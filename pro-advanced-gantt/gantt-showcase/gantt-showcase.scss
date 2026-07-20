@@ -1,0 +1,127 @@
+// Styles owned exclusively by the full Gantt showcase demo.
+$icon-size: 16px;
+
+.gantt-showcase-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gantt-showcase-angular-host {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gantt-showcase-angular-host .gantt-showcase-shell {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.gantt-showcase-controls {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  align-items: center;
+  padding: 0 0 8px;
+}
+
+.gantt-showcase-control {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid var(--revo-grid-border-color, #d8dee4);
+  border-radius: 6px;
+  padding: 4px 10px;
+  background: var(--revo-grid-background, #fff);
+  color: currentColor;
+  font: inherit;
+  line-height: 1.4;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--revo-grid-focused-border, #8c9bab);
+  }
+}
+
+.gantt-showcase-control__input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  accent-color: var(--revo-grid-focused-border, #5577ff);
+}
+
+.gantt-showcase-control__label {
+  white-space: nowrap;
+}
+
+revo-grid.gantt-showcase-grid {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+.gantt-showcase-grid {
+  .rgRow[row-status] .gantt-showcase-task-name {
+    color: var(--revo-row-status-color, color-mix(in srgb, currentColor 62%, transparent));
+    opacity: var(--revo-row-status-opacity, 0.78);
+    text-decoration: var(--revo-row-status-text-decoration, line-through);
+  }
+
+  .gantt-bar--summary {
+    .gantt-bar__label {
+      display: none;
+    }
+  }
+}
+
+.gantt-showcase-status-icon {
+  display: inline-flex;
+  flex: 0 0 $icon-size;
+  align-items: center;
+  justify-content: center;
+  width: $icon-size;
+  height: $icon-size;
+  margin-right: 5px;
+  margin-left: 4px;
+  opacity: 0.7;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.gantt-showcase-task-cell {
+  display: flex;
+  align-items: center;
+
+  .gantt-status-badge {
+    height: 21px;
+    padding: 0 6px;
+    margin-left: 4px;
+    gap: 4px;
+    font-size: 11px;
+  }
+  .tree-toggle {
+    margin-right: 0;
+  }
+}
+
+.gantt-showcase-bar--finished {
+  --gantt-bar-color: #94a3b8;
+  --gantt-progress-color: #64748b;
+  --gantt-bar-border-color: #64748b;
+  --gantt-bar-text-color: #000000;
+}
