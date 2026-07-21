@@ -1,6 +1,5 @@
 import {
   FINANCIAL_PRESETS,
-  type FinancialKpi,
   type FinancialPresetId,
 } from '../financial.pivot';
 
@@ -8,13 +7,11 @@ export const FINANCIAL_PIVOT_HEADER_TAG = 'financial-pivot-header';
 export const FINANCIAL_PIVOT_PRESET_EVENT = 'financial-pivot-preset-select';
 export const FINANCIAL_PIVOT_CONFIGURATOR_EVENT = 'financial-pivot-configurator-toggle';
 export const FINANCIAL_PIVOT_EXPANDED_EVENT = 'financial-pivot-expanded-toggle';
-export const FINANCIAL_PIVOT_RESET_EVENT = 'financial-pivot-reset';
 
 export interface FinancialPivotHeaderState {
   activePreset: FinancialPresetId | null;
   configuratorVisible: boolean;
   expanded: boolean;
-  kpis: FinancialKpi[];
 }
 
 export type FinancialPivotHeaderElement = HTMLElement & {
@@ -25,7 +22,6 @@ const DEFAULT_STATE: FinancialPivotHeaderState = {
   activePreset: 'sales',
   configuratorVisible: true,
   expanded: false,
-  kpis: [],
 };
 
 class FinancialPivotHeader extends HTMLElement {
@@ -86,14 +82,10 @@ class FinancialPivotHeader extends HTMLElement {
         () => this.emit(FINANCIAL_PIVOT_EXPANDED_EVENT),
         'expanded',
       ),
-      actionButton('Reset demo', () => this.emit(FINANCIAL_PIVOT_RESET_EVENT), 'reset'),
     );
     toolbar.append(report, actions);
 
-    const kpis = element('section', 'financial-pivot-header__kpis');
-    kpis.setAttribute('aria-label', 'Portfolio snapshot');
-    kpis.append(...state.kpis.map(renderKpi));
-    root.append(toolbar, kpis);
+    root.append(toolbar);
     this.replaceChildren(root);
   }
 
@@ -125,25 +117,6 @@ function actionButton(label: string, onClick: () => void, action?: string) {
   button.append(element('span', '', label));
   button.addEventListener('click', onClick);
   return button;
-}
-
-function renderKpi(kpi: FinancialKpi) {
-  const article = element('article', 'financial-pivot-header__kpi');
-  const icon = element(
-    'span',
-    `financial-pivot-header__icon financial-pivot-header__icon--${kpi.tone}`,
-  );
-  icon.setAttribute('aria-hidden', 'true');
-  icon.innerHTML = kpi.icon;
-  const content = element('div', 'financial-pivot-header__kpi-content');
-  const label = element('div', 'financial-pivot-header__kpi-label', kpi.label);
-  label.append(element('span', 'financial-pivot-header__kpi-detail', ` · ${kpi.detail}`));
-  content.append(
-    label,
-    element('div', 'financial-pivot-header__kpi-value', kpi.value),
-  );
-  article.append(icon, content);
-  return article;
 }
 
 function element<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text?: string) {

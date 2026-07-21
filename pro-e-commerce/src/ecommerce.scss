@@ -338,7 +338,7 @@ revo-grid.ecommerce-grid {
   height: auto !important;
   overflow: hidden;
   border: 0;
-  border-radius: 0 0 24px 24px;
+  border-radius: 0;
   background: var(--ecommerce-surface);
   font-family: inherit;
   --revo-grid-background: var(--ecommerce-surface);
@@ -539,6 +539,35 @@ revo-grid.ecommerce-grid {
   .pie-chart-container,
   .summary-header {
     opacity: 0.92;
+  }
+
+  .ecommerce-summary-aggregate {
+    display: flex;
+    width: calc(100% - 35px);
+    min-width: 0;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 4px;
+    overflow: hidden;
+    margin: 0 20px 0 15px;
+    white-space: nowrap;
+
+    &__label {
+      flex: 0 0 auto;
+      color: var(--ecommerce-text-3);
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    &__value {
+      min-width: 0;
+      overflow: hidden;
+      color: var(--ecommerce-text-1);
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+      font-weight: 600;
+      text-overflow: ellipsis;
+    }
   }
 
   .group-panel {

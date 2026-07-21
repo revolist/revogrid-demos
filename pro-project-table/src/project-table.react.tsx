@@ -14,11 +14,9 @@ import {
   applyProjectBulkAction,
   applyProjectSort,
   clearProjectSelection,
-  formatProjectBudget,
   getProjectFilterOptions,
   getProjectHideableColumns,
   getSelectedProjectIndexes,
-  getProjectSummary,
   projectFilterConfig,
   projectGridPreset,
   projectPlugins,
@@ -59,7 +57,6 @@ function Color() {
   const [isTaskModalOpen, setTaskModalOpen] = useState(false);
   const [taskDraft, setTaskDraft] = useState<ProjectTaskDraft>(() => createProjectTaskDraft());
 
-  const summary = useMemo(() => getProjectSummary(projectRows), [projectRows]);
   const options = useMemo(() => getProjectFilterOptions(projectRows), [projectRows]);
   const [columns, setColumns] = useState(() => createProjectColumns());
   const gridPreset = useMemo(() => projectGridPreset, []);
@@ -190,14 +187,6 @@ function Color() {
   return (
     <div className="project-grid-host">
       <div className="project-grid-shell" ref={shellRef}>
-        <div className="project-grid-summary" aria-label="Project summary">
-          <ProjectStat label="Projects" value={summary.total} />
-          <ProjectStat label="In progress" value={summary.inProgress} />
-          <ProjectStat label="Ready" value={summary.complete} />
-          <ProjectStat label="Blocked" value={summary.blocked} />
-          <ProjectStat label="Budget" value={formatProjectBudget(summary.budget)} />
-        </div>
-
         {React.createElement(PROJECT_TRACKER_TOOLBAR_TAG, { ref: toolbarRef })}
 
         <RevoGridComponent
@@ -377,15 +366,6 @@ function DraftChecks({
         ))}
       </div>
     </fieldset>
-  );
-}
-
-function ProjectStat({ label, value }: { label: string; value: string | number }) {
-  return (
-    <span className="project-grid-stat">
-      <span>{label}</span>
-      <span>{value}</span>
-    </span>
   );
 }
 

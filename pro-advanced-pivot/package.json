@@ -25,7 +25,6 @@
     "@angular/core": "^20.0.0",
     "@angular/platform-browser": "^20.0.0",
     "@angular/platform-browser-dynamic": "^20.0.0",
-    "@fortawesome/fontawesome-free": "^7.2.0",
     "@revolist/angular-datagrid": "latest",
     "@revolist/react-datagrid": "latest",
     "@revolist/revogrid": "latest",

@@ -210,7 +210,7 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
         columnTypes={columnTypes}
         rowContextMenu={contextMenus.rowContextMenu}
         columnContextMenu={contextMenus.columnContextMenu}
-        filter={false}
+        filter={true}
         hideColumns={hiddenColumns}
         stretch="last"
         resize

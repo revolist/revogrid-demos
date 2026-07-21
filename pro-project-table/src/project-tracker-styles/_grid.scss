@@ -10,6 +10,7 @@ revo-grid.project-tracker-grid {
   --revo-grid-background: #{token(surface)};
   --revo-grid-foreground: #{token(surface)};
   --revo-grid-border: var(--pipeline-border);
+  --revo-grid-header-border: var(--pipeline-border);
   --revo-grid-text: var(--pipeline-text);
   --revo-grid-cell-border: var(--pipeline-border);
   --revo-grid-header-bg: #{token(surface)};

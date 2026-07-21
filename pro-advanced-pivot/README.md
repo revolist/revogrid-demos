@@ -11,14 +11,14 @@ An Enterprise financial-analysis demo that combines RevoGrid Pivot with Pro grid
 - Collapsible pivot column groups and multi-row headers
 - Dimension sorting, text/number/selection filters, and header filter controls
 - Currency, numeric, integer, and heatmap column types
-- Responsive configurator, KPI header, guidance panel, reset, and expanded view
+- Responsive configurator, preset controls, and expanded view
 
 ## Enterprise feature inventory
 
 | Enterprise API | How this demo uses it and why it helps |
 | --- | --- |
 | `PivotPlugin` | Builds the pivot model and configurator, turns dimensions into row and column axes, supports drill-down, and produces grouped aggregations, subtotals, and grand totals. This lets users reshape the same financial data without a new report. |
-| `filterPivotSource` | Applies the active pivot filter selections before modeling and KPI calculation, keeping the grid, header metrics, and guidance panel consistent. |
+| `filterPivotSource` | Applies active pivot filter selections before modeling and expanding the initial row groups. |
 
 The demo configures `PivotPlugin` with three reusable financial presets, sortable dimensions, selectable filters, expanded or collapsed row groups, column-group totals, and sum, average, minimum, or maximum value choices.
 
@@ -62,5 +62,5 @@ Build variants use the matching `build:ts`, `build:react`, `build:vue`, and `bui
 - `src/pivot.vue` — Vue
 - `src/pivot.angular.ts` — Angular
 - `src/financial.pivot.ts` — dimensions, presets, aggregations, and plugin configuration
-- `src/financial-pivot-header/` — standalone KPI/header component
+- `src/financial-pivot-header/` — standalone report controls
 - `src/financial-dataset.ts` — financial source data

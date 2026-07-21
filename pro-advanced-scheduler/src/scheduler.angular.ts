@@ -79,18 +79,6 @@ import {
         </div>
       </aside>
       <div class="event-scheduler-shift-week-main">
-        <header class="event-scheduler-shift-week-appbar">
-          <div class="event-scheduler-shift-week-appbar__title">
-            <strong>Scheduler JavaScript Calendar</strong>
-            <span>On track</span>
-          </div>
-        <div class="event-scheduler-shift-week-appbar__actions">
-            <span class="event-scheduler-shift-week-avatar-stack" aria-hidden="true">
-              <span *ngFor="let member of appbarTeamMembers" [style.--shift-week-avatar-color]="member.color">{{ member.initials }}</span>
-              <small *ngIf="appbarTeamOverflow > 0">+{{ appbarTeamOverflow }}</small>
-            </span>
-          </div>
-        </header>
         <div *ngIf="workspaceView === 'table'; else schedulerGrid" class="event-scheduler-shift-week-table" role="region" aria-label="Scheduled events table">
           <revo-grid
             class="event-scheduler-shift-week-table__grid"
@@ -229,9 +217,6 @@ export class EventSchedulerShiftWeekGridComponent {
   viewKeys = shiftWeekDemoViews;
   calendarOptions = shiftWeekCalendarOptions;
   teamMembers = shiftWeekTeamMembers;
-  maxAppbarTeamMembers = 2;
-  appbarTeamMembers = shiftWeekTeamMembers.slice(0, this.maxAppbarTeamMembers);
-  appbarTeamOverflow = Math.max(shiftWeekTeamMembers.length - this.maxAppbarTeamMembers, 0);
   newEventStatusOptions = shiftWeekNewEventStatusOptions;
   newEventTypeOptions = shiftWeekNewEventTypeOptions;
   workspaceViews: readonly { view: ShiftWeekWorkspaceView; label: string }[] = [

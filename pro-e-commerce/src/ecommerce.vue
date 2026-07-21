@@ -69,7 +69,7 @@
       :column-context-menu.prop="contextMenus.columnContextMenu"
       stretch="last"
       :column-types="columnTypes"
-      :filter="false"
+      :filter="true"
       :hide-columns="hiddenColumns"
       style="min-height: 0"
       resize

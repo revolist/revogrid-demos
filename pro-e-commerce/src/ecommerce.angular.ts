@@ -94,7 +94,7 @@ import {
         [columnTypes]="columnTypes"
         [rowContextMenu]="rowContextMenu"
         [columnContextMenu]="columnContextMenu"
-        [filter]="false"
+        [filter]="true"
         stretch="last"
         [resize]="true"
         [hideAttribution]="true"

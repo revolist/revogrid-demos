@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RevoGrid, type DataType } from '@revolist/angular-datagrid';
-import { filterPivotSource, type PivotConfig } from '@revolist/revogrid-enterprise';
+import type { PivotConfig } from '@revolist/revogrid-enterprise';
 import { currentTheme } from '../../composables/useRandomData';
 import {
   FINANCIAL_COLUMNS,
@@ -20,7 +20,6 @@ import {
   FINANCIAL_SHOWCASE_PLUGINS,
   applyFinancialPivotOptions,
   createFinancialPreset,
-  getFinancialKpis,
   resolveFinancialRows,
   type FinancialPresetId,
 } from './financial.pivot';
@@ -28,10 +27,8 @@ import {
   defineFinancialPivotHeaderElement,
   type FinancialPivotHeaderState,
 } from './financial-pivot-header/financial-pivot-header';
-import { defineFinancialPivotGuidanceElement } from './financial-pivot-guidance';
 
 defineFinancialPivotHeaderElement();
-defineFinancialPivotGuidanceElement();
 
 const isSmallScreen = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
 
@@ -56,14 +53,7 @@ const isSmallScreen = () => typeof window !== 'undefined' && window.matchMedia('
         (financial-pivot-preset-select)="selectPreset($any($event).detail)"
         (financial-pivot-configurator-toggle)="configuratorVisible.set(!configuratorVisible())"
         (financial-pivot-expanded-toggle)="expanded.set(!expanded())"
-        (financial-pivot-reset)="resetDemo()"
       ></financial-pivot-header>
-
-      <financial-pivot-guidance
-        [visible]="guidanceVisible()"
-        [config]="pivotSignal()"
-        (financial-pivot-guidance-dismiss)="guidanceVisible.set(false)"
-      ></financial-pivot-guidance>
 
       <div class="grow min-h-0 overflow-auto">
         <div
@@ -107,7 +97,6 @@ export class PivotShowcaseGridComponent {
   readonly pivotSignal = signal<PivotConfig>(createFinancialPreset());
   readonly activePreset = signal<FinancialPresetId>('sales');
   readonly configuratorVisible = signal(!isSmallScreen());
-  readonly guidanceVisible = signal(true);
   readonly expanded = signal(false);
 
   get headerState(): FinancialPivotHeaderState {
@@ -115,17 +104,8 @@ export class PivotShowcaseGridComponent {
       activePreset: this.activePreset(),
       configuratorVisible: this.configuratorVisible(),
       expanded: this.expanded(),
-      kpis: getFinancialKpis(
-        this.filteredRows(),
-        this.activePreset(),
-      ),
     };
   }
-
-  readonly filteredRows = computed(() => filterPivotSource(
-    this.rows as ReturnType<typeof resolveFinancialRows>,
-    this.pivotSignal(),
-  ));
 
   readonly pivot = computed(() => applyFinancialPivotOptions(
     this.pivotSignal(),
@@ -139,13 +119,6 @@ export class PivotShowcaseGridComponent {
 
   selectPreset(id: FinancialPresetId) {
     this.replacePivot(createFinancialPreset(id), id);
-  }
-
-  resetDemo() {
-    this.replacePivot(createFinancialPreset(), 'sales');
-    this.configuratorVisible.set(!isSmallScreen());
-    this.guidanceVisible.set(true);
-    this.expanded.set(false);
   }
 
   private replacePivot(config: PivotConfig, preset: FinancialPresetId) {

@@ -43,56 +43,6 @@
   font-family: $font-stack;
 }
 
-.project-grid-summary {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  gap: space(3);
-  border-bottom: 1px solid var(--pipeline-border);
-  padding: space(6) space(11);
-}
-
-.project-grid-stat {
-  display: inline-grid;
-  min-width: 92px;
-  min-height: 52px;
-  align-content: center;
-  gap: 3px;
-  border: 1px solid var(--pipeline-border);
-  border-radius: radius(lg);
-  background: token(surface);
-  padding: space(2) space(5);
-  color: var(--pipeline-muted);
-  font-size: 11px;
-  line-height: 1.1;
-  white-space: nowrap;
-
-  > span:last-child {
-    color: var(--pipeline-blue);
-    font-size: 24px;
-    font-weight: 500;
-    letter-spacing: 0;
-  }
-
-  &:nth-child(2) > span:last-child {
-    color: var(--pipeline-orange);
-  }
-
-  &:nth-child(3) > span:last-child {
-    color: var(--pipeline-green);
-  }
-
-  &:nth-child(4) > span:last-child {
-    color: var(--pipeline-red);
-  }
-
-  &:nth-child(5) > span:last-child {
-    color: token(green-strong);
-    font-size: 18px;
-  }
-}
 
 .project-grid-toolbar {
   display: flex;

@@ -8,13 +8,6 @@
       @financial-pivot-preset-select="onPresetSelect"
       @financial-pivot-configurator-toggle="configuratorVisible = !configuratorVisible"
       @financial-pivot-expanded-toggle="expanded = !expanded"
-      @financial-pivot-reset="resetDemo"
-    />
-
-    <financial-pivot-guidance
-      :visible.prop="guidanceVisible"
-      :config.prop="pivotConfig"
-      @financial-pivot-guidance-dismiss="guidanceVisible = false"
     />
 
     <div class="grow min-h-0 overflow-auto">
@@ -48,7 +41,7 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
-import { filterPivotSource, type PivotConfig } from '@revolist/revogrid-enterprise';
+import type { PivotConfig } from '@revolist/revogrid-enterprise';
 import { currentThemeVue } from '../../composables/useRandomData';
 import {
   FINANCIAL_COLUMNS,
@@ -57,7 +50,6 @@ import {
   FINANCIAL_SHOWCASE_PLUGINS,
   applyFinancialPivotOptions,
   createFinancialPreset,
-  getFinancialKpis,
   resolveFinancialRows,
   type FinancialPresetId,
 } from './financial.pivot';
@@ -65,10 +57,8 @@ import {
   defineFinancialPivotHeaderElement,
   type FinancialPivotHeaderState,
 } from './financial-pivot-header/financial-pivot-header';
-import { defineFinancialPivotGuidanceElement } from './financial-pivot-guidance';
 
 defineFinancialPivotHeaderElement();
-defineFinancialPivotGuidanceElement();
 
 const { isDark } = currentThemeVue();
 const props = defineProps({ rows: { type: Array<any>, default: () => [] } });
@@ -78,21 +68,14 @@ const isSmallScreen = () => typeof window !== 'undefined' && window.matchMedia('
 const pivotConfig = shallowRef<PivotConfig>(createFinancialPreset());
 const activePreset = ref<FinancialPresetId>('sales');
 const configuratorVisible = ref(!isSmallScreen());
-const guidanceVisible = ref(true);
 const expanded = ref(false);
 const gridElement = ref<HTMLRevoGridElement>();
 const columnTypes = ref(FINANCIAL_COLUMN_TYPES);
 const plugins = FINANCIAL_SHOWCASE_PLUGINS;
-const filteredRows = computed(() => filterPivotSource(rows.value, pivotConfig.value));
-const kpis = computed(() => getFinancialKpis(
-  filteredRows.value,
-  activePreset.value,
-));
 const headerState = computed<FinancialPivotHeaderState>(() => ({
   activePreset: activePreset.value,
   configuratorVisible: configuratorVisible.value,
   expanded: expanded.value,
-  kpis: kpis.value,
 }));
 
 const pivot = computed(() =>
@@ -122,17 +105,6 @@ const selectPreset = (id: FinancialPresetId) => {
 
 const onPresetSelect = (event: Event) => {
   selectPreset((event as CustomEvent<FinancialPresetId>).detail);
-};
-
-const resetDemo = () => {
-  if (gridElement.value) gridElement.value.pivot = undefined;
-  window.setTimeout(() => {
-    pivotConfig.value = createFinancialPreset();
-    activePreset.value = 'sales';
-  });
-  configuratorVisible.value = !isSmallScreen();
-  guidanceVisible.value = true;
-  expanded.value = false;
 };
 </script>
 

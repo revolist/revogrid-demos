@@ -37,18 +37,6 @@
       </div>
     </aside>
     <div class="event-scheduler-shift-week-main">
-      <header class="event-scheduler-shift-week-appbar">
-        <div class="event-scheduler-shift-week-appbar__title">
-          <strong>Scheduler JavaScript Calendar</strong>
-          <span>On track</span>
-        </div>
-        <div class="event-scheduler-shift-week-appbar__actions">
-          <span class="event-scheduler-shift-week-avatar-stack" aria-hidden="true">
-            <span v-for="member in appbarTeamMembers" :key="member.id" :style="{ '--shift-week-avatar-color': member.color }">{{ member.initials }}</span>
-            <small v-if="appbarTeamOverflow > 0">+{{ appbarTeamOverflow }}</small>
-          </span>
-        </div>
-      </header>
       <RevoGrid
         v-if="workspaceView === 'table'"
         class="event-scheduler-shift-week-table"
@@ -224,9 +212,6 @@ const viewLabels = shiftWeekViewLabels;
 const viewKeys = shiftWeekDemoViews;
 const calendarOptions = shiftWeekCalendarOptions;
 const teamMembers = shiftWeekTeamMembers;
-const maxAppbarTeamMembers = 2;
-const appbarTeamMembers = computed(() => teamMembers.slice(0, maxAppbarTeamMembers));
-const appbarTeamOverflow = computed(() => Math.max(teamMembers.length - maxAppbarTeamMembers, 0));
 const newEventStatusOptions = shiftWeekNewEventStatusOptions;
 const newEventTypeOptions = shiftWeekNewEventTypeOptions;
 const newEventForm = ref<ShiftWeekNewEventForm | null>(null);

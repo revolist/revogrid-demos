@@ -13,11 +13,9 @@ import {
   applyProjectBulkAction,
   applyProjectSort,
   clearProjectSelection,
-  formatProjectBudget,
   getProjectFilterOptions,
   getProjectHideableColumns,
   getSelectedProjectIndexes,
-  getProjectSummary,
   projectFilterConfig,
   projectGridPreset,
   projectPlugins,
@@ -59,7 +57,7 @@ export function load(parentSelector: string) {
 
   const container = document.createElement('div');
   container.className = 'project-grid-host';
-  container.innerHTML = renderTracker(projectRows);
+  container.innerHTML = renderTracker();
 
   const parent = document.querySelector(parentSelector);
   parent?.appendChild(container);
@@ -84,7 +82,6 @@ export function load(parentSelector: string) {
   const refreshGrid = () => {
     grid.grouping = createProjectGrouping(() => projectRows, groupBy, groupsExpanded, collapsedGroups);
     grid.source = projectRows;
-    refreshSummary(container, projectRows);
     syncToolbar();
   };
 
@@ -168,7 +165,6 @@ export function load(parentSelector: string) {
     }
     projectRows.splice(0, projectRows.length, ...nextRows);
     grid.source = projectRows;
-    refreshSummary(container, projectRows);
     syncToolbar();
   };
   grid.addEventListener('celleditapply', syncProjectEditState);
@@ -264,44 +260,13 @@ export function load(parentSelector: string) {
   };
 }
 
-function renderTracker(rows: ProjectRow[]) {
-  const summary = getProjectSummary(rows);
+function renderTracker() {
   return `
     <div class="project-grid-shell">
-      <div class="project-grid-summary" aria-label="Project summary">
-        ${renderSummaryItem('Projects', String(summary.total), 'total')}
-        ${renderSummaryItem('In progress', String(summary.inProgress), 'inProgress')}
-        ${renderSummaryItem('Ready', String(summary.complete), 'complete')}
-        ${renderSummaryItem('Blocked', String(summary.blocked), 'blocked')}
-        ${renderSummaryItem('Budget', formatProjectBudget(summary.budget), 'budget')}
-      </div>
       <${PROJECT_TRACKER_TOOLBAR_TAG}></${PROJECT_TRACKER_TOOLBAR_TAG}>
       <revo-grid></revo-grid>
     </div>
   `;
-}
-
-function renderSummaryItem(label: string, value: string, key: keyof ReturnType<typeof getProjectSummary>) {
-  return `
-    <span class="project-grid-stat">
-      <span>${label}</span>
-      <span data-project-summary="${key}">${value}</span>
-    </span>
-  `;
-}
-
-function refreshSummary(container: HTMLElement, rows: ProjectRow[]) {
-  const summary = getProjectSummary(rows);
-  setSummaryValue(container, 'total', String(summary.total));
-  setSummaryValue(container, 'inProgress', String(summary.inProgress));
-  setSummaryValue(container, 'complete', String(summary.complete));
-  setSummaryValue(container, 'blocked', String(summary.blocked));
-  setSummaryValue(container, 'budget', formatProjectBudget(summary.budget));
-}
-
-function setSummaryValue(container: HTMLElement, key: keyof ReturnType<typeof getProjectSummary>, value: string) {
-  const node = container.querySelector<HTMLElement>(`[data-project-summary="${key}"]`);
-  if (node) node.textContent = value;
 }
 
 function openTaskModal(

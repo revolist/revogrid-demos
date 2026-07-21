@@ -542,51 +542,6 @@ export function createShiftWeekEvents(view: ShiftWeekDemoView, anchorDate: strin
       status: 'training',
       color: 'oklch(0.58 0.17 158)',
     },
-    {
-      id: 'shift-mina-overnight',
-      resourceId: 'sam',
-      title: rotation.overnightTitle,
-      startDateTime: createDateTimeFromTimeOfDay(startDate, rotation.overnightStart, rotation.overnightDay),
-      endDateTime: createDateTimeFromTimeOfDay(startDate, rotation.overnightEnd, rotation.overnightDay + 1),
-      status: 'confirmed',
-      color: 'oklch(0.58 0.17 62)',
-    },
-    {
-      id: 'shift-daily-standup',
-      resourceId: 'jamie',
-      title: 'Daily Standup',
-      startDateTime: createDateTimeFromTimeOfDay(startDate, '09:00', 2),
-      endDateTime: createDateTimeFromTimeOfDay(startDate, '09:30', 2),
-      status: 'confirmed',
-      color: 'oklch(0.58 0.17 264)',
-    },
-    {
-      id: 'shift-sprint-review',
-      resourceId: 'sam',
-      title: 'Sprint Review',
-      startDateTime: createDateTimeFromTimeOfDay(startDate, '12:00', 2),
-      endDateTime: createDateTimeFromTimeOfDay(startDate, '15:00', 2),
-      status: 'locked',
-      color: 'oklch(0.58 0.17 215)',
-    },
-    {
-      id: 'shift-design-sync',
-      resourceId: 'mina',
-      title: 'Design Sync',
-      startDateTime: createDateTimeFromTimeOfDay(startDate, '16:00', 3),
-      endDateTime: createDateTimeFromTimeOfDay(startDate, '16:45', 3),
-      status: 'pending',
-      color: 'oklch(0.58 0.17 14)',
-    },
-    {
-      id: 'shift-on-call-standby',
-      resourceId: 'sam',
-      title: 'On-call Standby',
-      startDateTime: createDateTimeFromTimeOfDay(startDate, '13:00', 5),
-      endDateTime: createDateTimeFromTimeOfDay(startDate, '17:00', 5),
-      status: 'pending',
-      color: 'oklch(0.58 0.17 62)',
-    },
   ];
 }
 
@@ -775,10 +730,6 @@ function getShiftWeekEventRotation(startDate: string) {
       trainingDay: 3,
       trainingStart: '09:30',
       trainingEnd: '15:00',
-      overnightTitle: 'Weekend Deploy',
-      overnightDay: 5,
-      overnightStart: '17:00',
-      overnightEnd: '08:30',
     };
   }
   if (rotation === 2) {
@@ -803,10 +754,6 @@ function getShiftWeekEventRotation(startDate: string) {
       trainingDay: 4,
       trainingStart: '12:00',
       trainingEnd: '17:00',
-      overnightTitle: 'Night Handoff',
-      overnightDay: 5,
-      overnightStart: '21:00',
-      overnightEnd: '07:30',
     };
   }
   return {
@@ -830,10 +777,6 @@ function getShiftWeekEventRotation(startDate: string) {
     trainingDay: 3,
     trainingStart: '13:00',
     trainingEnd: '18:00',
-    overnightTitle: 'Night Handoff',
-    overnightDay: 4,
-    overnightStart: '21:00',
-    overnightEnd: '07:30',
   };
 }
 

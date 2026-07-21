@@ -4,7 +4,6 @@ defineCustomElements();
 import { EventSchedulerPlugin, type EventSchedulerEntityId, type EventSchedulerEventSelectedDetail } from '@revolist/revogrid-enterprise';
 import { AdvanceFilterPlugin, ColumnStretchPlugin, RowOddPlugin } from '@revolist/revogrid-pro';
 import { currentTheme } from '../../composables/useRandomData';
-const APPBAR_MAX_VISIBLE_TEAM_MEMBERS = 2;
 import {
   createShiftWeekAssignedOpenShift,
   createShiftWeekConfig,
@@ -50,7 +49,6 @@ export function load(parentSelector: string) {
   const root = document.createElement('section');
   const sidebar = document.createElement('aside');
   const main = document.createElement('div');
-  const appbar = document.createElement('header');
   const toolbar = document.createElement('div');
   const nav = document.createElement('div');
   const previousButton = document.createElement('button');
@@ -67,8 +65,6 @@ export function load(parentSelector: string) {
   const grid = document.createElement('revo-grid');
   const table = document.createElement('revo-grid');
   const dialogHost = document.createElement('div');
-  const appbarVisibleTeamMembers = shiftWeekTeamMembers.slice(0, APPBAR_MAX_VISIBLE_TEAM_MEMBERS);
-  const appbarTeamOverflow = Math.max(shiftWeekTeamMembers.length - APPBAR_MAX_VISIBLE_TEAM_MEMBERS, 0);
   let activeView: ShiftWeekDemoView = initialShiftWeekDemoView;
   let workspaceView: ShiftWeekWorkspaceView = initialShiftWeekWorkspaceView;
   let activeCalendar: ShiftWeekDemoCalendar = initialShiftWeekCalendar;
@@ -81,18 +77,6 @@ export function load(parentSelector: string) {
   sidebar.className = 'event-scheduler-shift-week-sidebar';
   sidebar.setAttribute('aria-label', 'Scheduler navigation');
   main.className = 'event-scheduler-shift-week-main';
-  appbar.className = 'event-scheduler-shift-week-appbar';
-  appbar.innerHTML = `
-    <div class="event-scheduler-shift-week-appbar__title">
-      <strong>Scheduler JavaScript Calendar</strong>
-      <span>On track</span>
-    </div>
-    <div class="event-scheduler-shift-week-appbar__actions">
-      <span class="event-scheduler-shift-week-avatar-stack" aria-hidden="true">
-        ${appbarVisibleTeamMembers.map((member) => `<span style="--shift-week-avatar-color:${member.color}">${member.initials}</span>`).join('')}${appbarTeamOverflow > 0 ? `<small>+${appbarTeamOverflow}</small>` : ''}
-      </span>
-    </div>
-  `;
   toolbar.className = 'event-scheduler-shift-week-toolbar';
   toolbar.setAttribute('aria-label', 'Shift scheduler navigation');
   nav.className = 'event-scheduler-shift-week-toolbar__nav';
@@ -422,7 +406,7 @@ export function load(parentSelector: string) {
   renderToolbar();
   renderSidebar();
   renderWorkspace();
-  main.append(appbar, toolbar, grid, table);
+  main.append(toolbar, grid, table);
   root.append(sidebar, main, dialogHost);
   parent.appendChild(root);
 

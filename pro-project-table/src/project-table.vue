@@ -1,14 +1,6 @@
 <template>
   <div class="project-grid-host">
     <div class="project-grid-shell">
-      <div class="project-grid-summary" aria-label="Project summary">
-        <ProjectStat label="Projects" :value="summary.total" />
-        <ProjectStat label="In progress" :value="summary.inProgress" />
-        <ProjectStat label="Ready" :value="summary.complete" />
-        <ProjectStat label="Blocked" :value="summary.blocked" />
-        <ProjectStat label="Budget" :value="formatProjectBudget(summary.budget)" />
-      </div>
-
       <project-tracker-toolbar
         ref="toolbarRef"
         @project-tracker-toolbar-action="handleToolbarAction"
@@ -116,11 +108,9 @@ import {
   applyProjectBulkAction,
   applyProjectSort,
   clearProjectSelection,
-  formatProjectBudget,
   getProjectFilterOptions,
   getProjectHideableColumns,
   getSelectedProjectIndexes,
-  getProjectSummary,
   projectFilterConfig,
   projectGridPreset,
   projectPlugins,
@@ -159,7 +149,6 @@ const isTaskModalOpen = ref(false);
 const taskDraft = ref<ProjectTaskDraft>(createProjectTaskDraft());
 
 const options = computed(() => getProjectFilterOptions(projectRows.value));
-const summary = computed(() => getProjectSummary(projectRows.value));
 const columns = shallowRef(createProjectColumns());
 const gridPreset = projectGridPreset;
 const plugins = projectPlugins;
@@ -208,19 +197,6 @@ const columnAddPopup = computed(() => createProjectColumnAddPopupConfig({
 const additionalData = computed(() => ({
   columnAddPopup: columnAddPopup.value,
 }));
-
-const ProjectStat = defineComponent({
-  props: {
-    label: { type: String, required: true },
-    value: { type: [String, Number], required: true },
-  },
-  setup(props) {
-    return () => h('span', { class: 'project-grid-stat' }, [
-      h('span', props.label),
-      h('span', String(props.value)),
-    ]);
-  },
-});
 
 const DraftSelect = defineComponent({
   props: {

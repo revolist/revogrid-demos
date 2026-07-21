@@ -10,6 +10,7 @@ A customer analytics RevoGrid Pro demo implemented in Vanilla TypeScript, React,
 - Row context actions for copy, duplicate, discount changes, export, and delete
 - Column context actions for sorting, clearing, hiding, pinning, and export
 - Toolbar-driven expression filtering with a full-text fallback
+- Per-column slider, selection, and text filtering in the header
 - Runtime column visibility controls and responsive last-column stretching
 - Styled Excel export configuration for headers, values, number formats, and workbook metadata
 
@@ -22,6 +23,8 @@ Every plugin in this table comes from `@revolist/revogrid-pro` and is registered
 | `ContextMenuPlugin` | Places customer actions and column-management commands beside the clicked row or header, reducing trips to a separate toolbar. |
 | `ColumnHidePlugin` | Applies toolbar and context-menu visibility changes while preserving the full grouped column model for later restoration. |
 | `ColumnStretchPlugin` | Expands the last visible column into spare width so the analytics grid fits its container cleanly. |
+| `AdvanceFilterPlugin` | Applies the slider, selection, and text filter definitions already configured on ecommerce columns. |
+| `FilterHeaderPlugin` | Renders the interactive per-column filter controls directly in the grid headers. |
 
 ### Pro plugin installed automatically
 
@@ -39,7 +42,7 @@ This companion is created internally and should not be repeated in `ecommercePlu
 | `avatarTemplate` | Renders recognizable customer initials consistently in avatar cells and dropdown options. |
 | Excel export cell and transformer contracts | Attach workbook names, sheet names, number formats, header styles, group-header styles, and value-specific styling to the export configuration. |
 
-The toolbar expression parser is demo application code, not `AdvanceFilterPlugin`; each grid intentionally sets `filter={false}` and filters the source before passing rows to RevoGrid.
+The toolbar expression parser remains demo application code. It filters the source before passing rows to RevoGrid, while `AdvanceFilterPlugin` and `FilterHeaderPlugin` apply the per-column filters to those visible rows.
 
 ### Excel export registration status
 

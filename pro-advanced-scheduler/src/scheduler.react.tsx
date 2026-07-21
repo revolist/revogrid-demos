@@ -39,7 +39,6 @@ import './styles.scss';
 const { isDark } = currentTheme();
 
 export default function EventSchedulerShiftWeek() {
-  const maxAppbarTeamMembers = 2;
   const gridRef = useRef<HTMLRevoGridElement | null>(null);
   const [activeView, setActiveViewState] = useState<ShiftWeekDemoView>(initialShiftWeekDemoView);
   const [workspaceView, setWorkspaceView] = useState<ShiftWeekWorkspaceView>(initialShiftWeekWorkspaceView);
@@ -63,8 +62,6 @@ export default function EventSchedulerShiftWeek() {
   const rangeTitle = useMemo(() => getShiftWeekRangeTitle(activeView, anchorDate), [activeView, anchorDate]);
   const rangeSubtitle = useMemo(() => getShiftWeekSubtitle(anchorDate), [anchorDate]);
   const tableRows = useMemo(() => getShiftWeekTableRows(events), [events]);
-  const appbarTeamMembers = useMemo(() => shiftWeekTeamMembers.slice(0, maxAppbarTeamMembers), []);
-  const appbarTeamOverflow = useMemo(() => Math.max(shiftWeekTeamMembers.length - maxAppbarTeamMembers, 0), []);
   const showToolbar = workspaceView === 'calendar';
 
   const resetEvents = useCallback((view: ShiftWeekDemoView, date: string) => {
@@ -250,20 +247,6 @@ export default function EventSchedulerShiftWeek() {
         </div>
       </aside>
       <div className="event-scheduler-shift-week-main">
-        <header className="event-scheduler-shift-week-appbar">
-          <div className="event-scheduler-shift-week-appbar__title">
-            <strong>Scheduler JavaScript Calendar</strong>
-            <span>On track</span>
-          </div>
-          <div className="event-scheduler-shift-week-appbar__actions">
-            <span className="event-scheduler-shift-week-avatar-stack" aria-hidden="true">
-              {appbarTeamMembers.map((member) => (
-                <span key={String(member.id)} style={{ '--shift-week-avatar-color': member.color } as React.CSSProperties}>{member.initials}</span>
-              ))}
-              {appbarTeamOverflow > 0 ? <small>+{appbarTeamOverflow}</small> : null}
-            </span>
-          </div>
-        </header>
         {workspaceView === 'table' ? (
           <RevoGrid
             theme={isDark() ? 'darkMaterial' : 'material'}

@@ -12,7 +12,6 @@
   --rv-column-add-trigger-color: #7db3ff;
 
   .project-grid-shell,
-  .project-grid-summary,
   .project-grid-toolbar,
   revo-grid.project-tracker-grid,
   revo-grid.color-grid revogr-header .rgHeaderCell {
@@ -151,7 +150,6 @@
     }
   }
 
-  .project-grid-stat,
   .project-grid-menu__panel,
   .project-grid-menu__panel button,
   .project-grid-menu__panel label,
@@ -164,14 +162,6 @@
     border-color: token(dark-border);
     background: token(dark-elevated);
     color: token(dark-text);
-  }
-
-  .project-grid-stat {
-    background: #151b29;
-
-    > span:first-child {
-      color: token(dark-muted);
-    }
   }
 
   .project-grid-select,

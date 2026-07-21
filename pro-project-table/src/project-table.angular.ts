@@ -15,11 +15,9 @@ import {
   applyProjectBulkAction,
   applyProjectSort,
   clearProjectSelection,
-  formatProjectBudget,
   getProjectFilterOptions,
   getProjectHideableColumns,
   getSelectedProjectIndexes,
-  getProjectSummary,
   projectFilterConfig,
   projectGridPreset,
   projectPlugins,
@@ -49,28 +47,6 @@ defineProjectTrackerToolbarElement();
   host: { class: 'project-grid-host' },
   template: `
     <div class="project-grid-shell">
-      <div class="project-grid-summary" aria-label="Project summary">
-        <span class="project-grid-stat">
-          <span>Projects</span>
-          <span>{{ summary.total }}</span>
-        </span>
-        <span class="project-grid-stat">
-          <span>In progress</span>
-          <span>{{ summary.inProgress }}</span>
-        </span>
-        <span class="project-grid-stat">
-          <span>Ready</span>
-          <span>{{ summary.complete }}</span>
-        </span>
-        <span class="project-grid-stat">
-          <span>Blocked</span>
-          <span>{{ summary.blocked }}</span>
-        </span>
-        <span class="project-grid-stat">
-          <span>Budget</span>
-          <span>{{ formatProjectBudget(summary.budget) }}</span>
-        </span>
-      </div>
       <project-tracker-toolbar
         [state]="toolbarState"
         (project-tracker-toolbar-action)="handleToolbarAction($event)"
@@ -251,7 +227,6 @@ export class ColorGridComponent {
   filterConfig = projectFilterConfig;
   projectRows: ProjectRow[] = createProjectRows();
   options = getProjectFilterOptions(this.projectRows);
-  summary = getProjectSummary(this.projectRows);
   groupBy: ProjectGroupProp = 'section';
   groupsExpanded = true;
   collapsedGroups = new Set<string>();
@@ -263,7 +238,6 @@ export class ColorGridComponent {
   toolbarState: ProjectTrackerToolbarState = this.createToolbarState();
   isTaskModalOpen = false;
   taskDraft: ProjectTaskDraft = createProjectTaskDraft();
-  formatProjectBudget = formatProjectBudget;
   projectOwnerProfiles = projectOwnerProfiles;
   contextMenus = createProjectContextMenus({
     getRows: () => this.projectRows,
@@ -331,7 +305,6 @@ export class ColorGridComponent {
 
   refreshVisibleRows() {
     this.options = getProjectFilterOptions(this.projectRows);
-    this.summary = getProjectSummary(this.projectRows);
     this.grouping = createProjectGrouping(() => this.projectRows, this.groupBy, this.groupsExpanded, this.collapsedGroups);
     this.syncToolbarState();
   }

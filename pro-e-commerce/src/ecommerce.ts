@@ -184,7 +184,7 @@ export function load(parentSelector: string, data: any[] = []) {
 
     grid.columnTypes = ecommerceColumnTypes;
     grid.plugins = ecommercePlugins;
-    grid.filter = false;
+    grid.filter = true;
     grid.stretch = 'last';
     grid.rowContextMenu = rowContextMenu;
     grid.columnContextMenu = columnContextMenu;

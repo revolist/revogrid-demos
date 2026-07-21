@@ -1,5 +1,5 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
-import { filterPivotSource, type PivotConfig } from '@revolist/revogrid-enterprise';
+import type { PivotConfig } from '@revolist/revogrid-enterprise';
 import './financial-pivot-header/financial-pivot-header.scss';
 import { currentTheme } from '../../composables/useRandomData';
 import {
@@ -9,7 +9,6 @@ import {
   FINANCIAL_SHOWCASE_PLUGINS,
   applyFinancialPivotOptions,
   createFinancialPreset,
-  getFinancialKpis,
   resolveFinancialRows,
   type FinancialPresetId,
 } from './financial.pivot';
@@ -17,12 +16,8 @@ import {
   FINANCIAL_PIVOT_CONFIGURATOR_EVENT,
   FINANCIAL_PIVOT_EXPANDED_EVENT,
   FINANCIAL_PIVOT_PRESET_EVENT,
-  FINANCIAL_PIVOT_RESET_EVENT,
   createFinancialPivotHeader,
 } from './financial-pivot-header/financial-pivot-header';
-import {
-  createFinancialPivotGuidance,
-} from './financial-pivot-guidance';
 
 defineCustomElements();
 
@@ -46,20 +41,13 @@ export function load(parentSelector: string, rows: any[] | { isDark?: boolean } 
     activePreset,
     configuratorVisible,
     expanded,
-    kpis: getFinancialKpis(
-      filterPivotSource(data, pivotConfig),
-      activePreset,
-    ),
   });
-
-  const guidance = createFinancialPivotGuidance(pivotConfig);
 
   const scrollContainer = document.createElement('div');
   scrollContainer.className = 'grow min-h-0 overflow-auto';
   const gridContainer = document.createElement('div');
   gridContainer.className = 'pivot-grid-container h-full overflow-hidden';
   let grid: any;
-  const getFilteredData = () => filterPivotSource(data, pivotConfig);
 
   function applyPivotOptions() {
     grid.pivot = applyFinancialPivotOptions(
@@ -74,27 +62,12 @@ export function load(parentSelector: string, rows: any[] | { isDark?: boolean } 
       activePreset,
       configuratorVisible,
       expanded,
-      kpis: getFinancialKpis(
-        getFilteredData(),
-        activePreset,
-      ),
     };
-    guidance.config = pivotConfig;
     gridContainer.style.minWidth = configuratorVisible ? '920px' : '680px';
     Object.assign(container.style, expanded
       ? { position: 'fixed', inset: '8px', zIndex: '1000', background: 'var(--financial-pivot-expanded-background)' }
       : { position: '', inset: '', zIndex: '', background: '' });
   }
-
-  const resetDemo = () => {
-    pivotConfig = createFinancialPreset();
-    activePreset = 'sales';
-    configuratorVisible = !isSmallScreen();
-    expanded = false;
-    guidance.visible = true;
-    refreshLayout();
-    replacePivotOptions();
-  };
 
   const onPivotConfigUpdate = (event: CustomEvent<PivotConfig>) => {
     pivotConfig = event.detail || createFinancialPreset();
@@ -147,9 +120,8 @@ export function load(parentSelector: string, rows: any[] | { isDark?: boolean } 
     expanded = !expanded;
     refreshLayout();
   });
-  header.addEventListener(FINANCIAL_PIVOT_RESET_EVENT, resetDemo);
   scrollContainer.appendChild(gridContainer);
-  container.append(header, guidance, scrollContainer);
+  container.append(header, scrollContainer);
   parent.appendChild(container);
   refreshLayout();
   initializeGrid();

@@ -217,9 +217,6 @@ importers:
       '@angular/platform-browser-dynamic':
         specifier: ^20.0.0
         version: 20.3.26(@angular/common@20.3.26(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/compiler@20.3.26)(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@20.3.26(@angular/common@20.3.26(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1)))
-      '@fortawesome/fontawesome-free':
-        specifier: ^7.2.0
-        version: 7.3.1
       '@revolist/angular-datagrid':
         specifier: latest
         version: 4.23.22
