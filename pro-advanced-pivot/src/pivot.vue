@@ -27,7 +27,7 @@
           :source="rows"
           :columns="FINANCIAL_COLUMNS"
           :pivot.prop="pivot"
-          :theme="isDark.value ? 'darkCompact' : 'compact'"
+          :theme="isDark ? 'darkCompact' : 'compact'"
           :plugins="plugins"
           :column-types="columnTypes"
           readonly
