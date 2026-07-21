@@ -9,7 +9,7 @@ switch (framework) {
     const [{ createElement }, { createRoot }, { default: Demo }] = await Promise.all([
       import('react'),
       import('react-dom/client'),
-      import('./hr-demo.react'),
+      import('./hr.react'),
     ]);
     createRoot(document.querySelector('#app')!).render(createElement(Demo, { isDark }));
     break;
@@ -17,7 +17,7 @@ switch (framework) {
   case 'vue': {
     const [{ createApp }, { default: Demo }] = await Promise.all([
       import('vue'),
-      import('./hr-demo.vue'),
+      import('./hr.vue'),
     ]);
     createApp(Demo, { isDark }).mount('#app');
     break;
@@ -28,13 +28,13 @@ switch (framework) {
     document.querySelector('#app')!.innerHTML = '<hr-demo-grid></hr-demo-grid>';
     const [{ bootstrapApplication }, { HRDemoGridComponent }] = await Promise.all([
       import('@angular/platform-browser'),
-      import('./hr-demo.angular'),
+      import('./hr.angular'),
     ]);
     await bootstrapApplication(HRDemoGridComponent);
     break;
   }
   default: {
-    const { load } = await import('./hr-demo');
+    const { load } = await import('./hr');
     await load('#app', { isDark });
   }
 }

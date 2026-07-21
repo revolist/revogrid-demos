@@ -1,0 +1,226 @@
+@use "sass:map";
+@use "sass:list";
+
+$font-stack: inherit;
+
+$colors: (
+  blue: #005be3,
+  blue-strong: #0969f6,
+  orange: #ff9800,
+  orange-strong: #fe8600,
+  green: #00a22e,
+  green-strong: #00a22e,
+  red: #ff4d57,
+  red-strong: #f8001a,
+  violet: #7848f4,
+  pink: #ff2d8d,
+  cyan: #00b8d9,
+  yellow: #ffd21f,
+  border: #dfe5f2,
+  border-strong: #d7dff0,
+  soft: #f7f9fd,
+  surface: #fff,
+  text: #000000,
+  text-soft: #172033,
+  muted: #1e2534,
+  muted-strong: #596780,
+  header-placeholder: #596780,
+  dark-surface: #131722,
+  dark-elevated: #171d2b,
+  dark-border: #2b3445,
+  dark-text: #f6f8fb,
+  dark-muted: #a8b3c7
+);
+
+$semantic-colors: (
+  blue: map.get($colors, blue),
+  orange: map.get($colors, orange),
+  green: map.get($colors, green),
+  red: map.get($colors, red),
+  violet: map.get($colors, violet),
+  pink: map.get($colors, pink),
+  cyan: map.get($colors, cyan),
+  yellow: map.get($colors, yellow),
+  gray: #98a2b3
+);
+
+$block-colors: (
+  blue: #005edc,
+  orange: map.get($colors, orange-strong),
+  green: map.get($colors, green),
+  red: map.get($colors, red-strong),
+  violet: map.get($colors, violet)
+);
+
+$label-colors: (
+  blue: (#eaf2ff, map.get($colors, blue-strong)),
+  violet: (#f0eaff, map.get($colors, violet)),
+  pink: (#ffeaf5, #d91a73),
+  cyan: (#e6faff, #0088a3),
+  green: (#e7fbf2, #008f55),
+  red: (#ffecef, #e12836),
+  gray: (#eef2f7, #526071),
+  yellow: (#fff8d8, #a06a00)
+);
+
+$space: (
+  1: 4px,
+  2: 6px,
+  3: 8px,
+  4: 10px,
+  5: 12px,
+  6: 14px,
+  7: 16px,
+  8: 18px,
+  9: 20px,
+  10: 22px,
+  11: 24px
+);
+
+$radius: (
+  xs: 3px,
+  sm: 5px,
+  md: 7px,
+  lg: 8px,
+  xl: 10px,
+  shell: 18px,
+  modal: 16px,
+  pill: 999px
+);
+
+$shadow: (
+  shell: 0 18px 48px rgba(31, 48, 78, 0.08),
+  menu: 0 16px 36px rgba(31, 48, 78, 0.16),
+  modal: 0 24px 80px rgba(15, 23, 42, 0.24),
+  primary: 0 6px 14px rgba(9, 105, 246, 0.22),
+  pinned: 8px 0 16px rgba(31, 48, 78, 0.04)
+);
+
+$control: (
+  height: 32px,
+  filter-height: 28px,
+  header-action-lane: 44px,
+  header-action-icon: 24px,
+  modal-height: 42px,
+  modal-button-height: 40px,
+  checkbox-size: 16px,
+  toolbar-icon-size: 14px,
+  primary-icon-size: 13px
+);
+
+$z: (
+  menu: 50,
+  modal: 1000
+);
+
+@function token($name) {
+  @return map.get($colors, $name);
+}
+
+@function space($name) {
+  @return map.get($space, $name);
+}
+
+@function radius($name) {
+  @return map.get($radius, $name);
+}
+
+@function shadow($name) {
+  @return map.get($shadow, $name);
+}
+
+@function control($name) {
+  @return map.get($control, $name);
+}
+
+@mixin control-reset($height: control(height), $radius-name: md) {
+  display: inline-flex;
+  height: $height;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: radius($radius-name);
+  color: token(text);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@mixin panel-control {
+  border-color: token(border-strong);
+  color: token(text);
+}
+
+@mixin full-cell-block {
+  position: relative;
+  width: calc(100% + 20px);
+  height: 100%;
+  min-height: 100%;
+  margin-inline: -10px;
+  border-radius: 0;
+}
+
+@mixin truncation {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin tag-label($height: 22px, $radius-name: sm) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: radius($radius-name);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@mixin project-checkbox {
+  display: inline-grid;
+  width: control(checkbox-size);
+  height: control(checkbox-size);
+  flex: 0 0 control(checkbox-size);
+  box-sizing: border-box;
+  appearance: none;
+  place-content: center;
+  margin: 0;
+  border: 1.5px solid #b8c4d8;
+  border-radius: 4px;
+  background: token(surface);
+  cursor: pointer;
+
+  &::before {
+    width: 8px;
+    height: 8px;
+    background: token(surface);
+    clip-path: polygon(14% 44%, 0 58%, 38% 96%, 100% 22%, 86% 8%, 36% 68%);
+    content: "";
+    opacity: 0;
+  }
+
+  &:checked {
+    border-color: var(--pipeline-blue);
+    background: var(--pipeline-blue);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  &:indeterminate {
+    border-color: var(--pipeline-blue);
+    background: var(--pipeline-blue);
+
+    &::before {
+      width: 8px;
+      height: 2px;
+      border-radius: 2px;
+      clip-path: none;
+      opacity: 1;
+    }
+  }
+}

@@ -6,13 +6,13 @@
 
 [![RevoGrid](https://img.shields.io/badge/RevoGrid-Demos-1f6feb?style=for-the-badge)](https://github.com/revolist/revogrid)
 [![Frameworks](https://img.shields.io/badge/Frameworks-TS_%7C_React_%7C_Vue_%7C_Angular-8250df?style=for-the-badge)](#framework-support)
-[![Demos](https://img.shields.io/badge/Showcases-5-2ea44f?style=for-the-badge)](#demo-catalog)
+[![Demos](https://img.shields.io/badge/Showcases-7-2ea44f?style=for-the-badge)](#demo-catalog)
 
 </div>
 
 ## About
 
-This repository contains focused source examples for [RevoGrid](https://github.com/revolist/revogrid). The demos cover the free Core grid, the Pro spreadsheet experience, and advanced Pivot, Scheduler, and Gantt use cases.
+This repository contains focused source examples for [RevoGrid](https://github.com/revolist/revogrid). The demos cover the free Core grid and Pro spreadsheet, e-commerce, project table, Pivot, Scheduler, and Gantt use cases.
 
 Every showcase provides equivalent implementations for the major supported frontend approaches, making it easier to compare integrations or adapt an example to an existing application.
 
@@ -22,9 +22,13 @@ Every showcase provides equivalent implementations for the major supported front
 | --- | --- | --- | --- |
 | **Core** | HR data grid | Async large-data loading, grouped columns, custom cell templates, column types, row drag handling, and light/dark themes | [Demo guide](./core-free/README.md) |
 | **Pro** | Spreadsheet workbench | Formula bar, XLSX import/export, history, autofill, multi-range selection, merged cells, validation, context menus, and collaborative presence simulation | [Demo guide](./pro-excel/README.md) |
+| **Pro** | E-commerce analytics | Customer profiles, grouped analytics columns, filtering, column controls, context menus, and styled Excel export configuration | [Demo guide](./pro-e-commerce/README.md) |
+| **Pro** | Project table | Project grouping, status filtering, custom editors, toolbar actions, context menus, and project presets | [Demo guide](./pro-project-table/README.md) |
 | **Pro Advance** | Financial pivot | Financial presets, configurable row and column axes, filtering, KPIs, heatmap formatting, responsive layout, and expanded view | [Demo guide](./pro-advanced-pivot/README.md) |
 | **Pro Advance** | Event scheduler | Calendar and resource views, table view, navigation, search, event creation, open shifts, reassignment, and team scheduling | [Demo guide](./pro-advanced-scheduler/README.md) |
 | **Pro Advance** | Project Gantt | Tasks, dependencies, resources, assignments, working calendars, baselines, critical path controls, row status, and Excel export | [Demo guide](./pro-advanced-gantt/README.md) |
+
+Each commercial demo guide contains a source-audited inventory of its directly registered and automatically installed Pro or Enterprise plugins, the supporting package APIs it uses, and the practical benefit of each capability.
 
 ## Repository structure
 
@@ -34,6 +38,8 @@ revogrid-demos/
 ├── pnpm-workspace.yaml         # Workspace package discovery
 ├── core-free/                  # Core HR data-grid showcase
 ├── pro-excel/                  # Pro spreadsheet workbench
+├── pro-e-commerce/             # Pro e-commerce analytics
+├── pro-project-table/          # Pro project tracker table
 ├── pro-advanced-pivot/         # Financial pivot showcase
 ├── pro-advanced-scheduler/     # Shift and event scheduler
 └── pro-advanced-gantt/
@@ -78,6 +84,8 @@ pnpm dev:excel
 pnpm dev:pivot
 pnpm dev:scheduler
 pnpm dev:gantt
+pnpm dev:ecommerce
+pnpm dev:project
 ```
 
 Each short command starts the Vanilla TypeScript variant. Append a framework name
@@ -91,7 +99,7 @@ pnpm dev:pivot:angular
 ```
 
 The same `:ts`, `:react`, `:vue`, and `:angular` suffixes work for `core`,
-`excel`, `scheduler`, and `gantt`.
+`excel`, `scheduler`, `gantt`, `ecommerce`, and `project`.
 
 You can also run a demo from its package directory:
 
@@ -107,8 +115,10 @@ pnpm dev:angular
 
 | Demo | TypeScript | React | Vue | Angular |
 | --- | --- | --- | --- | --- |
-| HR data grid | [`hr-demo.ts`](./core-free/src/hr-demo.ts) | [`hr-demo.react.tsx`](./core-free/src/hr-demo.react.tsx) | [`hr-demo.vue`](./core-free/src/hr-demo.vue) | [`hr-demo.angular.ts`](./core-free/src/hr-demo.angular.ts) |
+| HR data grid | [`hr.ts`](./core-free/src/hr.ts) | [`hr.react.tsx`](./core-free/src/hr.react.tsx) | [`hr.vue`](./core-free/src/hr.vue) | [`hr.angular.ts`](./core-free/src/hr.angular.ts) |
 | Spreadsheet | [`excel.ts`](./pro-excel/src/excel.ts) | [`excel.react.tsx`](./pro-excel/src/excel.react.tsx) | [`excel.vue`](./pro-excel/src/excel.vue) | [`excel.angular.ts`](./pro-excel/src/excel.angular.ts) |
+| E-commerce | [`ecommerce.ts`](./pro-e-commerce/src/ecommerce.ts) | [`ecommerce.react.tsx`](./pro-e-commerce/src/ecommerce.react.tsx) | [`ecommerce.vue`](./pro-e-commerce/src/ecommerce.vue) | [`ecommerce.angular.ts`](./pro-e-commerce/src/ecommerce.angular.ts) |
+| Project table | [`project-table.ts`](./pro-project-table/src/project-table.ts) | [`project-table.react.tsx`](./pro-project-table/src/project-table.react.tsx) | [`project-table.vue`](./pro-project-table/src/project-table.vue) | [`project-table.angular.ts`](./pro-project-table/src/project-table.angular.ts) |
 | Pivot | [`pivot.ts`](./pro-advanced-pivot/src/pivot.ts) | [`pivot.react.tsx`](./pro-advanced-pivot/src/pivot.react.tsx) | [`pivot.vue`](./pro-advanced-pivot/src/pivot.vue) | [`pivot.angular.ts`](./pro-advanced-pivot/src/pivot.angular.ts) |
 | Scheduler | [`scheduler.ts`](./pro-advanced-scheduler/src/scheduler.ts) | [`scheduler.react.tsx`](./pro-advanced-scheduler/src/scheduler.react.tsx) | [`scheduler.vue`](./pro-advanced-scheduler/src/scheduler.vue) | [`scheduler.angular.ts`](./pro-advanced-scheduler/src/scheduler.angular.ts) |
 | Gantt | [`gantt.ts`](./pro-advanced-gantt/src/gantt.ts) | [`gantt.react.tsx`](./pro-advanced-gantt/src/gantt.react.tsx) | [`gantt.vue`](./pro-advanced-gantt/src/gantt.vue) | [`gantt.angular.ts`](./pro-advanced-gantt/src/gantt.angular.ts) |

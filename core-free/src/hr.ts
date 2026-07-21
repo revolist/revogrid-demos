@@ -4,7 +4,7 @@ import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE } from './sys-data/hr.columns';
 import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
 import { getHRLoadingOverlayHtml } from './hr-loading';
-import './hr-demo.css';
+import './hr.css';
 
 defineCustomElements();
 

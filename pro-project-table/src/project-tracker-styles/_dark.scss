@@ -1,0 +1,394 @@
+@use "./tokens" as *;
+
+[data-theme="dark"] {
+  --rv-column-add-popup-bg: #{token(dark-elevated)};
+  --rv-column-add-popup-text: #{token(dark-text)};
+  --rv-column-add-popup-muted: #{token(dark-muted)};
+  --rv-column-add-popup-border: #{token(dark-border)};
+  --rv-column-add-popup-soft: #20283a;
+  --rv-column-add-popup-shadow: 0 22px 60px rgba(0, 0, 0, 0.42), 0 8px 22px rgba(0, 0, 0, 0.24);
+  --rv-column-add-trigger-bg: #20283a;
+  --rv-column-add-trigger-hover: #263149;
+  --rv-column-add-trigger-color: #7db3ff;
+
+  .project-grid-shell,
+  .project-grid-summary,
+  .project-grid-toolbar,
+  revo-grid.project-tracker-grid,
+  revo-grid.color-grid revogr-header .rgHeaderCell {
+    --pipeline-border: #30394a;
+    --pipeline-soft: #1a2030;
+    --pipeline-text: #{token(dark-text)};
+    --pipeline-muted: #{token(dark-muted)};
+    --revo-grid-background: #{token(dark-surface)};
+    --revo-grid-foreground: #{token(dark-surface)};
+    --revo-grid-header-bg: #{token(dark-surface)};
+    --revo-grid-border: #30394a;
+    --revo-grid-cell-border: #30394a;
+    --revo-grid-text: #{token(dark-text)};
+    --project-header-divider: #3a4558;
+
+    color: token(dark-text);
+  }
+
+  revo-grid.project-tracker-grid {
+    --revo-grid-cell-disabled-bg: rgba(18, 24, 36, 0.46);
+
+    .rgCell:not(revo-grid.project-tracker-grid revo-grid .rgCell),
+    .rgHeaderCell:not(revo-grid.project-tracker-grid revo-grid .rgHeaderCell) {
+      border-color: #30394a !important;
+    }
+
+    .project-task-name,
+    .project-summary-text,
+    .project-money {
+      color: token(dark-text);
+    }
+
+    .project-task-main,
+    .project-task-cell {
+      color: token(dark-text);
+    }
+
+    .project-task-progress {
+      color: token(dark-text);
+
+      .circular-progress-bg {
+        stroke: #263246;
+      }
+
+      .circular-progress-value {
+        color: #aeb9cd;
+      }
+    }
+
+    .cell-checkbox,
+    .rv-column-add-cell-host {
+      background: #101521;
+    }
+
+    revogr-data .rgRow.groupingRow,
+    revogr-data .rgRow.groupingRow .rgCell,
+    .project-group-label {
+      background: #111827 !important;
+      color: token(dark-text);
+    }
+
+    revogr-data .rgRow.groupingRow:not(revo-grid.project-tracker-grid revo-grid .rgRow):hover,
+    revogr-data .rgRow.groupingRow:not(revo-grid.project-tracker-grid revo-grid .rgRow):hover > div,
+    revogr-data .rgRow.groupingRow:not(revo-grid.project-tracker-grid revo-grid .rgRow):hover > div > div,
+    revogr-data .rgRow.groupingRow:not(revo-grid.project-tracker-grid revo-grid .rgRow):hover .rgCell,
+    revogr-data .rgRow.groupingRow:not(revo-grid.project-tracker-grid revo-grid .rgRow):hover .project-group-label {
+      background: #162235 !important;
+    }
+
+    .project-group-count,
+    .project-group-metrics {
+      color: token(dark-muted);
+    }
+
+    .project-group-chevron {
+      color: token(dark-muted);
+    }
+
+    .project-select-cell__arrow {
+      color: token(dark-muted);
+    }
+
+    .project-new-badge {
+      background: #1b2a42;
+      color: #8fbeff;
+    }
+
+    .project-skill,
+    .project-linked-item {
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: #20283a;
+      color: #c5cee0;
+    }
+
+    @each $name, $color in $semantic-colors {
+      .project-skill--#{"" + $name},
+      .project-linked-item--#{"" + $name} {
+        background: rgba($color, 0.13);
+        color: color-mix(in srgb, $color 52%, #d8e0ef);
+      }
+    }
+
+    .timeline-editor {
+      &__container,
+      &__timeline-bar {
+        border-color: #334055;
+        background: #20283a;
+      }
+
+      &__date-range {
+        background: #111827;
+        color: #f6f8fb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.36);
+      }
+
+      &__date-picker-icon {
+        background: rgba(246, 248, 251, 0.12);
+        color: #dce5f3;
+      }
+    }
+
+    .project-progress-editor {
+      .revo-slider {
+        --slider-track-bg: #20283a;
+        --slider-thumb-border: #111827;
+        --slider-value-color: #aeb9cd;
+      }
+
+      .revo-slider-value {
+        color: #aeb9cd;
+      }
+    }
+
+    .project-rating {
+      color: #323c50;
+    }
+  }
+
+  .project-grid-stat,
+  .project-grid-menu__panel,
+  .project-grid-menu__panel button,
+  .project-grid-menu__panel label,
+  .project-modal,
+  .project-modal__close,
+  .project-modal__field input,
+  .project-modal__field select,
+  .project-modal-select__preview,
+  .project-modal__footer button {
+    border-color: token(dark-border);
+    background: token(dark-elevated);
+    color: token(dark-text);
+  }
+
+  .project-grid-stat {
+    background: #151b29;
+
+    > span:first-child {
+      color: token(dark-muted);
+    }
+  }
+
+  .project-grid-select,
+  .project-grid-menu summary,
+  .project-grid-menu__trigger {
+    border-color: transparent;
+    background: transparent;
+    color: token(dark-text);
+  }
+
+  .project-grid-select:hover,
+  .project-grid-menu summary:hover,
+  .project-grid-menu__trigger:hover,
+  .project-grid-select:focus-within,
+  .project-grid-menu[open] summary,
+  .project-grid-menu.is-open .project-grid-menu__trigger {
+    border-color: transparent;
+    background: #20283a;
+  }
+
+  .project-grid-menu__panel {
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38);
+
+    button:hover,
+    label:hover {
+      background: #20283a;
+    }
+  }
+
+  .project-grid-menu__option.is-selected {
+    background: #18345c;
+    color: #8fbeff;
+
+    .project-grid-menu__check {
+      border-color: #7db3ff;
+      background: #2f7df1;
+    }
+  }
+
+  .project-grid-menu__type-icon {
+    background: rgba(125, 179, 255, 0.16);
+    color: #8fbeff;
+  }
+
+  @each $name, $color in $semantic-colors {
+    .project-grid-menu__type-icon--#{"" + $name} {
+      background: rgba($color, 0.22);
+      color: $color;
+    }
+  }
+
+  .project-grid-menu__type-icon--empty {
+    background: transparent;
+    color: transparent;
+  }
+
+  .project-selection-count {
+    border-color: token(dark-border);
+    background: #151b29;
+    color: token(dark-text);
+  }
+
+  .project-owner-filter-header-text,
+  .project-owner-filter-header-count {
+    color: token(dark-text);
+  }
+
+  .project-owner-filter-header-count {
+    background: #20283a;
+  }
+
+  .project-filter-header-count {
+    background: #20283a;
+    color: token(dark-muted);
+  }
+
+  .project-bulk-action {
+    color: token(dark-muted);
+    background: transparent !important;
+
+    &:disabled {
+      border-color: transparent !important;
+      background: transparent !important;
+      color: #7f8ba0;
+      opacity: 0.6;
+    }
+
+    &:hover:not(:disabled) {
+      background: #20283a;
+      color: token(dark-text);
+    }
+  }
+
+  .rv-column-add-popup__item.is-selected {
+    background: #18345c;
+    box-shadow: inset 0 0 0 1px #315f9e;
+  }
+
+  .rv-column-add-popup__footer-button {
+    color: token(dark-text);
+  }
+
+  revo-grid.color-grid revogr-header .rgHeaderCell .filter-input input[type="text"],
+  revo-grid.color-grid revogr-header .rgHeaderCell .filter-header-selection-trigger.rv-filter {
+    border-color: #334055 !important;
+    background: token(dark-elevated) !important;
+    color: token(dark-text);
+    -webkit-text-fill-color: token(dark-text);
+
+    &:disabled {
+      border-color: #334055 !important;
+      background: token(dark-elevated) !important;
+      color: token(dark-text);
+      -webkit-text-fill-color: token(dark-text);
+    }
+  }
+
+  revo-grid.color-grid revogr-header {
+    .rgHeaderCell {
+      border-color: #30394a !important;
+      background: token(dark-surface) !important;
+    }
+
+    .filter-header-content {
+      border-bottom-color: #3a4558;
+      color: #c0cadb;
+    }
+
+    .filter-header-label {
+      color: #c0cadb;
+    }
+
+    .rv-filter:not(.filter-header-selection-trigger) {
+      color: #98a5ba;
+      opacity: 0.9;
+    }
+  }
+
+  revogr-filter-panel {
+    --filter-input-bg: #171d2b;
+    --filter-input-color: #{token(dark-text)};
+    --revo-grid-background: #20252c;
+    --revo-grid-foreground: #20252c;
+    --revo-grid-text: #{token(dark-text)};
+    --revo-grid-row-hover: #2a3242;
+    --revo-grid-cell-border: transparent;
+    --revo-grid-border: #4a4f59;
+    --text-color: #{token(dark-muted)};
+
+    border-color: #4a4f59;
+    background: #20252c;
+    color: token(dark-text);
+
+    > span,
+    .filter,
+    .filter-list-option,
+    .filter-list-option-content,
+    .range-values,
+    .form_control {
+      color: token(dark-text);
+    }
+
+    .filter .search-input,
+    .multi-filter-list input[type="text"] {
+      border-color: #3a4558;
+      background: #333333 !important;
+      color: token(dark-text) !important;
+    }
+
+    .filter-list-grid {
+      --revo-grid-background: transparent;
+      --revo-grid-foreground: transparent;
+      --revo-grid-text: #{token(dark-text)};
+      --revo-grid-row-hover: #2a3242;
+    }
+
+    .filter-list-grid revogr-data .rgRow,
+    .filter-list-grid revogr-data .rgCell {
+      color: token(dark-text);
+    }
+
+    .project-owner-filter-option,
+    .project-owner-filter-name,
+    .project-filter-block,
+    .project-filter-department {
+      color: token(dark-text);
+    }
+
+    .project-filter-block {
+      color: #ffffff;
+    }
+
+    .project-filter-department {
+      color: #ffffff;
+    }
+
+    button {
+      color: token(dark-text);
+    }
+  }
+
+  .revo-dropdown-menu .dropdown-option[class*="theme-dark"] {
+    .project-owner-option,
+    .project-owner-filter-option {
+      color: token(dark-text) !important;
+      -webkit-text-fill-color: token(dark-text);
+    }
+
+    .project-skill-option {
+      border-color: #334055;
+      background: #20283a;
+      color: token(dark-text);
+      -webkit-text-fill-color: token(dark-text);
+
+      input {
+        accent-color: #7db3ff;
+      }
+    }
+  }
+}

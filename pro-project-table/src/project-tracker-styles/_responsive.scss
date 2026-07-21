@@ -1,0 +1,48 @@
+@use "./tokens" as *;
+
+@media (max-width: 980px) {
+  .project-grid-summary {
+    min-width: 0;
+    justify-content: flex-start;
+    padding: space(5) space(7);
+  }
+
+  .project-grid-toolbar {
+    padding: space(4) space(7);
+  }
+
+  .project-bulk-bar {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 640px) {
+  .project-grid-shell {
+    border-radius: 0;
+  }
+
+  .project-grid-stat {
+    min-width: 78px;
+    min-height: 46px;
+
+    > span:last-child {
+      font-size: 19px;
+    }
+  }
+
+  .project-grid-select,
+  .project-grid-menu summary,
+  .project-grid-menu__trigger {
+    flex: 1 1 136px;
+  }
+
+  .project-bulk-bar {
+    justify-content: flex-start;
+  }
+
+  .project-modal__grid {
+    grid-template-columns: 1fr;
+  }
+}

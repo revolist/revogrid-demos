@@ -1,0 +1,442 @@
+@use "sass:map";
+@use "./tokens" as *;
+
+.project-grid-host {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+}
+
+.project-grid-shell {
+  --pipeline-blue: #{token(blue)};
+  --pipeline-orange: #{token(orange)};
+  --pipeline-green: #{token(green)};
+  --pipeline-red: #{token(red)};
+  --pipeline-violet: #{token(violet)};
+  --pipeline-pink: #{token(pink)};
+  --pipeline-cyan: #{token(cyan)};
+  --pipeline-yellow: #{token(yellow)};
+  --progress-bar-low-color: var(--pipeline-red);
+  --progress-bar-medium-color: var(--pipeline-orange);
+  --progress-bar-info-color: var(--pipeline-blue);
+  --progress-bar-high-color: var(--pipeline-green);
+  --pipeline-border: #{token(border)};
+  --pipeline-soft: #{token(soft)};
+  --pipeline-text: #{token(text)};
+  --pipeline-muted: #{token(muted)};
+
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--pipeline-text);
+  font-family: $font-stack;
+}
+
+.project-grid-summary {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: space(3);
+  border-bottom: 1px solid var(--pipeline-border);
+  padding: space(6) space(11);
+}
+
+.project-grid-stat {
+  display: inline-grid;
+  min-width: 92px;
+  min-height: 52px;
+  align-content: center;
+  gap: 3px;
+  border: 1px solid var(--pipeline-border);
+  border-radius: radius(lg);
+  background: token(surface);
+  padding: space(2) space(5);
+  color: var(--pipeline-muted);
+  font-size: 11px;
+  line-height: 1.1;
+  white-space: nowrap;
+
+  > span:last-child {
+    color: var(--pipeline-blue);
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  &:nth-child(2) > span:last-child {
+    color: var(--pipeline-orange);
+  }
+
+  &:nth-child(3) > span:last-child {
+    color: var(--pipeline-green);
+  }
+
+  &:nth-child(4) > span:last-child {
+    color: var(--pipeline-red);
+  }
+
+  &:nth-child(5) > span:last-child {
+    color: token(green-strong);
+    font-size: 18px;
+  }
+}
+
+.project-grid-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  min-height: 54px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: space(5);
+  overflow: visible;
+  border-bottom: 1px solid var(--pipeline-border);
+  padding: space(4) space(11);
+
+  button,
+  .project-grid-select,
+  .project-grid-menu summary,
+  .project-grid-menu__trigger {
+    @include control-reset;
+  }
+
+  button,
+  .project-grid-menu summary,
+  .project-grid-menu__trigger,
+  .project-grid-select select {
+    cursor: pointer;
+  }
+}
+
+.project-toolbar-icon {
+  display: inline-flex;
+  width: control(toolbar-icon-size);
+  height: control(toolbar-icon-size);
+  flex: 0 0 control(toolbar-icon-size);
+  align-items: center;
+  justify-content: center;
+  color: #4b5568;
+
+  svg {
+    display: block;
+    width: control(toolbar-icon-size);
+    height: control(toolbar-icon-size);
+    fill: currentColor;
+  }
+}
+
+.project-grid-icon-button {
+  width: control(height);
+  padding: 0;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.42;
+  }
+}
+
+.project-grid-select {
+  @include panel-control;
+
+  gap: 8px;
+  padding: 0 space(2);
+
+  select {
+    height: control(filter-height);
+    min-width: 86px;
+    border: 0;
+    background: transparent;
+    color: token(text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    outline: none;
+  }
+}
+
+.project-grid-toolbar {
+  .project-grid-select,
+  .project-grid-menu summary,
+  .project-grid-menu__trigger {
+    border-color: transparent;
+    background: transparent;
+    color: token(text);
+    box-shadow: none;
+  }
+
+  .project-selection-count {
+    border-color: token(border-strong);
+    background: #f8faff;
+  }
+
+  .project-grid-select:hover,
+  .project-grid-menu summary:hover,
+  .project-grid-menu__trigger:hover,
+  .project-bulk-action:hover:not(:disabled) {
+    border-color: transparent;
+    background: #f3f7ff;
+  }
+
+  .project-grid-select:focus-within,
+  .project-grid-menu[open] summary,
+  .project-grid-menu.is-open .project-grid-menu__trigger {
+    border-color: transparent;
+    background: #eef5ff;
+    box-shadow: none;
+  }
+}
+
+.project-grid-menu {
+  position: relative;
+
+  summary,
+  &__trigger {
+    @include panel-control;
+
+    gap: 8px;
+    list-style: none;
+    padding: 0 space(2);
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &--button::after {
+      display: none;
+      content: none;
+    }
+  }
+
+  .project-chevron-icon {
+    display: inline-flex;
+    width: 10px;
+    height: 10px;
+    flex: 0 0 10px;
+    align-items: center;
+    justify-content: center;
+    color: #6b778d;
+
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      fill: currentColor;
+    }
+  }
+
+  &__panel {
+    position: absolute;
+    z-index: map.get($z, menu);
+    top: calc(100% + 6px);
+    left: 0;
+    display: grid;
+    gap: space(2);
+    min-width: 190px;
+    border: 1px solid var(--pipeline-border);
+    border-radius: radius(lg);
+    background: token(surface);
+    box-shadow: shadow(menu);
+    padding: space(3);
+
+    button,
+    label {
+      display: flex;
+      width: 100%;
+      min-height: control(height);
+      align-items: center;
+      justify-content: flex-start;
+      gap: space(3);
+      border: 0;
+      border-radius: 6px;
+      background: token(surface);
+      color: token(text-soft);
+      font-size: 13px;
+      font-weight: 400;
+      padding: 0 space(3);
+      text-align: left;
+
+      &:hover {
+        background: #f4f7fd;
+      }
+    }
+  }
+
+  &__option {
+    .project-grid-menu__check {
+      display: inline-grid;
+      width: control(checkbox-size);
+      height: control(checkbox-size);
+      flex: 0 0 control(checkbox-size);
+      box-sizing: border-box;
+      place-content: center;
+      border: 1.5px solid #b8c4d8;
+      border-radius: 4px;
+      background: token(surface);
+
+      &::before {
+        width: 8px;
+        height: 8px;
+        background: token(surface);
+        clip-path: polygon(14% 44%, 0 58%, 38% 96%, 100% 22%, 86% 8%, 36% 68%);
+        content: "";
+        opacity: 0;
+      }
+    }
+
+    &.is-selected {
+      background: #eef5ff;
+      color: token(blue-strong);
+
+      .project-grid-menu__check {
+        border-color: var(--pipeline-blue);
+        background: var(--pipeline-blue);
+
+        &::before {
+          opacity: 1;
+        }
+      }
+    }
+
+    &::before {
+      content: none;
+    }
+  }
+
+  &__type-icon {
+    display: inline-flex;
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: #eef5ff;
+    color: token(blue-strong);
+
+    svg {
+      display: block;
+      width: 12px;
+      height: 12px;
+      fill: currentColor;
+    }
+
+    &--empty {
+      background: transparent;
+      color: transparent;
+    }
+
+    @each $name, $color in $semantic-colors {
+      &--#{"" + $name} {
+        background: rgba($color, 0.14);
+        color: $color;
+      }
+    }
+  }
+
+  &__column-option input[type="checkbox"] {
+    @include project-checkbox;
+  }
+}
+
+.project-hide-menu .project-grid-menu__panel {
+  top: 0;
+  left: calc(100% + 6px);
+}
+
+.project-grid-primary {
+  border-color: token(blue-strong) !important;
+  background: token(blue-strong) !important;
+  color: token(surface) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: shadow(primary);
+  font-weight: 500 !important;
+  padding: 0 14px !important;
+
+  .project-toolbar-icon {
+    width: control(primary-icon-size);
+    height: control(primary-icon-size);
+    flex-basis: control(primary-icon-size);
+    color: currentColor;
+
+    svg {
+      width: control(primary-icon-size);
+      height: control(primary-icon-size);
+    }
+  }
+}
+
+.project-bulk-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: space(3);
+  margin-left: auto;
+}
+
+.project-selection-count,
+.project-bulk-action {
+  @include control-reset;
+
+  padding: 0 space(4);
+}
+
+.project-selection-count {
+  @include panel-control;
+  border-color: token(border-strong);
+}
+
+.project-bulk-action {
+  gap: space(2);
+  border-color: transparent;
+  background: transparent;
+  color: token(text);
+  box-shadow: none;
+}
+
+.project-bulk-danger {
+  border-color: transparent !important;
+  color: var(--pipeline-red) !important;
+}
+
+.project-bulk-icon {
+  display: inline-flex;
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  opacity: 0.9;
+
+  svg {
+    display: block;
+    width: 13px;
+    height: 13px;
+    fill: currentColor;
+  }
+}
+
+.project-bulk-action,
+.project-bulk-danger {
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.project-grid-spacer {
+  flex: 999 1 24px;
+}

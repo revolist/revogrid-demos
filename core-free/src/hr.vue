@@ -59,7 +59,7 @@ import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE } from './sys-data
 import { currentThemeVue } from '../../composables/useRandomData';
 import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
-import './hr-demo.css';
+import './hr.css';
 
 const props = defineProps<{
   isDark?: boolean;

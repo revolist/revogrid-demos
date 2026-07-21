@@ -24,10 +24,10 @@ Build variants use the matching `build:ts`, `build:react`, `build:vue`, and `bui
 
 ## Main files
 
-- `src/hr-demo.ts` — Vanilla TypeScript
-- `src/hr-demo.react.tsx` — React
-- `src/hr-demo.vue` — Vue
-- `src/hr-demo.angular.ts` — Angular
+- `src/hr.ts` — Vanilla TypeScript
+- `src/hr.react.tsx` — React
+- `src/hr.vue` — Vue
+- `src/hr.angular.ts` — Angular
 - `src/sys-data/` — HR data and column definitions
 
 This demo uses only free/core functionality. It is the baseline for comparing the Pro and Enterprise demos in this workspace.

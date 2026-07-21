@@ -1,0 +1,386 @@
+@use "sass:list";
+@use "./tokens" as *;
+
+.project-avatar {
+  flex: 0 0 24px;
+  font-weight: 500;
+}
+
+.project-owner-option {
+  display: flex;
+  min-width: 160px;
+  align-items: center;
+  gap: space(3);
+  color: token(text);
+  font-size: 12.5px;
+  font-weight: 400;
+  padding: space(2) space(3);
+}
+
+.project-owner-filter-option {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: space(3);
+  color: token(text);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+
+  .avatar-cell {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    font-size: 10px;
+  }
+}
+
+.project-owner-filter-name {
+  @include truncation;
+}
+
+.project-owner-filter-header {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+
+  .avatar-cell {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    font-size: 9px;
+  }
+}
+
+.project-owner-filter-header-text,
+.project-owner-filter-header-count {
+  @include truncation;
+
+  color: token(text);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.project-owner-filter-header-count {
+  display: inline-flex;
+  height: 22px;
+  min-width: 22px;
+  align-items: center;
+  justify-content: center;
+  border-radius: radius(pill);
+  background: #eef2f8;
+  padding: 0 6px;
+}
+
+.project-filter-block,
+.project-filter-department {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 24px;
+  align-items: center;
+  justify-content: flex-start;
+  color: token(surface);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 0 space(3);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.project-filter-block {
+  border-radius: radius(xs);
+}
+
+.project-filter-department {
+  border-radius: radius(pill);
+}
+
+.project-filter-header-empty {
+  @include truncation;
+
+  color: inherit;
+}
+
+.project-filter-header-values {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: space(1);
+  overflow: hidden;
+}
+
+.project-filter-header-block,
+.project-filter-header-department {
+  display: inline-flex;
+  min-width: 0;
+  height: 22px;
+  align-items: center;
+  justify-content: flex-start;
+  color: token(surface);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 0 space(3);
+}
+
+.project-filter-header-block {
+  flex: 1 1 auto;
+  border-radius: radius(xs);
+}
+
+.project-filter-header-department {
+  max-width: 100%;
+  border-radius: radius(pill);
+}
+
+.project-filter-header-label {
+  @include truncation;
+
+  min-width: 0;
+}
+
+.project-filter-header-count {
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 22px;
+  min-width: 22px;
+  align-items: center;
+  justify-content: center;
+  border-radius: radius(pill);
+  background: #eef2f8;
+  color: token(muted-strong);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 0 6px;
+}
+
+@each $name, $color in $block-colors {
+  revo-grid.project-tracker-grid .project-block--#{"" + $name},
+  .revo-dropdown-menu .project-block--#{"" + $name},
+  .project-filter-block--#{"" + $name},
+  .project-filter-header-block--#{"" + $name} {
+    background: $color;
+  }
+}
+
+.revo-dropdown-menu {
+  &.dropdown-menu-color {
+    min-width: 200px;
+    max-height: 400px;
+  }
+
+  .dropdown-option,
+  .option-content {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .option-content {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .project-dropdown-option {
+    justify-content: flex-start;
+    width: fit-content;
+    max-width: calc(100% - 8px);
+    margin: space(1);
+    text-align: left;
+  }
+
+  .project-block,
+  .project-department {
+    position: relative;
+    display: inline-flex;
+    width: fit-content;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 24px;
+    align-items: center;
+    justify-content: flex-start;
+    border-radius: radius(xs);
+    color: token(surface);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    overflow: hidden;
+    padding: 0 22px 0 space(3);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .project-block__label,
+  .project-department__label {
+    @include truncation;
+
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .project-department {
+    border-radius: radius(pill);
+  }
+
+  .project-skills,
+  .project-linked-items {
+    display: inline-flex;
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    overflow: hidden;
+  }
+}
+
+.project-skill,
+.project-linked-item {
+  @include tag-label(22px, sm);
+  @include truncation;
+
+  flex: 0 0 auto;
+  max-width: 82px;
+  height: 22px;
+  font-size: 11px;
+  padding: 0 space(3);
+}
+
+  .project-skill {
+    &-option {
+    width: fit-content;
+    max-width: calc(100% - #{space(3)}) !important;
+    align-self: flex-start;
+    justify-content: flex-start;
+    gap: 7px;
+    margin-left: space(2);
+    margin-right: space(2);
+
+    input {
+      accent-color: var(--pipeline-blue);
+      flex: 0 0 auto;
+    }
+  }
+}
+
+.project-filter-skill {
+  max-width: 136px;
+}
+
+.project-filter-header-skills {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-start;
+  gap: space(2);
+  overflow: hidden;
+}
+
+.project-filter-header-skill {
+  max-width: 96px;
+}
+
+.project-select-cell {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: space(2);
+  overflow: hidden;
+
+  &__badge {
+    max-width: calc(100% - 20px);
+  }
+
+  &__arrow {
+    display: inline-flex;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    color: token(muted);
+    cursor: pointer;
+
+    svg {
+      display: block;
+      width: 10px;
+      height: 10px;
+      fill: currentColor;
+    }
+  }
+}
+
+.project-department {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-height: 22px;
+  justify-content: flex-start;
+  border-radius: radius(pill);
+  color: #1d3557;
+  font-size: 11.5px;
+  font-weight: 400;
+  gap: space(2);
+  overflow: hidden;
+  padding: 0 24px 0 10px;
+  text-align: left;
+
+  &__label {
+    @include truncation;
+
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .dropdown-arrow {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    flex: 0 0 auto;
+    margin-left: 0;
+    transform: translateY(-50%);
+  }
+}
+
+@each $name, $pair in $label-colors {
+  .project-skill--#{"" + $name},
+  .project-linked-item--#{"" + $name},
+  .project-department--#{"" + $name} {
+    background: list.nth($pair, 1);
+    color: list.nth($pair, 2);
+  }
+}
+
+$department-bright-colors: (
+  blue: (token(blue), token(surface)),
+  violet: (token(violet), token(surface)),
+  pink: (token(pink), token(surface)),
+  cyan: (token(cyan), token(surface)),
+  green: (token(green), token(surface)),
+  red: (token(red-strong), token(surface)),
+  gray: (#667085, token(surface)),
+  yellow: (token(yellow), #5c4300)
+);
+
+@each $name, $pair in $department-bright-colors {
+  revo-grid.project-tracker-grid .project-department--#{"" + $name},
+  .revo-dropdown-menu .project-department--#{"" + $name},
+  .project-filter-department--#{"" + $name},
+  .project-filter-header-department--#{"" + $name} {
+    background: list.nth($pair, 1);
+    color: list.nth($pair, 2);
+  }
+}
