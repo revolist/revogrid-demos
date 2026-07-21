@@ -37,11 +37,13 @@ financial-pivot-header {
 }
 
 .financial-pivot-header__toolbar {
+  box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  padding-inline: 8px;
 }
 
 .financial-pivot-header__report {
