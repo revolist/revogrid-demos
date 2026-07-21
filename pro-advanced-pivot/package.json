@@ -7,6 +7,18 @@
   "engines": {
     "node": ">=18"
   },
+  "scripts": {
+    "dev": "pnpm dev:ts",
+    "dev:ts": "vite --mode ts",
+    "dev:react": "vite --mode react",
+    "dev:vue": "vite --mode vue",
+    "dev:angular": "vite --mode angular",
+    "build": "pnpm build:ts",
+    "build:ts": "vite build --mode ts",
+    "build:react": "vite build --mode react",
+    "build:vue": "vite build --mode vue",
+    "build:angular": "vite build --mode angular"
+  },
   "dependencies": {
     "@angular/common": "^20.0.0",
     "@angular/compiler": "^20.0.0",

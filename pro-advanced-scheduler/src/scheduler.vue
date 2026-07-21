@@ -54,7 +54,7 @@
         class="event-scheduler-shift-week-table"
         hide-attribution
         readonly
-        :theme="isDark ? 'darkMaterial' : 'material'"
+        :theme="isDark.value ? 'darkMaterial' : 'material'"
         :plugins="tablePlugins"
         :filter="{}"
         :source="filteredTableRows"
@@ -96,7 +96,7 @@
         <RevoGrid
           class="event-scheduler-shift-week-grid"
           hide-attribution
-          :theme="isDark ? 'darkMaterial' : 'material'"
+          :theme="isDark.value ? 'darkMaterial' : 'material'"
           :plugins="plugins"
           :source="rows"
           :columns="columns"

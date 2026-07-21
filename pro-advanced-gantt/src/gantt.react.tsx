@@ -1,5 +1,5 @@
-// src/components/gantt/GanttShowcase.tsx
-import './gantt-showcase.scss';
+// src/gantt.react.tsx
+import './gantt.scss';
 import React, { useMemo, useRef, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import { GanttPlugin } from '@revolist/revogrid-enterprise';

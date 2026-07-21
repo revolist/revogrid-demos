@@ -7,10 +7,29 @@
     "pnpm": ">=10"
   },
   "scripts": {
-    "dev:core": "pnpm --filter revogrid-demo-core-free exec vite",
-    "dev:excel": "pnpm --filter revogrid-demo-pro-excel exec vite",
-    "dev:pivot": "pnpm --filter revogrid-demo-pro-advanced-pivot exec vite",
-    "dev:scheduler": "pnpm --filter revogrid-demo-pro-advanced-scheduler exec vite",
-    "dev:gantt": "pnpm --filter revogrid-demo-pro-advanced-gantt exec vite"
+    "dev:core": "pnpm --filter revogrid-demo-core-free dev",
+    "dev:core:react": "pnpm --filter revogrid-demo-core-free dev:react",
+    "dev:core:vue": "pnpm --filter revogrid-demo-core-free dev:vue",
+    "dev:core:angular": "pnpm --filter revogrid-demo-core-free dev:angular",
+    "dev:excel": "pnpm --filter revogrid-demo-pro-excel dev",
+    "dev:excel:react": "pnpm --filter revogrid-demo-pro-excel dev:react",
+    "dev:excel:vue": "pnpm --filter revogrid-demo-pro-excel dev:vue",
+    "dev:excel:angular": "pnpm --filter revogrid-demo-pro-excel dev:angular",
+    "dev:pivot": "pnpm --filter revogrid-demo-pro-advanced-pivot dev",
+    "dev:pivot:react": "pnpm --filter revogrid-demo-pro-advanced-pivot dev:react",
+    "dev:pivot:vue": "pnpm --filter revogrid-demo-pro-advanced-pivot dev:vue",
+    "dev:pivot:angular": "pnpm --filter revogrid-demo-pro-advanced-pivot dev:angular",
+    "dev:scheduler": "pnpm --filter revogrid-demo-pro-advanced-scheduler dev",
+    "dev:scheduler:react": "pnpm --filter revogrid-demo-pro-advanced-scheduler dev:react",
+    "dev:scheduler:vue": "pnpm --filter revogrid-demo-pro-advanced-scheduler dev:vue",
+    "dev:scheduler:angular": "pnpm --filter revogrid-demo-pro-advanced-scheduler dev:angular",
+    "dev:gantt": "pnpm --filter revogrid-demo-pro-advanced-gantt dev",
+    "dev:gantt:react": "pnpm --filter revogrid-demo-pro-advanced-gantt dev:react",
+    "dev:gantt:vue": "pnpm --filter revogrid-demo-pro-advanced-gantt dev:vue",
+    "dev:gantt:angular": "pnpm --filter revogrid-demo-pro-advanced-gantt dev:angular"
+  },
+  "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.6.3",
+    "jsdom": "^29.1.1"
   }
 }

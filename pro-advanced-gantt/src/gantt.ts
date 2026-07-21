@@ -1,5 +1,5 @@
-// src/components/gantt/GanttShowcase.ts
-import './gantt-showcase.scss';
+// src/gantt.ts
+import './gantt.scss';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 defineCustomElements();
 

@@ -369,12 +369,23 @@
   }
 
   &__view {
+    appearance: none;
     min-width: 56px;
     height: 26px;
+    padding: 0 12px;
+    border: 0;
     border-radius: 5px;
     background: transparent;
     color: var(--event-scheduler-demo-text);
+    cursor: pointer;
+    font: inherit;
     font-size: 12px;
+    line-height: 1;
+
+    &:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--event-scheduler-accent, #2563eb) 70%, transparent);
+      outline-offset: -2px;
+    }
 
     &--active {
       background: var(--event-scheduler-demo-surface);

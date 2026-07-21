@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { RevoGrid, type DataType } from '@revolist/react-datagrid';
 import { filterPivotSource, type PivotConfig } from '@revolist/revogrid-enterprise';
-import './financial-pivot-header.scss';
+import './financial-pivot-header/financial-pivot-header.scss';
 import { currentTheme } from '../../composables/useRandomData';
 import {
   FINANCIAL_COLUMNS,
@@ -30,7 +30,7 @@ import {
   defineFinancialPivotHeaderElement,
   type FinancialPivotHeaderElement,
   type FinancialPivotHeaderState,
-} from './financial-pivot-header';
+} from './financial-pivot-header/financial-pivot-header';
 import {
   FINANCIAL_PIVOT_GUIDANCE_DISMISS_EVENT,
   defineFinancialPivotGuidanceElement,

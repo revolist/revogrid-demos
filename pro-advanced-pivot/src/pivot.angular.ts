@@ -27,7 +27,7 @@ import {
 import {
   defineFinancialPivotHeaderElement,
   type FinancialPivotHeaderState,
-} from './financial-pivot-header';
+} from './financial-pivot-header/financial-pivot-header';
 import { defineFinancialPivotGuidanceElement } from './financial-pivot-guidance';
 
 defineFinancialPivotHeaderElement();
@@ -41,7 +41,7 @@ const isSmallScreen = () => typeof window !== 'undefined' && window.matchMedia('
   imports: [RevoGrid, CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  styleUrls: ['./financial-pivot-header.scss'],
+  styleUrls: ['./financial-pivot-header/financial-pivot-header.scss'],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <div

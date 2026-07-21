@@ -1,4 +1,4 @@
-// src/components/gantt/GanttShowcaseAngular.ts
+// src/gantt.angular.ts
 import {
   Component,
   NO_ERRORS_SCHEMA,
@@ -46,7 +46,7 @@ function createGanttConfig(showCriticalPath: boolean, showBaseline: boolean): Ga
   schemas: [NO_ERRORS_SCHEMA],
   imports: [RevoGrid],
   encapsulation: ViewEncapsulation.None,
-  styleUrls: ['./gantt-showcase.scss'],
+  styleUrls: ['./gantt.scss'],
   template: `
     <div [class]="shellClass">
       <div class="gantt-showcase-controls">

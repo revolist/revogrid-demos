@@ -20,11 +20,11 @@ Every showcase provides equivalent implementations for the major supported front
 
 | Edition | Demo | Highlights | Source |
 | --- | --- | --- | --- |
-| **Core** | HR data grid | Async large-data loading, grouped columns, custom cell templates, column types, row drag handling, and light/dark themes | [`core-free/`](./core-free/) |
-| **Pro** | Spreadsheet workbench | Formula bar, XLSX import/export, history, autofill, multi-range selection, merged cells, validation, context menus, and collaborative presence simulation | [`pro-excel/`](./pro-excel/) |
-| **Pro Advance** | Financial pivot | Financial presets, configurable row and column axes, filtering, KPIs, heatmap formatting, responsive layout, and expanded view | [`pro-advanced-pivot/`](./pro-advanced-pivot/) |
-| **Pro Advance** | Event scheduler | Calendar and resource views, table view, navigation, search, event creation, open shifts, reassignment, and team scheduling | [`pro-advanced-scheduler/`](./pro-advanced-scheduler/) |
-| **Pro Advance** | Project Gantt | Tasks, dependencies, resources, assignments, working calendars, baselines, critical path controls, row status, and Excel export | [`pro-advanced-gantt/`](./pro-advanced-gantt/) |
+| **Core** | HR data grid | Async large-data loading, grouped columns, custom cell templates, column types, row drag handling, and light/dark themes | [Demo guide](./core-free/README.md) |
+| **Pro** | Spreadsheet workbench | Formula bar, XLSX import/export, history, autofill, multi-range selection, merged cells, validation, context menus, and collaborative presence simulation | [Demo guide](./pro-excel/README.md) |
+| **Pro Advance** | Financial pivot | Financial presets, configurable row and column axes, filtering, KPIs, heatmap formatting, responsive layout, and expanded view | [Demo guide](./pro-advanced-pivot/README.md) |
+| **Pro Advance** | Event scheduler | Calendar and resource views, table view, navigation, search, event creation, open shifts, reassignment, and team scheduling | [Demo guide](./pro-advanced-scheduler/README.md) |
+| **Pro Advance** | Project Gantt | Tasks, dependencies, resources, assignments, working calendars, baselines, critical path controls, row status, and Excel export | [Demo guide](./pro-advanced-gantt/README.md) |
 
 ## Repository structure
 
@@ -38,7 +38,7 @@ revogrid-demos/
 ├── pro-advanced-scheduler/     # Shift and event scheduler
 └── pro-advanced-gantt/
     └── src/
-        ├── GanttShowcase.*     # Gantt framework implementations
+        ├── gantt.*             # Gantt framework implementations
         └── shared/             # Shared project data and configuration
 ```
 
@@ -80,17 +80,38 @@ pnpm dev:scheduler
 pnpm dev:gantt
 ```
 
-Each command starts a Vite development server using that package's Vanilla TypeScript entry point.
+Each short command starts the Vanilla TypeScript variant. Append a framework name
+to run another implementation:
+
+```bash
+pnpm dev:pivot:ts
+pnpm dev:pivot:react
+pnpm dev:pivot:vue
+pnpm dev:pivot:angular
+```
+
+The same `:ts`, `:react`, `:vue`, and `:angular` suffixes work for `core`,
+`excel`, `scheduler`, and `gantt`.
+
+You can also run a demo from its package directory:
+
+```bash
+cd pro-advanced-pivot
+pnpm dev            # TypeScript
+pnpm dev:react
+pnpm dev:vue
+pnpm dev:angular
+```
 
 ## Example entry points
 
 | Demo | TypeScript | React | Vue | Angular |
 | --- | --- | --- | --- | --- |
-| HR data grid | [`HRDemo.ts`](./core-free/src/HRDemo.ts) | [`HRDemo.tsx`](./core-free/src/HRDemo.tsx) | [`HRDemo.vue`](./core-free/src/HRDemo.vue) | [`HRDemoAngular.ts`](./core-free/src/HRDemoAngular.ts) |
-| Spreadsheet | [`SpreadsheetWorkbench.ts`](./pro-excel/src/SpreadsheetWorkbench.ts) | [`SpreadsheetWorkbench.tsx`](./pro-excel/src/SpreadsheetWorkbench.tsx) | [`SpreadsheetWorkbench.vue`](./pro-excel/src/SpreadsheetWorkbench.vue) | [`SpreadsheetWorkbenchAngular.ts`](./pro-excel/src/SpreadsheetWorkbenchAngular.ts) |
-| Pivot | [`PivotShowcase.ts`](./pro-advanced-pivot/src/PivotShowcase.ts) | [`PivotShowcase.tsx`](./pro-advanced-pivot/src/PivotShowcase.tsx) | [`PivotShowcase.vue`](./pro-advanced-pivot/src/PivotShowcase.vue) | [`PivotShowcaseAngular.ts`](./pro-advanced-pivot/src/PivotShowcaseAngular.ts) |
-| Scheduler | [`index.ts`](./pro-advanced-scheduler/src/index.ts) | [`index.tsx`](./pro-advanced-scheduler/src/index.tsx) | [`index.vue`](./pro-advanced-scheduler/src/index.vue) | [`angular.ts`](./pro-advanced-scheduler/src/angular.ts) |
-| Gantt | [`GanttShowcase.ts`](./pro-advanced-gantt/src/GanttShowcase.ts) | [`GanttShowcase.tsx`](./pro-advanced-gantt/src/GanttShowcase.tsx) | [`GanttShowcase.vue`](./pro-advanced-gantt/src/GanttShowcase.vue) | [`GanttShowcaseAngular.ts`](./pro-advanced-gantt/src/GanttShowcaseAngular.ts) |
+| HR data grid | [`hr-demo.ts`](./core-free/src/hr-demo.ts) | [`hr-demo.react.tsx`](./core-free/src/hr-demo.react.tsx) | [`hr-demo.vue`](./core-free/src/hr-demo.vue) | [`hr-demo.angular.ts`](./core-free/src/hr-demo.angular.ts) |
+| Spreadsheet | [`excel.ts`](./pro-excel/src/excel.ts) | [`excel.react.tsx`](./pro-excel/src/excel.react.tsx) | [`excel.vue`](./pro-excel/src/excel.vue) | [`excel.angular.ts`](./pro-excel/src/excel.angular.ts) |
+| Pivot | [`pivot.ts`](./pro-advanced-pivot/src/pivot.ts) | [`pivot.react.tsx`](./pro-advanced-pivot/src/pivot.react.tsx) | [`pivot.vue`](./pro-advanced-pivot/src/pivot.vue) | [`pivot.angular.ts`](./pro-advanced-pivot/src/pivot.angular.ts) |
+| Scheduler | [`scheduler.ts`](./pro-advanced-scheduler/src/scheduler.ts) | [`scheduler.react.tsx`](./pro-advanced-scheduler/src/scheduler.react.tsx) | [`scheduler.vue`](./pro-advanced-scheduler/src/scheduler.vue) | [`scheduler.angular.ts`](./pro-advanced-scheduler/src/scheduler.angular.ts) |
+| Gantt | [`gantt.ts`](./pro-advanced-gantt/src/gantt.ts) | [`gantt.react.tsx`](./pro-advanced-gantt/src/gantt.react.tsx) | [`gantt.vue`](./pro-advanced-gantt/src/gantt.vue) | [`gantt.angular.ts`](./pro-advanced-gantt/src/gantt.angular.ts) |
 
 ## Contributing
 
@@ -106,7 +127,6 @@ When adding or updating a showcase:
 ## Useful links
 
 - [RevoGrid on GitHub](https://github.com/revolist/revogrid)
-- [RevoGrid demo repository](https://github.com/revolist/revogrid-demos)
 - [Report an issue](https://github.com/revolist/revogrid-demos/issues)
 
 ---

@@ -97,7 +97,7 @@ onMounted(async () => {
 });
 </script>
 
-<style src="./gantt-showcase.scss" lang="scss"></style>
+<style src="./gantt.scss" lang="scss"></style>
 
 <style scoped>
 .gantt-showcase :deep(revo-grid) {

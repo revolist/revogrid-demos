@@ -1,6 +1,6 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import { filterPivotSource, type PivotConfig } from '@revolist/revogrid-enterprise';
-import './financial-pivot-header.scss';
+import './financial-pivot-header/financial-pivot-header.scss';
 import { currentTheme } from '../../composables/useRandomData';
 import {
   FINANCIAL_COLUMNS,
@@ -19,7 +19,7 @@ import {
   FINANCIAL_PIVOT_PRESET_EVENT,
   FINANCIAL_PIVOT_RESET_EVENT,
   createFinancialPivotHeader,
-} from './financial-pivot-header';
+} from './financial-pivot-header/financial-pivot-header';
 import {
   createFinancialPivotGuidance,
 } from './financial-pivot-guidance';

@@ -34,7 +34,7 @@
           :source="rows"
           :columns="FINANCIAL_COLUMNS"
           :pivot.prop="pivot"
-          :theme="isDark ? 'darkCompact' : 'compact'"
+          :theme="isDark.value ? 'darkCompact' : 'compact'"
           :plugins="plugins"
           :column-types="columnTypes"
           readonly
@@ -64,7 +64,7 @@ import {
 import {
   defineFinancialPivotHeaderElement,
   type FinancialPivotHeaderState,
-} from './financial-pivot-header';
+} from './financial-pivot-header/financial-pivot-header';
 import { defineFinancialPivotGuidanceElement } from './financial-pivot-guidance';
 
 defineFinancialPivotHeaderElement();
@@ -137,7 +137,7 @@ const resetDemo = () => {
 </script>
 
 <style lang="scss">
-@use './financial-pivot-header.scss';
+@use './financial-pivot-header/financial-pivot-header.scss';
 
 revo-grid.cell-border .rgHeaderCell[highlight] {
   box-shadow: 0 -3px 0 0 #00b997 inset, -1px 0 0 0 var(--revo-grid-cell-border) inset;

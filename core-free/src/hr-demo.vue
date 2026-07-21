@@ -56,7 +56,7 @@ import { VGrid, type ColumnGrouping, type ColumnRegular, BasePlugin, type Plugin
 import { getHRColumnsCount, getHRData, HR_OPTIONS } from './sys-data/hr.data';
 import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE } from './sys-data/hr.columns';
-import { currentThemeVue } from '../composables/useRandomData';
+import { currentThemeVue } from '../../composables/useRandomData';
 import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
 import './hr-demo.css';

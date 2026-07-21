@@ -2,7 +2,7 @@ import {
   FINANCIAL_PRESETS,
   type FinancialKpi,
   type FinancialPresetId,
-} from './financial.pivot';
+} from '../financial.pivot';
 
 export const FINANCIAL_PIVOT_HEADER_TAG = 'financial-pivot-header';
 export const FINANCIAL_PIVOT_PRESET_EVENT = 'financial-pivot-preset-select';
