@@ -296,6 +296,17 @@ revo-grid.ecommerce-grid {
       padding-block: 8px;
     }
 
+    .filter-input {
+      overflow: hidden;
+
+      input[type='text'] {
+        padding-right: 38px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
     .summary-header-box[data-value='_checkbox'] {
       align-items: center;
       justify-content: center;

@@ -110,6 +110,19 @@ test('combined headers keep selection, summary spacing, and column separators vi
   );
 });
 
+test('narrow filter inputs stay contained and reserve space for the filter icon', () => {
+  const styles = readFileSync(
+    new URL('./ecommerce.scss', import.meta.url),
+    'utf8',
+  );
+
+  assert.match(styles, /\.filter-input\s*\{[\s\S]*?overflow:\s*hidden;/);
+  assert.match(
+    styles,
+    /input\[type='text'\]\s*\{[\s\S]*?padding-right:\s*38px\s*!important;[\s\S]*?text-overflow:\s*ellipsis;/,
+  );
+});
+
 test('all framework variants enable the grid filter property', () => {
   const variants = [
     ['ecommerce.ts', /grid\.filter\s*=\s*true/],
