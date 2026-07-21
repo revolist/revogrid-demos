@@ -1,6 +1,6 @@
 // src/gantt.react.tsx
 import './gantt.scss';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import { GanttPlugin } from '@revolist/revogrid-enterprise';
 import { ExportExcelPlugin, RowStatusPlugin } from '@revolist/revogrid-pro';
@@ -18,7 +18,7 @@ import {
   renderShowcaseTaskBarContent,
 } from './shared/gantt-project-data';
 import type { GanttPluginConfig } from '@revolist/revogrid-enterprise';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 
 const plugins = [GanttPlugin, ExportExcelPlugin, RowStatusPlugin];
 const source      = [...SHOWCASE_TASKS];
@@ -31,8 +31,7 @@ const columns      = [...SHOWCASE_COLUMNS_WITH_COMPLETION];
 const hiddenColumns = [...SHOWCASE_DEFAULT_HIDDEN];
 
 function GanttShowcase() {
-  const { isDark } = currentTheme();
-  const darkTheme = isDark();
+  const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
   const gridRef = useRef<HTMLRevoGridElement>(null);
   const [showCriticalPath, setShowCriticalPath] = useState(Boolean(SHOWCASE_GANTT_CONFIG.visuals.showCriticalPath));
   const [showBaseline, setShowBaseline] = useState(false);
@@ -46,6 +45,8 @@ function GanttShowcase() {
       taskBarContentHook: renderShowcaseTaskBarContent,
     },
   } as GanttPluginConfig), [showCriticalPath, showBaseline]);
+
+  useEffect(() => observeCurrentTheme(setDarkTheme), []);
 
   return (
     <div className={`gantt-showcase-shell grow h-full ${darkTheme ? 'gantt-showcase-shell--dark' : 'gantt-showcase-shell--light'}`}>

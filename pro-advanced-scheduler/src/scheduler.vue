@@ -1,90 +1,35 @@
 <template>
   <section class="event-scheduler-shift-week-demo">
-    <aside class="event-scheduler-shift-week-sidebar" aria-label="Scheduler navigation">
-      <div class="event-scheduler-shift-week-brand">
-        <span class="event-scheduler-shift-week-brand__mark">OS</span>
-        <span class="event-scheduler-shift-week-brand__copy">
-          <strong>Ops Studio</strong>
-          <small>Workspace</small>
-        </span>
-      </div>
-      <button type="button" class="event-scheduler-shift-week-new-event" @click="openNewEvent">New event</button>
-      <label class="event-scheduler-shift-week-search">
-        <span>Search</span>
-        <input v-model="searchQuery" type="search" placeholder="Search..." />
-      </label>
-      <nav class="event-scheduler-shift-week-nav" aria-label="Scheduler sections">
-        <span>Views</span>
-        <button
-          v-for="item in workspaceViews"
-          :key="item.view"
-          type="button"
-          class="event-scheduler-shift-week-nav__item"
-          :class="{ 'event-scheduler-shift-week-nav__item--active': workspaceView === item.view }"
-          :aria-pressed="workspaceView === item.view"
-          @click="setWorkspace(item.view)"
-        >
-          {{ item.label }}
-        </button>
-      </nav>
-      <div class="event-scheduler-shift-week-team">
-        <span>Team</span>
-        <div v-for="member in teamMembers" :key="member.id" class="event-scheduler-shift-week-team__row">
-          <span class="event-scheduler-shift-week-avatar" :style="{ '--shift-week-avatar-color': member.color }">{{ member.initials }}</span>
-          <strong>{{ member.name }}</strong>
-          <small>{{ member.count }}</small>
-        </div>
-      </div>
-    </aside>
+    <revogr-scheduler-sidebar
+      :model.prop="sidebarModel"
+      @scheduler-sidebar-new-event="openNewEvent"
+      @scheduler-sidebar-search-change="handleSidebarSearchChange"
+      @scheduler-sidebar-workspace-change="handleSidebarWorkspaceChange"
+    />
     <div class="event-scheduler-shift-week-main">
       <RevoGrid
         v-if="workspaceView === 'table'"
         class="event-scheduler-shift-week-table"
         hide-attribution
         readonly
-        :theme="isDark.value ? 'darkMaterial' : 'material'"
+        :theme="isDark ? 'darkMaterial' : 'material'"
         :plugins="tablePlugins"
         :filter="{}"
         :source="filteredTableRows"
         :columns="tableColumns"
       />
       <template v-else>
-        <div v-if="showToolbar" class="event-scheduler-shift-week-toolbar" aria-label="Shift scheduler navigation">
-          <div class="event-scheduler-shift-week-toolbar__nav">
-            <button type="button" class="event-scheduler-shift-week-toolbar__icon" aria-label="Previous range" @click="goPrevious">‹</button>
-            <button type="button" class="event-scheduler-shift-week-toolbar__icon" aria-label="Next range" @click="goNext">›</button>
-            <button type="button" class="event-scheduler-shift-week-toolbar__today" @click="goToday">Today</button>
-          </div>
-          <div class="event-scheduler-shift-week-toolbar__heading">
-            <strong>{{ rangeTitle }}</strong>
-            <span>{{ rangeSubtitle }}</span>
-          </div>
-          <div class="event-scheduler-shift-week-toolbar__views" role="group" aria-label="Scheduler view">
-            <button
-              v-for="viewKey in viewKeys"
-              :key="viewKey"
-              type="button"
-              class="event-scheduler-shift-week-toolbar__view"
-              :class="{ 'event-scheduler-shift-week-toolbar__view--active': activeView === viewKey }"
-              :aria-pressed="activeView === viewKey"
-              @click="setView(viewKey)"
-            >
-              {{ viewLabels[viewKey] }}
-            </button>
-          </div>
-          <label class="event-scheduler-shift-week-toolbar__calendar">
-            <span>Calendar</span>
-            <select v-model="activeCalendar" aria-label="Calendar preset">
-              <option v-for="option in calendarOptions" :key="option.id" :value="option.id">
-                {{ option.label }}
-              </option>
-            </select>
-          </label>
-        </div>
+        <revogr-scheduler-header
+          v-if="showToolbar"
+          :model.prop="headerModel"
+          @scheduler-header-calendar-change="handleHeaderCalendarChange"
+          @scheduler-header-navigate="handleHeaderNavigate"
+          @scheduler-header-view-change="handleHeaderViewChange"
+        />
         <RevoGrid
           class="event-scheduler-shift-week-grid"
           hide-attribution
-          :theme="isDark.value ? 'darkMaterial' : 'material'"
+          :theme="isDark ? 'darkMaterial' : 'material'"
           :plugins="plugins"
           :source="rows"
           :columns="columns"
@@ -102,66 +47,20 @@
         />
       </template>
     </div>
-    <div v-if="newEventForm" class="event-scheduler-shift-week-dialog" role="dialog" aria-modal="true" aria-labelledby="shift-week-new-event-title">
-      <form class="event-scheduler-shift-week-dialog__panel" @submit.prevent="submitNewEvent">
-        <div class="event-scheduler-shift-week-dialog__header">
-          <div>
-            <strong id="shift-week-new-event-title">New event</strong>
-            <span>{{ newEventForm.date }} · {{ newEventForm.startTime }}-{{ newEventForm.endTime }}</span>
-          </div>
-          <button type="button" class="event-scheduler-shift-week-dialog__close" aria-label="Close new event" @click="closeNewEvent">×</button>
-        </div>
-        <div class="event-scheduler-shift-week-dialog__body">
-          <label class="event-scheduler-shift-week-dialog__field event-scheduler-shift-week-dialog__field--wide">
-            <span>Event</span>
-            <input v-model="newEventForm.title">
-          </label>
-          <label class="event-scheduler-shift-week-dialog__field">
-            <span>Date</span>
-            <input v-model="newEventForm.date" type="date">
-          </label>
-          <label class="event-scheduler-shift-week-dialog__field">
-            <span>Assignee</span>
-            <select v-model="newEventForm.resourceId">
-              <option v-for="member in teamMembers" :key="member.id" :value="member.id">{{ member.name }}</option>
-            </select>
-          </label>
-          <label class="event-scheduler-shift-week-dialog__field">
-            <span>Start</span>
-            <input v-model="newEventForm.startTime" type="time" step="1800">
-          </label>
-          <label class="event-scheduler-shift-week-dialog__field">
-            <span>End</span>
-            <input v-model="newEventForm.endTime" type="time" step="1800">
-          </label>
-          <label class="event-scheduler-shift-week-dialog__field">
-            <span>Type</span>
-            <select v-model="newEventForm.type">
-              <option v-for="option in newEventTypeOptions" :key="option.id" :value="option.id">{{ option.label }}</option>
-            </select>
-          </label>
-          <label class="event-scheduler-shift-week-dialog__field">
-            <span>Status</span>
-            <select v-model="newEventForm.status">
-              <option v-for="option in newEventStatusOptions" :key="option.id" :value="option.id">{{ option.label }}</option>
-            </select>
-          </label>
-        </div>
-        <div class="event-scheduler-shift-week-dialog__actions">
-          <button type="button" class="event-scheduler-shift-week-dialog__cancel" @click="closeNewEvent">Cancel</button>
-          <button type="submit" class="event-scheduler-shift-week-dialog__submit">Create event</button>
-        </div>
-      </form>
-    </div>
+    <revogr-scheduler-dialog
+      :model.prop="dialogModel"
+      @scheduler-dialog-close="closeNewEvent"
+      @scheduler-dialog-submit="handleDialogSubmit"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import { EventSchedulerPlugin, type EventSchedulerEntityId, type EventSchedulerEventChangedDetail, type EventSchedulerEventSelectedDetail, type EventSchedulerOpenShiftAssignRequestDetail, type EventSchedulerResourceReassignRequestDetail } from '@revolist/revogrid-enterprise';
 import { AdvanceFilterPlugin, ColumnStretchPlugin, RowOddPlugin } from '@revolist/revogrid-pro';
-import { currentThemeVue } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createShiftWeekAssignedOpenShift,
   createShiftWeekConfig,
@@ -193,9 +92,28 @@ import {
   type ShiftWeekNewEventForm,
   type ShiftWeekWorkspaceView,
 } from './data';
+import {
+  defineSchedulerShellElements,
+  type SchedulerDialogSubmitDetail,
+  type SchedulerHeaderCalendarChangeDetail,
+  type SchedulerHeaderNavigateDetail,
+  type SchedulerHeaderViewChangeDetail,
+  type SchedulerSidebarSearchChangeDetail,
+  type SchedulerSidebarWorkspaceChangeDetail,
+} from './components';
 import './styles.scss';
 
-const { isDark } = currentThemeVue();
+defineSchedulerShellElements();
+
+const isDark = ref(currentTheme().isDark());
+let disconnectTheme: (() => void) | undefined;
+
+onMounted(() => {
+  disconnectTheme = observeCurrentTheme((value) => {
+    isDark.value = value;
+  });
+});
+onBeforeUnmount(() => disconnectTheme?.());
 
 const plugins = [EventSchedulerPlugin];
 const tablePlugins = [AdvanceFilterPlugin, ColumnStretchPlugin, RowOddPlugin];
@@ -215,11 +133,6 @@ const teamMembers = shiftWeekTeamMembers;
 const newEventStatusOptions = shiftWeekNewEventStatusOptions;
 const newEventTypeOptions = shiftWeekNewEventTypeOptions;
 const newEventForm = ref<ShiftWeekNewEventForm | null>(null);
-const workspaceViews: readonly { view: ShiftWeekWorkspaceView; label: string }[] = [
-  { view: 'calendar', label: 'Calendar' },
-  { view: 'resource', label: 'Resource' },
-  { view: 'table', label: 'Table' },
-];
 const schedulerEvents = ref(createShiftWeekEvents(activeView.value, anchorDate.value));
 const resources = ref(shiftResources.map((resource) => ({ ...resource })));
 const highlightedEventIds = computed(() => getShiftWeekSearchMatchIds(schedulerEvents.value, searchQuery.value));
@@ -235,6 +148,26 @@ const schedulerConfig = computed(() => createShiftWeekConfig(
 const rangeTitle = computed(() => getShiftWeekRangeTitle(activeView.value, anchorDate.value));
 const rangeSubtitle = computed(() => getShiftWeekSubtitle(anchorDate.value));
 const showToolbar = computed(() => workspaceView.value === 'calendar');
+const sidebarModel = computed(() => ({
+  workspaceView: workspaceView.value,
+  searchQuery: searchQuery.value,
+  teamMembers,
+}));
+const headerModel = computed(() => ({
+  activeView: activeView.value,
+  activeCalendar: activeCalendar.value,
+  title: rangeTitle.value,
+  subtitle: rangeSubtitle.value,
+  views: viewKeys,
+  viewLabels,
+  calendarOptions,
+}));
+const dialogModel = computed(() => newEventForm.value ? ({
+  form: newEventForm.value,
+  teamMembers,
+  typeOptions: newEventTypeOptions,
+  statusOptions: newEventStatusOptions,
+}) : null);
 
 function setView(view: ShiftWeekDemoView) {
   activeView.value = view;
@@ -284,13 +217,36 @@ function closeNewEvent() {
   newEventForm.value = null;
 }
 
-function submitNewEvent() {
-  if (!newEventForm.value) return;
+function submitNewEvent(form: ShiftWeekNewEventForm) {
   schedulerEvents.value = [
     ...schedulerEvents.value,
-    createShiftWeekManualEvent(newEventForm.value),
+    createShiftWeekManualEvent(form),
   ];
   closeNewEvent();
+}
+
+function handleSidebarSearchChange(event: CustomEvent<SchedulerSidebarSearchChangeDetail>) {
+  searchQuery.value = event.detail.query;
+}
+
+function handleSidebarWorkspaceChange(event: CustomEvent<SchedulerSidebarWorkspaceChangeDetail>) {
+  setWorkspace(event.detail.view);
+}
+
+function handleHeaderNavigate(event: CustomEvent<SchedulerHeaderNavigateDetail>) {
+  handleNavigateRequest(event);
+}
+
+function handleHeaderViewChange(event: CustomEvent<SchedulerHeaderViewChangeDetail>) {
+  setView(event.detail.view);
+}
+
+function handleHeaderCalendarChange(event: CustomEvent<SchedulerHeaderCalendarChangeDetail>) {
+  activeCalendar.value = event.detail.calendar;
+}
+
+function handleDialogSubmit(event: CustomEvent<SchedulerDialogSubmitDetail>) {
+  submitNewEvent(event.detail.form);
 }
 
 watch(activeCalendar, () => {

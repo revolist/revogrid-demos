@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { RevoGrid } from '@revolist/react-datagrid';
 import { EventSchedulerPlugin, type EventSchedulerEntityId, type EventSchedulerEventChangedDetail, type EventSchedulerEventEntity, type EventSchedulerEventSelectedDetail, type EventSchedulerOpenShiftAssignRequestDetail, type EventSchedulerResourceReassignRequestDetail } from '@revolist/revogrid-enterprise';
 import { AdvanceFilterPlugin, ColumnStretchPlugin, RowOddPlugin } from '@revolist/revogrid-pro';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createShiftWeekAssignedOpenShift,
   createShiftWeekConfig,
@@ -34,12 +34,32 @@ import {
   type ShiftWeekNewEventForm,
   type ShiftWeekWorkspaceView,
 } from './data';
+import {
+  SCHEDULER_DIALOG_TAG,
+  SCHEDULER_HEADER_TAG,
+  SCHEDULER_SIDEBAR_TAG,
+  defineSchedulerShellElements,
+  type SchedulerDialogElement,
+  type SchedulerDialogSubmitDetail,
+  type SchedulerHeaderCalendarChangeDetail,
+  type SchedulerHeaderElement,
+  type SchedulerHeaderNavigateDetail,
+  type SchedulerHeaderViewChangeDetail,
+  type SchedulerSidebarElement,
+  type SchedulerSidebarSearchChangeDetail,
+  type SchedulerSidebarWorkspaceChangeDetail,
+} from './components';
 import './styles.scss';
 
-const { isDark } = currentTheme();
+defineSchedulerShellElements();
 
 export default function EventSchedulerShiftWeek() {
+  const shellRef = useRef<HTMLElement | null>(null);
   const gridRef = useRef<HTMLRevoGridElement | null>(null);
+  const sidebarRef = useRef<SchedulerSidebarElement | null>(null);
+  const headerRef = useRef<SchedulerHeaderElement | null>(null);
+  const dialogRef = useRef<SchedulerDialogElement | null>(null);
+  const [isDark, setIsDark] = useState(() => currentTheme().isDark());
   const [activeView, setActiveViewState] = useState<ShiftWeekDemoView>(initialShiftWeekDemoView);
   const [workspaceView, setWorkspaceView] = useState<ShiftWeekWorkspaceView>(initialShiftWeekWorkspaceView);
   const [activeCalendar, setActiveCalendar] = useState<ShiftWeekDemoCalendar>(initialShiftWeekCalendar);
@@ -63,6 +83,24 @@ export default function EventSchedulerShiftWeek() {
   const rangeSubtitle = useMemo(() => getShiftWeekSubtitle(anchorDate), [anchorDate]);
   const tableRows = useMemo(() => getShiftWeekTableRows(events), [events]);
   const showToolbar = workspaceView === 'calendar';
+  const sidebarModel = useMemo(() => ({ workspaceView, searchQuery, teamMembers: shiftWeekTeamMembers }), [workspaceView, searchQuery]);
+  const headerModel = useMemo(() => ({
+    activeView,
+    activeCalendar,
+    title: rangeTitle,
+    subtitle: rangeSubtitle,
+    views: shiftWeekDemoViews,
+    viewLabels: shiftWeekViewLabels,
+    calendarOptions: shiftWeekCalendarOptions,
+  }), [activeView, activeCalendar, rangeTitle, rangeSubtitle]);
+  const dialogModel = useMemo(() => newEventForm ? ({
+    form: newEventForm,
+    teamMembers: shiftWeekTeamMembers,
+    typeOptions: shiftWeekNewEventTypeOptions,
+    statusOptions: shiftWeekNewEventStatusOptions,
+  }) : null, [newEventForm]);
+
+  useEffect(() => observeCurrentTheme(setIsDark), []);
 
   const resetEvents = useCallback((view: ShiftWeekDemoView, date: string) => {
     setEvents(createShiftWeekEvents(view, date));
@@ -125,19 +163,57 @@ export default function EventSchedulerShiftWeek() {
     setNewEventForm(getShiftWeekNewEventDefaults(activeView, anchorDate));
   }, [activeView, anchorDate]);
 
-  const updateNewEventForm = useCallback(<Key extends keyof ShiftWeekNewEventForm>(key: Key, value: ShiftWeekNewEventForm[Key]) => {
-    setNewEventForm((current) => current ? { ...current, [key]: value } : current);
-  }, []);
+  useEffect(() => {
+    if (sidebarRef.current) sidebarRef.current.model = sidebarModel;
+  }, [sidebarModel]);
 
-  const submitNewEvent = useCallback((event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!newEventForm) return;
-    setEvents((currentEvents) => [
-      ...currentEvents,
-      createShiftWeekManualEvent(newEventForm),
-    ]);
-    setNewEventForm(null);
-  }, [newEventForm]);
+  useEffect(() => {
+    if (headerRef.current) headerRef.current.model = headerModel;
+  }, [headerModel, showToolbar]);
+
+  useEffect(() => {
+    if (dialogRef.current) dialogRef.current.model = dialogModel;
+  }, [dialogModel]);
+
+  useEffect(() => {
+    const shell = shellRef.current;
+    if (!shell) return undefined;
+    const handleNewEvent = () => openNewEvent();
+    const handleSearch = (event: Event) => setSearchQuery((event as CustomEvent<SchedulerSidebarSearchChangeDetail>).detail.query);
+    const handleWorkspace = (event: Event) => setWorkspace((event as CustomEvent<SchedulerSidebarWorkspaceChangeDetail>).detail.view);
+    const handleNavigate = (event: Event) => {
+      const { action } = (event as CustomEvent<SchedulerHeaderNavigateDetail>).detail;
+      if (action === 'previous') goPrevious();
+      else if (action === 'next') goNext();
+      else goToday();
+    };
+    const handleView = (event: Event) => setView((event as CustomEvent<SchedulerHeaderViewChangeDetail>).detail.view);
+    const handleCalendar = (event: Event) => setCalendar((event as CustomEvent<SchedulerHeaderCalendarChangeDetail>).detail.calendar);
+    const handleDialogClose = () => setNewEventForm(null);
+    const handleDialogSubmit = (event: Event) => {
+      const { form } = (event as CustomEvent<SchedulerDialogSubmitDetail>).detail;
+      setEvents((currentEvents) => [...currentEvents, createShiftWeekManualEvent(form)]);
+      setNewEventForm(null);
+    };
+    shell.addEventListener('scheduler-sidebar-new-event', handleNewEvent);
+    shell.addEventListener('scheduler-sidebar-search-change', handleSearch);
+    shell.addEventListener('scheduler-sidebar-workspace-change', handleWorkspace);
+    shell.addEventListener('scheduler-header-navigate', handleNavigate);
+    shell.addEventListener('scheduler-header-view-change', handleView);
+    shell.addEventListener('scheduler-header-calendar-change', handleCalendar);
+    shell.addEventListener('scheduler-dialog-close', handleDialogClose);
+    shell.addEventListener('scheduler-dialog-submit', handleDialogSubmit);
+    return () => {
+      shell.removeEventListener('scheduler-sidebar-new-event', handleNewEvent);
+      shell.removeEventListener('scheduler-sidebar-search-change', handleSearch);
+      shell.removeEventListener('scheduler-sidebar-workspace-change', handleWorkspace);
+      shell.removeEventListener('scheduler-header-navigate', handleNavigate);
+      shell.removeEventListener('scheduler-header-view-change', handleView);
+      shell.removeEventListener('scheduler-header-calendar-change', handleCalendar);
+      shell.removeEventListener('scheduler-dialog-close', handleDialogClose);
+      shell.removeEventListener('scheduler-dialog-submit', handleDialogSubmit);
+    };
+  }, [goNext, goPrevious, goToday, openNewEvent, setCalendar, setView, setWorkspace]);
 
   useEffect(() => {
     const grid = gridRef.current;
@@ -200,56 +276,12 @@ export default function EventSchedulerShiftWeek() {
   }, [goNext, goPrevious, goToday, setView]);
 
   return (
-    <section className="event-scheduler-shift-week-demo">
-      <aside className="event-scheduler-shift-week-sidebar" aria-label="Scheduler navigation">
-        <div className="event-scheduler-shift-week-brand">
-          <span className="event-scheduler-shift-week-brand__mark">OS</span>
-          <span className="event-scheduler-shift-week-brand__copy">
-            <strong>Ops Studio</strong>
-            <small>Workspace</small>
-          </span>
-        </div>
-        <button type="button" className="event-scheduler-shift-week-new-event" onClick={openNewEvent}>New event</button>
-        <label className="event-scheduler-shift-week-search">
-          <span>Search</span>
-          <input type="search" placeholder="Search..." value={searchQuery} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
-        </label>
-        <nav className="event-scheduler-shift-week-nav" aria-label="Scheduler sections">
-          <span>Views</span>
-          {[
-            ['calendar', 'Calendar'],
-            ['resource', 'Resource'],
-            ['table', 'Table'],
-          ].map(([view, label]) => (
-            <button
-              key={view}
-              type="button"
-              className={[
-                'event-scheduler-shift-week-nav__item',
-                workspaceView === view ? 'event-scheduler-shift-week-nav__item--active' : '',
-              ].filter(Boolean).join(' ')}
-              aria-pressed={workspaceView === view}
-              onClick={() => setWorkspace(view as ShiftWeekWorkspaceView)}
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
-        <div className="event-scheduler-shift-week-team">
-          <span>Team</span>
-          {shiftWeekTeamMembers.map((member) => (
-            <div key={String(member.id)} className="event-scheduler-shift-week-team__row">
-              <span className="event-scheduler-shift-week-avatar" style={{ '--shift-week-avatar-color': member.color } as React.CSSProperties}>{member.initials}</span>
-              <strong>{member.name}</strong>
-              <small>{member.count}</small>
-            </div>
-          ))}
-        </div>
-      </aside>
+    <section ref={shellRef} className="event-scheduler-shift-week-demo">
+      {React.createElement(SCHEDULER_SIDEBAR_TAG, { ref: sidebarRef })}
       <div className="event-scheduler-shift-week-main">
         {workspaceView === 'table' ? (
           <RevoGrid
-            theme={isDark() ? 'darkMaterial' : 'material'}
+            theme={isDark ? 'darkMaterial' : 'material'}
             hideAttribution
             readonly
             plugins={tablePlugins}
@@ -261,50 +293,12 @@ export default function EventSchedulerShiftWeek() {
         ) : (
           <>
             {showToolbar ? (
-              <div className="event-scheduler-shift-week-toolbar" aria-label="Shift scheduler navigation">
-                <div className="event-scheduler-shift-week-toolbar__nav">
-                  <button type="button" className="event-scheduler-shift-week-toolbar__icon" aria-label="Previous range" onClick={goPrevious}>{'‹'}</button>
-                  <button type="button" className="event-scheduler-shift-week-toolbar__icon" aria-label="Next range" onClick={goNext}>{'›'}</button>
-                  <button type="button" className="event-scheduler-shift-week-toolbar__today" onClick={goToday}>Today</button>
-                </div>
-                <div className="event-scheduler-shift-week-toolbar__heading">
-                  <strong>{rangeTitle}</strong>
-                  <span>{rangeSubtitle}</span>
-                </div>
-                <div className="event-scheduler-shift-week-toolbar__views" role="group" aria-label="Scheduler view">
-                  {shiftWeekDemoViews.map((view) => (
-                    <button
-                      key={view}
-                      type="button"
-                      className={[
-                        'event-scheduler-shift-week-toolbar__view',
-                        activeView === view ? 'event-scheduler-shift-week-toolbar__view--active' : '',
-                      ].filter(Boolean).join(' ')}
-                      aria-pressed={activeView === view}
-                      onClick={() => setView(view)}
-                    >
-                      {shiftWeekViewLabels[view]}
-                    </button>
-                  ))}
-                </div>
-                <label className="event-scheduler-shift-week-toolbar__calendar">
-                  <span>Calendar</span>
-                  <select
-                    aria-label="Calendar preset"
-                    value={activeCalendar}
-                    onChange={(event) => setCalendar(event.currentTarget.value as ShiftWeekDemoCalendar)}
-                  >
-                    {shiftWeekCalendarOptions.map((option) => (
-                      <option key={option.id} value={option.id}>{option.label}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
+              React.createElement(SCHEDULER_HEADER_TAG, { ref: headerRef })
             ) : null}
             <RevoGrid
               ref={gridRef}
               className="event-scheduler-shift-week-grid"
-              theme={isDark() ? 'darkMaterial' : 'material'}
+              theme={isDark ? 'darkMaterial' : 'material'}
               hideAttribution
               plugins={plugins}
               source={[]}
@@ -318,65 +312,7 @@ export default function EventSchedulerShiftWeek() {
           </>
         )}
       </div>
-      {newEventForm ? (
-        <div className="event-scheduler-shift-week-dialog" role="dialog" aria-modal="true" aria-labelledby="shift-week-new-event-title">
-          <form className="event-scheduler-shift-week-dialog__panel" onSubmit={submitNewEvent}>
-            <div className="event-scheduler-shift-week-dialog__header">
-              <div>
-                <strong id="shift-week-new-event-title">New event</strong>
-                <span>{newEventForm.date} · {newEventForm.startTime}-{newEventForm.endTime}</span>
-              </div>
-              <button type="button" className="event-scheduler-shift-week-dialog__close" aria-label="Close new event" onClick={() => setNewEventForm(null)}>×</button>
-            </div>
-            <div className="event-scheduler-shift-week-dialog__body">
-              <label className="event-scheduler-shift-week-dialog__field event-scheduler-shift-week-dialog__field--wide">
-                <span>Event</span>
-                <input value={newEventForm.title} onChange={(event) => updateNewEventForm('title', event.currentTarget.value)} />
-              </label>
-              <label className="event-scheduler-shift-week-dialog__field">
-                <span>Date</span>
-                <input type="date" value={newEventForm.date} onChange={(event) => updateNewEventForm('date', event.currentTarget.value)} />
-              </label>
-              <label className="event-scheduler-shift-week-dialog__field">
-                <span>Assignee</span>
-                <select value={String(newEventForm.resourceId)} onChange={(event) => updateNewEventForm('resourceId', event.currentTarget.value)}>
-                  {shiftWeekTeamMembers.map((member) => (
-                    <option key={String(member.id)} value={String(member.id)}>{member.name}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="event-scheduler-shift-week-dialog__field">
-                <span>Start</span>
-                <input type="time" step="1800" value={newEventForm.startTime} onChange={(event) => updateNewEventForm('startTime', event.currentTarget.value)} />
-              </label>
-              <label className="event-scheduler-shift-week-dialog__field">
-                <span>End</span>
-                <input type="time" step="1800" value={newEventForm.endTime} onChange={(event) => updateNewEventForm('endTime', event.currentTarget.value)} />
-              </label>
-              <label className="event-scheduler-shift-week-dialog__field">
-                <span>Type</span>
-                <select value={newEventForm.type} onChange={(event) => updateNewEventForm('type', event.currentTarget.value as ShiftWeekNewEventForm['type'])}>
-                  {shiftWeekNewEventTypeOptions.map((option) => (
-                    <option key={option.id} value={option.id}>{option.label}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="event-scheduler-shift-week-dialog__field">
-                <span>Status</span>
-                <select value={newEventForm.status} onChange={(event) => updateNewEventForm('status', event.currentTarget.value as ShiftWeekNewEventForm['status'])}>
-                  {shiftWeekNewEventStatusOptions.map((option) => (
-                    <option key={option.id} value={option.id}>{option.label}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <div className="event-scheduler-shift-week-dialog__actions">
-              <button type="button" className="event-scheduler-shift-week-dialog__cancel" onClick={() => setNewEventForm(null)}>Cancel</button>
-              <button type="submit" className="event-scheduler-shift-week-dialog__submit">Create event</button>
-            </div>
-          </form>
-        </div>
-      ) : null}
+      {React.createElement(SCHEDULER_DIALOG_TAG, { ref: dialogRef })}
     </section>
   );
 }

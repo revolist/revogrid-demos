@@ -676,6 +676,10 @@ revo-grid.event-scheduler-shift-week-grid {
   backdrop-filter: blur(3px);
 }
 
+.event-scheduler-shift-week-dialog[hidden] {
+  display: none;
+}
+
 .event-scheduler-shift-week-dialog__panel {
   display: grid;
   width: min(430px, 100%);

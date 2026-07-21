@@ -2,6 +2,7 @@
 import {
   Component,
   NO_ERRORS_SCHEMA,
+  OnDestroy,
   ViewEncapsulation,
 } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
@@ -21,7 +22,7 @@ import {
   renderShowcaseTaskBarColor,
   renderShowcaseTaskBarContent,
 } from './shared/gantt-project-data';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 
 function createGanttConfig(showCriticalPath: boolean, showBaseline: boolean): GanttPluginConfig {
   return {
@@ -93,10 +94,15 @@ function createGanttConfig(showCriticalPath: boolean, showBaseline: boolean): Ga
     </div>
   `,
 })
-export class GanttShowcaseGridComponent {
-  readonly isDark       = currentTheme().isDark();
-  readonly theme        = this.isDark ? 'darkCompact' : 'compact';
-  readonly shellClass   = `gantt-showcase-shell grow h-full ${this.isDark ? 'gantt-showcase-shell--dark' : 'gantt-showcase-shell--light'}`;
+export class GanttShowcaseGridComponent implements OnDestroy {
+  isDark                = currentTheme().isDark();
+  theme                 = this.isDark ? 'darkCompact' : 'compact';
+  shellClass            = `gantt-showcase-shell grow h-full ${this.isDark ? 'gantt-showcase-shell--dark' : 'gantt-showcase-shell--light'}`;
+  private readonly disconnectTheme = observeCurrentTheme((isDark) => {
+    this.isDark = isDark;
+    this.theme = isDark ? 'darkCompact' : 'compact';
+    this.shellClass = `gantt-showcase-shell grow h-full ${isDark ? 'gantt-showcase-shell--dark' : 'gantt-showcase-shell--light'}`;
+  });
   readonly plugins      = [GanttPlugin, ExportExcelPlugin, RowStatusPlugin];
   showCriticalPath      = Boolean(SHOWCASE_GANTT_CONFIG.visuals.showCriticalPath);
   showBaseline          = false;
@@ -118,5 +124,9 @@ export class GanttShowcaseGridComponent {
   setBaseline(value: boolean): void {
     this.showBaseline = value;
     this.ganttConfig = createGanttConfig(this.showCriticalPath, this.showBaseline);
+  }
+
+  ngOnDestroy(): void {
+    this.disconnectTheme();
   }
 }

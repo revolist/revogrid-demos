@@ -39,10 +39,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, shallowRef } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import type { PivotConfig } from '@revolist/revogrid-enterprise';
-import { currentThemeVue } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   FINANCIAL_COLUMNS,
   FINANCIAL_COLUMN_TYPES,
@@ -60,10 +60,18 @@ import {
 
 defineFinancialPivotHeaderElement();
 
-const { isDark } = currentThemeVue();
+const isDark = ref(currentTheme().isDark());
+let disconnectTheme: (() => void) | undefined;
 const props = defineProps({ rows: { type: Array<any>, default: () => [] } });
 const rows = ref(resolveFinancialRows(props.rows));
 const isSmallScreen = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
+
+onMounted(() => {
+  disconnectTheme = observeCurrentTheme((value) => {
+    isDark.value = value;
+  });
+});
+onBeforeUnmount(() => disconnectTheme?.());
 
 const pivotConfig = shallowRef<PivotConfig>(createFinancialPreset());
 const activePreset = ref<FinancialPresetId>('sales');

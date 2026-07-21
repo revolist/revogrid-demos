@@ -18,11 +18,11 @@ import {
   renderShowcaseTaskBarColor,
   renderShowcaseTaskBarContent,
 } from './shared/gantt-project-data';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
 
-export function load(parentSelector: string): void {
+export function load(parentSelector: string): (() => void) | undefined {
   const parent = document.querySelector(parentSelector);
   if (!parent) return;
   const darkTheme = currentTheme().isDark();
@@ -54,6 +54,11 @@ export function load(parentSelector: string): void {
   grid.ganttResources    = [...SHOWCASE_RESOURCES];
   grid.ganttAssignments  = [...SHOWCASE_ASSIGNMENTS];
   grid.ganttBaselines    = [...SHOWCASE_BASELINES];
+  const disconnectTheme = observeCurrentTheme((isDark) => {
+    grid.theme = isDark ? 'darkCompact' : 'compact';
+    container.classList.toggle('gantt-showcase-shell--dark', isDark);
+    container.classList.toggle('gantt-showcase-shell--light', !isDark);
+  });
   let showCriticalPath = Boolean(SHOWCASE_GANTT_CONFIG.visuals.showCriticalPath);
   let showBaseline = false;
 
@@ -102,4 +107,9 @@ export function load(parentSelector: string): void {
 
   applyGanttConfig();
   container.appendChild(grid);
+
+  return () => {
+    disconnectTheme();
+    container.remove();
+  };
 }

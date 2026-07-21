@@ -5,6 +5,7 @@ import {
   ElementRef,
   Input,
   NO_ERRORS_SCHEMA,
+  OnDestroy,
   signal,
   ViewChild,
   ViewEncapsulation,
@@ -12,7 +13,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { RevoGrid, type DataType } from '@revolist/angular-datagrid';
 import type { PivotConfig } from '@revolist/revogrid-enterprise';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   FINANCIAL_COLUMNS,
   FINANCIAL_COLUMN_TYPES,
@@ -72,7 +73,7 @@ const isSmallScreen = () => typeof window !== 'undefined' && window.matchMedia('
             [source]="rows"
             [columns]="FINANCIAL_COLUMNS"
             [pivot]="pivot()"
-            [theme]="theme"
+            [theme]="theme()"
             [plugins]="plugins"
             [columnTypes]="columnTypes"
             [readonly]="true"
@@ -83,7 +84,7 @@ const isSmallScreen = () => typeof window !== 'undefined' && window.matchMedia('
     </div>
   `,
 })
-export class PivotShowcaseGridComponent {
+export class PivotShowcaseGridComponent implements OnDestroy {
   @Input() rows: DataType[] = resolveFinancialRows();
   @ViewChild('gridElement', { read: ElementRef })
   gridElement?: ElementRef<HTMLRevoGridElement & { pivot?: PivotConfig }>;
@@ -92,7 +93,9 @@ export class PivotShowcaseGridComponent {
   readonly columnTypes = FINANCIAL_COLUMN_TYPES;
   readonly multiRowHeader = FINANCIAL_MULTI_ROW_HEADER;
   readonly plugins = FINANCIAL_SHOWCASE_PLUGINS;
-  readonly theme = currentTheme().isDark() ? 'darkCompact' : 'compact';
+  readonly isDark = signal(currentTheme().isDark());
+  readonly theme = computed(() => this.isDark() ? 'darkCompact' : 'compact');
+  private readonly disconnectTheme = observeCurrentTheme((value) => this.isDark.set(value));
 
   readonly pivotSignal = signal<PivotConfig>(createFinancialPreset());
   readonly activePreset = signal<FinancialPresetId>('sales');
@@ -127,5 +130,9 @@ export class PivotShowcaseGridComponent {
       this.pivotSignal.set(config);
       this.activePreset.set(preset);
     });
+  }
+
+  ngOnDestroy(): void {
+    this.disconnectTheme();
   }
 }

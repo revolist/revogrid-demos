@@ -10,7 +10,7 @@ import {
 import { RevoGrid, type DataType } from '@revolist/react-datagrid';
 import type { PivotConfig } from '@revolist/revogrid-enterprise';
 import './financial-pivot-header/financial-pivot-header.scss';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   FINANCIAL_COLUMNS,
   FINANCIAL_COLUMN_TYPES,
@@ -50,7 +50,7 @@ interface PivotProps {
 const isSmallScreen = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
 
 function PivotShowcase({ rows }: PivotProps) {
-  const { isDark } = currentTheme();
+  const [isDark, setIsDark] = useState(() => currentTheme().isDark());
   const data = useMemo(() => resolveFinancialRows(rows), [rows]);
   const [pivotConfig, setPivotConfig] = useState<PivotConfig>(() => createFinancialPreset());
   const [activePreset, setActivePreset] = useState<FinancialPresetId>('sales');
@@ -66,6 +66,8 @@ function PivotShowcase({ rows }: PivotProps) {
   const columnTypes = useMemo(() => FINANCIAL_COLUMN_TYPES, []);
   const gridRef = useRef<HTMLRevoGridElement>(null);
   const headerRef = useRef<FinancialPivotHeaderElement>(null);
+
+  useEffect(() => observeCurrentTheme(setIsDark), []);
 
   useEffect(() => {
     const grid = gridRef.current;
@@ -135,7 +137,7 @@ function PivotShowcase({ rows }: PivotProps) {
             source={data}
             columns={columns}
             pivot={pivot}
-            theme={isDark() ? 'darkCompact' : 'compact'}
+            theme={isDark ? 'darkCompact' : 'compact'}
             plugins={plugins}
             columnTypes={columnTypes}
             readonly

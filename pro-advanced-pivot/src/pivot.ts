@@ -1,7 +1,7 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import type { PivotConfig } from '@revolist/revogrid-enterprise';
 import './financial-pivot-header/financial-pivot-header.scss';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   FINANCIAL_COLUMNS,
   FINANCIAL_COLUMN_TYPES,
@@ -125,8 +125,12 @@ export function load(parentSelector: string, rows: any[] | { isDark?: boolean } 
   parent.appendChild(container);
   refreshLayout();
   initializeGrid();
+  const disconnectTheme = observeCurrentTheme((darkTheme) => {
+    grid.theme = darkTheme ? 'darkCompact' : 'compact';
+  });
 
   return () => {
+    disconnectTheme();
     grid.removeEventListener('pivot-config-update', onPivotConfigUpdate as EventListener);
     grid.remove();
     container.remove();

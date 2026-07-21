@@ -1,9 +1,9 @@
-import { Component, NO_ERRORS_SCHEMA, ViewEncapsulation } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+import { Component, NO_ERRORS_SCHEMA, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { NgIf } from '@angular/common';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import { EventSchedulerPlugin, type EventSchedulerEntityId, type EventSchedulerEventChangedDetail, type EventSchedulerEventEntity, type EventSchedulerEventSelectedDetail, type EventSchedulerOpenShiftAssignRequestDetail, type EventSchedulerResourceReassignRequestDetail } from '@revolist/revogrid-enterprise';
 import { AdvanceFilterPlugin, ColumnStretchPlugin, RowOddPlugin } from '@revolist/revogrid-pro';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createShiftWeekAssignedOpenShift,
   createShiftWeekConfig,
@@ -35,49 +35,31 @@ import {
   type ShiftWeekNewEventForm,
   type ShiftWeekWorkspaceView,
 } from './data';
+import {
+  defineSchedulerShellElements,
+  type SchedulerDialogSubmitDetail,
+  type SchedulerHeaderCalendarChangeDetail,
+  type SchedulerHeaderNavigateDetail,
+  type SchedulerHeaderViewChangeDetail,
+  type SchedulerSidebarSearchChangeDetail,
+  type SchedulerSidebarWorkspaceChangeDetail,
+} from './components';
+
+defineSchedulerShellElements();
 
 @Component({
   selector: 'event-scheduler-shift-week-grid',
   standalone: true,
   schemas: [NO_ERRORS_SCHEMA],
-  imports: [RevoGrid, NgFor, NgIf],
+  imports: [RevoGrid, NgIf],
   template: `
     <section class="event-scheduler-shift-week-demo">
-      <aside class="event-scheduler-shift-week-sidebar" aria-label="Scheduler navigation">
-        <div class="event-scheduler-shift-week-brand">
-          <span class="event-scheduler-shift-week-brand__mark">OS</span>
-          <span class="event-scheduler-shift-week-brand__copy">
-            <strong>Ops Studio</strong>
-            <small>Workspace</small>
-          </span>
-        </div>
-        <button type="button" class="event-scheduler-shift-week-new-event" (click)="openNewEvent()">New event</button>
-        <label class="event-scheduler-shift-week-search">
-          <span>Search</span>
-          <input type="search" placeholder="Search..." [value]="searchQuery" (input)="setSearchQuery($any($event.target).value)" />
-        </label>
-        <nav class="event-scheduler-shift-week-nav" aria-label="Scheduler sections">
-          <span>Views</span>
-          <button
-            *ngFor="let item of workspaceViews"
-            type="button"
-            class="event-scheduler-shift-week-nav__item"
-            [class.event-scheduler-shift-week-nav__item--active]="workspaceView === item.view"
-            [attr.aria-pressed]="workspaceView === item.view"
-            (click)="setWorkspace(item.view)"
-          >
-            {{ item.label }}
-          </button>
-        </nav>
-        <div class="event-scheduler-shift-week-team">
-          <span>Team</span>
-          <div *ngFor="let member of teamMembers" class="event-scheduler-shift-week-team__row">
-            <span class="event-scheduler-shift-week-avatar" [style.--shift-week-avatar-color]="member.color">{{ member.initials }}</span>
-            <strong>{{ member.name }}</strong>
-            <small>{{ member.count }}</small>
-          </div>
-        </div>
-      </aside>
+      <revogr-scheduler-sidebar
+        [model]="sidebarModel"
+        (scheduler-sidebar-new-event)="openNewEvent()"
+        (scheduler-sidebar-search-change)="handleSidebarSearchChange($event)"
+        (scheduler-sidebar-workspace-change)="handleSidebarWorkspaceChange($event)"
+      ></revogr-scheduler-sidebar>
       <div class="event-scheduler-shift-week-main">
         <div *ngIf="workspaceView === 'table'; else schedulerGrid" class="event-scheduler-shift-week-table" role="region" aria-label="Scheduled events table">
           <revo-grid
@@ -92,37 +74,13 @@ import {
           ></revo-grid>
         </div>
         <ng-template #schedulerGrid>
-          <div *ngIf="showToolbar" class="event-scheduler-shift-week-toolbar" aria-label="Shift scheduler navigation">
-            <div class="event-scheduler-shift-week-toolbar__nav">
-              <button type="button" class="event-scheduler-shift-week-toolbar__icon" aria-label="Previous range" (click)="goPrevious()">‹</button>
-              <button type="button" class="event-scheduler-shift-week-toolbar__icon" aria-label="Next range" (click)="goNext()">›</button>
-              <button type="button" class="event-scheduler-shift-week-toolbar__today" (click)="goToday()">Today</button>
-            </div>
-            <div class="event-scheduler-shift-week-toolbar__heading">
-              <strong>{{ rangeTitle }}</strong>
-              <span>{{ rangeSubtitle }}</span>
-            </div>
-            <div class="event-scheduler-shift-week-toolbar__views" role="group" aria-label="Scheduler view">
-              <button
-                *ngFor="let view of viewKeys"
-                type="button"
-                class="event-scheduler-shift-week-toolbar__view"
-                [class.event-scheduler-shift-week-toolbar__view--active]="activeView === view"
-                [attr.aria-pressed]="activeView === view"
-                (click)="setView(view)"
-              >
-                {{ viewLabels[view] }}
-              </button>
-            </div>
-            <label class="event-scheduler-shift-week-toolbar__calendar">
-              <span>Calendar</span>
-              <select aria-label="Calendar preset" [value]="activeCalendar" (change)="setCalendar($any($event.target).value)">
-                <option *ngFor="let option of calendarOptions" [value]="option.id">
-                  {{ option.label }}
-                </option>
-              </select>
-            </label>
-          </div>
+          <revogr-scheduler-header
+            *ngIf="showToolbar"
+            [model]="headerModel"
+            (scheduler-header-calendar-change)="handleHeaderCalendarChange($event)"
+            (scheduler-header-navigate)="handleHeaderNavigate($event)"
+            (scheduler-header-view-change)="handleHeaderViewChange($event)"
+          ></revogr-scheduler-header>
           <revo-grid
             class="event-scheduler-shift-week-grid"
             [theme]="theme"
@@ -144,64 +102,21 @@ import {
           ></revo-grid>
         </ng-template>
       </div>
-      <div *ngIf="newEventForm" class="event-scheduler-shift-week-dialog" role="dialog" aria-modal="true" aria-labelledby="shift-week-new-event-title">
-        <form class="event-scheduler-shift-week-dialog__panel" (submit)="submitNewEvent($event)">
-          <div class="event-scheduler-shift-week-dialog__header">
-            <div>
-              <strong id="shift-week-new-event-title">New event</strong>
-              <span>{{ newEventForm.date }} · {{ newEventForm.startTime }}-{{ newEventForm.endTime }}</span>
-            </div>
-            <button type="button" class="event-scheduler-shift-week-dialog__close" aria-label="Close new event" (click)="closeNewEvent()">×</button>
-          </div>
-          <div class="event-scheduler-shift-week-dialog__body">
-            <label class="event-scheduler-shift-week-dialog__field event-scheduler-shift-week-dialog__field--wide">
-              <span>Event</span>
-              <input [value]="newEventForm.title" (input)="updateNewEvent('title', $any($event.target).value)">
-            </label>
-            <label class="event-scheduler-shift-week-dialog__field">
-              <span>Date</span>
-              <input type="date" [value]="newEventForm.date" (input)="updateNewEvent('date', $any($event.target).value)">
-            </label>
-            <label class="event-scheduler-shift-week-dialog__field">
-              <span>Assignee</span>
-              <select [value]="newEventForm.resourceId" (change)="updateNewEvent('resourceId', $any($event.target).value)">
-                <option *ngFor="let member of teamMembers" [value]="member.id">{{ member.name }}</option>
-              </select>
-            </label>
-            <label class="event-scheduler-shift-week-dialog__field">
-              <span>Start</span>
-              <input type="time" step="1800" [value]="newEventForm.startTime" (input)="updateNewEvent('startTime', $any($event.target).value)">
-            </label>
-            <label class="event-scheduler-shift-week-dialog__field">
-              <span>End</span>
-              <input type="time" step="1800" [value]="newEventForm.endTime" (input)="updateNewEvent('endTime', $any($event.target).value)">
-            </label>
-            <label class="event-scheduler-shift-week-dialog__field">
-              <span>Type</span>
-              <select [value]="newEventForm.type" (change)="updateNewEvent('type', $any($event.target).value)">
-                <option *ngFor="let option of newEventTypeOptions" [value]="option.id">{{ option.label }}</option>
-              </select>
-            </label>
-            <label class="event-scheduler-shift-week-dialog__field">
-              <span>Status</span>
-              <select [value]="newEventForm.status" (change)="updateNewEvent('status', $any($event.target).value)">
-                <option *ngFor="let option of newEventStatusOptions" [value]="option.id">{{ option.label }}</option>
-              </select>
-            </label>
-          </div>
-          <div class="event-scheduler-shift-week-dialog__actions">
-            <button type="button" class="event-scheduler-shift-week-dialog__cancel" (click)="closeNewEvent()">Cancel</button>
-            <button type="submit" class="event-scheduler-shift-week-dialog__submit">Create event</button>
-          </div>
-        </form>
-      </div>
+      <revogr-scheduler-dialog
+        [model]="dialogModel"
+        (scheduler-dialog-close)="closeNewEvent()"
+        (scheduler-dialog-submit)="handleDialogSubmit($event)"
+      ></revogr-scheduler-dialog>
     </section>
   `,
   styleUrls: ['./styles.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class EventSchedulerShiftWeekGridComponent {
+export class EventSchedulerShiftWeekGridComponent implements OnDestroy {
   theme = currentTheme().isDark() ? 'darkMaterial' : 'material';
+  private readonly disconnectTheme = observeCurrentTheme((isDark) => {
+    this.theme = isDark ? 'darkMaterial' : 'material';
+  });
   plugins = [EventSchedulerPlugin];
   rows = [];
   columns = [];
@@ -213,17 +128,9 @@ export class EventSchedulerShiftWeekGridComponent {
   tablePlugins = [AdvanceFilterPlugin, ColumnStretchPlugin, RowOddPlugin];
   tableColumns = getShiftWeekTableColumns();
   tableFilter = {};
-  viewLabels = shiftWeekViewLabels;
-  viewKeys = shiftWeekDemoViews;
-  calendarOptions = shiftWeekCalendarOptions;
   teamMembers = shiftWeekTeamMembers;
   newEventStatusOptions = shiftWeekNewEventStatusOptions;
   newEventTypeOptions = shiftWeekNewEventTypeOptions;
-  workspaceViews: readonly { view: ShiftWeekWorkspaceView; label: string }[] = [
-    { view: 'calendar', label: 'Calendar' },
-    { view: 'resource', label: 'Resource' },
-    { view: 'table', label: 'Table' },
-  ];
   selectedEventIds: readonly EventSchedulerEntityId[] = [];
   highlightedEventIds: readonly EventSchedulerEntityId[] = [];
   schedulerConfig = createShiftWeekConfig(this.activeView, this.anchorDate, this.activeCalendar, this.selectedEventIds, this.highlightedEventIds, this.workspaceView);
@@ -245,6 +152,35 @@ export class EventSchedulerShiftWeekGridComponent {
 
   get showToolbar() {
     return this.workspaceView === 'calendar';
+  }
+
+  get sidebarModel() {
+    return {
+      workspaceView: this.workspaceView,
+      searchQuery: this.searchQuery,
+      teamMembers: this.teamMembers,
+    };
+  }
+
+  get headerModel() {
+    return {
+      activeView: this.activeView,
+      activeCalendar: this.activeCalendar,
+      title: this.rangeTitle,
+      subtitle: this.rangeSubtitle,
+      views: shiftWeekDemoViews,
+      viewLabels: shiftWeekViewLabels,
+      calendarOptions: shiftWeekCalendarOptions,
+    };
+  }
+
+  get dialogModel() {
+    return this.newEventForm ? {
+      form: this.newEventForm,
+      teamMembers: this.teamMembers,
+      typeOptions: this.newEventTypeOptions,
+      statusOptions: this.newEventStatusOptions,
+    } : null;
   }
 
   setSearchQuery(query: string) {
@@ -300,20 +236,30 @@ export class EventSchedulerShiftWeekGridComponent {
     this.newEventForm = null;
   }
 
-  updateNewEvent<Key extends keyof ShiftWeekNewEventForm>(key: Key, value: ShiftWeekNewEventForm[Key]) {
-    if (!this.newEventForm) return;
-    this.newEventForm = {
-      ...this.newEventForm,
-      [key]: value,
-    };
+  handleSidebarSearchChange(event: CustomEvent<SchedulerSidebarSearchChangeDetail>) {
+    this.setSearchQuery(event.detail.query);
   }
 
-  submitNewEvent(event: Event) {
-    event.preventDefault();
-    if (!this.newEventForm) return;
+  handleSidebarWorkspaceChange(event: CustomEvent<SchedulerSidebarWorkspaceChangeDetail>) {
+    this.setWorkspace(event.detail.view);
+  }
+
+  handleHeaderNavigate(event: CustomEvent<SchedulerHeaderNavigateDetail>) {
+    this.handleNavigateRequest(event);
+  }
+
+  handleHeaderViewChange(event: CustomEvent<SchedulerHeaderViewChangeDetail>) {
+    this.setView(event.detail.view);
+  }
+
+  handleHeaderCalendarChange(event: CustomEvent<SchedulerHeaderCalendarChangeDetail>) {
+    this.setCalendar(event.detail.calendar);
+  }
+
+  handleDialogSubmit(event: CustomEvent<SchedulerDialogSubmitDetail>) {
     this.events = [
       ...this.events,
-      createShiftWeekManualEvent(this.newEventForm),
+      createShiftWeekManualEvent(event.detail.form),
     ];
     this.refreshSearchMatches();
     this.closeNewEvent();
@@ -374,5 +320,9 @@ export class EventSchedulerShiftWeekGridComponent {
   private refreshSearchMatches() {
     this.highlightedEventIds = getShiftWeekSearchMatchIds(this.events, this.searchQuery);
     this.refreshSchedulerConfig();
+  }
+
+  ngOnDestroy(): void {
+    this.disconnectTheme();
   }
 }

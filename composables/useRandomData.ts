@@ -1,6 +1,6 @@
 const darkMedia = () => window.matchMedia('(prefers-color-scheme: dark)');
 
-function isDarkTheme() {
+function isDarkTheme(media = darkMedia()) {
   const root = document.documentElement;
   const explicitTheme = root.dataset.theme?.toLowerCase();
 
@@ -11,7 +11,33 @@ function isDarkTheme() {
     return false;
   }
 
-  return darkMedia().matches;
+  return media.matches;
+}
+
+export function observeCurrentTheme(onChange: (isDark: boolean) => void) {
+  const media = darkMedia();
+  const emitTheme = () => onChange(isDarkTheme(media));
+  const observer = new MutationObserver(emitTheme);
+
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class', 'data-theme'],
+  });
+  if (typeof media.addEventListener === 'function') {
+    media.addEventListener('change', emitTheme);
+  } else {
+    media.addListener?.(emitTheme);
+  }
+  emitTheme();
+
+  return () => {
+    observer.disconnect();
+    if (typeof media.removeEventListener === 'function') {
+      media.removeEventListener('change', emitTheme);
+    } else {
+      media.removeListener?.(emitTheme);
+    }
+  };
 }
 
 export function currentTheme() {

@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import { ExportExcelPlugin, RowStatusPlugin } from '@revolist/revogrid-pro';
 import {
@@ -52,7 +52,7 @@ import {
   renderShowcaseTaskBarColor,
   renderShowcaseTaskBarContent,
 } from './shared/gantt-project-data';
-import { currentThemeVue } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 
 // ── Static grid data ──────────────────────────────────────────────────────────
 const plugins = ref<unknown[]>([]);
@@ -66,7 +66,8 @@ const columns      = ref([...SHOWCASE_COLUMNS_WITH_COMPLETION]);
 const hiddenColumns = [...SHOWCASE_DEFAULT_HIDDEN];
 const showCriticalPath = ref(Boolean(SHOWCASE_GANTT_CONFIG.visuals.showCriticalPath));
 const showBaseline = ref(false);
-const { isDark } = currentThemeVue();
+const isDark = ref(currentTheme().isDark());
+let disconnectTheme: (() => void) | undefined;
 const gridTheme = computed(() => (isDark.value ? 'darkCompact' : 'compact'));
 const shellClass = computed(() => [
   'gantt-showcase',
@@ -91,10 +92,15 @@ const ganttConfig = computed(() => ({
 const gridRef    = ref<InstanceType<typeof RevoGrid> | HTMLRevoGridElement | null>(null);
 
 onMounted(async () => {
+  disconnectTheme = observeCurrentTheme((value) => {
+    isDark.value = value;
+  });
   const { GanttPlugin } = await import('@revolist/revogrid-enterprise');
 
   plugins.value = [GanttPlugin, ExportExcelPlugin, RowStatusPlugin];
 });
+
+onBeforeUnmount(() => disconnectTheme?.());
 </script>
 
 <style src="./gantt.scss" lang="scss"></style>
