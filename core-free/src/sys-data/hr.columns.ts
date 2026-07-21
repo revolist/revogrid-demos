@@ -47,26 +47,27 @@ export function getBaseHRColumns(companies: string[]): ColumnProp[] {
     {
       name: 'Employee',
       children: [
-        { name: 'Name', prop: 'name', size: 210 },
-        { name: 'Company', prop: 'company', columnType: 'select', source: companies, size: 150 },
+        { name: 'Name', prop: 'name', size: 210, sortable: true },
+        { name: 'Company', prop: 'company', columnType: 'select', source: companies, size: 150, sortable: true },
       ],
     },
     {
       name: 'Personal',
       children: [
-        { name: 'Age', prop: 'age', size: 90 },
-        { name: 'Department', prop: 'department', size: 140 },
+        { name: 'Age', prop: 'age', size: 90, sortable: true },
+        { name: 'Department', prop: 'department', size: 140, sortable: true },
         {
           name: 'Eye color',
           prop: 'eyeColor',
           columnType: 'colorSelect',
           source: ['#2563eb', '#16a34a', '#92400e', '#64748b'],
           size: 120,
+          sortable: true,
         },
       ],
     },
-    { name: 'Joined', prop: 'joined', columnType: 'date', size: 130 },
-    { name: 'Salary', prop: 'salary', columnType: 'number', size: 130 },
+    { name: 'Joined', prop: 'joined', columnType: 'date', size: 130, sortable: true },
+    { name: 'Salary', prop: 'salary', columnType: 'number', size: 130, sortable: true },
   ] as ColumnProp[];
 }
 
@@ -75,5 +76,6 @@ export function getExtraHRColumns(count: number): ColumnRegular[] {
     name: `Metric ${index + 1}`,
     prop: `metric${index + 1}`,
     size: 110,
+    sortable: true,
   }));
 }

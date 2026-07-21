@@ -5,7 +5,7 @@ A free RevoGrid Core demo built as an HR dataset explorer. It demonstrates the s
 ## What it features
 
 - Asynchronous generation of large HR datasets with loading progress
-- Filtering, range selection, row headers, resizing, and grouped columns
+- Filtering, single-column sorting, Shift-click multi-column sorting, range selection, row headers, resizing, and grouped columns
 - Custom cell rendering and a reusable color-select column type
 - Date, numeral, and select column packages
 - Dynamic columns and light/dark themes

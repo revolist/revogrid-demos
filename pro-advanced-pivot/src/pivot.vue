@@ -1,6 +1,6 @@
 <template>
   <div
-    class="financial-pivot-showcase grow flex flex-col gap-2 h-full p-2 box-border"
+    class="financial-pivot-showcase grow flex flex-col gap-2 h-full box-border"
     :style="expandedStyle"
   >
     <financial-pivot-header
@@ -12,7 +12,7 @@
 
     <div class="grow min-h-0 overflow-auto">
       <div
-        class="pivot-grid-container h-full overflow-hidden"
+        class="pivot-grid-container h-full overflow-hidden gap-1"
         :style="{ minWidth: configuratorVisible ? '920px' : '680px' }"
       >
         <RevoGrid
