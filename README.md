@@ -21,7 +21,7 @@ Every showcase provides equivalent implementations for the major supported front
 | Edition | Demo | Highlights | Source |
 | --- | --- | --- | --- |
 | **Core** | HR data grid | Async large-data loading, grouped columns, custom cell templates, column types, row drag handling, and light/dark themes | [Demo guide](./core-free/README.md) |
-| **Pro** | Spreadsheet workbench | Formula bar, XLSX import/export, history, autofill, multi-range selection, merged cells, validation, context menus, and collaborative presence simulation | [Demo guide](./pro-excel/README.md) |
+| **Pro** | Spreadsheet workbench | Formula bar, XLSX export, history, autofill, multi-range selection, merged cells, validation, context menus, and collaborative presence simulation | [Demo guide](./pro-excel/README.md) |
 | **Pro** | E-commerce analytics | Customer profiles, grouped analytics columns, filtering, column controls, context menus, and styled Excel export configuration | [Demo guide](./pro-e-commerce/README.md) |
 | **Pro** | Project table | Project grouping, status filtering, custom editors, toolbar actions, context menus, and project presets | [Demo guide](./pro-project-table/README.md) |
 | **Pro Advance** | Financial pivot | Financial presets, configurable row and column axes, filtering, KPIs, heatmap formatting, responsive layout, and expanded view | [Demo guide](./pro-advanced-pivot/README.md) |

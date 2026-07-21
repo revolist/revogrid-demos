@@ -1,7 +1,6 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
 defineCustomElements();
 
-import { readSheet as readXlsxSheet } from 'read-excel-file/browser';
 import {
   AdvanceFilterPlugin,
   AutoFillPlugin,
@@ -56,7 +55,6 @@ import {
   installSpreadsheetAutofillStrategy,
   insertSpreadsheetRowFromPinnedDropdown,
   observeSpreadsheetTheme,
-  readSpreadsheetWorkbookFromXlsx,
   createSpreadsheetWorkbookFromGridSource,
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
@@ -130,22 +128,12 @@ export function load(parentSelector: string) {
   grid.columnTypes = { statusDropdown: ColumnDropdown, departmentDropdown: ColumnDropdown };
   grid.filter = {};
 
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = '.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-  fileInput.className = 'spreadsheet-file-input';
-  fileInput.dataset.testid = 'spreadsheet-xlsx-input';
-
-  const importLabel = document.createElement('label');
-  importLabel.className = 'spreadsheet-file-label';
-  appendActionIcon(importLabel, SPREADSHEET_ACTION_ICONS.import);
-  importLabel.append('Import XLSX', fileInput);
   const exportButton = button('Export XLSX', exportWorkbook, SPREADSHEET_ACTION_ICONS.export);
   exportButton.dataset.testid = 'spreadsheet-export';
   const undoButton = button('Undo 0', () => runHistory('undo'), SPREADSHEET_ACTION_ICONS.undo);
   const redoButton = button('Redo 0', () => runHistory('redo'), SPREADSHEET_ACTION_ICONS.redo);
   ribbon.append(
-    group(importLabel, exportButton),
+    group(exportButton),
     group(undoButton, redoButton),
   );
 
@@ -215,9 +203,6 @@ export function load(parentSelector: string) {
   grid.addEventListener('beforepasteapply', onClipboardPaste as EventListener);
   grid.addEventListener('rowfocus', onRowHeaderFocus as EventListener);
   grid.addEventListener('beforeedit', onBeforeEdit as EventListener);
-  fileInput.addEventListener('change', onXlsxChange);
-  shell.addEventListener('dragover', (event) => event.preventDefault());
-  shell.addEventListener('drop', onDrop);
   const disconnectThemeObserver = observeSpreadsheetTheme((isDark) => {
     shell.classList.toggle('is-dark', isDark);
     grid.theme = getSpreadsheetGridTheme(isDark);
@@ -466,37 +451,12 @@ export function load(parentSelector: string) {
     presenceStep = 0;
     presenceUsers = createSpreadsheetPresenceUsers(0);
     selectionStatus.textContent = 'No ranges selected';
-    clipboardStatus.textContent = 'Workbook reset. CSV files can be dropped on the grid.';
+    clipboardStatus.textContent = 'Workbook reset.';
     void syncWorkbookSource(workbook);
   }
 
   function getActiveSheetKey(): SpreadsheetSheetKey {
     return workbook.sheetKey === 'imported' || workbook.sheetKey === 'empty' ? 'budget' : workbook.sheetKey;
-  }
-
-  async function importXlsxFile(file: File) {
-    stopFeedFlash();
-    feedStep = 0;
-    workbook = await readSpreadsheetWorkbookFromXlsx(file, readXlsxSheet);
-    presenceUsers = createSpreadsheetPresenceUsers(presenceStep, true);
-    clipboardStatus.textContent = `Imported values from ${file.name}.`;
-    void syncWorkbookSource(workbook);
-  }
-
-  async function onXlsxChange(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) {
-      await importXlsxFile(file);
-    }
-    fileInput.value = '';
-  }
-
-  function onDrop(event: DragEvent) {
-    const file = event.dataTransfer?.files?.[0];
-    if (file?.name.toLowerCase().endsWith('.xlsx')) {
-      event.preventDefault();
-      void importXlsxFile(file);
-    }
   }
 
   function onHistoryChanged(event: CustomEvent<HistoryState>) {

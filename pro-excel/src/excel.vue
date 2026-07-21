@@ -5,23 +5,9 @@
     data-testid="spreadsheet-workbench"
     :data-plugin-stack="pluginStack"
     ref="shellRef"
-    @drop="onDrop"
-    @dragover.prevent
   >
     <div class="spreadsheet-ribbon">
       <span class="spreadsheet-ribbon-group">
-        <label class="spreadsheet-file-label">
-          <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.import"></span>
-          Import XLSX
-          <input
-            ref="fileInputRef"
-            class="spreadsheet-file-input"
-            data-testid="spreadsheet-xlsx-input"
-            type="file"
-            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            @change="onXlsxChange"
-          />
-        </label>
         <button class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" @click="exportWorkbook">
           <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.export"></span>
           Export XLSX
@@ -131,7 +117,6 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
-import { readSheet as readXlsxSheet } from 'read-excel-file/browser';
 import { VGrid } from '@revolist/vue3-datagrid';
 import {
   AdvanceFilterPlugin,
@@ -187,7 +172,6 @@ import {
   insertSpreadsheetRowFromPinnedDropdown,
   observeSpreadsheetTheme,
   preventReadonlySpreadsheetEdit,
-  readSpreadsheetWorkbookFromXlsx,
   createSpreadsheetWorkbookFromGridSource,
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
@@ -228,7 +212,6 @@ const shellRef = ref<HTMLElement | null>(null);
 const formulaInputRef = ref<HTMLInputElement | null>(null);
 const formulaBadgeRef = ref<HTMLSpanElement | null>(null);
 const formulaHighlightRef = ref<HTMLSpanElement | null>(null);
-const fileInputRef = ref<HTMLInputElement | null>(null);
 const selectionStatus = ref('No ranges selected');
 const clipboardStatus = ref('Copy ranges or paste structured data.');
 const historyState = ref<HistoryState>({
@@ -459,38 +442,11 @@ function resetWorkbook() {
   presenceStep.value = 0;
   presenceUsers.value = createSpreadsheetPresenceUsers(0);
   selectionStatus.value = 'No ranges selected';
-  clipboardStatus.value = 'Workbook reset. CSV files can be dropped on the grid.';
+  clipboardStatus.value = 'Workbook reset.';
 }
 
 function getActiveSheetKey(): SpreadsheetSheetKey {
   return workbook.value.sheetKey === 'imported' || workbook.value.sheetKey === 'empty' ? 'budget' : workbook.value.sheetKey;
-}
-
-async function importXlsxFile(file: File) {
-  stopFeedFlash();
-  feedStep = 0;
-  workbook.value = await readSpreadsheetWorkbookFromXlsx(file, readXlsxSheet);
-  simulationWorkbook = workbook.value;
-  presenceUsers.value = createSpreadsheetPresenceUsers(presenceStep.value, true);
-  clipboardStatus.value = `Imported values from ${file.name}.`;
-}
-
-async function onXlsxChange(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0];
-  if (file) {
-    await importXlsxFile(file);
-  }
-  if (fileInputRef.value) {
-    fileInputRef.value.value = '';
-  }
-}
-
-async function onDrop(event: DragEvent) {
-  const file = event.dataTransfer?.files?.[0];
-  if (file?.name.toLowerCase().endsWith('.xlsx')) {
-    event.preventDefault();
-    await importXlsxFile(file);
-  }
 }
 
 function onHistoryChanged(event: CustomEvent<HistoryState>) {

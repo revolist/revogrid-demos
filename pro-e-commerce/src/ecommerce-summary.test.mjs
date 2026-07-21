@@ -27,6 +27,21 @@ test('numeric summary distributions keep positive frequency bars visible', () =>
   assert.deepEqual(heights, ['50%', '50%', '100%']);
 });
 
+test('categorical summaries render at most two total lines', () => {
+  const columns = ECOMMERCE_COLUMNS.flatMap((entry) =>
+    'children' in entry ? entry.children : [entry],
+  );
+  const h = (tag, props, children) => ({ tag, props, children });
+  const summary = { Chicago: 8, Lisbon: 8, Porto: 4 };
+
+  for (const prop of ['City', 'Membership Type']) {
+    const column = columns.find((entry) => entry.prop === prop);
+    const rendered = column.summaryVNode(h, summary);
+
+    assert.equal(rendered.children.length, 2, prop);
+  }
+});
+
 test('the ecommerce grid has square corners', () => {
   const styles = readFileSync(
     new URL('./ecommerce.scss', import.meta.url),
@@ -59,12 +74,39 @@ test('aggregate summary styles cancel chart margins and clip long values', () =>
   assert.match(aggregateRule?.[1] || '', /overflow:\s*hidden;/);
 });
 
-test('the ecommerce plugin stack activates column filters before summary headers', () => {
+test('the ecommerce plugin stack composes summaries before column filter headers', () => {
   assert.ok(ECOMMERCE_PLUGINS.includes(AdvanceFilterPlugin));
   assert.ok(ECOMMERCE_PLUGINS.includes(FilterHeaderPlugin));
   assert.ok(
-    ECOMMERCE_PLUGINS.indexOf(FilterHeaderPlugin) <
-      ECOMMERCE_PLUGINS.indexOf(SummaryChartHeaderPlugin),
+    ECOMMERCE_PLUGINS.indexOf(SummaryChartHeaderPlugin) <
+      ECOMMERCE_PLUGINS.indexOf(FilterHeaderPlugin),
+  );
+});
+
+test('combined filter and summary headers reserve space for both render layers', () => {
+  const styles = readFileSync(
+    new URL('./ecommerce.scss', import.meta.url),
+    'utf8',
+  );
+  const combinedRule = styles.match(/&\.summary-header\.filter-header\s*\{([\s\S]*?)\n\s*\}/);
+
+  assert.match(combinedRule?.[1] || '', /--rv-header-label-height:\s*70px;/);
+  assert.match(combinedRule?.[1] || '', /--rv-header-height:\s*110px;/);
+  assert.match(combinedRule?.[1] || '', /\.summary-header-content\s*\{[\s\S]*line-height:\s*normal;/);
+});
+
+test('combined headers keep selection, summary spacing, and column separators visible', () => {
+  const styles = readFileSync(
+    new URL('./ecommerce.scss', import.meta.url),
+    'utf8',
+  );
+
+  assert.match(styles, /\.summary-header-box\[data-value='_checkbox'\]/);
+  assert.match(styles, /\.cell-header-checkbox-container\s*\{[\s\S]*?margin:\s*0;/);
+  assert.match(styles, /\.summary-container\s*\{[\s\S]*?padding-block:\s*8px;/);
+  assert.match(
+    styles,
+    /\.rgHeaderCell\s*\{[\s\S]*?box-shadow:\s*-1px 0 0 0 var\(--ecommerce-border\) inset;/,
   );
 });
 
@@ -79,5 +121,21 @@ test('all framework variants enable the grid filter property', () => {
   for (const [file, pattern] of variants) {
     const source = readFileSync(new URL(`./${file}`, import.meta.url), 'utf8');
     assert.match(source, pattern, file);
+  }
+});
+
+test('all framework variants omit reset and toolbar column chooser controls', () => {
+  const files = [
+    'ecommerce.ts',
+    'ecommerce.react.tsx',
+    'ecommerce.vue',
+    'ecommerce.angular.ts',
+  ];
+
+  for (const file of files) {
+    const source = readFileSync(new URL(`./${file}`, import.meta.url), 'utf8');
+    assert.doesNotMatch(source, />\s*Reset\s*</, file);
+    assert.doesNotMatch(source, />\s*Columns\s*</, file);
+    assert.doesNotMatch(source, /isColumnsOpen|columnsMenu|columnsButton|resetFilters/, file);
   }
 });

@@ -17,6 +17,15 @@ describe('scheduler segmented view styles', () => {
     expect(viewRule?.[1]).toContain('font: inherit;');
   });
 
+  it('uses consistent shadcn-style sizing and focus treatment for toolbar actions', () => {
+    const actionRule = schedulerStyles.match(/&__icon,\s*&__today\s*\{([\s\S]*?)(?=\n\n\s*&__icon\s*\{)/);
+
+    expect(actionRule?.[1]).toContain('appearance: none;');
+    expect(actionRule?.[1]).toContain('height: 36px;');
+    expect(actionRule?.[1]).toContain('border-radius: 8px;');
+    expect(actionRule?.[1]).toContain('&:focus-visible');
+  });
+
   it('keeps the removed top app bar out of every scheduler demo variant', () => {
     for (const source of [...schedulerSources, schedulerStyles]) {
       expect(source).not.toContain('event-scheduler-shift-week-appbar');

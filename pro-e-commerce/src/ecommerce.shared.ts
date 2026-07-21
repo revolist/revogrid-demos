@@ -265,20 +265,6 @@ export function createEcommerceContextMenus(
   return { rowContextMenu, columnContextMenu };
 }
 
-export function getEcommerceColumnOptions(
-  columns: (ColumnRegular | ColumnGrouping)[],
-) {
-  const flatColumns = columns.flatMap((column) =>
-    'children' in column ? column.children : [column],
-  );
-  return flatColumns
-    .filter((column) => column.prop && column.prop !== '_checkbox')
-    .map((column) => ({
-      prop: column.prop as ColumnProp,
-      label: String(column.name || column.prop),
-    }));
-}
-
 export function getVisibleEcommerceColumns(
   columns: (ColumnRegular | ColumnGrouping)[],
   hiddenColumns: ColumnProp[],
@@ -335,15 +321,6 @@ export function formatEcommerceTotalSpend(rows: any[]) {
     currency: 'USD',
     maximumFractionDigits: 1,
   }).format(value);
-}
-
-export function toggleEcommerceColumn(
-  hiddenColumns: ColumnProp[],
-  prop: ColumnProp,
-) {
-  return hiddenColumns.includes(prop)
-    ? hiddenColumns.filter((column) => column !== prop)
-    : [...hiddenColumns, prop];
 }
 
 export function getSelectedEcommerceIndexes(

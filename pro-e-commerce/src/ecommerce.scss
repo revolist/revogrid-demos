@@ -215,79 +215,6 @@ $dark-badges: (
     }
   }
 
-  &--columns {
-    gap: 8px;
-
-    span {
-      color: var(--ecommerce-text-3);
-      font-size: 14px;
-      line-height: 1;
-    }
-  }
-}
-
-.ecommerce-columns {
-  position: relative;
-  flex: 0 0 auto;
-}
-
-.ecommerce-columns-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 40;
-  display: flex;
-  width: 232px;
-  max-height: 320px;
-  flex-direction: column;
-  gap: 2px;
-  overflow: auto;
-  border: 1px solid var(--ecommerce-border);
-  border-radius: 12px;
-  background: var(--ecommerce-surface);
-  box-shadow: var(--ecommerce-menu-shadow);
-  padding: 6px;
-  transform-origin: top left;
-  animation: ecommerce-menu-in 120ms cubic-bezier(0.16, 1, 0.3, 1);
-
-  &[hidden] {
-    display: none;
-  }
-
-  label {
-    display: flex;
-    min-height: 34px;
-    align-items: center;
-    gap: 10px;
-    border-radius: 8px;
-    color: var(--ecommerce-text-1);
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 0 10px;
-
-    &:hover {
-      background: var(--ecommerce-surface-3);
-    }
-  }
-
-  input {
-    width: 15px;
-    height: 15px;
-    accent-color: var(--showcase-brand-600, #4f46e5);
-  }
-}
-
-@keyframes ecommerce-menu-in {
-  from {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 .ecommerce-chip {
@@ -356,6 +283,45 @@ revo-grid.ecommerce-grid {
   --change-positive-color: #16a34a;
   --change-negative-color: #ef4444;
 
+  &.summary-header.filter-header {
+    --rv-header-label-height: 70px;
+    --rv-header-height: 110px;
+
+    .summary-header-content {
+      line-height: normal;
+    }
+
+    .summary-container {
+      box-sizing: border-box;
+      padding-block: 8px;
+    }
+
+    .summary-header-box[data-value='_checkbox'] {
+      align-items: center;
+      justify-content: center;
+
+      .summary-header-content {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .summary-container {
+        display: none;
+      }
+
+      .cell-header-checkbox-container {
+        width: 100%;
+        height: 100%;
+        align-self: stretch;
+        margin: 0;
+        padding: 0;
+      }
+    }
+  }
+
   &[theme^='dark'] {
     --revo-grid-background: var(--ecommerce-surface, #10131b);
     --revo-grid-foreground: var(--ecommerce-surface, #10131b);
@@ -397,6 +363,8 @@ revo-grid.ecommerce-grid {
 
   .rgHeaderCell {
     background: var(--ecommerce-surface-2) !important;
+    box-shadow: -1px 0 0 0 var(--ecommerce-border) inset;
+
     .summary-header-content {
       font-weight: 400;
     }
@@ -881,15 +849,6 @@ revo-grid.ecommerce-grid {
     }
   }
 
-  .ecommerce-columns-menu {
-    border-color: var(--ecommerce-border, #2a3142);
-    background: var(--ecommerce-surface, #10131b);
-    box-shadow: var(--ecommerce-menu-shadow);
-
-    label:hover {
-      background: var(--ecommerce-surface-3, #202636);
-    }
-  }
 }
 
 @media (max-width: 980px) {

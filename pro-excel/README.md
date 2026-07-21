@@ -5,7 +5,7 @@ A spreadsheet-style RevoGrid Pro demo implemented in Vanilla TypeScript, React, 
 ## What it features
 
 - Formula editing, named ranges, dependency highlighting, and computed cells
-- XLSX import and export
+- XLSX export
 - Undo/redo history
 - Autofill with preview and custom fill strategy
 - Multi-range selection and structured clipboard data
@@ -75,7 +75,7 @@ These companion plugins are not repeated in the demo's `plugins` array. Their ow
 | `progressLineWithValueRenderer` | Shows target attainment as an immediately readable progress bar plus value. |
 | `sparklineRenderer` | Turns trend values into compact in-cell charts. |
 
-These capabilities require the appropriate RevoGrid Pro license; base grid rendering, editing, pinning, and virtualization come from RevoGrid Core. XLSX import is handled by `read-excel-file`, while XLSX export is provided by `ExportExcelPlugin`.
+These capabilities require the appropriate RevoGrid Pro license; base grid rendering, editing, pinning, and virtualization come from RevoGrid Core. XLSX export is provided by `ExportExcelPlugin`.
 
 ## Run it
 

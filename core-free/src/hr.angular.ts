@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { RevoGrid, BasePlugin, type PluginProviders } from '@revolist/angular-datagrid';
 import { getHRColumnsCount, getHRData, HR_OPTIONS } from './sys-data/hr.data';
 import type { HRGenerationProgress } from './sys-data/hr.data.generator';
-import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE } from './sys-data/hr.columns';
+import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE, withHRShortDate } from './sys-data/hr.columns';
 import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
 import './hr.css';
@@ -140,7 +140,7 @@ export class HRDemoGridComponent implements OnInit, OnDestroy {
     ]);
 
     this.columnTypes.set({
-      date: new DateCol.default(),
+      date: withHRShortDate(new DateCol.default()),
       number: new NumeralCol.default(),
       select: new SelectCol.default(),
       colorSelect: createHRColorSelectColumnType(SelectCol.default)

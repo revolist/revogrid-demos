@@ -83,11 +83,11 @@ export function load(parentSelector: string) {
   previousButton.type = 'button';
   previousButton.className = 'event-scheduler-shift-week-toolbar__icon';
   previousButton.setAttribute('aria-label', 'Previous range');
-  previousButton.textContent = '<';
+  previousButton.textContent = '‹';
   nextButton.type = 'button';
   nextButton.className = 'event-scheduler-shift-week-toolbar__icon';
   nextButton.setAttribute('aria-label', 'Next range');
-  nextButton.textContent = '>';
+  nextButton.textContent = '›';
   todayButton.type = 'button';
   todayButton.className = 'event-scheduler-shift-week-toolbar__today';
   todayButton.textContent = 'Today';

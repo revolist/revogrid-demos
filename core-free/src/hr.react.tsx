@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { RevoGrid, BasePlugin, type PluginProviders } from '@revolist/react-datagrid';
 import { getHRColumnsCount, getHRData, HR_OPTIONS } from './sys-data/hr.data';
 import type { HRGenerationProgress } from './sys-data/hr.data.generator';
-import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE } from './sys-data/hr.columns';
+import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE, withHRShortDate } from './sys-data/hr.columns';
 import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
 import DateCol from '@revolist/revogrid-column-date';
@@ -63,7 +63,7 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
   useEffect(() => {
     const init = () => {
       setColumnTypes({
-        date: new DateCol(),
+        date: withHRShortDate(new DateCol()),
         number: new NumeralCol(),
         select: new SelectCol(),
         colorSelect: createHRColorSelectColumnType(SelectCol)

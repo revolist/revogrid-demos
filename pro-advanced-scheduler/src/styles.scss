@@ -211,10 +211,11 @@
   display: grid;
   grid-template-columns: auto minmax(180px, 1fr) auto auto;
   align-items: center;
-  gap: 14px;
-  min-height: 58px;
-  padding: 0 20px;
+  gap: 16px;
+  min-height: 64px;
+  padding: 0 18px;
   border-bottom: 1px solid var(--event-scheduler-demo-border);
+  background: color-mix(in srgb, var(--event-scheduler-demo-surface) 96%, var(--event-scheduler-demo-surface-2));
 
   &__nav,
   &__views {
@@ -223,48 +224,64 @@
   }
 
   &__nav {
-    gap: 7px;
+    gap: 6px;
   }
 
   &__views {
-    min-height: 30px;
+    min-height: 38px;
     justify-self: end;
-    padding: 2px;
-    border: 1px solid var(--event-scheduler-demo-border);
-    border-radius: 7px;
-    background: var(--event-scheduler-demo-control-bg);
-    box-shadow: inset 0 1px 1px rgb(15 23 42 / 4%);
+    padding: 3px;
+    border: 1px solid var(--event-scheduler-demo-border-strong);
+    border-radius: 10px;
+    background: var(--event-scheduler-demo-surface-2);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 5%);
   }
 
   &__icon,
-  &__today,
-  &__view {
+  &__today {
+    display: inline-flex;
+    appearance: none;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--event-scheduler-demo-border-strong);
+    border-radius: 8px;
+    background: var(--event-scheduler-demo-control-bg);
+    color: var(--event-scheduler-demo-text);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 8%);
+    cursor: pointer;
+    font: inherit;
+    transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+
     &:hover {
       background: var(--event-scheduler-demo-control-hover-bg);
+      border-color: color-mix(in srgb, var(--event-scheduler-demo-border-strong) 70%, var(--event-scheduler-demo-text));
+    }
+
+    &:active {
+      box-shadow: 0 1px 1px rgb(15 23 42 / 6%);
+      transform: translateY(1px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--event-scheduler-demo-surface);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--event-scheduler-accent, #2563eb) 28%, transparent);
     }
   }
 
   &__icon {
-    width: 32px;
-    height: 32px;
-    border: 1px solid var(--event-scheduler-demo-border-strong);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--event-scheduler-demo-text);
-    font-size: 20px;
+    width: 36px;
+    padding: 0;
+    font-size: 21px;
+    font-weight: 500;
     line-height: 1;
   }
 
   &__today {
-    min-width: 62px;
-    height: 32px;
-    border: 1px solid var(--event-scheduler-demo-border) !important;
-    border-radius: 7px;
-    background: var(--event-scheduler-demo-control-bg);
-    color: var(--event-scheduler-demo-text);
-    font-size: 12px;
+    min-width: 68px;
+    padding: 0 14px;
+    font-size: 13px;
     font-weight: 500;
-    box-shadow: 0 1px 3px rgb(15 23 42 / 12%);
   }
 
   &__heading {
@@ -279,8 +296,8 @@
     strong {
       overflow: hidden;
       color: var(--event-scheduler-demo-text);
-      font-size: 16px;
-      font-weight: 500;
+      font-size: 17px;
+      font-weight: 600;
       line-height: 1.15;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -289,49 +306,87 @@
 
   &__view {
     appearance: none;
-    min-width: 56px;
-    height: 26px;
-    padding: 0 12px;
+    min-width: 60px;
+    height: 30px;
+    padding: 0 14px;
     border: 0;
-    border-radius: 5px;
+    border-radius: 7px;
     background: transparent;
-    color: var(--event-scheduler-demo-text);
+    color: var(--event-scheduler-demo-muted-text);
     cursor: pointer;
     font: inherit;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 500;
     line-height: 1;
+    transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+
+    &:hover {
+      background: color-mix(in srgb, var(--event-scheduler-demo-control-hover-bg) 78%, transparent);
+      color: var(--event-scheduler-demo-text);
+    }
 
     &:focus-visible {
-      outline: 2px solid color-mix(in srgb, var(--event-scheduler-accent, #2563eb) 70%, transparent);
-      outline-offset: -2px;
+      outline: 2px solid var(--event-scheduler-demo-surface);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--event-scheduler-accent, #2563eb) 28%, transparent);
     }
 
     &--active {
       background: var(--event-scheduler-demo-surface);
-      color: var(--event-scheduler-accent, var(--event-scheduler-demo-text));
-      box-shadow: 0 1px 3px rgb(15 23 42 / 12%);
-      font-weight: 500;
+      color: var(--event-scheduler-demo-text);
+      box-shadow: 0 1px 3px rgb(15 23 42 / 12%), inset 0 0 0 1px color-mix(in srgb, var(--event-scheduler-demo-border) 72%, transparent);
+      font-weight: 600;
     }
   }
 
   &__calendar {
+    position: relative;
     display: inline-flex;
     align-items: center;
     min-width: 0;
-    gap: 8px;
-    font-size: 12px;
+    gap: 10px;
+    color: var(--event-scheduler-demo-muted-text);
+    font-size: 13px;
+    font-weight: 500;
     line-height: 1.15;
 
+    &::after {
+      position: absolute;
+      top: 50%;
+      right: 13px;
+      width: 6px;
+      height: 6px;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      content: '';
+      pointer-events: none;
+      transform: translateY(-2px) rotate(45deg);
+    }
+
     select {
+      appearance: none;
       min-width: 0;
-      height: 32px;
-      border: 1px solid var(--event-scheduler-demo-border);
-      border-radius: 7px;
+      height: 36px;
+      padding: 0 34px 0 12px;
+      border: 1px solid var(--event-scheduler-demo-border-strong);
+      border-radius: 8px;
       background: var(--event-scheduler-demo-control-bg);
       color: var(--event-scheduler-demo-text);
+      box-shadow: 0 1px 2px rgb(15 23 42 / 8%);
+      cursor: pointer;
       font: inherit;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 500;
+      transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+
+      &:hover {
+        background: var(--event-scheduler-demo-control-hover-bg);
+        border-color: color-mix(in srgb, var(--event-scheduler-demo-border-strong) 70%, var(--event-scheduler-demo-text));
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--event-scheduler-demo-surface);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--event-scheduler-accent, #2563eb) 28%, transparent);
+      }
     }
 
     small {

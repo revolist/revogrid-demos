@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { readSheet as readXlsxSheet } from 'read-excel-file/browser';
 import { RevoGrid } from '@revolist/react-datagrid';
 import {
   AdvanceFilterPlugin,
@@ -55,7 +54,6 @@ import {
   installSpreadsheetAutofillStrategy,
   insertSpreadsheetRowFromPinnedDropdown,
   preventReadonlySpreadsheetEdit,
-  readSpreadsheetWorkbookFromXlsx,
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
   summarizeSelection,
@@ -96,7 +94,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
   const formulaInputRef = useRef<HTMLInputElement>(null);
   const formulaBadgeRef = useRef<HTMLSpanElement>(null);
   const formulaHighlightRef = useRef<HTMLSpanElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const feedTimerRef = useRef<number | undefined>(undefined);
   const feedStepRef = useRef(0);
   const presenceStepRef = useRef(0);
@@ -327,15 +324,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const importXlsxFile = useCallback(async (file: File) => {
-    stopFeedFlash();
-    feedStepRef.current = 0;
-    const nextWorkbook = await readSpreadsheetWorkbookFromXlsx(file, readXlsxSheet);
-    setWorkbook(nextWorkbook);
-    setPresenceUsers(createSpreadsheetPresenceUsers(presenceStep, true));
-    setClipboardStatus(`Imported values from ${file.name}.`);
-  }, [presenceStep, stopFeedFlash]);
-
   const getActiveSheetKey = useCallback((): SpreadsheetSheetKey => (
     workbook.sheetKey === 'imported' || workbook.sheetKey === 'empty' ? 'budget' : workbook.sheetKey
   ), [workbook.sheetKey]);
@@ -347,26 +335,8 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     setPresenceStep(0);
     setPresenceUsers(createSpreadsheetPresenceUsers(0));
     setSelectionStatus('No ranges selected');
-    setClipboardStatus('Workbook reset. CSV files can be dropped on the grid.');
+    setClipboardStatus('Workbook reset.');
   }, [getActiveSheetKey, stopFeedFlash]);
-
-  const onXlsxChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      void importXlsxFile(file);
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  }, [importXlsxFile]);
-
-  const onDrop = useCallback((event: React.DragEvent<HTMLElement>) => {
-    const file = event.dataTransfer.files?.[0];
-    if (file?.name.toLowerCase().endsWith('.xlsx')) {
-      event.preventDefault();
-      void importXlsxFile(file);
-    }
-  }, [importXlsxFile]);
 
   const onHistoryChanged = useCallback((event: CustomEvent<HistoryState>) => {
     setHistoryState(event.detail);
@@ -486,23 +456,9 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
       className={`spreadsheet-workbench ${isDark ? 'is-dark' : ''}`}
       data-testid="spreadsheet-workbench"
       data-plugin-stack={pluginStack}
-      onDrop={onDrop}
-      onDragOver={(event) => event.preventDefault()}
     >
       <div className="spreadsheet-ribbon">
         <span className="spreadsheet-ribbon-group">
-          <label className="spreadsheet-file-label">
-            <ActionIcon icon={SPREADSHEET_ACTION_ICONS.import} />
-            Import XLSX
-            <input
-              ref={fileInputRef}
-              className="spreadsheet-file-input"
-              data-testid="spreadsheet-xlsx-input"
-              type="file"
-              accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-              onChange={onXlsxChange}
-            />
-          </label>
           <button className="spreadsheet-btn" type="button" data-testid="spreadsheet-export" onClick={exportWorkbook}>
             <ActionIcon icon={SPREADSHEET_ACTION_ICONS.export} />
             Export XLSX

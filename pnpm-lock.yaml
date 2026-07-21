@@ -499,9 +499,6 @@ importers:
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
-      read-excel-file:
-        specifier: ^9.0.10
-        version: 9.3.3
       rxjs:
         specifier: ~7.8.0
         version: 7.8.2
@@ -3288,9 +3285,6 @@ packages:
     engines: {node: ^20.17.0 || >=22.9.0}
     hasBin: true
 
-  node-int64@0.4.0:
-    resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
-
   node-releases@2.0.51:
     resolution: {integrity: sha512-wRNIrw4DmVLKQlbgOMdkMx27Wrpzes2hh5Jtbi2bjPd+4wJstWIqP5A+lscnqbm0xxmT5Bpg8Lec5ItEBwx6BQ==}
     engines: {node: '>=18'}
@@ -3492,10 +3486,6 @@ packages:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
     engines: {node: '>=0.10.0'}
 
-  read-excel-file@9.3.3:
-    resolution: {integrity: sha512-Eogrq3sqre8IP28bSil9+0yUfZB67o//h5w3R0zdOznkhNAmRJGHz7z38oH8NC5AWO78YG1TXVHGyJZZ2PzZUw==}
-    engines: {node: '>=18'}
-
   readdirp@4.1.2:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
     engines: {node: '>= 14.18.0'}
@@ -3668,10 +3658,6 @@ packages:
     resolution: {integrity: sha512-9GUyuksjw70uNpb1MTYWsH9MQHOHY6kwfnkafC24+7aOMZn9+rVMBxRbLvw756mrBFbIsFg6Xw9IkR2Fnn3k+Q==}
     engines: {node: '>=14.0.0'}
     hasBin: true
-
-  saxen@11.1.0:
-    resolution: {integrity: sha512-GOxBOAmiWVAytOHBuMlgFMZ4MAk+2Ny5QJpzM9I4IozfPLXq3FsDdIHNviTQGZGIx7G2mBkA+uySiJlYmSU1Gg==}
-    engines: {node: '>= 20.12'}
 
   saxes@6.0.0:
     resolution: {integrity: sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==}
@@ -3913,10 +3899,6 @@ packages:
   unpipe@1.0.0:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
     engines: {node: '>= 0.8'}
-
-  unzipper-esm@0.13.2:
-    resolution: {integrity: sha512-lt8GtgDYV8YcAFZNQuLyR2QvHI8C/TstpgsdjUn9ZxiWLJgn+e5uW6DsO3e/HUJVuWD57ZLLFMZ9xk26tePuHQ==}
-    engines: {node: '>=8.0.0'}
 
   update-browserslist-db@1.2.3:
     resolution: {integrity: sha512-Js0m9cx+qOgDxo0eMiFGEueWztz+d4+M3rGlmKPT+T4IS/jP4ylw3Nwpu6cpTTP8R1MAC1kF4VbdLt3ARf209w==}
@@ -6672,8 +6654,6 @@ snapshots:
       undici: 6.27.0
       which: 6.0.1
 
-  node-int64@0.4.0: {}
-
   node-releases@2.0.51: {}
 
   nopt@9.0.0:
@@ -6907,12 +6887,6 @@ snapshots:
     dependencies:
       loose-envify: 1.4.0
 
-  read-excel-file@9.3.3:
-    dependencies:
-      fflate: 0.8.3
-      saxen: 11.1.0
-      unzipper-esm: 0.13.2
-
   readdirp@4.1.2: {}
 
   readdirp@5.0.0:
@@ -7122,8 +7096,6 @@ snapshots:
       source-map-js: 1.2.1
     optionalDependencies:
       '@parcel/watcher': 2.6.0
-
-  saxen@11.1.0: {}
 
   saxes@6.0.0:
     dependencies:
@@ -7378,11 +7350,6 @@ snapshots:
   undici@7.28.0: {}
 
   unpipe@1.0.0: {}
-
-  unzipper-esm@0.13.2:
-    dependencies:
-      graceful-fs: 4.2.11
-      node-int64: 0.4.0
 
   update-browserslist-db@1.2.3(browserslist@4.28.6):
     dependencies:

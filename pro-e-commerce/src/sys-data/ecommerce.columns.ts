@@ -59,13 +59,13 @@ export const ECOMMERCE_COLUMNS: (ColumnRegular | ColumnGrouping)[] = [
         prop: 'City',
         name: 'City',
         summaryVNode: (h: HyperFunc<VNode>, summary: Record<string, number>) =>
-          summaryHeaderRenderer(h, summary, { maxItems: 2 }),
+          summaryHeaderRenderer(h, summary, { maxItems: 1 }),
       },
       {
         prop: 'Membership Type',
         name: 'Membership Type',
         summaryVNode: (h: HyperFunc<VNode>, summary: Record<string, number>) =>
-          summaryHeaderRenderer(h, summary, { maxItems: 2 }),
+          summaryHeaderRenderer(h, summary, { maxItems: 1 }),
       },
     ],
   },
@@ -157,6 +157,6 @@ export const ECOMMERCE_PLUGINS = [
   RowSelectPlugin,
   ColumnGroupPanelPlugin,
   AdvanceFilterPlugin,
-  FilterHeaderPlugin,
   SummaryChartHeaderPlugin,
+  FilterHeaderPlugin,
 ] as (typeof BasePlugin)[];

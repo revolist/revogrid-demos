@@ -16,30 +16,6 @@
             placeholder='Gender eq "Female" and City eq "Chicago"'
           ></textarea>
         </label>
-        <button type="button" class="ecommerce-button" @click="resetFilters">
-          Reset
-        </button>
-        <div ref="columnsWrapper" class="ecommerce-columns" @keydown.esc="isColumnsOpen = false">
-          <button
-            type="button"
-            class="ecommerce-button ecommerce-button--columns"
-            :aria-expanded="isColumnsOpen"
-            @click="isColumnsOpen = !isColumnsOpen"
-          >
-            Columns
-            <span aria-hidden="true">⌄</span>
-          </button>
-          <div v-if="isColumnsOpen" class="ecommerce-columns-menu">
-            <label v-for="column in columnOptions" :key="column.prop">
-              <input
-                type="checkbox"
-                :checked="!hiddenColumns.includes(column.prop)"
-                @change="toggleColumn(column.prop)"
-              />
-              <span>{{ column.label }}</span>
-            </label>
-          </div>
-        </div>
       </div>
 
       <div class="ecommerce-toolbar__aside">
@@ -100,13 +76,11 @@ import {
   ecommercePlugins,
   filterEcommerceRows,
   formatEcommerceTotalSpend,
-  getEcommerceColumnOptions,
   getSelectedEcommerceIndexes,
   getVisibleEcommerceColumns,
   normalizeEcommerceRows,
-  toggleEcommerceColumn,
 } from './ecommerce.shared';
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
+import { computed, ref, shallowRef, watch } from 'vue';
 
 const props = defineProps({
   rows: {
@@ -116,12 +90,10 @@ const props = defineProps({
 });
 
 const grid = ref<{ $el: HTMLRevoGridElement } | null>(null);
-const columnsWrapper = ref<HTMLElement | null>(null);
 const columnTypes = ecommerceColumnTypes;
 const columns = ref<(ColumnRegular | ColumnGrouping)[]>(createEcommerceAnalyticsColumns());
 const plugins = ecommercePlugins;
 const hiddenColumns = ref<ColumnProp[]>([]);
-const isColumnsOpen = ref(false);
 const localRows = ref<any[]>([]);
 const selectedIndexes = shallowRef<Set<number>>(new Set());
 
@@ -203,37 +175,7 @@ const handleRowSelected = (
   allRowsCount.value = event.detail.allRowsCount;
 };
 
-const resetFilters = () => {
-  filterExpression.value = '';
-};
-
-const columnOptions = computed(() => {
-  return getEcommerceColumnOptions(columns.value);
-});
-
 const visibleColumns = computed(() =>
   getVisibleEcommerceColumns(columns.value, hiddenColumns.value),
 );
-
-function toggleColumn(prop: ColumnProp) {
-  hiddenColumns.value = toggleEcommerceColumn(hiddenColumns.value, prop);
-}
-
-function closeColumnsOnOutsideClick(event: MouseEvent) {
-  if (
-    isColumnsOpen.value &&
-    columnsWrapper.value &&
-    !columnsWrapper.value.contains(event.target as Node)
-  ) {
-    isColumnsOpen.value = false;
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('mousedown', closeColumnsOnOutsideClick);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', closeColumnsOnOutsideClick);
-});
 </script>

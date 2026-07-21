@@ -1,5 +1,4 @@
-import { CommonModule } from '@angular/common';
-import { Component, ViewEncapsulation, Input, ViewChild, ElementRef, HostListener, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, ViewEncapsulation, Input, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   RevoGrid,
@@ -18,17 +17,15 @@ import {
   ecommercePlugins,
   filterEcommerceRows,
   formatEcommerceTotalSpend,
-  getEcommerceColumnOptions,
   getSelectedEcommerceIndexes,
   getVisibleEcommerceColumns,
   normalizeEcommerceRows,
-  toggleEcommerceColumn,
 } from './ecommerce.shared';
 
 @Component({
   selector: 'ecommerce-grid',
   standalone: true,
-  imports: [RevoGrid, CommonModule, FormsModule],
+  imports: [RevoGrid, FormsModule],
   host: { class: 'ecommerce-grid-host' },
   template: `
     <div class="ecommerce-shell grow">
@@ -48,30 +45,6 @@ import {
             (ngModelChange)="refreshVisibleRows()"
           ></textarea>
           </label>
-          <button type="button" class="ecommerce-button" (click)="resetFilters()">
-            Reset
-          </button>
-          <div #columnsWrapper class="ecommerce-columns" (keydown.escape)="isColumnsOpen = false">
-            <button
-              type="button"
-              class="ecommerce-button ecommerce-button--columns"
-              [attr.aria-expanded]="isColumnsOpen"
-              (click)="isColumnsOpen = !isColumnsOpen"
-            >
-              Columns
-              <span aria-hidden="true">⌄</span>
-            </button>
-            <div *ngIf="isColumnsOpen" class="ecommerce-columns-menu">
-              <label *ngFor="let column of columnOptions">
-                <input
-                  type="checkbox"
-                  [checked]="!hiddenColumns.includes(column.prop)"
-                  (change)="toggleColumn(column.prop)"
-                />
-                <span>{{ column.label }}</span>
-              </label>
-            </div>
-          </div>
         </div>
         <div class="ecommerce-toolbar__aside">
           <span class="ecommerce-chip">
@@ -114,18 +87,15 @@ export class ECommerceGridComponent {
   @Input() fields: string[] = [];
 
   @ViewChild('gridRef', { static: true }) gridRef!: ElementRef<HTMLRevoGridElement>;
-  @ViewChild('columnsWrapper', { static: true }) columnsWrapper!: ElementRef<HTMLElement>;
 
   columnTypes = ecommerceColumnTypes;
   hiddenColumns: ColumnProp[] = [];
   allColumns = createEcommerceAnalyticsColumns();
   columns = getVisibleEcommerceColumns(this.allColumns, this.hiddenColumns);
-  columnOptions = getEcommerceColumnOptions(this.allColumns);
 
   theme = currentTheme().isDark() ? 'darkMaterial' : 'material';
   isDark = currentTheme().isDark();
   filterExpression = '';
-  isColumnsOpen = false;
   selectedRowsCount = 0;
   selectedIndexes = new Set<number>();
   allRowsCount = 0;
@@ -169,17 +139,6 @@ export class ECommerceGridComponent {
     exportPlugin?.export(createEcommerceExcelExportConfig());
   }
 
-  resetFilters() {
-    this.filterExpression = '';
-    this.refreshVisibleRows();
-  }
-
-  toggleColumn(prop: ColumnProp) {
-    this.hiddenColumns = toggleEcommerceColumn(this.hiddenColumns, prop);
-    this.columns = getVisibleEcommerceColumns(this.allColumns, this.hiddenColumns);
-    (this.gridRef.nativeElement as any).hideColumns = this.hiddenColumns;
-  }
-
   refreshVisibleRows() {
     this.visibleRows = filterEcommerceRows(this.sourceRows, this.filterExpression);
     this.updateRowsCountLabel();
@@ -205,16 +164,5 @@ export class ECommerceGridComponent {
     this.rowsCountLabel = this.selectedRowsCount === totalRowsCount
       ? String(totalRowsCount)
       : `${this.selectedRowsCount}/${totalRowsCount}`;
-  }
-
-  @HostListener('document:mousedown', ['$event'])
-  closeColumnsOnOutsideClick(event: MouseEvent) {
-    if (
-      this.isColumnsOpen &&
-      this.columnsWrapper &&
-      !this.columnsWrapper.nativeElement.contains(event.target as Node)
-    ) {
-      this.isColumnsOpen = false;
-    }
   }
 }

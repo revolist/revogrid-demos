@@ -16,11 +16,9 @@ import {
   ecommercePlugins,
   filterEcommerceRows,
   formatEcommerceTotalSpend,
-  getEcommerceColumnOptions,
   getSelectedEcommerceIndexes,
   getVisibleEcommerceColumns,
   normalizeEcommerceRows,
-  toggleEcommerceColumn,
 } from './ecommerce.shared';
 
 defineCustomElements();
@@ -34,7 +32,6 @@ function formatRowsCount(selectedCount: number, totalCount: number) {
 export function load(parentSelector: string, data: any[] = []) {
   let source = normalizeEcommerceRows(data);
   let columns = createEcommerceAnalyticsColumns();
-  const columnOptions = getEcommerceColumnOptions(columns);
   let hiddenColumns: ColumnProp[] = [];
   let filterExpression = '';
   let selectedRowsCount = 0;
@@ -59,32 +56,6 @@ export function load(parentSelector: string, data: any[] = []) {
             placeholder='Gender eq "Female" and City eq "Chicago"'
           ></textarea>
           </label>
-          <button id="resetButton" type="button" class="ecommerce-button">
-            Reset
-          </button>
-          <div class="ecommerce-columns">
-            <button
-              id="columnsButton"
-              type="button"
-              class="ecommerce-button ecommerce-button--columns"
-              aria-expanded="false"
-            >
-              Columns
-              <span aria-hidden="true">⌄</span>
-            </button>
-            <div id="columnsMenu" class="ecommerce-columns-menu" hidden>
-              ${columnOptions
-                .map(
-                  (column) => `
-                    <label>
-                      <input type="checkbox" data-column="${String(column.prop)}" checked />
-                      <span>${column.label}</span>
-                    </label>
-                  `,
-                )
-                .join('')}
-            </div>
-          </div>
         </div>
         <div class="ecommerce-toolbar__aside">
           <span class="ecommerce-chip">
@@ -113,11 +84,7 @@ export function load(parentSelector: string, data: any[] = []) {
 
   const grid = container.querySelector<HTMLRevoGridElement>('#grid');
   const textarea = container.querySelector<HTMLTextAreaElement>('#filterExpression');
-  const resetButton = container.querySelector<HTMLButtonElement>('#resetButton');
   const exportButton = container.querySelector<HTMLButtonElement>('#exportButton');
-  const columnsButton = container.querySelector<HTMLButtonElement>('#columnsButton');
-  const columnsMenu = container.querySelector<HTMLDivElement>('#columnsMenu');
-  const columnsWrapper = container.querySelector<HTMLDivElement>('.ecommerce-columns');
   const rowsCount = container.querySelector<HTMLElement>('#rowsCount');
   const totalSpend = container.querySelector<HTMLElement>('#totalSpend');
 
@@ -145,7 +112,7 @@ export function load(parentSelector: string, data: any[] = []) {
     grid.hideColumns = hiddenColumns;
   };
 
-  if (grid && textarea && resetButton && exportButton && columnsButton && columnsMenu && columnsWrapper) {
+  if (grid && textarea && exportButton) {
     const exportToExcel = async () => {
       const plugins = await grid.getPlugins();
       const exportPlugin = plugins.find(
@@ -197,50 +164,6 @@ export function load(parentSelector: string, data: any[] = []) {
       updateRows();
     });
 
-    resetButton.addEventListener('click', () => {
-      textarea.value = '';
-      filterExpression = '';
-      updateRows();
-    });
-
-    const closeColumnsMenu = () => {
-      columnsMenu.hidden = true;
-      columnsButton.setAttribute('aria-expanded', 'false');
-    };
-
-    columnsButton.addEventListener('click', (event) => {
-      event.stopPropagation();
-      const isOpen = columnsMenu.hidden;
-      columnsMenu.hidden = !isOpen;
-      columnsButton.setAttribute('aria-expanded', String(isOpen));
-    });
-
-    columnsMenu.addEventListener('click', (event) => {
-      event.stopPropagation();
-    });
-
-    container.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        closeColumnsMenu();
-      }
-    });
-
-    const handleDocumentClick = (event: MouseEvent) => {
-      if (!columnsWrapper.contains(event.target as Node)) {
-        closeColumnsMenu();
-      }
-    };
-
-    document.addEventListener('click', handleDocumentClick);
-
-    columnsMenu.addEventListener('change', (event) => {
-      const input = event.target as HTMLInputElement;
-      const prop = input.dataset.column as ColumnProp | undefined;
-      if (!prop) return;
-      hiddenColumns = toggleEcommerceColumn(hiddenColumns, prop);
-      updateColumns();
-    });
-
     grid.addEventListener('rowselected', (event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>) => {
       selectedIndexes = getSelectedEcommerceIndexes(event, source);
       selectedRowsCount = event.detail.count;
@@ -251,7 +174,6 @@ export function load(parentSelector: string, data: any[] = []) {
     exportButton.addEventListener('click', exportToExcel);
 
     return () => {
-      document.removeEventListener('click', handleDocumentClick);
       container.remove();
     };
   }

@@ -62,7 +62,6 @@ import eyeSlashIcon from '@fortawesome/fontawesome-free/svgs/solid/eye-slash.svg
 import filterIcon from '@fortawesome/fontawesome-free/svgs/solid/filter.svg?raw';
 import fileCirclePlusIcon from '@fortawesome/fontawesome-free/svgs/solid/file-circle-plus.svg?raw';
 import fileExportIcon from '@fortawesome/fontawesome-free/svgs/solid/file-export.svg?raw';
-import fileImportIcon from '@fortawesome/fontawesome-free/svgs/solid/file-import.svg?raw';
 import magnifyingGlassIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?raw';
 import pasteIcon from '@fortawesome/fontawesome-free/svgs/solid/paste.svg?raw';
 import scissorsIcon from '@fortawesome/fontawesome-free/svgs/solid/scissors.svg?raw';
@@ -77,7 +76,6 @@ export type SpreadsheetPreviewMode = 'smart-fill' | 'copy-preview';
 export const SPREADSHEET_ACTION_ICONS = {
   reset: arrowsRotateIcon,
   newWorkbook: fileCirclePlusIcon,
-  import: fileImportIcon,
   export: fileExportIcon,
   undo: arrowRotateLeftIcon,
   redo: arrowRotateRightIcon,
@@ -139,8 +137,6 @@ export type SpreadsheetWorkbook = {
   name: string;
   sheetKey: SpreadsheetWorkbookKey;
 };
-
-export type SpreadsheetXlsxReader = (file: File) => Promise<unknown[][]>;
 
 export type SpreadsheetFormulaTokenType =
   | 'plain'
@@ -2687,54 +2683,6 @@ function createReadonlySpreadsheetNumberCellProperties(
   return createReadonlySpreadsheetCellProperties(createSpreadsheetNumberCellProperties(original));
 }
 
-export async function readSpreadsheetWorkbookFromXlsx(
-  file: File,
-  readXlsxFile: SpreadsheetXlsxReader,
-): Promise<SpreadsheetWorkbook> {
-  const sheetRows = await readXlsxFile(file);
-  return createImportedSpreadsheetWorkbook(sheetRows, file.name);
-}
-
-export function createImportedSpreadsheetWorkbook(
-  sheetRows: unknown[][],
-  fileName = 'Imported workbook',
-): SpreadsheetWorkbook {
-  const nonEmptyRows = sheetRows.filter(row => row.some(cell => normalizeImportedCell(cell) !== ''));
-  if (!nonEmptyRows.length) {
-    return {
-      rows: [],
-      columns: [],
-      pinnedBottomSource: [],
-      formulaNames: createImportedSpreadsheetFormulaNames(),
-      cellMerge: [],
-      imported: true,
-      name: fileName,
-      sheetKey: 'imported',
-    };
-  }
-
-  const headers = nonEmptyRows[0].map((cell, index) => normalizeHeader(cell, index));
-  const columns = createImportedColumns(headers);
-  const rows = nonEmptyRows.slice(1).map((row, rowIndex) => {
-    const item: DataType = { id: rowIndex + 1 };
-    columns.forEach((column, index) => {
-      item[column.prop] = normalizeImportedCell(row[index]);
-    });
-    return item;
-  });
-
-  return {
-    rows,
-    columns,
-    pinnedBottomSource: [],
-    formulaNames: createImportedSpreadsheetFormulaNames(),
-    cellMerge: [],
-    imported: true,
-    name: fileName,
-    sheetKey: 'imported',
-  };
-}
-
 export function createSpreadsheetHistoryConfig(sourceId = SPREADSHEET_DEMO_ID): HistoryConfig {
   return {
     sourceId,
@@ -2959,43 +2907,6 @@ function createSpreadsheetFeedFlashTemplate(template: ColumnRegular['cellTemplat
     className: 'spreadsheet-feed-flash',
     arrowClassName: 'spreadsheet-feed-arrow',
   });
-}
-
-function createImportedColumns(headers: string[]): ColumnRegular[] {
-  const used = new Map<string, number>();
-  return headers.map((header, index) => {
-    const base = toColumnProp(header || `Column ${index + 1}`) || `col_${index + 1}`;
-    const count = used.get(base) ?? 0;
-    used.set(base, count + 1);
-    const prop = count ? `${base}_${count + 1}` : base;
-    return {
-      name: header || `Column ${index + 1}`,
-      prop,
-      size: index === 0 ? 170 : 135,
-      filter: 'input',
-      flash: true,
-      columnTemplate: createSpreadsheetHeaderTypeTemplate('string'),
-      columnProperties: createSpreadsheetHeaderProperties('spreadsheet-header-leaf'),
-    };
-  });
-}
-
-function normalizeHeader(cell: unknown, index: number) {
-  const value = normalizeImportedCell(cell);
-  return value ? String(value) : `Column ${index + 1}`;
-}
-
-function normalizeImportedCell(cell: unknown): string | number | boolean {
-  if (cell instanceof Date) {
-    return cell.toISOString().slice(0, 10);
-  }
-  if (cell === null || typeof cell === 'undefined') {
-    return '';
-  }
-  if (typeof cell === 'number' || typeof cell === 'boolean') {
-    return cell;
-  }
-  return String(cell);
 }
 
 function toColumnProp(header: string) {

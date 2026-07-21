@@ -4,6 +4,8 @@ export const HR_OPTIONS = [
   { label: '100 rows', value: 100 },
   { label: '1,000 rows', value: 1_000 },
   { label: '10,000 rows', value: 10_000 },
+  { label: '100,000 rows', value: 100_000 },
+  { label: '1,000,000 rows', value: 1_000_000 },
 ] as const;
 
 const FIRST_NAMES = ['Avery', 'Maya', 'Noah', 'Sofia', 'Liam', 'Zoe', 'Ethan', 'Nora'];

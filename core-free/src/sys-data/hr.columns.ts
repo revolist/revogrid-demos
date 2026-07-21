@@ -1,4 +1,40 @@
-import type { ColumnRegular, ColumnProp } from '@revolist/revogrid';
+import type { ColumnDataSchemaModel, ColumnRegular, ColumnProp, HyperFunc, VNode } from '@revolist/revogrid';
+
+const SHORT_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+});
+
+export function formatHRShortDate(value: unknown): string {
+  let date: Date | undefined;
+
+  if (value instanceof Date) {
+    date = value;
+  } else if (typeof value === 'string') {
+    const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    date = dateOnly
+      ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+      : new Date(value);
+  }
+
+  return date && !Number.isNaN(date.getTime())
+    ? SHORT_DATE_FORMATTER.format(date)
+    : String(value ?? '');
+}
+
+interface HRDateColumnType {
+  cellTemplate: (h: HyperFunc<VNode>, props: ColumnDataSchemaModel) => VNode | VNode[];
+}
+
+export function withHRShortDate<T extends HRDateColumnType>(columnType: T): T {
+  const renderDateColumn = columnType.cellTemplate;
+  columnType.cellTemplate = (h, props) => renderDateColumn(h, {
+    ...props,
+    value: formatHRShortDate(props.value),
+  });
+  return columnType;
+}
 
 export const HR_COLOR_BY_AGE = (age: number) => {
   if (age < 30) return '#22c55e';
@@ -11,7 +47,6 @@ export function getBaseHRColumns(companies: string[]): ColumnProp[] {
     {
       name: 'Employee',
       children: [
-        { name: 'ID', prop: 'id', size: 80, readonly: true },
         { name: 'Name', prop: 'name', size: 210 },
         { name: 'Company', prop: 'company', columnType: 'select', source: companies, size: 150 },
       ],

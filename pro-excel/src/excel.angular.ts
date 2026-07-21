@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RevoGrid } from '@revolist/angular-datagrid';
-import { readSheet as readXlsxSheet } from 'read-excel-file/browser';
 import {
   AdvanceFilterPlugin,
   AutoFillPlugin,
@@ -65,7 +64,6 @@ import {
   insertSpreadsheetRowFromPinnedDropdown,
   isSpreadsheetDarkTheme,
   preventReadonlySpreadsheetEdit,
-  readSpreadsheetWorkbookFromXlsx,
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
   summarizeSelection,
@@ -106,23 +104,9 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
       [class.is-dark]="isDark"
       data-testid="spreadsheet-workbench"
       [attr.data-plugin-stack]="pluginStack"
-      (drop)="onDrop($event)"
-      (dragover)="onDragOver($event)"
     >
       <div class="spreadsheet-ribbon">
         <span class="spreadsheet-ribbon-group">
-          <label class="spreadsheet-file-label">
-            <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.import"></span>
-            Import XLSX
-            <input
-              #fileInput
-              class="spreadsheet-file-input"
-              data-testid="spreadsheet-xlsx-input"
-              type="file"
-              accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-              (change)="onXlsxChange($event)"
-            />
-          </label>
           <button class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" (click)="exportWorkbook()">
             <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.export"></span>
             Export XLSX
@@ -238,8 +222,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   @ViewChild('formulaInput', { read: ElementRef }) formulaInputElement!: ElementRef<HTMLInputElement>;
   @ViewChild('formulaBadge', { read: ElementRef }) formulaBadgeElement!: ElementRef<HTMLSpanElement>;
   @ViewChild('formulaHighlight', { read: ElementRef }) formulaHighlightElement!: ElementRef<HTMLSpanElement>;
-  @ViewChild('fileInput', { read: ElementRef }) fileInputElement!: ElementRef<HTMLInputElement>;
-
   workbook: SpreadsheetWorkbook = createSpreadsheetWorkbook();
   private _simulationWorkbook: SpreadsheetWorkbook = this.workbook;
   presenceStep = 0;
@@ -427,30 +409,8 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     this.presenceUsers = createSpreadsheetPresenceUsers(0);
     this.collaborativePresence = createSpreadsheetCollaborativePresence(this.presenceUsers);
     this.selectionStatus = 'No ranges selected';
-    this.clipboardStatus = 'Workbook reset. CSV files can be dropped on the grid.';
+    this.clipboardStatus = 'Workbook reset.';
     this.syncWorkbookUi();
-  }
-
-  async onXlsxChange(event: Event) {
-    const input = event.currentTarget as HTMLInputElement;
-    const file = input.files?.[0];
-    if (file) {
-      await this.importXlsxFile(file);
-    }
-    input.value = '';
-  }
-
-  onDragOver(event: DragEvent) {
-    event.preventDefault();
-  }
-
-  onDrop(event: DragEvent) {
-    const file = event.dataTransfer?.files?.[0];
-    if (!file?.name.toLowerCase().endsWith('.xlsx')) {
-      return;
-    }
-    event.preventDefault();
-    void this.importXlsxFile(file);
   }
 
   onHistoryChanged(event: Event) {
@@ -490,17 +450,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     preventReadonlySpreadsheetEdit(event, this.workbook.columns, (message) => {
       this.clipboardStatus = message;
     });
-  }
-
-  private async importXlsxFile(file: File) {
-    this.stopFeedFlash();
-    this.feedStep = 0;
-    this.workbook = await readSpreadsheetWorkbookFromXlsx(file, readXlsxSheet);
-    this._simulationWorkbook = this.workbook;
-    this.presenceUsers = createSpreadsheetPresenceUsers(this.presenceStep, true);
-    this.collaborativePresence = createSpreadsheetCollaborativePresence(this.presenceUsers);
-    this.clipboardStatus = `Imported values from ${file.name}.`;
-    this.syncWorkbookUi();
   }
 
   private getActiveSheetKey(): SpreadsheetSheetKey {
