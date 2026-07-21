@@ -1,4 +1,4 @@
-// src/components/gantt/gantt-showcase/GanttShowcase.ts
+// src/components/gantt/GanttShowcase.ts
 import './gantt-showcase.scss';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 defineCustomElements();
@@ -17,7 +17,7 @@ import {
   SHOWCASE_TASKS,
   renderShowcaseTaskBarColor,
   renderShowcaseTaskBarContent,
-} from '../shared/gantt-project-data';
+} from './shared/gantt-project-data';
 import { currentTheme } from '../../composables/useRandomData';
 
 // ─── Entry point ──────────────────────────────────────────────────────────────

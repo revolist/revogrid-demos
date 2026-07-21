@@ -1,4 +1,4 @@
-// src/components/gantt/gantt-showcase/GanttShowcaseAngular.ts
+// src/components/gantt/GanttShowcaseAngular.ts
 import {
   Component,
   NO_ERRORS_SCHEMA,
@@ -20,7 +20,7 @@ import {
   SHOWCASE_TASKS,
   renderShowcaseTaskBarColor,
   renderShowcaseTaskBarContent,
-} from '../shared/gantt-project-data';
+} from './shared/gantt-project-data';
 import { currentTheme } from '../../composables/useRandomData';
 
 function createGanttConfig(showCriticalPath: boolean, showBaseline: boolean): GanttPluginConfig {

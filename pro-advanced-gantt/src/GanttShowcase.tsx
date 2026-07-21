@@ -1,4 +1,4 @@
-// src/components/gantt/gantt-showcase/GanttShowcase.tsx
+// src/components/gantt/GanttShowcase.tsx
 import './gantt-showcase.scss';
 import React, { useMemo, useRef, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
@@ -16,7 +16,7 @@ import {
   SHOWCASE_TASKS,
   renderShowcaseTaskBarColor,
   renderShowcaseTaskBarContent,
-} from '../shared/gantt-project-data';
+} from './shared/gantt-project-data';
 import type { GanttPluginConfig } from '@revolist/revogrid-enterprise';
 import { currentTheme } from '../../composables/useRandomData';
 

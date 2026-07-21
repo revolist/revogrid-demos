@@ -49,7 +49,7 @@
 import { computed, ref, shallowRef } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import { filterPivotSource, type PivotConfig } from '@revolist/revogrid-enterprise';
-import { currentThemeVue } from '../composables/useRandomData';
+import { currentThemeVue } from '../../composables/useRandomData';
 import {
   FINANCIAL_COLUMNS,
   FINANCIAL_COLUMN_TYPES,

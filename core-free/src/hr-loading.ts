@@ -1,4 +1,4 @@
-import type { HRGenerationProgress } from '../sys-data/hr.data.generator';
+import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 
 export function getHRProgressPercent(progress: HRGenerationProgress) {
   if (!progress.total) {

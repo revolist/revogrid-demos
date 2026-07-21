@@ -53,9 +53,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, onBeforeUnmount } from 'vue';
 import { VGrid, type ColumnGrouping, type ColumnRegular, BasePlugin, type PluginProviders } from '@revolist/vue3-datagrid';
-import { getHRColumnsCount, getHRData, HR_OPTIONS } from '../sys-data/hr-source';
-import type { HRGenerationProgress } from '../sys-data/hr.data.generator';
-import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE } from '../sys-data/hr.columns';
+import { getHRColumnsCount, getHRData, HR_OPTIONS } from './sys-data/hr.data';
+import type { HRGenerationProgress } from './sys-data/hr.data.generator';
+import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE } from './sys-data/hr.columns';
 import { currentThemeVue } from '../composables/useRandomData';
 import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';

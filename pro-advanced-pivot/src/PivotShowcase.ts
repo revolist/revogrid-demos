@@ -1,7 +1,7 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import { filterPivotSource, type PivotConfig } from '@revolist/revogrid-enterprise';
 import './financial-pivot-header.scss';
-import { currentTheme } from '../composables/useRandomData';
+import { currentTheme } from '../../composables/useRandomData';
 import {
   FINANCIAL_COLUMNS,
   FINANCIAL_COLUMN_TYPES,

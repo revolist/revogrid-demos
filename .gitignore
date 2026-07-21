@@ -1,0 +1,54 @@
+# Dependencies — every demo
+**/node_modules/
+
+# Build output
+**/dist/
+**/out-tsc/
+**/.angular/
+
+# Vite and TypeScript caches
+**/.vite/
+**/*.tsbuildinfo
+
+# Test output
+**/coverage/
+**/test-results/
+**/playwright-report/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Keep one workspace lockfile; ignore package-local lockfiles
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+!/pnpm-lock.yaml
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Operating-system artifacts
+.DS_Store
+Thumbs.db
+
+# Editors and IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Temporary files
+**/tmp/
+**/.cache/
+*_feature.md

@@ -1,0 +1,16 @@
+{
+  "name": "revogrid-demos",
+  "private": true,
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "dev:core": "pnpm --filter revogrid-demo-core-free exec vite",
+    "dev:excel": "pnpm --filter revogrid-demo-pro-excel exec vite",
+    "dev:pivot": "pnpm --filter revogrid-demo-pro-advanced-pivot exec vite",
+    "dev:scheduler": "pnpm --filter revogrid-demo-pro-advanced-scheduler exec vite",
+    "dev:gantt": "pnpm --filter revogrid-demo-pro-advanced-gantt exec vite"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "revogrid-demo-core-free",
+  "version": "1.0.0",
+  "description": "RevoGrid Core HR data-grid demo for TypeScript, React, Vue, and Angular.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@angular/common": "^20.0.0",
+    "@angular/compiler": "^20.0.0",
+    "@angular/core": "^20.0.0",
+    "@angular/forms": "^20.0.0",
+    "@angular/platform-browser": "^20.0.0",
+    "@angular/platform-browser-dynamic": "^20.0.0",
+    "@revolist/angular-datagrid": "latest",
+    "@revolist/react-datagrid": "latest",
+    "@revolist/revogrid": "latest",
+    "@revolist/revogrid-column-date": "^2.0.25",
+    "@revolist/revogrid-column-numeral": "^2.0.11",
+    "@revolist/revogrid-column-select": "^3.1.20",
+    "@revolist/vue3-datagrid": "latest",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "vue": "^3.5.21",
+    "zone.js": "~0.15.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^20.0.0",
+    "@angular/cli": "^20.0.0",
+    "@angular/compiler-cli": "^20.0.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "~5.9.2",
+    "vite": "^6.3.5",
+    "vue-tsc": "^2.2.10"
+  }
+}

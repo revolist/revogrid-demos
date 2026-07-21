@@ -51,7 +51,7 @@ import {
   SHOWCASE_TASKS,
   renderShowcaseTaskBarColor,
   renderShowcaseTaskBarContent,
-} from '../shared/gantt-project-data';
+} from './shared/gantt-project-data';
 import { currentThemeVue } from '../../composables/useRandomData';
 
 // ── Static grid data ──────────────────────────────────────────────────────────

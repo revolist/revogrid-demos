@@ -30,13 +30,16 @@ Every showcase provides equivalent implementations for the major supported front
 
 ```text
 revogrid-demos/
+├── package.json                # Root scripts and package-manager contract
+├── pnpm-workspace.yaml         # Workspace package discovery
 ├── core-free/                  # Core HR data-grid showcase
 ├── pro-excel/                  # Pro spreadsheet workbench
 ├── pro-advanced-pivot/         # Financial pivot showcase
 ├── pro-advanced-scheduler/     # Shift and event scheduler
 └── pro-advanced-gantt/
-    ├── gantt-showcase/         # Gantt framework implementations
-    └── shared/                 # Shared project data and configuration
+    └── src/
+        ├── GanttShowcase.*     # Gantt framework implementations
+        └── shared/             # Shared project data and configuration
 ```
 
 ## Framework support
@@ -54,25 +57,40 @@ The supporting files next to each implementation contain shared data, styles, co
 
 ## Using an example
 
-These folders contain demo source code rather than standalone applications. They are intended to be integrated into a compatible RevoGrid project or used as implementation references.
+These workspace packages contain demo source code rather than standalone applications. They are intended to be integrated into a compatible RevoGrid project or used as implementation references. Each demo has a dedicated `package.json` containing the combined dependencies for its TypeScript, React, Vue, and Angular variants.
 
 1. Choose the edition and feature you want to explore.
 2. Open the file matching your framework.
-3. Copy the implementation and its adjacent shared files into your application.
-4. Resolve the demo's local imports against your project structure.
-5. Install the RevoGrid packages required by the imports and use versions compatible with your application.
+3. Run `pnpm install` once from the repository root.
+4. Copy the implementation and its adjacent shared files into your application.
+5. Resolve the demo's local imports against your project structure.
+6. Align package versions with your host application when integrating the example.
 
 > Pro and Pro Advance examples require access to their corresponding commercial packages. Keep registry credentials and package tokens outside source control.
+
+### Run the demos
+
+After `pnpm install`, start any demo from the repository root:
+
+```bash
+pnpm dev:core
+pnpm dev:excel
+pnpm dev:pivot
+pnpm dev:scheduler
+pnpm dev:gantt
+```
+
+Each command starts a Vite development server using that package's Vanilla TypeScript entry point.
 
 ## Example entry points
 
 | Demo | TypeScript | React | Vue | Angular |
 | --- | --- | --- | --- | --- |
-| HR data grid | [`HRDemo.ts`](./core-free/HRDemo.ts) | [`HRDemo.tsx`](./core-free/HRDemo.tsx) | [`HRDemo.vue`](./core-free/HRDemo.vue) | [`HRDemoAngular.ts`](./core-free/HRDemoAngular.ts) |
-| Spreadsheet | [`SpreadsheetWorkbench.ts`](./pro-excel/SpreadsheetWorkbench.ts) | [`SpreadsheetWorkbench.tsx`](./pro-excel/SpreadsheetWorkbench.tsx) | [`SpreadsheetWorkbench.vue`](./pro-excel/SpreadsheetWorkbench.vue) | [`SpreadsheetWorkbenchAngular.ts`](./pro-excel/SpreadsheetWorkbenchAngular.ts) |
-| Pivot | [`PivotShowcase.ts`](./pro-advanced-pivot/PivotShowcase.ts) | [`PivotShowcase.tsx`](./pro-advanced-pivot/PivotShowcase.tsx) | [`PivotShowcase.vue`](./pro-advanced-pivot/PivotShowcase.vue) | [`PivotShowcaseAngular.ts`](./pro-advanced-pivot/PivotShowcaseAngular.ts) |
-| Scheduler | [`index.ts`](./pro-advanced-scheduler/index.ts) | [`index.tsx`](./pro-advanced-scheduler/index.tsx) | [`index.vue`](./pro-advanced-scheduler/index.vue) | [`angular.ts`](./pro-advanced-scheduler/angular.ts) |
-| Gantt | [`GanttShowcase.ts`](./pro-advanced-gantt/gantt-showcase/GanttShowcase.ts) | [`GanttShowcase.tsx`](./pro-advanced-gantt/gantt-showcase/GanttShowcase.tsx) | [`GanttShowcase.vue`](./pro-advanced-gantt/gantt-showcase/GanttShowcase.vue) | [`GanttShowcaseAngular.ts`](./pro-advanced-gantt/gantt-showcase/GanttShowcaseAngular.ts) |
+| HR data grid | [`HRDemo.ts`](./core-free/src/HRDemo.ts) | [`HRDemo.tsx`](./core-free/src/HRDemo.tsx) | [`HRDemo.vue`](./core-free/src/HRDemo.vue) | [`HRDemoAngular.ts`](./core-free/src/HRDemoAngular.ts) |
+| Spreadsheet | [`SpreadsheetWorkbench.ts`](./pro-excel/src/SpreadsheetWorkbench.ts) | [`SpreadsheetWorkbench.tsx`](./pro-excel/src/SpreadsheetWorkbench.tsx) | [`SpreadsheetWorkbench.vue`](./pro-excel/src/SpreadsheetWorkbench.vue) | [`SpreadsheetWorkbenchAngular.ts`](./pro-excel/src/SpreadsheetWorkbenchAngular.ts) |
+| Pivot | [`PivotShowcase.ts`](./pro-advanced-pivot/src/PivotShowcase.ts) | [`PivotShowcase.tsx`](./pro-advanced-pivot/src/PivotShowcase.tsx) | [`PivotShowcase.vue`](./pro-advanced-pivot/src/PivotShowcase.vue) | [`PivotShowcaseAngular.ts`](./pro-advanced-pivot/src/PivotShowcaseAngular.ts) |
+| Scheduler | [`index.ts`](./pro-advanced-scheduler/src/index.ts) | [`index.tsx`](./pro-advanced-scheduler/src/index.tsx) | [`index.vue`](./pro-advanced-scheduler/src/index.vue) | [`angular.ts`](./pro-advanced-scheduler/src/angular.ts) |
+| Gantt | [`GanttShowcase.ts`](./pro-advanced-gantt/src/GanttShowcase.ts) | [`GanttShowcase.tsx`](./pro-advanced-gantt/src/GanttShowcase.tsx) | [`GanttShowcase.vue`](./pro-advanced-gantt/src/GanttShowcase.vue) | [`GanttShowcaseAngular.ts`](./pro-advanced-gantt/src/GanttShowcaseAngular.ts) |
 
 ## Contributing
 
