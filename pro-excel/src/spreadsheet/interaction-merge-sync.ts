@@ -1,5 +1,10 @@
 /** Keeps explicit value-derived merges aligned with the current visible row projection. */
+import type { MergeData } from '@revolist/revogrid-pro';
 import { createSpreadsheetCellMerge } from './data';
+
+type SpreadsheetMergeGrid = HTMLRevoGridElement & {
+  cellMerge?: MergeData[];
+};
 
 const SPREADSHEET_MERGE_PROJECTION_EVENTS = [
   'afteredit',
@@ -9,7 +14,7 @@ const SPREADSHEET_MERGE_PROJECTION_EVENTS = [
   'rowdragend',
 ] as const;
 
-export function installSpreadsheetCellMergeSync(grid: HTMLRevoGridElement) {
+export function installSpreadsheetCellMergeSync(grid: SpreadsheetMergeGrid) {
   let disposed = false;
   let requestedVersion = 0;
 

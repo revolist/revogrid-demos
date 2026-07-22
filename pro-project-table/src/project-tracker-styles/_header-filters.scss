@@ -145,6 +145,11 @@ revo-grid.color-grid {
     }
 
     .rgHeaderCell.sortable {
+      > .sort-indicator {
+        right: 0 !important;
+        height: 50px !important;
+      }
+
       .sort-indicator i,
       > i.asc,
       > i.desc,
