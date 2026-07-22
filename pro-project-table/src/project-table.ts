@@ -1,7 +1,7 @@
 import './project-tracker.scss';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import type { ColumnProp } from '@revolist/revogrid';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createProjectColumns,
   createProjectColumnAddPopupConfig,
@@ -19,6 +19,8 @@ import {
   projectFilterConfig,
   projectGridPreset,
   projectPlugins,
+  projectRowOrder,
+  projectRowSelect,
   openProjectStatusHeaderFilter,
   projectOwnerProfiles,
   resolveProjectSortValueFromConfig,
@@ -94,11 +96,17 @@ export function load(parentSelector: string) {
 
   grid.className = 'project-tracker-grid skip-style color-grid cell-border';
   grid.theme = isDark() ? 'darkMaterial' : 'material';
+  grid.canMoveColumns = true;
+  const disconnectTheme = observeCurrentTheme((darkTheme) => {
+    grid.theme = darkTheme ? 'darkMaterial' : 'material';
+  });
   grid.columns = columns;
   grid.source = projectRows;
   grid.grouping = createProjectGrouping(() => projectRows, groupBy, groupsExpanded, collapsedGroups);
   grid.gridPreset = projectGridPreset;
   grid.plugins = projectPlugins;
+  grid.rowOrder = projectRowOrder;
+  grid.rowSelect = projectRowSelect;
   grid.stretch = 'last';
   grid.filter = projectFilterConfig;
   grid.hideColumns = hiddenColumns;
@@ -256,6 +264,7 @@ export function load(parentSelector: string) {
   });
 
   return () => {
+    disconnectTheme();
     container.remove();
   };
 }

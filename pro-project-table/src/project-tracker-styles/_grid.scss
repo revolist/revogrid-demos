@@ -209,7 +209,7 @@ revo-grid.project-tracker-grid {
     justify-content: center;
     padding: 0 !important;
 
-    input[type="checkbox"] {
+    input[type="checkbox"]:not(.rv-checkbox) {
       @include project-checkbox;
     }
   }
@@ -225,7 +225,7 @@ revo-grid.project-tracker-grid {
     padding: 0 !important;
     box-shadow: none !important;
 
-    input[type="checkbox"] {
+    input[type="checkbox"]:not(.rv-checkbox) {
       @include project-checkbox;
     }
   }

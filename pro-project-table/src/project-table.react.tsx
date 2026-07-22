@@ -2,7 +2,7 @@ import './project-tracker.scss';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import type { ColumnProp } from '@revolist/revogrid';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createProjectColumns,
   createProjectColumnAddPopupConfig,
@@ -20,6 +20,8 @@ import {
   projectFilterConfig,
   projectGridPreset,
   projectPlugins,
+  projectRowOrder,
+  projectRowSelect,
   openProjectStatusHeaderFilter,
   projectOwnerProfiles,
   resolveProjectSortValueFromConfig,
@@ -42,7 +44,7 @@ import {
 defineProjectTrackerToolbarElement();
 
 function Color() {
-  const { isDark } = currentTheme();
+  const [isDark, setIsDark] = useState(() => currentTheme().isDark());
   const shellRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLRevoGridElement>(null);
   const toolbarRef = useRef<ProjectTrackerToolbarElement>(null);
@@ -127,6 +129,8 @@ function Color() {
     columnAddPopup,
   }), [columnAddPopup]);
 
+  useEffect(() => observeCurrentTheme(setIsDark), []);
+
   const runBulkAction = (action: ProjectBulkAction) => {
     if (!selectedIndexes.size) return;
     setProjectRows((next) => applyProjectBulkAction(next, selectedIndexes, action, groupBy));
@@ -192,12 +196,15 @@ function Color() {
         <RevoGridComponent
           ref={gridRef}
           className="project-tracker-grid skip-style color-grid cell-border"
-          theme={isDark() ? 'darkMaterial' : 'material'}
+          theme={isDark ? 'darkMaterial' : 'material'}
+          canMoveColumns={true}
           columns={columns}
           source={projectRows}
           grouping={grouping}
           gridPreset={gridPreset}
           plugins={plugins}
+          rowOrder={projectRowOrder}
+          rowSelect={projectRowSelect}
           stretch="last"
           filter={projectFilterConfig}
           hideColumns={hiddenColumns}

@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import type { OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import type { ColumnProp } from '@revolist/revogrid';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createProjectColumns,
   createProjectColumnAddPopupConfig,
@@ -21,6 +22,8 @@ import {
   projectFilterConfig,
   projectGridPreset,
   projectPlugins,
+  projectRowOrder,
+  projectRowSelect,
   openProjectStatusHeaderFilter,
   projectOwnerProfiles,
   resolveProjectSortValueFromConfig,
@@ -56,11 +59,14 @@ defineProjectTrackerToolbarElement();
         #gridRef
         class="project-tracker-grid skip-style color-grid cell-border"
         [theme]="theme"
+        [canMoveColumns]="true"
         [columns]="columns"
         [source]="projectRows"
         [grouping]="grouping"
         [gridPreset]="gridPreset"
         [plugins]="plugins"
+        [rowOrder]="projectRowOrder"
+        [rowSelect]="projectRowSelect"
         stretch="last"
         [filter]="filterConfig"
         [hideColumns]="hiddenColumns"
@@ -217,13 +223,18 @@ defineProjectTrackerToolbarElement();
   encapsulation: ViewEncapsulation.None,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ColorGridComponent {
+export class ColorGridComponent implements OnDestroy {
   @ViewChild('gridRef', { static: true }) gridRef!: ElementRef<HTMLRevoGridElement>;
 
   theme = currentTheme().isDark() ? 'darkMaterial' : 'material';
+  private readonly disconnectTheme = observeCurrentTheme((isDark) => {
+    this.theme = isDark ? 'darkMaterial' : 'material';
+  });
   columns = createProjectColumns();
   gridPreset = projectGridPreset;
   plugins = projectPlugins;
+  projectRowOrder = projectRowOrder;
+  projectRowSelect = projectRowSelect;
   filterConfig = projectFilterConfig;
   projectRows: ProjectRow[] = createProjectRows();
   options = getProjectFilterOptions(this.projectRows);
@@ -497,5 +508,9 @@ export class ColorGridComponent {
     if (detail.action === 'hideColumn') {
       this.toggleHiddenColumn(detail.prop, detail.visible);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.disconnectTheme();
   }
 }

@@ -10,7 +10,12 @@ import {
   projectSortOptions,
   projectStatusOptions,
 } from './project-tracker/options';
-import { projectGridPreset, projectPlugins } from './project-tracker/plugins';
+import {
+  projectGridPreset,
+  projectPlugins,
+  projectRowOrder,
+  projectRowSelect,
+} from './project-tracker/plugins';
 import { projectFilterConfig } from './project-tracker/filters';
 import {
   createProjectRows,
@@ -100,6 +105,8 @@ export {
   projectHideableColumns,
   projectOwnerProfiles,
   projectPlugins,
+  projectRowOrder,
+  projectRowSelect,
   projectPriorityOptions,
   projectRiskOptions,
   projectSections,

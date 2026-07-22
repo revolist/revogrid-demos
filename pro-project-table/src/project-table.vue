@@ -10,11 +10,14 @@
         ref="gridRef"
         class="project-tracker-grid skip-style color-grid cell-border"
         :theme="isDark ? 'darkMaterial' : 'material'"
+        :can-move-columns="true"
         :columns="columns"
         :source="projectRows"
         :grouping="grouping"
         :grid-preset.prop="gridPreset"
         :plugins="plugins"
+        :row-order.prop="projectRowOrder"
+        :row-select.prop="projectRowSelect"
         stretch="last"
         :filter="projectFilterConfig"
         :hide-columns="hiddenColumns"
@@ -93,10 +96,10 @@
 
 <script setup lang="ts">
 import './project-tracker.scss';
-import { computed, defineComponent, h, ref, shallowRef, watchEffect } from 'vue';
+import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, shallowRef, watchEffect } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import type { ColumnProp } from '@revolist/revogrid';
-import { currentThemeVue } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createProjectColumns,
   createProjectColumnAddPopupConfig,
@@ -114,6 +117,8 @@ import {
   projectFilterConfig,
   projectGridPreset,
   projectPlugins,
+  projectRowOrder,
+  projectRowSelect,
   openProjectStatusHeaderFilter,
   projectOwnerProfiles,
   resolveProjectSortValueFromConfig,
@@ -133,7 +138,15 @@ import {
 
 defineProjectTrackerToolbarElement();
 
-const { isDark } = currentThemeVue();
+const isDark = ref(currentTheme().isDark());
+let disconnectTheme: (() => void) | undefined;
+
+onMounted(() => {
+  disconnectTheme = observeCurrentTheme((darkTheme) => {
+    isDark.value = darkTheme;
+  });
+});
+onBeforeUnmount(() => disconnectTheme?.());
 
 const hiddenColumns = shallowRef<ColumnProp[]>([]);
 const projectRows = ref<ProjectRow[]>(createProjectRows());

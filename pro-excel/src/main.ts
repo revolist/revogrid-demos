@@ -1,4 +1,5 @@
 import '../../demo-host.css';
+import './excel-host.css';
 import '@revolist/revogrid-pro/dist/revogrid-pro.css';
 
 const framework = import.meta.env.MODE === 'development' ? 'ts' : import.meta.env.MODE;

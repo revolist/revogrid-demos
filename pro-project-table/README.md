@@ -30,8 +30,8 @@ These plugins come from `@revolist/revogrid-pro`. They are installed automatical
 | --- | --- |
 | `EventManagerPlugin` | Provides the shared event lifecycle used by the preset stack, helping editing, selection, filtering, and other plugins cooperate. |
 | `TreeDataPlugin` | Adds tree hierarchy support to the reusable project-pipeline baseline. This demo uses Core grouping instead of configuring `tree`, so tree rows are currently dormant. |
-| `RowOrderPlugin` | Enables project rows to be reordered by drag and drop; the preset supplies the initial `rowOrder` configuration. |
-| `RowSelectPlugin` | Powers the pinned checkbox column and selected-row state, enabling bulk project actions and selection-aware row menu commands. |
+| `RowOrderPlugin` | Enables project rows to be reordered from the Project name handle; the demo supplies a compact project-name drag preview. |
+| `RowSelectPlugin` | Powers the pinned checkbox column and selected-row state, enabling bulk actions, selection-aware menus, and moving checked projects together. |
 | `MasterRowPlugin` | Adds master-detail row infrastructure to the preset. No `masterRow` template is configured in this demo, so detail rows are currently dormant. |
 | `OverlayPlugin` | Provides an aligned grid overlay surface for master-detail content. It is included by the preset and reused when `MasterRowPlugin` initializes it. |
 | `RowHeaderPlugin` | Provides numbered-header focus, selection, and drag integration for layouts that enable row headers. This demo uses its own pinned selection column instead of a generated numbered row header. |

@@ -29,6 +29,7 @@ export function createProjectColumns(): ColumnRegular[] {
     {
       name: 'Project name',
       prop: 'task',
+      rowDrag: true,
       size: 260,
       pin: 'colPinStart',
       filter: ['string'],
