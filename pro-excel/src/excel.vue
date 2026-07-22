@@ -125,7 +125,6 @@ import {
   CellFlashPlugin,
   CellMergePlugin,
   CellValidatePlugin,
-  ClipboardJsonPlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
   ColumnHidePlugin,
@@ -177,7 +176,6 @@ import {
   summarizeSpreadsheetRowHeaderFocus,
   summarizeSelection,
   type SpreadsheetFlashPlugin,
-  type SpreadsheetSheetKey,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
 import {
@@ -258,7 +256,6 @@ const plugins = computed(() => [
   RowOrderPlugin,
   ColumnMoveAdvancedPlugin,
   ColumnCollapsePlugin,
-  ClipboardJsonPlugin,
   ContextMenuPlugin,
   ExportExcelPlugin,
   AdvanceFilterPlugin,
@@ -279,7 +276,6 @@ const contextMenus = computed(() => createSpreadsheetContextMenus({
   setClipboardStatus: (message) => {
     clipboardStatus.value = message;
   },
-  resetWorkbook,
   exportWorkbook,
 }));
 
@@ -432,21 +428,6 @@ async function runPresenceSimulation() {
   simulationWorkbook = await syncSpreadsheetSimulationResultToGrid(grid, sourceWorkbook, result.workbook, { rowType: 'rgRow' });
   const plugin = await getPlugin(CellFlashPlugin);
   flashSpreadsheetPresenceEdit(plugin as SpreadsheetFlashPlugin | undefined, result);
-}
-
-function resetWorkbook() {
-  stopFeedFlash();
-  feedStep = 0;
-  workbook.value = createSpreadsheetWorkbook(getActiveSheetKey());
-  simulationWorkbook = workbook.value;
-  presenceStep.value = 0;
-  presenceUsers.value = createSpreadsheetPresenceUsers(0);
-  selectionStatus.value = 'No ranges selected';
-  clipboardStatus.value = 'Workbook reset.';
-}
-
-function getActiveSheetKey(): SpreadsheetSheetKey {
-  return workbook.value.sheetKey === 'imported' || workbook.value.sheetKey === 'empty' ? 'budget' : workbook.value.sheetKey;
 }
 
 function onHistoryChanged(event: CustomEvent<HistoryState>) {

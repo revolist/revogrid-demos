@@ -28,7 +28,6 @@ Every plugin in this table comes from `@revolist/revogrid-pro` and is registered
 | `CellFlashPlugin` | Highlights simulated live-feed and collaborator edits, including directional change cues, so changing values are easy to spot. |
 | `CellMergePlugin` | Combines configured adjacent cells into larger spreadsheet regions while keeping focus and range behavior merge-aware. |
 | `CellValidatePlugin` | Rejects negative currency edits and adds an inline error indicator plus tooltip, protecting workbook data quality. |
-| `ClipboardJsonPlugin` | Preserves structured values when copying and pasting instead of flattening object data into unusable text. |
 | `CollaborativePresencePlugin` | Renders simulated remote cursors, ranges, users, and edits without taking over the local user's focus or history. |
 | `ColumnCollapsePlugin` | Lets users collapse related budget columns into a compact placeholder, reducing horizontal clutter. |
 | `ColumnHidePlugin` | Supports runtime column visibility changes so users can tailor the workbook to the fields they need. |

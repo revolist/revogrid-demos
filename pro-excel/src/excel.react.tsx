@@ -7,7 +7,6 @@ import {
   CellFlashPlugin,
   CellMergePlugin,
   CellValidatePlugin,
-  ClipboardJsonPlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
   ColumnHidePlugin,
@@ -58,7 +57,6 @@ import {
   summarizeSpreadsheetRowHeaderFocus,
   summarizeSelection,
   type SpreadsheetFlashPlugin,
-  type SpreadsheetSheetKey,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
 import {
@@ -148,7 +146,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     RowOrderPlugin,
     ColumnMoveAdvancedPlugin,
     ColumnCollapsePlugin,
-    ClipboardJsonPlugin,
     ContextMenuPlugin,
     ExportExcelPlugin,
     AdvanceFilterPlugin,
@@ -324,20 +321,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const getActiveSheetKey = useCallback((): SpreadsheetSheetKey => (
-    workbook.sheetKey === 'imported' || workbook.sheetKey === 'empty' ? 'budget' : workbook.sheetKey
-  ), [workbook.sheetKey]);
-
-  const resetWorkbook = useCallback(() => {
-    stopFeedFlash();
-    feedStepRef.current = 0;
-    setWorkbook(createSpreadsheetWorkbook(getActiveSheetKey()));
-    setPresenceStep(0);
-    setPresenceUsers(createSpreadsheetPresenceUsers(0));
-    setSelectionStatus('No ranges selected');
-    setClipboardStatus('Workbook reset.');
-  }, [getActiveSheetKey, stopFeedFlash]);
-
   const onHistoryChanged = useCallback((event: CustomEvent<HistoryState>) => {
     setHistoryState(event.detail);
   }, []);
@@ -382,9 +365,8 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     getWorkbook: () => workbook,
     setWorkbook,
     setClipboardStatus,
-    resetWorkbook,
     exportWorkbook,
-  }), [exportWorkbook, resetWorkbook, workbook]);
+  }), [exportWorkbook, workbook]);
 
   const gridElement = useMemo(() => (
     <RevoGrid

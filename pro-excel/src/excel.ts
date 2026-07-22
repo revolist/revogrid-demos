@@ -8,7 +8,6 @@ import {
   CellFlashPlugin,
   CellMergePlugin,
   CellValidatePlugin,
-  ClipboardJsonPlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
   ColumnHidePlugin,
@@ -61,7 +60,6 @@ import {
   summarizeSelection,
   type SpreadsheetContextMenuController,
   type SpreadsheetFlashPlugin,
-  type SpreadsheetSheetKey,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
 import {
@@ -187,7 +185,6 @@ export function load(parentSelector: string) {
     setClipboardStatus: (message) => {
       clipboardStatus.textContent = message;
     },
-    resetWorkbook,
     exportWorkbook,
   };
   const contextMenus = createSpreadsheetContextMenus(workbookController);
@@ -328,7 +325,6 @@ export function load(parentSelector: string) {
       RowOrderPlugin,
       ColumnMoveAdvancedPlugin,
       ColumnCollapsePlugin,
-      ClipboardJsonPlugin,
       ContextMenuPlugin,
       ExportExcelPlugin,
       AdvanceFilterPlugin,
@@ -442,21 +438,6 @@ export function load(parentSelector: string) {
     syncToolbar();
     const plugin = await getPlugin(CellFlashPlugin);
     flashSpreadsheetPresenceEdit(plugin as SpreadsheetFlashPlugin | undefined, result);
-  }
-
-  function resetWorkbook() {
-    stopFeedFlash();
-    feedStep = 0;
-    workbook = createSpreadsheetWorkbook(getActiveSheetKey());
-    presenceStep = 0;
-    presenceUsers = createSpreadsheetPresenceUsers(0);
-    selectionStatus.textContent = 'No ranges selected';
-    clipboardStatus.textContent = 'Workbook reset.';
-    void syncWorkbookSource(workbook);
-  }
-
-  function getActiveSheetKey(): SpreadsheetSheetKey {
-    return workbook.sheetKey === 'imported' || workbook.sheetKey === 'empty' ? 'budget' : workbook.sheetKey;
   }
 
   function onHistoryChanged(event: CustomEvent<HistoryState>) {

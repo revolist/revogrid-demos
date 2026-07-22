@@ -1523,16 +1523,6 @@ revo-grid .range-copy-preview-cell {
   white-space: nowrap;
 }
 
-.spreadsheet-context-item__badge {
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--sheet-warning) 16%, transparent);
-  color: var(--sheet-warning);
-  font-size: 9px;
-  font-weight: 500;
-  line-height: 1;
-  padding: 3px 5px;
-}
-
 .spreadsheet-context-item__shortcut {
   border: 0;
   background: transparent;

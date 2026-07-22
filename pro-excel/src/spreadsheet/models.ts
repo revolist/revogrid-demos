@@ -80,7 +80,6 @@ export type SpreadsheetContextMenuController = {
   getWorkbook?: () => SpreadsheetWorkbook;
   setWorkbook?: (workbook: SpreadsheetWorkbook) => void;
   setClipboardStatus?: (message: string) => void;
-  resetWorkbook?: () => void;
   exportWorkbook?: () => void | Promise<void>;
 };
 

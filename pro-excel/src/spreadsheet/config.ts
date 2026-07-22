@@ -23,7 +23,6 @@ export const SPREADSHEET_BASE_PLUGIN_LABELS = [
   'RowOrderPlugin',
   'ColumnMoveAdvancedPlugin',
   'ColumnCollapsePlugin',
-  'ClipboardJsonPlugin',
   'ContextMenuPlugin',
   'ExportExcelPlugin',
   'AdvanceFilterPlugin',

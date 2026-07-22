@@ -17,7 +17,6 @@ import {
   CellFlashPlugin,
   CellMergePlugin,
   CellValidatePlugin,
-  ClipboardJsonPlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
   ColumnHidePlugin,
@@ -69,7 +68,6 @@ import {
   summarizeSelection,
   type SpreadsheetContextMenuController,
   type SpreadsheetFlashPlugin,
-  type SpreadsheetSheetKey,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
 import {
@@ -259,7 +257,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     setClipboardStatus: (message) => {
       this.clipboardStatus = message;
     },
-    resetWorkbook: () => this.resetWorkbook(),
     exportWorkbook: () => this.exportWorkbook(),
   };
   private contextMenus = createSpreadsheetContextMenus(this.workbookController);
@@ -400,19 +397,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     flashSpreadsheetPresenceEdit(plugin as SpreadsheetFlashPlugin | undefined, result);
   }
 
-  resetWorkbook() {
-    this.stopFeedFlash();
-    this.feedStep = 0;
-    this.workbook = createSpreadsheetWorkbook(this.getActiveSheetKey());
-    this._simulationWorkbook = this.workbook;
-    this.presenceStep = 0;
-    this.presenceUsers = createSpreadsheetPresenceUsers(0);
-    this.collaborativePresence = createSpreadsheetCollaborativePresence(this.presenceUsers);
-    this.selectionStatus = 'No ranges selected';
-    this.clipboardStatus = 'Workbook reset.';
-    this.syncWorkbookUi();
-  }
-
   onHistoryChanged(event: Event) {
     this.historyState = (event as CustomEvent<HistoryState>).detail;
   }
@@ -450,10 +434,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     preventReadonlySpreadsheetEdit(event, this.workbook.columns, (message) => {
       this.clipboardStatus = message;
     });
-  }
-
-  private getActiveSheetKey(): SpreadsheetSheetKey {
-    return this.workbook.sheetKey === 'imported' || this.workbook.sheetKey === 'empty' ? 'budget' : this.workbook.sheetKey;
   }
 
   private stopFeedFlash(message?: string) {
@@ -511,7 +491,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
       RowOrderPlugin,
       ColumnMoveAdvancedPlugin,
       ColumnCollapsePlugin,
-      ClipboardJsonPlugin,
       ContextMenuPlugin,
       ExportExcelPlugin,
       AdvanceFilterPlugin,
