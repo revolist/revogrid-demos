@@ -15,6 +15,7 @@ import {
   RowSelectPlugin,
   SameValueMergePlugin,
   commonAggregators,
+  columnTypeRenderer,
 } from '@revolist/revogrid-pro';
 import { FINANCIAL_DATA, type FinancialRow } from './financial-dataset';
 import { createFinancialHeatmapColumnType } from './financial.heatmap';
@@ -51,27 +52,30 @@ const MONTH_ORDER = [
 const monthCompare: NonNullable<PivotConfigDimension['cellCompare']> = (_prop, a, b) =>
   MONTH_ORDER.indexOf(String(a.Month)) - MONTH_ORDER.indexOf(String(b.Month));
 
-export const FINANCIAL_DIMENSIONS: PivotConfigDimension[] = [
-  { prop: 'Country', sortable: true, order: 'asc', merge: true, filter: ['string', 'selection'] },
-  { prop: 'Segment', sortable: true, order: 'asc', merge: true, filter: ['string', 'selection'] },
-  { prop: 'Year', sortable: true, order: 'asc', columnType: 'integer', filter: ['number', 'selection'] },
+const FINANCIAL_DIMENSION_DEFINITIONS: PivotConfigDimension[] = [
+  { prop: 'Country', fieldGroup: 'Dimensions', sortable: true, order: 'asc', merge: true, filter: ['string', 'selection'] },
+  { prop: 'Segment', fieldGroup: 'Dimensions', sortable: true, order: 'asc', merge: true, filter: ['string', 'selection'] },
+  { prop: 'Year', fieldGroup: ['Dimensions', 'Dates'], sortable: true, order: 'asc', columnType: 'integer', filter: ['number', 'selection'] },
   {
     prop: 'Month',
+    fieldGroup: ['Dimensions', 'Dates'],
     sortable: true,
     order: 'asc',
     cellCompare: monthCompare,
     filter: ['string', 'selection'],
     filterOptions: [...MONTH_ORDER],
   },
-  { prop: 'Product', sortable: true, filter: ['string', 'selection'] },
+  { prop: 'Product', fieldGroup: 'Dimensions', sortable: true, filter: ['string', 'selection'] },
   {
     prop: 'Discount Band',
+    fieldGroup: 'Dimensions',
     sortable: true,
     filter: ['string', 'selection'],
     filterOptions: ['None', 'Low', 'Medium', 'High'],
   },
   {
     prop: 'Units Sold',
+    fieldGroup: 'Measures',
     sortable: true,
     columnType: 'unitsHeatmap',
     filter: ['number'],
@@ -79,6 +83,7 @@ export const FINANCIAL_DIMENSIONS: PivotConfigDimension[] = [
   },
   {
     prop: 'Sales',
+    fieldGroup: 'Measures',
     sortable: true,
     columnType: 'salesHeatmap',
     filter: ['number'],
@@ -86,6 +91,7 @@ export const FINANCIAL_DIMENSIONS: PivotConfigDimension[] = [
   },
   {
     prop: 'Profit',
+    fieldGroup: 'Measures',
     sortable: true,
     columnType: 'profitHeatmap',
     filter: ['number'],
@@ -93,6 +99,7 @@ export const FINANCIAL_DIMENSIONS: PivotConfigDimension[] = [
   },
   {
     prop: 'Gross Sales',
+    fieldGroup: 'Measures',
     sortable: true,
     columnType: 'grossSalesHeatmap',
     filter: ['number'],
@@ -100,6 +107,7 @@ export const FINANCIAL_DIMENSIONS: PivotConfigDimension[] = [
   },
   {
     prop: 'Discounts',
+    fieldGroup: 'Measures',
     sortable: true,
     columnType: 'discountsHeatmap',
     filter: ['number'],
@@ -107,13 +115,20 @@ export const FINANCIAL_DIMENSIONS: PivotConfigDimension[] = [
   },
   {
     prop: 'COGS',
+    fieldGroup: 'Measures',
     sortable: true,
     columnType: 'cogsHeatmap',
     filter: ['number'],
     aggregators: currencyAggregators,
   },
-  { prop: 'Date', sortable: true, filter: ['string'] },
+  { prop: 'Date', fieldGroup: 'Dimensions', sortable: true, filter: ['string'] },
 ];
+
+export const FINANCIAL_DIMENSIONS: PivotConfigDimension[] = FINANCIAL_DIMENSION_DEFINITIONS
+  .map((dimension) => ({
+    columnTemplate: columnTypeRenderer,
+    ...dimension,
+  }));
 
 export const FINANCIAL_COLUMNS: ColumnRegular[] = FINANCIAL_DIMENSIONS.map((dimension) => ({
   ...dimension,
@@ -166,6 +181,7 @@ const SALES_OVERVIEW: PivotConfig = {
   totals: {
     subtotals: true,
     grandTotal: true,
+    suppressSingleChildSubtotals: true,
     subtotalLabel: 'Subtotal',
     grandTotalLabel: 'Grand Total',
   },
