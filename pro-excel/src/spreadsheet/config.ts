@@ -20,6 +20,7 @@ export const SPREADSHEET_BASE_PLUGIN_LABELS = [
   'FormulaPlugin',
   'MultiRangeSelectionPlugin',
   'RowHeaderPlugin',
+  'RowSelectPlugin',
   'RowOrderPlugin',
   'ColumnMoveAdvancedPlugin',
   'ColumnCollapsePlugin',
@@ -29,7 +30,6 @@ export const SPREADSHEET_BASE_PLUGIN_LABELS = [
   'FilterHeaderPlugin',
   'CellValidatePlugin',
   'CellMergePlugin',
-  'SameValueMergePlugin',
   'TooltipPlugin',
   'ColumnHidePlugin',
   'ColumnStretchPlugin',
@@ -44,6 +44,10 @@ export const SPREADSHEET_ROW_ORDER_CONFIG = {
       : { valid: false as const, reason: 'Pinned totals stay fixed.' }
   ),
 };
+
+export const SPREADSHEET_ROW_SELECT_CONFIG = {
+  rowOrder: true,
+} as const;
 
 export function getSpreadsheetPluginLabels(previewMode: SpreadsheetPreviewMode = 'smart-fill'): string[] {
   return [

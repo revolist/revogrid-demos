@@ -72,6 +72,9 @@ function isReadonlySpreadsheetColumn(
   column: ColumnRegular,
   detail: BeforeSaveDataDetails | undefined,
 ) {
+  if (detail?.type === 'rowPinEnd') {
+    return true;
+  }
   if ((column as ColumnRegular & { dropdown?: unknown }).dropdown) {
     return false;
   }

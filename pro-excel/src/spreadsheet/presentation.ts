@@ -42,12 +42,20 @@ export function createSpreadsheetDisplayColumns(
 }
 
 export function createSpreadsheetRowHeaders(): RowHeaders {
+  const baseRowHeaders = rowHeaders({
+    showHeaderFocusBtn: false,
+    rowDrag: ({ type }) => type === 'rgRow',
+  });
+  const baseCellTemplate = baseRowHeaders.cellTemplate;
+
   return {
-    ...rowHeaders({
-      showHeaderFocusBtn: false,
-      rowDrag: ({ type }) => type === 'rgRow',
-    }),
+    ...baseRowHeaders,
     size: 48,
+    cellTemplate: (h, data, additionalData) => (
+      data.providers.type === 'rowPinEnd'
+        ? h('div', { class: 'grow', 'aria-hidden': 'true' })
+        : baseCellTemplate?.(h, data, additionalData)
+    ),
   };
 }
 

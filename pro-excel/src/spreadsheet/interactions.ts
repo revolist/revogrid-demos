@@ -16,4 +16,5 @@ export {
   preventReadonlySpreadsheetEdit,
 } from './interaction-edit-guards';
 export { SPREADSHEET_ACTION_ICONS } from './interaction-icons';
+export { installSpreadsheetCellMergeSync } from './interaction-merge-sync';
 export { installSpreadsheetContextSelectionGuard } from './interaction-selection';

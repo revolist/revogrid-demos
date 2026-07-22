@@ -27,6 +27,7 @@ export {
   SPREADSHEET_DEMO_ID,
   SPREADSHEET_EXPORT_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
+  SPREADSHEET_ROW_SELECT_CONFIG,
   SPREADSHEET_WORKBOOK_NAME,
   getSpreadsheetPluginLabels,
 } from './spreadsheet/config';
@@ -99,6 +100,7 @@ export {
   createSpreadsheetHistoryConfig,
   flashSpreadsheetSampleCells,
   insertSpreadsheetRowFromPinnedDropdown,
+  installSpreadsheetCellMergeSync,
   installSpreadsheetContextSelectionGuard,
   installSpreadsheetReadonlyEditGuard,
   preventReadonlySpreadsheetEdit,

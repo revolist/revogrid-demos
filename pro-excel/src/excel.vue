@@ -101,6 +101,7 @@
           :formula-dependency-highlight.prop="formulaDependencyHighlight"
           :export-excel.prop="exportExcel"
           :row-order.prop="rowOrder"
+          :row-select.prop="rowSelect"
           :row-context-menu.prop="contextMenus.rowContextMenu"
           :column-context-menu.prop="contextMenus.columnContextMenu"
           :source="workbook.rows"
@@ -156,8 +157,8 @@ import {
   MultiRangeSelectionPlugin,
   NamedRangesPlugin,
   RowHeaderPlugin,
+  RowSelectPlugin,
   RowOrderPlugin,
-  SameValueMergePlugin,
   TooltipPlugin,
   type HistoryState,
 } from '@revolist/revogrid-pro';
@@ -166,6 +167,7 @@ import {
   SPREADSHEET_ACTION_ICONS,
   SPREADSHEET_EXPORT_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
+  SPREADSHEET_ROW_SELECT_CONFIG,
   createSpreadsheetCellFlashConfig,
   createSpreadsheetContextMenus,
   createSpreadsheetDisplayColumns,
@@ -182,7 +184,6 @@ import {
   installSpreadsheetFormulaEditorHighlight,
   installSpreadsheetReadonlyEditGuard,
   installSpreadsheetAutofillStrategy,
-  insertSpreadsheetRowFromPinnedDropdown,
   observeSpreadsheetTheme,
   preventReadonlySpreadsheetEdit,
   createSpreadsheetWorkbookFromGridSource,
@@ -193,6 +194,7 @@ import {
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
+import { installSpreadsheetCellMergeSync } from './spreadsheet/interaction-merge-sync';
 import {
   getSpreadsheetGridRowsForSimulation,
   hasSpreadsheetSimulationDataChange,
@@ -255,6 +257,7 @@ const workbookStatus = computed(() => formatWorkbookStatus(workbook.value));
 const pluginStack = computed(() => getSpreadsheetPluginLabels().join(','));
 const rowHeaderConfig = createSpreadsheetRowHeaders();
 const rowOrder = SPREADSHEET_ROW_ORDER_CONFIG;
+const rowSelect = SPREADSHEET_ROW_SELECT_CONFIG;
 const plugins = computed(() => [
   EventManagerPlugin,
   HistoryPlugin,
@@ -268,6 +271,7 @@ const plugins = computed(() => [
   AutoFillPreviewPlugin,
   MultiRangeSelectionPlugin,
   RowHeaderPlugin,
+  RowSelectPlugin,
   RowOrderPlugin,
   ColumnMoveAdvancedPlugin,
   ColumnCollapsePlugin,
@@ -277,7 +281,6 @@ const plugins = computed(() => [
   FilterHeaderPlugin,
   CellValidatePlugin,
   CellMergePlugin,
-  SameValueMergePlugin,
   TooltipPlugin,
   ColumnHidePlugin,
   ColumnStretchPlugin,
@@ -295,6 +298,7 @@ const contextMenus = computed(() => createSpreadsheetContextMenus({
 }));
 
 let disconnectContextSelectionGuard: (() => void) | undefined;
+let disconnectCellMergeSync: (() => void) | undefined;
 let disconnectReadonlyEditGuard: (() => void) | undefined;
 let disconnectFormulaHighlight: (() => void) | undefined;
 let disconnectThemeObserver: (() => void) | undefined;
@@ -312,6 +316,7 @@ onMounted(() => {
   const grid = getGrid();
   if (grid) {
     void installSpreadsheetAutofillStrategy(grid);
+    disconnectCellMergeSync = installSpreadsheetCellMergeSync(grid);
     disconnectReadonlyEditGuard = installSpreadsheetReadonlyEditGuard(
       grid,
       () => workbook.value.columns,
@@ -340,6 +345,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   disconnectThemeObserver?.();
   disconnectContextSelectionGuard?.();
+  disconnectCellMergeSync?.();
   disconnectReadonlyEditGuard?.();
   disconnectFormulaHighlight?.();
   if (presenceTimer) {
@@ -382,7 +388,12 @@ async function exportWorkbook() {
 
 async function formatFocusedCell() {
   const grid = getGrid();
-  const result = toggleSpreadsheetFocusedCellFormat(workbook.value, await grid?.getFocused?.());
+  const selectionPlugin = await getPlugin(MultiRangeSelectionPlugin);
+  const result = toggleSpreadsheetFocusedCellFormat(
+    workbook.value,
+    await grid?.getFocused?.(),
+    selectionPlugin,
+  );
   workbook.value = result.workbook;
   simulationWorkbook = result.workbook;
   clipboardStatus.value = result.message;
@@ -406,8 +417,12 @@ function stopFeedFlash(message?: string) {
 }
 
 async function runFeedFlashStep() {
-  feedStep += 1;
   const grid = getGrid();
+  if (shouldDeferSpreadsheetSimulationDataUpdate(grid, shellRef.value)) {
+    clipboardStatus.value = 'Local row interaction in progress; feed simulation paused.';
+    return;
+  }
+  feedStep += 1;
   const sourceWorkbook = createSpreadsheetWorkbookFromGridSource(
     simulationWorkbook,
     getRowsForSimulation(grid, simulationWorkbook.rows),
@@ -438,8 +453,12 @@ function toggleFeedFlash() {
 }
 
 async function runPresenceSimulation() {
-  presenceStep.value += 1;
   const grid = getGrid();
+  if (shouldDeferSpreadsheetSimulationDataUpdate(grid, shellRef.value)) {
+    clipboardStatus.value = 'Local row interaction in progress; collaborator simulation paused.';
+    return;
+  }
+  presenceStep.value += 1;
   const sourceWorkbook = createSpreadsheetWorkbookFromGridSource(
     simulationWorkbook,
     getRowsForSimulation(grid, simulationWorkbook.rows),
@@ -483,18 +502,6 @@ function onClipboardPaste(event: CustomEvent<{ parsed?: unknown[][] }>) {
 }
 
 function onBeforeEdit(event: Event) {
-  if (insertSpreadsheetRowFromPinnedDropdown(event, {
-    getGrid,
-    getWorkbook: () => workbook.value,
-    setWorkbook: (nextWorkbook) => {
-      workbook.value = nextWorkbook;
-    },
-    setClipboardStatus: (message) => {
-      clipboardStatus.value = message;
-    },
-  })) {
-    return;
-  }
   onReadonlyEdit(event);
 }
 

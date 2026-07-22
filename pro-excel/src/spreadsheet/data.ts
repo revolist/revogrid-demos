@@ -152,7 +152,6 @@ export function createSpreadsheetPinnedBottomSource(rows: DataType[]): DataType[
     return [];
   }
   const lastRow = rows.length;
-  const totalRow = lastRow + 1;
   return [{
     department: `Total - ${lastRow} row${lastRow > 1 ? 's' : ''}`,
     owner: '',
@@ -161,10 +160,10 @@ export function createSpreadsheetPinnedBottomSource(rows: DataType[]): DataType[
     mar: `=SUM(E1:E${lastRow})`,
     total: `=SUM(F1:F${lastRow})`,
     target: `=SUM(G1:G${lastRow})`,
-    variance: `=F${totalRow}-G${totalRow}`,
-    margin: `=IF(G${totalRow}=0,0,F${totalRow}/G${totalRow})`,
+    variance: '=PortfolioTotal-SUM(Targets)',
+    margin: '=IF(SUM(Targets)=0,0,PortfolioTotal/SUM(Targets))',
     trend: 0,
-    status: 'Live formulas',
+    status: '',
   }];
 }
 
@@ -172,11 +171,35 @@ export function createSpreadsheetCellMerge(rows: DataType[], imported = false): 
   if (imported || !rows.length) {
     return [];
   }
-  return [{
-    row: 0,
-    column: 0,
-    rowType: 'rowPinEnd',
-    colType: 'colPinStart',
-    colSpan: 2,
-  }];
+
+  const departmentMerges: MergeData[] = [];
+  let runStart = 0;
+  while (runStart < rows.length) {
+    const department = rows[runStart]?.department;
+    let runEnd = runStart + 1;
+    while (runEnd < rows.length && rows[runEnd]?.department === department) {
+      runEnd += 1;
+    }
+    if (department !== '' && department !== null && typeof department !== 'undefined' && runEnd - runStart > 1) {
+      departmentMerges.push({
+        row: runStart,
+        column: 0,
+        rowType: 'rgRow',
+        colType: 'colPinStart',
+        rowSpan: runEnd - runStart,
+      });
+    }
+    runStart = runEnd;
+  }
+
+  return [
+    ...departmentMerges,
+    {
+      row: 0,
+      column: 0,
+      rowType: 'rowPinEnd',
+      colType: 'colPinStart',
+      colSpan: 2,
+    },
+  ];
 }

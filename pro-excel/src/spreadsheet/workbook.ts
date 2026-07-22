@@ -14,6 +14,7 @@ import {
   columnTypeRenderer,
   createFormulaConditionalCellProperties,
   createNamedRangeDropdown,
+  editorDropdown,
   evaluateRawValuesFormula,
   progressLineWithValueRenderer,
   sparklineRenderer,
@@ -93,7 +94,6 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
       name: 'Department',
       prop: 'department',
       size: 120,
-      merge: true,
       columnType: 'departmentDropdown',
       spreadsheetHeaderIconType: 'string',
       filter: ['selection'],
@@ -120,6 +120,7 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
       sealed: true,
       flash: true,
       spreadsheetHeaderIconType: 'currency',
+      cellParser: model => spreadsheetFormulaValue(model.total, rows, columns, formulaNames.names),
       cellTemplate: currencyTemplate,
       cellProperties: createReadonlySpreadsheetNumberCellProperties(),
     },
@@ -131,6 +132,7 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
       readonly: true,
       flash: true,
       spreadsheetHeaderIconType: 'currency',
+      cellParser: model => spreadsheetFormulaValue(model.variance, rows, columns, formulaNames.names),
       cellTemplate: signedCurrencyTemplate,
     },
     {
@@ -178,6 +180,7 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
       spreadsheetHeaderIconType: 'string',
       filter: ['selection'],
       flash: true,
+      cellTemplate: spreadsheetStatusTemplate,
     },
   ];
 
@@ -200,6 +203,7 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
     names: formulaNames.names,
     label: value => String(value),
   }, {
+    config: { popupClassName: 'spreadsheet-department-dropdown' },
     renderOption: (h, option) => departmentTemplate(h, { value: option.value }),
     renderSelectedValue: (h, selectedOptions, children) => (
       selectedOptions.length
@@ -213,6 +217,7 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
     names: formulaNames.names,
     label: value => String(value),
   }, {
+    config: { popupClassName: 'spreadsheet-status-dropdown' },
     renderOption: (h, option) => statusTemplate(h, { value: option.value }),
     renderSelectedValue: (h, selectedOptions, children) => (
       selectedOptions.length
@@ -231,9 +236,24 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
   );
   return createSpreadsheetColumnGroups(columns.map(column => ({
     ...column,
+    readonly: createSpreadsheetPinnedSummaryReadonly(column.readonly),
+    sortable: true,
     columnTemplate: createSpreadsheetHeaderTypeTemplate(column.spreadsheetHeaderIconType ?? 'string'),
     columnProperties: createSpreadsheetHeaderProperties('spreadsheet-header-leaf', column.columnProperties),
   })));
+}
+
+function createSpreadsheetPinnedSummaryReadonly(
+  readonly: ColumnRegular['readonly'],
+): NonNullable<ColumnRegular['readonly']> {
+  if (readonly === true) {
+    return true;
+  }
+
+  return model => (
+    model.type === 'rowPinEnd'
+    || (typeof readonly === 'function' && readonly(model))
+  );
 }
 
 function createEmptySpreadsheetColumns(columnCount: number): ColumnData {
@@ -243,6 +263,7 @@ function createEmptySpreadsheetColumns(columnCount: number): ColumnData {
     size: index < 2 ? 140 : 118,
     filter: 'input',
     flash: true,
+    sortable: true,
     columnTemplate: createSpreadsheetHeaderTypeTemplate('string'),
     columnProperties: createSpreadsheetHeaderProperties('spreadsheet-header-leaf'),
   }));
@@ -526,6 +547,15 @@ function createSpreadsheetTrendSeries(row: Partial<SpreadsheetRow>) {
   }
   return actuals;
 }
+
+const spreadsheetStatusTemplate: ColumnRegular['cellTemplate'] = (h, schema, additionalData) => (
+  schema.type === 'rowPinEnd'
+    ? h('span', {
+      class: 'spreadsheet-summary-status',
+      'aria-label': 'No governance status for total row',
+    })
+    : editorDropdown(h, schema, additionalData)
+);
 
 function statusTemplate(h: any, { value }: { value?: unknown }) {
   const status = String(value ?? '');

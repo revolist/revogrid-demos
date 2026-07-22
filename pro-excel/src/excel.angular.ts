@@ -34,8 +34,8 @@ import {
   MultiRangeSelectionPlugin,
   NamedRangesPlugin,
   RowHeaderPlugin,
+  RowSelectPlugin,
   RowOrderPlugin,
-  SameValueMergePlugin,
   TooltipPlugin,
   type HistoryState,
 } from '@revolist/revogrid-pro';
@@ -43,6 +43,7 @@ import {
   SPREADSHEET_ACTION_ICONS,
   SPREADSHEET_EXPORT_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
+  SPREADSHEET_ROW_SELECT_CONFIG,
   createSpreadsheetCellFlashConfig,
   createSpreadsheetContextMenus,
   createSpreadsheetDisplayColumns,
@@ -60,7 +61,6 @@ import {
   installSpreadsheetFormulaEditorHighlight,
   installSpreadsheetReadonlyEditGuard,
   installSpreadsheetAutofillStrategy,
-  insertSpreadsheetRowFromPinnedDropdown,
   isSpreadsheetDarkTheme,
   preventReadonlySpreadsheetEdit,
   summarizeClipboardMatrix,
@@ -71,6 +71,7 @@ import {
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
+import { installSpreadsheetCellMergeSync } from './spreadsheet/interaction-merge-sync';
 import {
   getSpreadsheetGridRowsForSimulation,
   hasSpreadsheetSimulationDataChange,
@@ -194,6 +195,7 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
             [formulaDependencyHighlight]="formulaDependencyHighlight"
             [exportExcel]="exportExcel"
             [rowOrder]="rowOrder"
+            [rowSelect]="rowSelect"
             [additionalData]="additionalData"
             [rowContextMenu]="rowContextMenu"
             [columnContextMenu]="columnContextMenu"
@@ -261,6 +263,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   exportExcel = createSpreadsheetExportExcelConfig();
   rowHeaders = createSpreadsheetRowHeaders();
   rowOrder = SPREADSHEET_ROW_ORDER_CONFIG;
+  rowSelect = SPREADSHEET_ROW_SELECT_CONFIG;
   private workbookController: SpreadsheetContextMenuController = {
     getGrid: () => this.gridElement?.nativeElement,
     getWorkbook: () => this.workbook,
@@ -282,6 +285,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   };
   plugins = this.buildPlugins();
   private disconnectContextSelectionGuard?: () => void;
+  private disconnectCellMergeSync?: () => void;
   private disconnectReadonlyEditGuard?: () => void;
   private disconnectFormulaHighlight?: () => void;
   private presenceTimer?: number;
@@ -317,6 +321,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     const grid = this.gridElement.nativeElement;
     grid.formulaBar = this.formulaBar;
     void installSpreadsheetAutofillStrategy(grid);
+    this.disconnectCellMergeSync = installSpreadsheetCellMergeSync(grid);
     this.disconnectContextSelectionGuard = installSpreadsheetContextSelectionGuard(
       this.shellElement.nativeElement,
       () => this.gridElement?.nativeElement,
@@ -345,6 +350,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
 
   ngOnDestroy() {
     this.disconnectContextSelectionGuard?.();
+    this.disconnectCellMergeSync?.();
     this.disconnectReadonlyEditGuard?.();
     this.disconnectFormulaHighlight?.();
     if (this.presenceTimer) {
@@ -376,9 +382,11 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   }
 
   async formatFocusedCell() {
+    const selectionPlugin = await this.getPlugin(MultiRangeSelectionPlugin);
     const result = toggleSpreadsheetFocusedCellFormat(
       this.workbook,
       await this.gridElement?.nativeElement?.getFocused?.(),
+      selectionPlugin,
     );
     this.workbook = result.workbook;
     this._simulationWorkbook = result.workbook;
@@ -412,8 +420,12 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   }
 
   async runPresenceSimulation() {
-    this.presenceStep += 1;
     const grid = this.gridElement?.nativeElement;
+    if (shouldDeferSpreadsheetSimulationDataUpdate(grid, this.shellElement?.nativeElement)) {
+      this.clipboardStatus = 'Local row interaction in progress; collaborator simulation paused.';
+      return;
+    }
+    this.presenceStep += 1;
     const sourceWorkbook = createSpreadsheetWorkbookFromGridSource(
       this._simulationWorkbook,
       this.getRowsForSimulation(grid, this._simulationWorkbook.rows),
@@ -461,9 +473,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   }
 
   onBeforeEdit(event: Event) {
-    if (insertSpreadsheetRowFromPinnedDropdown(event, this.workbookController)) {
-      return;
-    }
     this.onReadonlyEdit(event);
   }
 
@@ -485,8 +494,12 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   }
 
   private async runFeedFlashStep() {
-    this.feedStep += 1;
     const grid = this.gridElement?.nativeElement;
+    if (shouldDeferSpreadsheetSimulationDataUpdate(grid, this.shellElement?.nativeElement)) {
+      this.clipboardStatus = 'Local row interaction in progress; feed simulation paused.';
+      return;
+    }
+    this.feedStep += 1;
     const sourceWorkbook = createSpreadsheetWorkbookFromGridSource(
       this._simulationWorkbook,
       this.getRowsForSimulation(grid, this._simulationWorkbook.rows),
@@ -525,6 +538,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
       AutoFillPreviewPlugin,
       MultiRangeSelectionPlugin,
       RowHeaderPlugin,
+      RowSelectPlugin,
       RowOrderPlugin,
       ColumnMoveAdvancedPlugin,
       ColumnCollapsePlugin,
@@ -534,7 +548,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
       FilterHeaderPlugin,
       CellValidatePlugin,
       CellMergePlugin,
-      SameValueMergePlugin,
       TooltipPlugin,
       ColumnHidePlugin,
       ColumnStretchPlugin,

@@ -44,6 +44,51 @@ test('toggles formatting on the focused body cell and preserves existing cell cl
   assert.equal((removedProps as CellProps | undefined)?.class, 'existing');
 });
 
+test('toggles formatting across the unique union of selected ranges', () => {
+  const workbook = createSpreadsheetWorkbook();
+  const ownerColumn = getSpreadsheetLeafColumns(workbook.columns).find(item => item.prop === 'owner')!;
+  const initiallyFormatted = toggleSpreadsheetFocusedCellFormat(workbook, {
+    model: workbook.rows[1],
+    rowType: 'rgRow',
+    column: ownerColumn,
+  }).workbook;
+  const createSelectionPlugin = (rows: typeof workbook.rows) => ({
+    getSelectedRanges: () => [
+      { rowType: 'rgRow' as const, colType: 'colPinStart' as const, range: { x: 1, y: 1, x1: 1, y1: 3 } },
+      { rowType: 'rgRow' as const, colType: 'colPinStart' as const, range: { x: 1, y: 2, x1: 1, y1: 3 } },
+    ],
+    providers: {
+      data: { getModel: (row: number) => rows[row] },
+      column: { getColumn: (column: number) => column === 1 ? ownerColumn : undefined },
+    },
+  });
+
+  const applied = toggleSpreadsheetFocusedCellFormat(
+    initiallyFormatted,
+    { model: initiallyFormatted.rows[1], rowType: 'rgRow', column: ownerColumn },
+    createSelectionPlugin(initiallyFormatted.rows),
+  );
+  const displayColumn = getSpreadsheetLeafColumns(applySpreadsheetCellFormatting([ownerColumn]))[0] as ColumnRegular;
+  const isFormatted = (rows: typeof workbook.rows, row: number) => (
+    (displayColumn.cellProperties?.({ model: rows[row], prop: 'owner' } as never) as CellProps | undefined)
+      ?.class === 'spreadsheet-cell-formatted'
+  );
+
+  assert.equal(applied.formatted, true);
+  assert.equal(applied.message, 'Applied emphasis formatting to 3 selected cells.');
+  assert.deepEqual([0, 1, 2, 3, 4].map(row => isFormatted(applied.workbook.rows, row)), [false, true, true, true, false]);
+
+  const removed = toggleSpreadsheetFocusedCellFormat(
+    applied.workbook,
+    { model: applied.workbook.rows[1], rowType: 'rgRow', column: ownerColumn },
+    createSelectionPlugin(applied.workbook.rows),
+  );
+
+  assert.equal(removed.formatted, false);
+  assert.equal(removed.message, 'Removed formatting from 3 selected cells.');
+  assert.deepEqual([1, 2, 3].map(row => isFormatted(removed.workbook.rows, row)), [false, false, false]);
+});
+
 test('asks for a body-cell selection without changing the workbook', () => {
   const workbook = createSpreadsheetWorkbook();
   const result = toggleSpreadsheetFocusedCellFormat(workbook, null);

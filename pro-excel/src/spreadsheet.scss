@@ -975,10 +975,6 @@ revo-grid.spreadsheet-grid .spreadsheet-cell-formatted {
   padding: 0 6px 2px 6px !important;
 }
 
-.spreadsheet-workbench revo-grid.filter-header revogr-header .rgHeaderCell.spreadsheet-header-leaf .filter-input {
-  padding-right: 26px !important;
-}
-
 .spreadsheet-workbench revo-grid.filter-header revogr-header .rgHeaderCell button.rv-filter:not(.filter-header-selection-trigger) {
   align-items: center;
   bottom: auto;
@@ -987,14 +983,14 @@ revo-grid.spreadsheet-grid .spreadsheet-cell-formatted {
   height: 20px;
   justify-content: center;
   line-height: 20px;
-  right: 3px;
-  top: 30px;
+  right: 11px;
+  top: 32px;
   width: 20px;
 }
 
 .spreadsheet-workbench revo-grid.filter-header[theme*="material"] revogr-header .rgHeaderCell button.rv-filter:not(.filter-header-selection-trigger),
 .spreadsheet-workbench revo-grid.filter-header[theme*="Material"] revogr-header .rgHeaderCell button.rv-filter:not(.filter-header-selection-trigger) {
-  top: 48px;
+  top: 50px;
 }
 
 .spreadsheet-workbench revo-grid revogr-data .rgRow:not(.row-flash-active) .rgCell.disabled:not([flash]) {
@@ -1006,8 +1002,9 @@ revo-grid.spreadsheet-grid .spreadsheet-cell-formatted {
 }
 
 .spreadsheet-workbench revo-grid.filter-header revogr-header .rgHeaderCell button.rv-filter:not(.filter-header-selection-trigger) .filter-img {
-  height: 13px;
-  width: 13px;
+  flex: 0 0 10px;
+  height: 10px;
+  width: 10px;
 }
 
 .spreadsheet-workbench revo-grid revogr-header .filter-header-box,
@@ -1202,6 +1199,38 @@ revo-grid.spreadsheet-grid .spreadsheet-cell-formatted {
   border-radius: 50%;
   background: currentColor;
   content: "";
+}
+
+.revo-dropdown-menu.spreadsheet-department-dropdown {
+  --sheet-border-strong: rgba(0, 0, 0, 0.14);
+  --sheet-panel: #f6f8fa;
+}
+
+.revo-dropdown-menu.spreadsheet-department-dropdown[data-theme^="dark"] {
+  --sheet-border-strong: rgba(255, 255, 255, 0.12);
+  --sheet-panel: #16161a;
+}
+
+.revo-dropdown-menu.spreadsheet-status-dropdown {
+  --sheet-status-committed-bg: rgba(15, 139, 76, 0.08);
+  --sheet-status-committed-text: #137333;
+  --sheet-status-forecast-bg: rgba(29, 78, 216, 0.07);
+  --sheet-status-forecast-text: #1d4ed8;
+  --sheet-status-watch-bg: rgba(161, 92, 0, 0.08);
+  --sheet-status-watch-text: #a15c00;
+  --sheet-status-blocked-bg: rgba(197, 34, 31, 0.07);
+  --sheet-status-blocked-text: #c5221f;
+}
+
+.revo-dropdown-menu.spreadsheet-status-dropdown[data-theme^="dark"] {
+  --sheet-status-committed-bg: rgba(119, 211, 145, 0.16);
+  --sheet-status-committed-text: #9be7ad;
+  --sheet-status-forecast-bg: rgba(114, 167, 255, 0.18);
+  --sheet-status-forecast-text: #b9d4ff;
+  --sheet-status-watch-bg: rgba(249, 194, 112, 0.18);
+  --sheet-status-watch-text: #ffd79a;
+  --sheet-status-blocked-bg: rgba(255, 138, 133, 0.18);
+  --sheet-status-blocked-text: #ffb4ad;
 }
 
 .spreadsheet-workbench revo-grid .revo-dropdown-container,

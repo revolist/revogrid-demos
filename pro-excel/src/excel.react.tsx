@@ -24,8 +24,8 @@ import {
   MultiRangeSelectionPlugin,
   NamedRangesPlugin,
   RowHeaderPlugin,
+  RowSelectPlugin,
   RowOrderPlugin,
-  SameValueMergePlugin,
   TooltipPlugin,
   type HistoryState,
 } from '@revolist/revogrid-pro';
@@ -34,6 +34,7 @@ import {
   SPREADSHEET_ACTION_ICONS,
   SPREADSHEET_EXPORT_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
+  SPREADSHEET_ROW_SELECT_CONFIG,
   createSpreadsheetCellFlashConfig,
   createSpreadsheetContextMenus,
   createSpreadsheetDisplayColumns,
@@ -51,7 +52,6 @@ import {
   installSpreadsheetFormulaEditorHighlight,
   installSpreadsheetReadonlyEditGuard,
   installSpreadsheetAutofillStrategy,
-  insertSpreadsheetRowFromPinnedDropdown,
   preventReadonlySpreadsheetEdit,
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
@@ -60,6 +60,7 @@ import {
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
+import { installSpreadsheetCellMergeSync } from './spreadsheet/interaction-merge-sync';
 import {
   getSpreadsheetGridRowsForSimulation,
   hasSpreadsheetSimulationDataChange,
@@ -122,6 +123,7 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
   const formulaDependencyHighlight = useMemo(() => createSpreadsheetFormulaDependencyHighlightConfig(), []);
   const exportExcel = useMemo(() => createSpreadsheetExportExcelConfig(), []);
   const rowOrder = useMemo(() => SPREADSHEET_ROW_ORDER_CONFIG, []);
+  const rowSelect = useMemo(() => SPREADSHEET_ROW_SELECT_CONFIG, []);
   const gridTheme = useMemo(() => getSpreadsheetGridTheme(isDark), [isDark]);
   const pluginStack = useMemo(() => getSpreadsheetPluginLabels().join(','), []);
   const displayColumns = useMemo(() => createSpreadsheetDisplayColumns(workbook), [workbook]);
@@ -144,6 +146,7 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     AutoFillPreviewPlugin,
     MultiRangeSelectionPlugin,
     RowHeaderPlugin,
+    RowSelectPlugin,
     RowOrderPlugin,
     ColumnMoveAdvancedPlugin,
     ColumnCollapsePlugin,
@@ -153,7 +156,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     FilterHeaderPlugin,
     CellValidatePlugin,
     CellMergePlugin,
-    SameValueMergePlugin,
     TooltipPlugin,
     ColumnHidePlugin,
     ColumnStretchPlugin,
@@ -182,6 +184,13 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     requestAnimationFrame(() => {
       void installSpreadsheetAutofillStrategy(gridRef.current);
     });
+  }, []);
+
+  useEffect(() => {
+    if (!gridRef.current) {
+      return;
+    }
+    return installSpreadsheetCellMergeSync(gridRef.current);
   }, []);
 
   useEffect(() => {
@@ -220,6 +229,10 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
   }, []);
 
   const runPresenceSimulation = useCallback(async () => {
+    if (shouldDeferSpreadsheetSimulationDataUpdate(gridRef.current, shellRef.current)) {
+      setClipboardStatus('Local row interaction in progress; collaborator simulation paused.');
+      return;
+    }
     const nextStep = presenceStepRef.current + 1;
     presenceStepRef.current = nextStep;
     setPresenceStep(nextStep);
@@ -266,14 +279,16 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
   }, [getPlugin]);
 
   const formatFocusedCell = useCallback(async () => {
+    const selectionPlugin = await getPlugin(MultiRangeSelectionPlugin);
     const result = toggleSpreadsheetFocusedCellFormat(
       workbookRef.current,
       await gridRef.current?.getFocused?.(),
+      selectionPlugin,
     );
     workbookRef.current = result.workbook;
     setWorkbook(result.workbook);
     setClipboardStatus(result.message);
-  }, []);
+  }, [getPlugin]);
 
   const stopFeedFlash = useCallback((message?: string) => {
     if (feedTimerRef.current) {
@@ -291,6 +306,10 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
   }, [stopFeedFlash]);
 
   const runFeedFlashStep = useCallback(async () => {
+    if (shouldDeferSpreadsheetSimulationDataUpdate(gridRef.current, shellRef.current)) {
+      setClipboardStatus('Local row interaction in progress; feed simulation paused.');
+      return;
+    }
     feedStepRef.current += 1;
     const sourceWorkbook = createSpreadsheetWorkbookFromGridSource(
       workbookRef.current,
@@ -360,16 +379,8 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
   }, [workbook.columns]);
 
   const onBeforeEdit = useCallback((event: Event) => {
-    if (insertSpreadsheetRowFromPinnedDropdown(event, {
-      getGrid: () => gridRef.current,
-      getWorkbook: () => workbook,
-      setWorkbook,
-      setClipboardStatus,
-    })) {
-      return;
-    }
     preventReadonlySpreadsheetEdit(event, workbook.columns, setClipboardStatus);
-  }, [workbook, setWorkbook]);
+  }, [workbook.columns]);
 
   const contextMenus = useMemo(() => createSpreadsheetContextMenus({
     getGrid: () => gridRef.current,
@@ -399,6 +410,7 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
       formulaDependencyHighlight={formulaDependencyHighlight}
       exportExcel={exportExcel}
       rowOrder={rowOrder}
+      rowSelect={rowSelect}
       additionalData={additionalData}
       rowContextMenu={contextMenus.rowContextMenu}
       columnContextMenu={contextMenus.columnContextMenu}
@@ -439,6 +451,7 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     onSelectionChange,
     plugins,
     rowOrder,
+    rowSelect,
     rowHeaderConfig,
     workbook,
   ]);
