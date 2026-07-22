@@ -338,9 +338,9 @@ function getGridElement() {
   return (grid?.$el ?? grid) as HTMLRevoGridElement | undefined;
 }
 
-function changeSort(value: string) {
+function changeSort(value: string, additive = false) {
   sortBy.value = value as ProjectSortValue;
-  void applyProjectSort(getGridElement(), columns.value, sortBy.value);
+  void applyProjectSort(getGridElement(), columns.value, sortBy.value, additive);
 }
 
 function toggleGroups() {
@@ -392,7 +392,7 @@ function handleToolbarAction(event: ProjectTrackerToolbarActionEvent) {
     return;
   }
   if (detail.action === 'sort') {
-    changeSort(detail.value);
+    changeSort(detail.value, detail.additive);
     return;
   }
   if (detail.action === 'bulk') {

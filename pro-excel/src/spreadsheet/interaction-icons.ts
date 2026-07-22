@@ -14,6 +14,7 @@ import filterIcon from '@fortawesome/fontawesome-free/svgs/solid/filter.svg?raw'
 import fileCirclePlusIcon from '@fortawesome/fontawesome-free/svgs/solid/file-circle-plus.svg?raw';
 import fileExportIcon from '@fortawesome/fontawesome-free/svgs/solid/file-export.svg?raw';
 import magnifyingGlassIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?raw';
+import paintbrushIcon from '@fortawesome/fontawesome-free/svgs/solid/paintbrush.svg?raw';
 import pasteIcon from '@fortawesome/fontawesome-free/svgs/solid/paste.svg?raw';
 import scissorsIcon from '@fortawesome/fontawesome-free/svgs/solid/scissors.svg?raw';
 import tableColumnsIcon from '@fortawesome/fontawesome-free/svgs/solid/table-columns.svg?raw';
@@ -43,6 +44,7 @@ export {
 export const SPREADSHEET_ACTION_ICONS = {
   newWorkbook: fileCirclePlusIcon,
   export: fileExportIcon,
+  format: paintbrushIcon,
   undo: arrowRotateLeftIcon,
   redo: arrowRotateRightIcon,
   smartFill: wandMagicSparklesIcon,

@@ -9,6 +9,7 @@ A preset-driven RevoGrid Pro project tracker implemented in Vanilla TypeScript, 
 - Selection, text, date, number, and slider filters with custom filter-header rendering
 - Dropdown, multi-select, date, currency, integer, progress, timeline, avatar, and rating cells
 - Drag-and-drop row ordering, sorting, pinning, hiding, and responsive last-column stretching
+- Additive multi-column sorting from Shift-clicked headers or Sort-menu choices, with visible sort-priority badges
 - A column-add popup for adding and removing project-specific dynamic columns
 - Inline project progress, budget summaries, editable fields, and light/dark theme controls
 

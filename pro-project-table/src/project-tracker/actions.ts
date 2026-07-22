@@ -32,7 +32,12 @@ export function resolveProjectSortValueFromConfig(detail: unknown): ProjectSortV
   return projectSortOptions.some((option) => option.value === value) ? value : '';
 }
 
-export async function applyProjectSort(grid: HTMLRevoGridElement | undefined | null, columns: ColumnRegular[], value: ProjectSortValue) {
+export async function applyProjectSort(
+  grid: HTMLRevoGridElement | undefined | null,
+  columns: ColumnRegular[],
+  value: ProjectSortValue,
+  additive = false,
+) {
   if (!grid) return;
   const sort = resolveProjectSort(value);
   if (!sort) {
@@ -40,7 +45,7 @@ export async function applyProjectSort(grid: HTMLRevoGridElement | undefined | n
     return;
   }
   const column = columns.find((col) => col.prop === sort.prop);
-  if (column) await grid.updateColumnSorting(column, sort.order, false);
+  if (column) await grid.updateColumnSorting(column, sort.order, additive);
 }
 
 export function getSelectedProjectIndexes(event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>) {

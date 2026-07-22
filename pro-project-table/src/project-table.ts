@@ -219,7 +219,7 @@ export function load(parentSelector: string) {
     if (detail.action === 'sort') {
       sortBy = detail.value;
       syncToolbar();
-      void applyProjectSort(grid, columns, sortBy);
+      void applyProjectSort(grid, columns, sortBy, detail.additive);
       return;
     }
     if (detail.action === 'bulk') {

@@ -14,6 +14,7 @@ import {
   columnTypeRenderer,
   createFormulaConditionalCellProperties,
   createNamedRangeDropdown,
+  evaluateRawValuesFormula,
   progressLineWithValueRenderer,
   sparklineRenderer,
   validationRenderer,
@@ -105,7 +106,7 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
       prop: 'owner',
       size: 140,
       spreadsheetHeaderIconType: 'string',
-      filter: 'input',
+      filter: ['selection'],
       flash: true,
     },
     currencyColumn('Jan', 'jan'),
@@ -141,6 +142,9 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
       spreadsheetHeaderIconType: 'decimal',
       minValue: 90,
       maxValue: 110,
+      filter: ['slider'],
+      filterPlaceholder: 'Range',
+      cellParser: model => spreadsheetFormulaValue(model.margin, rows, columns, formulaNames.names),
       thresholds: [
         { value: 102, className: 'high' },
         { value: 98, className: 'medium' },
@@ -445,7 +449,10 @@ function currencyTemplate(h: any, { value }: { value?: unknown }) {
 }
 
 function departmentTemplate(h: any, { value }: { value?: unknown }) {
-  return h('span', { class: 'spreadsheet-department-tag' }, String(value ?? ''));
+  if (value === '' || value === null || value === undefined) {
+    return '';
+  }
+  return h('span', { class: 'spreadsheet-department-tag' }, String(value));
 }
 
 function signedCurrencyTemplate(h: any, { value }: { value?: unknown }) {
@@ -467,6 +474,17 @@ function spreadsheetActualsCollapsedValue(schema: CellTemplateProp) {
     const numeric = Number(row?.[prop as keyof SpreadsheetRow]);
     return Number.isFinite(numeric) ? total + numeric : total;
   }, 0);
+}
+
+function spreadsheetFormulaValue(
+  value: unknown,
+  rows: DataType[],
+  columns: ColumnRegular[],
+  names: ReturnType<typeof createSpreadsheetFormulaNames>['names'],
+) {
+  return typeof value === 'string' && value.startsWith('=')
+    ? evaluateRawValuesFormula(value, rows, columns, { names })
+    : value;
 }
 
 function marginTemplate(h: Parameters<CellTemplate>[0], schema: CellTemplateProp) {

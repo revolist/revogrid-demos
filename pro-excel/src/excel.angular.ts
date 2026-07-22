@@ -66,6 +66,7 @@ import {
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
   summarizeSelection,
+  toggleSpreadsheetFocusedCellFormat,
   type SpreadsheetContextMenuController,
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
@@ -108,6 +109,20 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
           <button class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" (click)="exportWorkbook()">
             <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.export"></span>
             Export XLSX
+          </button>
+        </span>
+        <span class="spreadsheet-ribbon-group">
+          <button
+            class="spreadsheet-btn"
+            type="button"
+            data-testid="spreadsheet-format-cell"
+            title="Toggle emphasis formatting on the selected cell"
+            (pointerdown)="formatFocusedCellFromPointer($event)"
+            (mouseup)="$event.preventDefault()"
+            (click)="formatFocusedCellFromKeyboard($event)"
+          >
+            <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.format"></span>
+            Format cell
           </button>
         </span>
         <span class="spreadsheet-ribbon-group">
@@ -358,6 +373,28 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   async exportWorkbook() {
     const plugin = await this.getPlugin(ExportExcelPlugin);
     await plugin?.export(SPREADSHEET_EXPORT_CONFIG);
+  }
+
+  async formatFocusedCell() {
+    const result = toggleSpreadsheetFocusedCellFormat(
+      this.workbook,
+      await this.gridElement?.nativeElement?.getFocused?.(),
+    );
+    this.workbook = result.workbook;
+    this._simulationWorkbook = result.workbook;
+    this.clipboardStatus = result.message;
+    this.syncWorkbookUi();
+  }
+
+  formatFocusedCellFromPointer(event: PointerEvent) {
+    event.preventDefault();
+    void this.formatFocusedCell();
+  }
+
+  formatFocusedCellFromKeyboard(event: MouseEvent) {
+    if (event.detail === 0) {
+      void this.formatFocusedCell();
+    }
   }
 
   toggleFeedFlash() {

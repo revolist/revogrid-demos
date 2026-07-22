@@ -416,10 +416,10 @@ export class ColorGridComponent implements OnDestroy {
     this.syncToolbarState();
   }
 
-  changeSort(value: ProjectSortValue) {
+  changeSort(value: ProjectSortValue, additive = false) {
     this.sortBy = value;
     this.syncToolbarState();
-    void applyProjectSort(this.gridRef?.nativeElement, this.columns, this.sortBy);
+    void applyProjectSort(this.gridRef?.nativeElement, this.columns, this.sortBy, additive);
   }
 
   openStatusFilter() {
@@ -498,7 +498,7 @@ export class ColorGridComponent implements OnDestroy {
       return;
     }
     if (detail.action === 'sort') {
-      this.changeSort(detail.value);
+      this.changeSort(detail.value, detail.additive);
       return;
     }
     if (detail.action === 'bulk') {

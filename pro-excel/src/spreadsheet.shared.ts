@@ -61,6 +61,15 @@ export {
 } from './spreadsheet/presentation';
 
 export {
+  applySpreadsheetCellFormatting,
+  toggleSpreadsheetFocusedCellFormat,
+} from './spreadsheet/formatting';
+export type {
+  SpreadsheetCellFormatResult,
+  SpreadsheetFocusedCell,
+} from './spreadsheet/formatting';
+
+export {
   formatWorkbookStatus,
   summarizeClipboardMatrix,
   summarizeSelection,

@@ -20,7 +20,7 @@ export type ProjectTrackerToolbarAction =
   | { action: 'filter' }
   | { action: 'toggleGroups' }
   | { action: 'group'; value: ProjectGroupProp }
-  | { action: 'sort'; value: ProjectSortValue }
+  | { action: 'sort'; value: ProjectSortValue; additive: boolean }
   | { action: 'bulk'; value: ProjectBulkAction }
   | { action: 'hideColumn'; prop: ColumnProp; visible: boolean };
 
@@ -140,7 +140,14 @@ export class ProjectTrackerToolbarElement extends HTMLElement {
           aria-label="${groupToggleLabel}"
           ${groupBy ? '' : 'disabled'}
         >${renderToolbarIcon(groupsExpanded ? projectToolbarIcons.collapse : projectToolbarIcons.expand)}</button>
-        ${renderMenuControl('Sort', 'sort', projectSortOptions, sortBy, projectToolbarIcons.sort)}
+        ${renderMenuControl(
+          'Sort',
+          'sort',
+          projectSortOptions,
+          sortBy,
+          projectToolbarIcons.sort,
+          'Shift-click to add another sort',
+        )}
         <button data-toolbar-action="filter" type="button" class="project-grid-menu__trigger project-grid-menu__trigger--button">
           ${renderToolbarIcon(projectToolbarIcons.filter)}
           <span>Filter</span>
@@ -199,15 +206,21 @@ export class ProjectTrackerToolbarElement extends HTMLElement {
     });
 
     this.querySelectorAll<HTMLButtonElement>('[data-menu-value]').forEach((button) => {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', (event) => {
         const menu = button.closest<HTMLElement>('[data-toolbar-menu]')?.dataset.toolbarMenu;
         if (menu === 'group') {
           this.emit({ action: 'group', value: button.dataset.menuValue as ProjectGroupProp });
         }
         if (menu === 'sort') {
-          this.emit({ action: 'sort', value: button.dataset.menuValue as ProjectSortValue });
+          this.emit({
+            action: 'sort',
+            value: button.dataset.menuValue as ProjectSortValue,
+            additive: event.shiftKey,
+          });
         }
-        this.closeMenus();
+        if (menu !== 'sort' || !event.shiftKey) {
+          this.closeMenus();
+        }
       });
     });
 
@@ -235,6 +248,7 @@ function renderMenuControl<T extends string>(
   options: Array<ProjectToolbarOption<T>>,
   value: T,
   icon: string,
+  hint?: string,
 ) {
   return `
     <details class="project-grid-menu" data-toolbar-menu="${id}">
@@ -247,6 +261,7 @@ function renderMenuControl<T extends string>(
             data-menu-value="${escapeAttr(option.value)}"
           ><span class="project-grid-menu__check" aria-hidden="true"></span>${renderMenuIcon(option.icon, option.tone)}<span>${option.label}</span></button>
         `).join('')}
+        ${hint ? `<p class="project-grid-menu__hint">${escapeAttr(hint)}</p>` : ''}
       </div>
     </details>
   `;

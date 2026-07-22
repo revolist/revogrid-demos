@@ -58,6 +58,7 @@ import {
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
   summarizeSelection,
+  toggleSpreadsheetFocusedCellFormat,
   type SpreadsheetContextMenuController,
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
@@ -128,10 +129,23 @@ export function load(parentSelector: string) {
 
   const exportButton = button('Export XLSX', exportWorkbook, SPREADSHEET_ACTION_ICONS.export);
   exportButton.dataset.testid = 'spreadsheet-export';
+  const formatButton = button('Format cell', (event) => {
+    if (event.detail === 0) {
+      void formatFocusedCell();
+    }
+  }, SPREADSHEET_ACTION_ICONS.format);
+  formatButton.dataset.testid = 'spreadsheet-format-cell';
+  formatButton.title = 'Toggle emphasis formatting on the selected cell';
+  formatButton.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    void formatFocusedCell();
+  });
+  formatButton.addEventListener('mouseup', event => event.preventDefault());
   const undoButton = button('Undo 0', () => runHistory('undo'), SPREADSHEET_ACTION_ICONS.undo);
   const redoButton = button('Redo 0', () => runHistory('redo'), SPREADSHEET_ACTION_ICONS.redo);
   ribbon.append(
     group(exportButton),
+    group(formatButton),
     group(undoButton, redoButton),
   );
 
@@ -237,13 +251,13 @@ export function load(parentSelector: string) {
     shell.remove();
   };
 
-  function button(label: string, onClick: () => void | Promise<void>, icon?: string) {
+  function button(label: string, onClick: (event: MouseEvent) => void | Promise<void>, icon?: string) {
     const item = document.createElement('button');
     item.className = 'spreadsheet-btn';
     item.type = 'button';
     setButtonContent(item, label, icon);
-    item.addEventListener('click', () => {
-      void onClick();
+    item.addEventListener('click', (event) => {
+      void onClick(event);
     });
     return item;
   }
@@ -367,6 +381,15 @@ export function load(parentSelector: string) {
   async function exportWorkbook() {
     const plugin = await getPlugin(ExportExcelPlugin);
     await plugin?.export(SPREADSHEET_EXPORT_CONFIG);
+  }
+
+  async function formatFocusedCell() {
+    const result = toggleSpreadsheetFocusedCellFormat(workbook, await grid.getFocused?.());
+    workbook = result.workbook;
+    clipboardStatus.textContent = result.message;
+    grid.source = workbook.rows;
+    grid.columns = createSpreadsheetDisplayColumns(workbook);
+    syncToolbar();
   }
 
   function stopFeedFlash() {

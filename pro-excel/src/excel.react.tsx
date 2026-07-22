@@ -56,6 +56,7 @@ import {
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
   summarizeSelection,
+  toggleSpreadsheetFocusedCellFormat,
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
@@ -264,6 +265,16 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     await plugin?.export(SPREADSHEET_EXPORT_CONFIG);
   }, [getPlugin]);
 
+  const formatFocusedCell = useCallback(async () => {
+    const result = toggleSpreadsheetFocusedCellFormat(
+      workbookRef.current,
+      await gridRef.current?.getFocused?.(),
+    );
+    workbookRef.current = result.workbook;
+    setWorkbook(result.workbook);
+    setClipboardStatus(result.message);
+  }, []);
+
   const stopFeedFlash = useCallback((message?: string) => {
     if (feedTimerRef.current) {
       window.clearInterval(feedTimerRef.current);
@@ -444,6 +455,25 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
           <button className="spreadsheet-btn" type="button" data-testid="spreadsheet-export" onClick={exportWorkbook}>
             <ActionIcon icon={SPREADSHEET_ACTION_ICONS.export} />
             Export XLSX
+          </button>
+        </span>
+        <span className="spreadsheet-ribbon-group">
+          <button
+            className="spreadsheet-btn"
+            type="button"
+            data-testid="spreadsheet-format-cell"
+            title="Toggle emphasis formatting on the selected cell"
+            onPointerDown={(event) => {
+              event.preventDefault();
+              void formatFocusedCell();
+            }}
+            onMouseUp={event => event.preventDefault()}
+            onClick={(event) => {
+              if (event.detail === 0) void formatFocusedCell();
+            }}
+          >
+            <ActionIcon icon={SPREADSHEET_ACTION_ICONS.format} />
+            Format cell
           </button>
         </span>
         <span className="spreadsheet-ribbon-group">

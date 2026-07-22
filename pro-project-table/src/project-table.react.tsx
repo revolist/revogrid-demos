@@ -137,9 +137,9 @@ function Color() {
     resetSelection();
   };
 
-  const changeSort = (value: ProjectSortValue) => {
+  const changeSort = (value: ProjectSortValue, additive = false) => {
     setSortBy(value);
-    void applyProjectSort(gridRef.current, columns, value);
+    void applyProjectSort(gridRef.current, columns, value, additive);
   };
 
   const toggleHiddenColumn = (prop: ColumnProp, visible: boolean) => {
@@ -173,7 +173,7 @@ function Color() {
         return;
       }
       if (detail.action === 'sort') {
-        changeSort(detail.value);
+        changeSort(detail.value, detail.additive);
         return;
       }
       if (detail.action === 'bulk') {

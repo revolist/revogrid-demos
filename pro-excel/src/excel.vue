@@ -14,6 +14,20 @@
         </button>
       </span>
       <span class="spreadsheet-ribbon-group">
+        <button
+          class="spreadsheet-btn"
+          type="button"
+          data-testid="spreadsheet-format-cell"
+          title="Toggle emphasis formatting on the selected cell"
+          @pointerdown.prevent="formatFocusedCell"
+          @mouseup.prevent
+          @click="handleFormatClick"
+        >
+          <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.format"></span>
+          Format cell
+        </button>
+      </span>
+      <span class="spreadsheet-ribbon-group">
         <button class="spreadsheet-btn" type="button" :disabled="!historyState.canUndo" @click="runHistory('undo')">
           <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.undo"></span>
           Undo {{ historyState.undoStackSize }}
@@ -175,6 +189,7 @@ import {
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
   summarizeSelection,
+  toggleSpreadsheetFocusedCellFormat,
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
@@ -363,6 +378,20 @@ function getRowsForSimulation(grid: HTMLRevoGridElement | null, fallbackRows: un
 async function exportWorkbook() {
   const plugin = await getPlugin(ExportExcelPlugin);
   await plugin?.export(SPREADSHEET_EXPORT_CONFIG);
+}
+
+async function formatFocusedCell() {
+  const grid = getGrid();
+  const result = toggleSpreadsheetFocusedCellFormat(workbook.value, await grid?.getFocused?.());
+  workbook.value = result.workbook;
+  simulationWorkbook = result.workbook;
+  clipboardStatus.value = result.message;
+}
+
+function handleFormatClick(event: MouseEvent) {
+  if (event.detail === 0) {
+    void formatFocusedCell();
+  }
 }
 
 function stopFeedFlash(message?: string) {
