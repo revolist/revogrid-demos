@@ -55,10 +55,10 @@ const monthCompare: NonNullable<PivotConfigDimension['cellCompare']> = (_prop, a
 const FINANCIAL_DIMENSION_DEFINITIONS: PivotConfigDimension[] = [
   { prop: 'Country', fieldGroup: 'Dimensions', sortable: true, order: 'asc', merge: true, filter: ['string', 'selection'] },
   { prop: 'Segment', fieldGroup: 'Dimensions', sortable: true, order: 'asc', merge: true, filter: ['string', 'selection'] },
-  { prop: 'Year', fieldGroup: ['Dimensions', 'Dates'], sortable: true, order: 'asc', columnType: 'integer', filter: ['number', 'selection'] },
+  { prop: 'Year', fieldGroup: ['Dimensions', 'Date'], sortable: true, order: 'asc', columnType: 'integer', filter: ['number', 'selection'] },
   {
     prop: 'Month',
-    fieldGroup: ['Dimensions', 'Dates'],
+    fieldGroup: ['Dimensions', 'Date'],
     sortable: true,
     order: 'asc',
     cellCompare: monthCompare,
