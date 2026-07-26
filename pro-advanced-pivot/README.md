@@ -7,17 +7,20 @@ An Enterprise financial-analysis demo that combines RevoGrid Pivot with Pro grid
 - Configurable row, column, value, and filter dimensions
 - Sales, profitability, and product-performance presets
 - Sum, average, minimum, and maximum aggregations
-- Expand/collapse drill-down, grouped aggregations, subtotals, and grand totals
+- Expand/collapse drill-down, parent-row aggregations, and grand totals
 - Collapsible pivot column groups and multi-row headers
 - Dimension sorting, text/number/selection filters, and header filter controls
 - Currency, numeric, integer, and heatmap column types
+- Linked Pivot charts created from the body-cell context menu
 - Responsive configurator, preset controls, and expanded view
 
 ## Enterprise feature inventory
 
 | Enterprise API | How this demo uses it and why it helps |
 | --- | --- |
-| `PivotPlugin` | Builds the pivot model and configurator, turns dimensions into row and column axes, supports drill-down, and produces grouped aggregations, subtotals, and grand totals. This lets users reshape the same financial data without a new report. |
+| `PivotPlugin` | Builds the pivot model and configurator, turns dimensions into row and column axes, supports drill-down, and produces parent-row aggregations and grand totals. This lets users reshape the same financial data without a new report. |
+| `PivotChartsPlugin` | Projects the active Pivot result into renderer-neutral linked chart data. |
+| `PivotChartsUiPlugin` | Adds the modeless chart dialog and contributes the Create chart action to the body-cell context menu. |
 | `filterPivotSource` | Applies active pivot filter selections before modeling and expanding the initial row groups. |
 
 The demo configures `PivotPlugin` with three reusable financial presets, sortable dimensions, selectable filters, expanded or collapsed row groups, column-group totals, and sum, average, minimum, or maximum value choices.
@@ -30,6 +33,7 @@ Every directly registered item below comes from `@revolist/revogrid-pro`.
 | --- | --- |
 | `AdvanceFilterPlugin` | Adds selection, text, and numeric filter choices to pivot dimensions so users can isolate a market, product, period, or value range. |
 | `ColumnCollapsePlugin` | Collapses generated period or market column groups into aggregate placeholder columns, preserving useful totals while saving width. |
+| `ContextMenuPlugin` | Hosts the Pivot Charts contribution so a chart can be created directly from a Pivot body cell. |
 | `FilterHeaderPlugin` | Places filter controls in the generated headers so filtering stays close to the data being analyzed. |
 | `MultiRowHeaderPlugin` | Renders the pivot's nested column groups as clear multi-level headers instead of a flat, ambiguous label row. |
 | `RowOddPlugin` | Adds stable row striping hooks that improve readability across dense pivot output. |

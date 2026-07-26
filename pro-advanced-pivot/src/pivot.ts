@@ -6,6 +6,8 @@ import {
   FINANCIAL_COLUMNS,
   FINANCIAL_COLUMN_TYPES,
   FINANCIAL_MULTI_ROW_HEADER,
+  FINANCIAL_PIVOT_CHARTS,
+  FINANCIAL_PIVOT_CHARTS_UI,
   FINANCIAL_SHOWCASE_PLUGINS,
   applyFinancialPivotOptions,
   createFinancialPreset,
@@ -88,6 +90,8 @@ export function load(parentSelector: string, rows: any[] | { isDark?: boolean } 
       columns: FINANCIAL_COLUMNS,
       columnTypes: FINANCIAL_COLUMN_TYPES,
       plugins: FINANCIAL_SHOWCASE_PLUGINS,
+      pivotCharts: FINANCIAL_PIVOT_CHARTS,
+      pivotChartsUi: FINANCIAL_PIVOT_CHARTS_UI,
       pivot: applyFinancialPivotOptions(
         pivotConfig,
         data,

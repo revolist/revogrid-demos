@@ -18,6 +18,8 @@ import {
   FINANCIAL_COLUMNS,
   FINANCIAL_COLUMN_TYPES,
   FINANCIAL_MULTI_ROW_HEADER,
+  FINANCIAL_PIVOT_CHARTS,
+  FINANCIAL_PIVOT_CHARTS_UI,
   FINANCIAL_SHOWCASE_PLUGINS,
   applyFinancialPivotOptions,
   createFinancialPreset,
@@ -73,6 +75,8 @@ const isSmallScreen = () => typeof window !== 'undefined' && window.matchMedia('
             [source]="rows"
             [columns]="FINANCIAL_COLUMNS"
             [pivot]="pivot()"
+            [pivotCharts]="pivotCharts"
+            [pivotChartsUi]="pivotChartsUi"
             [theme]="theme()"
             [plugins]="plugins"
             [columnTypes]="columnTypes"
@@ -92,6 +96,8 @@ export class PivotShowcaseGridComponent implements OnDestroy {
   readonly FINANCIAL_COLUMNS = FINANCIAL_COLUMNS;
   readonly columnTypes = FINANCIAL_COLUMN_TYPES;
   readonly multiRowHeader = FINANCIAL_MULTI_ROW_HEADER;
+  readonly pivotCharts = FINANCIAL_PIVOT_CHARTS;
+  readonly pivotChartsUi = FINANCIAL_PIVOT_CHARTS_UI;
   readonly plugins = FINANCIAL_SHOWCASE_PLUGINS;
   readonly isDark = signal(currentTheme().isDark());
   readonly theme = computed(() => this.isDark() ? 'darkCompact' : 'compact');

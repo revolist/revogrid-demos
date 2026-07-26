@@ -18,6 +18,7 @@ export function createSpreadsheetHistoryConfig(sourceId = SPREADSHEET_DEMO_ID): 
     clearOnSourceChange: true,
     clearOnFilterChange: false,
     clearOnSortingChange: false,
+    rowOrderHistory: 'preserve',
   };
 }
 

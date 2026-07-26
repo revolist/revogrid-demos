@@ -1,15 +1,20 @@
 import type { ColumnRegular, DataType, GridPlugin } from '@revolist/revogrid';
 import NumberColumnType from '@revolist/revogrid-column-numeral';
 import {
+  PivotChartsPlugin,
+  PivotChartsUiPlugin,
   type PivotConfig,
   type PivotConfigDimension,
+  createPivotChartsRenderer,
   filterPivotSource,
   PivotPlugin,
+  type PivotChartsConfig,
+  type PivotChartsUiConfig,
 } from '@revolist/revogrid-enterprise';
 import {
   AdvanceFilterPlugin,
   ColumnCollapsePlugin,
-  FilterHeaderPlugin,
+  ContextMenuPlugin,
   MultiRowHeaderPlugin,
   RowOddPlugin,
   RowSelectPlugin,
@@ -75,7 +80,7 @@ const FINANCIAL_DIMENSION_DEFINITIONS: PivotConfigDimension[] = [
   },
   {
     prop: 'Units Sold',
-    fieldGroup: 'Measures',
+    fieldGroup: 'Data',
     sortable: true,
     columnType: 'unitsHeatmap',
     filter: ['number'],
@@ -83,7 +88,7 @@ const FINANCIAL_DIMENSION_DEFINITIONS: PivotConfigDimension[] = [
   },
   {
     prop: 'Sales',
-    fieldGroup: 'Measures',
+    fieldGroup: 'Data',
     sortable: true,
     columnType: 'salesHeatmap',
     filter: ['number'],
@@ -91,7 +96,7 @@ const FINANCIAL_DIMENSION_DEFINITIONS: PivotConfigDimension[] = [
   },
   {
     prop: 'Profit',
-    fieldGroup: 'Measures',
+    fieldGroup: 'Data',
     sortable: true,
     columnType: 'profitHeatmap',
     filter: ['number'],
@@ -99,7 +104,7 @@ const FINANCIAL_DIMENSION_DEFINITIONS: PivotConfigDimension[] = [
   },
   {
     prop: 'Gross Sales',
-    fieldGroup: 'Measures',
+    fieldGroup: 'Data',
     sortable: true,
     columnType: 'grossSalesHeatmap',
     filter: ['number'],
@@ -107,7 +112,7 @@ const FINANCIAL_DIMENSION_DEFINITIONS: PivotConfigDimension[] = [
   },
   {
     prop: 'Discounts',
-    fieldGroup: 'Measures',
+    fieldGroup: 'Data',
     sortable: true,
     columnType: 'discountsHeatmap',
     filter: ['number'],
@@ -115,7 +120,7 @@ const FINANCIAL_DIMENSION_DEFINITIONS: PivotConfigDimension[] = [
   },
   {
     prop: 'COGS',
-    fieldGroup: 'Measures',
+    fieldGroup: 'Data',
     sortable: true,
     columnType: 'cogsHeatmap',
     filter: ['number'],
@@ -136,15 +141,30 @@ export const FINANCIAL_COLUMNS: ColumnRegular[] = FINANCIAL_DIMENSIONS.map((dime
 }));
 
 export const FINANCIAL_SHOWCASE_PLUGINS: GridPlugin[] = [
-  FilterHeaderPlugin,
   RowSelectPlugin,
   SameValueMergePlugin,
   PivotPlugin,
+  PivotChartsPlugin,
+  PivotChartsUiPlugin,
+  ContextMenuPlugin,
   ColumnCollapsePlugin,
   MultiRowHeaderPlugin,
   AdvanceFilterPlugin,
   RowOddPlugin,
 ] as GridPlugin[];
+
+export const FINANCIAL_PIVOT_CHARTS: PivotChartsConfig = {
+  renderer: createPivotChartsRenderer(),
+  defaultChartType: 'groupedColumn',
+  limits: {
+    maxSeries: 120,
+    maxDataPoints: 2_500,
+  },
+};
+
+export const FINANCIAL_PIVOT_CHARTS_UI: PivotChartsUiConfig = {
+  contextMenu: true,
+};
 
 export const FINANCIAL_MULTI_ROW_HEADER = {
   // Pivot row-axis headers contain sorting and filtering controls and should
@@ -170,7 +190,7 @@ const SALES_OVERVIEW: PivotConfig = {
   groupAggregations: true,
   columnCollapse: {
     enabled: true,
-    collapsed: false,
+    collapsed: true,
     aggregator: {
       Sales: 'sum',
       Profit: 'sum',
@@ -178,11 +198,34 @@ const SALES_OVERVIEW: PivotConfig = {
     },
     placeholder: 'Period Total',
   },
+  columnLevels: {
+    0: {
+      collapsible: true,
+      collapsed: true,
+      subtotal: true,
+      subtotalLabel: 'Year Total',
+      subtotalPosition: 'before',
+      subtotalValues: ['Sales'],
+      filterable: true,
+      sortable: true,
+    },
+    1: {
+      collapsible: true,
+      collapsed: true,
+      subtotal: false,
+      filterable: false,
+      sortable: false,
+    },
+  },
   totals: {
     subtotals: true,
+    // This preset demonstrates column-level totals without adding row subtotals.
+    disabledSubtotals: {
+      rows: {
+        fields: ['Country', 'Segment'],
+      },
+    },
     grandTotal: true,
-    suppressSingleChildSubtotals: true,
-    subtotalLabel: 'Subtotal',
     grandTotalLabel: 'Grand Total',
   },
 };
@@ -200,7 +243,7 @@ const PROFITABILITY: PivotConfig = {
   filterSelections: { 'Discount Band': ['Medium'] },
   columnCollapse: {
     enabled: true,
-    collapsed: false,
+    collapsed: true,
     aggregator: { Profit: 'sum', Sales: 'sum', COGS: 'sum' },
     placeholder: 'Period Total',
   },
@@ -219,7 +262,7 @@ const PRODUCT_PERFORMANCE: PivotConfig = {
   filterSelections: { Month: ['December'] },
   columnCollapse: {
     enabled: true,
-    collapsed: false,
+    collapsed: true,
     aggregator: { 'Gross Sales': 'sum', 'Units Sold': 'sum', Discounts: 'sum' },
     placeholder: 'Market Total',
   },
@@ -272,6 +315,14 @@ export function createFinancialPreset(id: FinancialPresetId = 'sales'): PivotCon
         [...(selection || [])],
       ]),
     ),
+    columnLevels: config.columnLevels
+      ? Object.fromEntries(
+          Object.entries(config.columnLevels).map(([level, settings]) => [
+            level,
+            settings ? { ...settings } : settings,
+          ]),
+        )
+      : undefined,
     totals: config.totals ? { ...config.totals } : undefined,
     columnCollapse: typeof config.columnCollapse === 'object'
       ? {

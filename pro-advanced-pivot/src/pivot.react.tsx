@@ -15,6 +15,8 @@ import {
   FINANCIAL_COLUMNS,
   FINANCIAL_COLUMN_TYPES,
   FINANCIAL_MULTI_ROW_HEADER,
+  FINANCIAL_PIVOT_CHARTS,
+  FINANCIAL_PIVOT_CHARTS_UI,
   FINANCIAL_SHOWCASE_PLUGINS,
   applyFinancialPivotOptions,
   createFinancialPreset,
@@ -137,6 +139,8 @@ function PivotShowcase({ rows }: PivotProps) {
             source={data}
             columns={columns}
             pivot={pivot}
+            pivotCharts={FINANCIAL_PIVOT_CHARTS}
+            pivotChartsUi={FINANCIAL_PIVOT_CHARTS_UI}
             theme={isDark ? 'darkCompact' : 'compact'}
             plugins={plugins}
             columnTypes={columnTypes}
