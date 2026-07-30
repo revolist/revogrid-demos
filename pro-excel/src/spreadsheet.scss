@@ -130,6 +130,58 @@
   background: rgba(17, 17, 20, 0.62);
 }
 
+.spreadsheet-workbench.is-dark revogr-filter-panel,
+:where(.dark, [data-theme='dark']) .spreadsheet-workbench revogr-filter-panel {
+  --filter-input-bg: var(--sheet-control);
+  --filter-input-color: var(--sheet-text);
+  --revo-grid-background: var(--sheet-panel-strong);
+  --revo-grid-foreground: var(--sheet-panel-strong);
+  --revo-grid-text: var(--sheet-text);
+  --revo-grid-row-hover: var(--sheet-menu-hover);
+  --revo-grid-cell-border: transparent;
+  --revo-grid-border: var(--sheet-border-strong);
+  --text-color: var(--sheet-muted);
+
+  border-color: var(--sheet-border-strong);
+  background: var(--sheet-panel-strong);
+  color: var(--sheet-text);
+
+  > span,
+  .filter,
+  .filter-list-option,
+  .filter-list-option-content,
+  .range-values,
+  .form_control {
+    color: var(--sheet-text);
+  }
+
+  .filter .search-input,
+  .multi-filter-list input[type="text"] {
+    border-color: var(--sheet-border-strong);
+    background: var(--sheet-control) !important;
+    color: var(--sheet-text) !important;
+  }
+
+  .filter-list-grid {
+    --revo-grid-background: var(--sheet-panel-strong);
+    --revo-grid-foreground: var(--sheet-panel-strong);
+    --revo-grid-text: var(--sheet-text);
+    --revo-grid-row-hover: var(--sheet-menu-hover);
+    --revo-grid-header-bg: var(--sheet-panel-strong);
+    --revo-grid-header-color: var(--sheet-text);
+    --revo-grid-cell-disabled-bg: var(--sheet-panel-strong);
+  }
+
+  .filter-list-grid revogr-data .rgRow,
+  .filter-list-grid revogr-data .rgCell {
+    color: var(--sheet-text);
+  }
+
+  button {
+    color: var(--sheet-text);
+  }
+}
+
 .spreadsheet-ribbon {
   grid-area: ribbon;
   align-items: center;
