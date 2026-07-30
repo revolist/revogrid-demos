@@ -1,0 +1,65 @@
+.planning-demo {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+}
+
+.planning-demo__switch {
+  display: flex;
+  gap: 4px;
+}
+
+.planning-demo__switch button {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #64748b;
+  font:
+    600 13px/1 system-ui,
+    sans-serif;
+  text-transform: capitalize;
+  cursor: pointer;
+}
+
+.planning-demo__switch button.active {
+  color: #0f172a;
+  background: #fff;
+  box-shadow: 0 1px 3px #0f172a1a;
+}
+
+.planning-demo__grid {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.planning-demo__grid revo-grid,
+revo-grid.planning-demo__grid {
+  height: 100%;
+  min-height: 0 !important;
+}
+
+planning-views-grid {
+  display: block;
+  height: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  .planning-demo__switch button {
+    color: #94a3b8;
+  }
+
+  .planning-demo__switch button.active {
+    color: #f8fafc;
+    background: #1e293b;
+  }
+
+  .planning-demo__grid {
+    border-color: #334155;
+  }
+}

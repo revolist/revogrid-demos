@@ -5,6 +5,7 @@ import {
   type GroupingOptions,
 } from '@revolist/revogrid';
 import chevronDownIcon from '@fortawesome/fontawesome-free/svgs/solid/chevron-down.svg?raw';
+import { ignoreCellEvents } from '@revolist/revogrid-pro';
 import type { ProjectGroupProp, ProjectRow } from './types';
 import { formatProjectBudget } from './summary';
 import { formatGroupLabel, groupValueTone } from './renderers';
@@ -45,7 +46,10 @@ export function createProjectGrouping(
       const groupTone = groupValueTone(groupProp, props.name);
 
       if (props.colType === 'rgCol') {
-        return groupH('div', { class: 'project-group-metrics' }, [
+        return groupH('div', {
+          ...ignoreCellEvents,
+          class: 'project-group-metrics',
+        }, [
           groupH('span', null, [`${inProgress} in progress`]),
           groupH('span', null, [`${ready} ready`]),
           blocked ? groupH('span', null, [`${blocked} blocked`]) : undefined,

@@ -200,6 +200,94 @@ importers:
         specifier: ^2.2.10
         version: 2.2.12(typescript@5.9.3)
 
+  pro-advanced-planning:
+    dependencies:
+      '@angular/common':
+        specifier: ^20.0.0
+        version: 20.3.26(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2)
+      '@angular/compiler':
+        specifier: ^20.0.0
+        version: 20.3.26
+      '@angular/core':
+        specifier: ^20.0.0
+        version: 20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1)
+      '@angular/platform-browser':
+        specifier: ^20.0.0
+        version: 20.3.26(@angular/common@20.3.26(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))
+      '@angular/platform-browser-dynamic':
+        specifier: ^20.0.0
+        version: 20.3.26(@angular/common@20.3.26(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/compiler@20.3.26)(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@20.3.26(@angular/common@20.3.26(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1)))
+      '@revolist/angular-datagrid':
+        specifier: latest
+        version: 4.23.22
+      '@revolist/react-datagrid':
+        specifier: latest
+        version: 4.23.22
+      '@revolist/revogrid':
+        specifier: latest
+        version: 4.23.22
+      '@revolist/revogrid-enterprise':
+        specifier: latest
+        version: 2.3.4
+      '@revolist/revogrid-pro':
+        specifier: latest
+        version: 2.3.4
+      '@revolist/vue3-datagrid':
+        specifier: latest
+        version: 4.23.22
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      rxjs:
+        specifier: ~7.8.0
+        version: 7.8.2
+      tslib:
+        specifier: ^2.4.0
+        version: 2.8.1
+      vue:
+        specifier: ^3.5.21
+        version: 3.5.40(typescript@5.9.3)
+      zone.js:
+        specifier: ~0.15.0
+        version: 0.15.1
+    devDependencies:
+      '@angular/build':
+        specifier: ^20.0.0
+        version: 20.3.32(@angular/compiler-cli@20.3.26(@angular/compiler@20.3.26)(typescript@5.9.3))(@angular/compiler@20.3.26)(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@20.3.26(@angular/common@20.3.26(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@4.0.3)(postcss@8.5.21)(sass-embedded@1.100.0)(tslib@2.8.1)(typescript@5.9.3)(vitest@4.1.10(jsdom@29.1.1)(vite@6.4.3(sass-embedded@1.100.0)(sass@1.100.0)))
+      '@angular/cli':
+        specifier: ^20.0.0
+        version: 20.3.32(chokidar@4.0.3)
+      '@angular/compiler-cli':
+        specifier: ^20.0.0
+        version: 20.3.26(@angular/compiler@20.3.26)(typescript@5.9.3)
+      '@types/react':
+        specifier: ^18.3.18
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.5
+        version: 18.3.7(@types/react@18.3.31)
+      '@vitejs/plugin-react':
+        specifier: ^4.3.4
+        version: 4.7.0(vite@6.4.3(sass-embedded@1.100.0)(sass@1.100.0))
+      '@vitejs/plugin-vue':
+        specifier: ^5.2.1
+        version: 5.2.4(vite@6.4.3(sass-embedded@1.100.0)(sass@1.100.0))(vue@3.5.40(typescript@5.9.3))
+      sass-embedded:
+        specifier: ^1.83.4
+        version: 1.100.0
+      typescript:
+        specifier: ~5.9.2
+        version: 5.9.3
+      vite:
+        specifier: ^6.3.5
+        version: 6.4.3(sass-embedded@1.100.0)(sass@1.100.0)
+      vue-tsc:
+        specifier: ^2.2.10
+        version: 2.2.12(typescript@5.9.3)
+
   pro-advanced-pivot:
     dependencies:
       '@angular/common':

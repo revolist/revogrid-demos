@@ -5,6 +5,7 @@ import {
   PivotChartsUiPlugin,
   type PivotConfig,
   type PivotConfigDimension,
+  clonePivotFilterSelectionMap,
   createPivotChartsRenderer,
   filterPivotSource,
   PivotPlugin,
@@ -143,10 +144,10 @@ export const FINANCIAL_COLUMNS: ColumnRegular[] = FINANCIAL_DIMENSIONS.map((dime
 export const FINANCIAL_SHOWCASE_PLUGINS: GridPlugin[] = [
   RowSelectPlugin,
   SameValueMergePlugin,
+  ContextMenuPlugin,
   PivotPlugin,
   PivotChartsPlugin,
   PivotChartsUiPlugin,
-  ContextMenuPlugin,
   ColumnCollapsePlugin,
   MultiRowHeaderPlugin,
   AdvanceFilterPlugin,
@@ -213,7 +214,7 @@ const SALES_OVERVIEW: PivotConfig = {
       collapsible: true,
       collapsed: true,
       subtotal: false,
-      filterable: false,
+      filterable: true,
       sortable: false,
     },
   },
@@ -309,12 +310,7 @@ export function createFinancialPreset(id: FinancialPresetId = 'sales'): PivotCon
     columns: [...(config.columns || [])],
     values: config.values.map((value) => ({ ...value })),
     filters: [...(config.filters || [])],
-    filterSelections: Object.fromEntries(
-      Object.entries(config.filterSelections || {}).map(([prop, selection]) => [
-        prop,
-        [...(selection || [])],
-      ]),
-    ),
+    filterSelections: clonePivotFilterSelectionMap(config.filterSelections || {}),
     columnLevels: config.columnLevels
       ? Object.fromEntries(
           Object.entries(config.columnLevels).map(([level, settings]) => [

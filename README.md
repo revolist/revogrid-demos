@@ -6,7 +6,7 @@
 
 [![RevoGrid](https://img.shields.io/badge/RevoGrid-Demos-1f6feb?style=for-the-badge)](https://github.com/revolist/revogrid)
 [![Frameworks](https://img.shields.io/badge/Frameworks-TS_%7C_React_%7C_Vue_%7C_Angular-8250df?style=for-the-badge)](#framework-support)
-[![Demos](https://img.shields.io/badge/Showcases-7-2ea44f?style=for-the-badge)](#demo-catalog)
+[![Demos](https://img.shields.io/badge/Showcases-8-2ea44f?style=for-the-badge)](#demo-catalog)
 
 </div>
 
@@ -27,6 +27,7 @@ Every showcase provides equivalent implementations for the major supported front
 | **Pro Advance** | Financial pivot | Financial presets, configurable row and column axes, filtering, KPIs, heatmap formatting, responsive layout, and expanded view | [Demo guide](./pro-advanced-pivot/README.md) |
 | **Pro Advance** | Event scheduler | Calendar and resource views, table view, navigation, search, event creation, open shifts, reassignment, and team scheduling | [Demo guide](./pro-advanced-scheduler/README.md) |
 | **Pro Advance** | Project Gantt | Tasks, dependencies, resources, assignments, working calendars, baselines, critical path controls, row status, and Excel export | [Demo guide](./pro-advanced-gantt/README.md) |
+| **Pro Advance** | Planning views | One editable task model shared by a data grid, Gantt, and resource scheduler | [Demo guide](./pro-advanced-planning/README.md) |
 
 Each commercial demo guide contains a source-audited inventory of its directly registered and automatically installed Pro or Enterprise plugins, the supporting package APIs it uses, and the practical benefit of each capability.
 
@@ -42,6 +43,7 @@ revogrid-demos/
 ├── pro-project-table/          # Pro project tracker table
 ├── pro-advanced-pivot/         # Financial pivot showcase
 ├── pro-advanced-scheduler/     # Shift and event scheduler
+├── pro-advanced-planning/      # Grid, Gantt, and Scheduler showcase
 └── pro-advanced-gantt/
     └── src/
         ├── gantt.*             # Gantt framework implementations
@@ -84,6 +86,7 @@ pnpm dev:excel
 pnpm dev:pivot
 pnpm dev:scheduler
 pnpm dev:gantt
+pnpm dev:planning
 pnpm dev:ecommerce
 pnpm dev:project
 ```
@@ -99,7 +102,7 @@ pnpm dev:pivot:angular
 ```
 
 The same `:ts`, `:react`, `:vue`, and `:angular` suffixes work for `core`,
-`excel`, `scheduler`, `gantt`, `ecommerce`, and `project`.
+`excel`, `scheduler`, `gantt`, `planning`, `ecommerce`, and `project`.
 
 You can also run a demo from its package directory:
 
@@ -122,6 +125,7 @@ pnpm dev:angular
 | Pivot | [`pivot.ts`](./pro-advanced-pivot/src/pivot.ts) | [`pivot.react.tsx`](./pro-advanced-pivot/src/pivot.react.tsx) | [`pivot.vue`](./pro-advanced-pivot/src/pivot.vue) | [`pivot.angular.ts`](./pro-advanced-pivot/src/pivot.angular.ts) |
 | Scheduler | [`scheduler.ts`](./pro-advanced-scheduler/src/scheduler.ts) | [`scheduler.react.tsx`](./pro-advanced-scheduler/src/scheduler.react.tsx) | [`scheduler.vue`](./pro-advanced-scheduler/src/scheduler.vue) | [`scheduler.angular.ts`](./pro-advanced-scheduler/src/scheduler.angular.ts) |
 | Gantt | [`gantt.ts`](./pro-advanced-gantt/src/gantt.ts) | [`gantt.react.tsx`](./pro-advanced-gantt/src/gantt.react.tsx) | [`gantt.vue`](./pro-advanced-gantt/src/gantt.vue) | [`gantt.angular.ts`](./pro-advanced-gantt/src/gantt.angular.ts) |
+| Planning views | [`planning.ts`](./pro-advanced-planning/src/planning.ts) | [`planning.react.tsx`](./pro-advanced-planning/src/planning.react.tsx) | [`planning.vue`](./pro-advanced-planning/src/planning.vue) | [`planning.angular.ts`](./pro-advanced-planning/src/planning.angular.ts) |
 
 ## Contributing
 

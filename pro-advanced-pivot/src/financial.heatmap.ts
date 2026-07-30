@@ -49,7 +49,7 @@ export function createFinancialHeatmapCellProperties(
       style: {
         backgroundColor: `rgba(${red}, ${green}, ${blue}, ${alpha.toFixed(3)})`,
       },
-      title: `${field} heatmap intensity: ${Math.round(intensity * 100)}%`,
+      'data-tooltip': `${field} heatmap intensity: ${Math.round(intensity * 100)}%`,
     };
   };
 }
