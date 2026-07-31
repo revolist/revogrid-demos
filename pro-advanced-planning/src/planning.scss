@@ -36,8 +36,18 @@ planning-views-grid {
   height: 100%;
 }
 
+:where(.dark, [data-theme^='dark']) .planning-demo__switch {
+  --rv-segmented-bg: #111827;
+  --rv-segmented-border: #334155;
+  --rv-segmented-item-color: #94a3b8;
+  --rv-segmented-item-hover-color: #e2e8f0;
+  --rv-segmented-active-bg: #1e293b;
+  --rv-segmented-active-color: #f8fafc;
+  --rv-segmented-active-border: #475569;
+}
+
 @media (prefers-color-scheme: dark) {
-  .planning-demo__switch {
+  :root:not(.light):not([data-theme^='light']) .planning-demo__switch {
     --rv-segmented-bg: #111827;
     --rv-segmented-border: #334155;
     --rv-segmented-item-color: #94a3b8;
