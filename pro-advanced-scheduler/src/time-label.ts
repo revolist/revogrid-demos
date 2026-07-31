@@ -15,13 +15,8 @@ export function renderShiftWeekTimeLabel(
   h: EventSchedulerTemplateH,
   context: EventSchedulerTimeCellContext,
 ) {
-  const isMinorSlot = context.startMinutes % 60 !== 0;
-
   return h('span', {
-    class: [
-      'shift-week-time-label',
-      isMinorSlot ? 'shift-week-time-label--minor' : '',
-    ].filter(Boolean).join(' '),
+    class: 'shift-week-time-label',
     title: context.timeLabel,
-  }, isMinorSlot ? '' : context.timeLabel);
+  }, context.timeLabel);
 }

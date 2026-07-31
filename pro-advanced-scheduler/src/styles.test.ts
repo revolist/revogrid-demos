@@ -1,20 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
-const schedulerStyles = readFileSync('src/styles.scss', 'utf8');
+const readSource = (path: string) => readFileSync(fileURLToPath(new URL(path, import.meta.url)), 'utf8');
+const schedulerStyles = readSource('./styles.scss');
+const sharedUiStyles = readSource('../../../../packages/pro/plugins/_ui.scss');
 const schedulerSources = [
-  'src/scheduler.ts',
-  'src/scheduler.react.tsx',
-  'src/scheduler.vue',
-  'src/scheduler.angular.ts',
-].map((path) => readFileSync(path, 'utf8'));
+  './scheduler.ts',
+  './scheduler.react.tsx',
+  './scheduler.vue',
+  './scheduler.angular.ts',
+].map(readSource);
+const schedulerHeaderSource = readSource('./components/scheduler-header/scheduler-header.ts');
 
 describe('scheduler segmented view styles', () => {
-  it('resets native button styling inside the Day, Week, and Month control', () => {
-    const viewRule = schedulerStyles.match(/&__view\s*\{([\s\S]*?)&--active/);
+  it('shares one reset and interaction style across both segmented controls', () => {
+    const segmentedButtonRule = sharedUiStyles.match(/\.rv-segmented-switch-item\s*\{([\s\S]*?)(?=\n\})/);
 
-    expect(viewRule?.[1]).toContain('border: 0;');
-    expect(viewRule?.[1]).toContain('font: inherit;');
+    expect(segmentedButtonRule?.[1]).toContain('appearance: none;');
+    expect(segmentedButtonRule?.[1]).toContain('border: 0;');
+    expect(segmentedButtonRule?.[1]).toContain('font: inherit;');
+    expect(sharedUiStyles).toContain('.rv-segmented-switch-item:focus-visible');
   });
 
   it('uses consistent shadcn-style sizing and focus treatment for toolbar actions', () => {
@@ -30,5 +36,25 @@ describe('scheduler segmented view styles', () => {
     for (const source of [...schedulerSources, schedulerStyles]) {
       expect(source).not.toContain('event-scheduler-shift-week-appbar');
     }
+  });
+
+  it('keeps the workspace switch in the shared header and the sidebar out of every framework variant', () => {
+    expect(schedulerHeaderSource).toContain("setAttribute('aria-label', 'Scheduler workspace')");
+    expect(schedulerHeaderSource).toContain("setAttribute('aria-selected', String(active))");
+    expect(schedulerHeaderSource).toContain('event-scheduler-shift-week-toolbar__workspace rv-segmented-switch');
+    expect(schedulerHeaderSource).toContain('event-scheduler-shift-week-toolbar__views rv-segmented-switch');
+    expect(schedulerHeaderSource).toContain('rv-segmented-switch-item');
+    expect(schedulerStyles).not.toContain('.event-scheduler-shift-week-segmented__button');
+    for (const source of schedulerSources) {
+      expect(source).not.toContain('revogr-scheduler-sidebar');
+      expect(source).not.toContain('SCHEDULER_SIDEBAR_TAG');
+    }
+  });
+
+  it('keeps the range navigation left-aligned after the workspace switch', () => {
+    expect(schedulerHeaderSource).toContain("range.className = 'event-scheduler-shift-week-toolbar__range'");
+    expect(schedulerHeaderSource).toContain('this.append(this.workspace, range, end)');
+    const rangeRule = schedulerStyles.match(/&__range\s*\{([\s\S]*?)\n\s*\}/);
+    expect(rangeRule?.[1]).toContain('justify-self: start;');
   });
 });

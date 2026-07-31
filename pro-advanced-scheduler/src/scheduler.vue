@@ -1,12 +1,13 @@
 <template>
   <section class="event-scheduler-shift-week-demo">
-    <revogr-scheduler-sidebar
-      :model.prop="sidebarModel"
-      @scheduler-sidebar-new-event="openNewEvent"
-      @scheduler-sidebar-search-change="handleSidebarSearchChange"
-      @scheduler-sidebar-workspace-change="handleSidebarWorkspaceChange"
-    />
     <div class="event-scheduler-shift-week-main">
+      <revogr-scheduler-header
+        :model.prop="headerModel"
+        @scheduler-header-calendar-change="handleHeaderCalendarChange"
+        @scheduler-header-navigate="handleHeaderNavigate"
+        @scheduler-header-view-change="handleHeaderViewChange"
+        @scheduler-header-workspace-change="handleHeaderWorkspaceChange"
+      />
       <RevoGrid
         v-if="workspaceView === 'table'"
         class="event-scheduler-shift-week-table"
@@ -19,13 +20,6 @@
         :columns="tableColumns"
       />
       <template v-else>
-        <revogr-scheduler-header
-          v-if="showToolbar"
-          :model.prop="headerModel"
-          @scheduler-header-calendar-change="handleHeaderCalendarChange"
-          @scheduler-header-navigate="handleHeaderNavigate"
-          @scheduler-header-view-change="handleHeaderViewChange"
-        />
         <RevoGrid
           class="event-scheduler-shift-week-grid"
           hide-attribution
@@ -66,9 +60,7 @@ import {
   createShiftWeekConfig,
   createShiftWeekEvents,
   createShiftWeekManualEvent,
-  getShiftWeekNewEventDefaults,
   getShiftWeekRangeTitle,
-  getShiftWeekSearchMatchIds,
   getShiftWeekSubtitle,
   getShiftWeekTableRows,
   getShiftWeekTableColumns,
@@ -98,8 +90,7 @@ import {
   type SchedulerHeaderCalendarChangeDetail,
   type SchedulerHeaderNavigateDetail,
   type SchedulerHeaderViewChangeDetail,
-  type SchedulerSidebarSearchChangeDetail,
-  type SchedulerSidebarWorkspaceChangeDetail,
+  type SchedulerHeaderWorkspaceChangeDetail,
 } from './components';
 import './styles.scss';
 
@@ -125,7 +116,6 @@ const workspaceView = ref<ShiftWeekWorkspaceView>(initialShiftWeekWorkspaceView)
 const anchorDate = ref(initialShiftWeekAnchorDate);
 const activeCalendar = ref<ShiftWeekDemoCalendar>(initialShiftWeekCalendar);
 const selectedEventIds = ref<readonly EventSchedulerEntityId[]>([]);
-const searchQuery = ref('');
 const viewLabels = shiftWeekViewLabels;
 const viewKeys = shiftWeekDemoViews;
 const calendarOptions = shiftWeekCalendarOptions;
@@ -135,25 +125,19 @@ const newEventTypeOptions = shiftWeekNewEventTypeOptions;
 const newEventForm = ref<ShiftWeekNewEventForm | null>(null);
 const schedulerEvents = ref(createShiftWeekEvents(activeView.value, anchorDate.value));
 const resources = ref(shiftResources.map((resource) => ({ ...resource })));
-const highlightedEventIds = computed(() => getShiftWeekSearchMatchIds(schedulerEvents.value, searchQuery.value));
 const filteredTableRows = computed(() => getShiftWeekTableRows(schedulerEvents.value));
 const schedulerConfig = computed(() => createShiftWeekConfig(
   activeView.value,
   anchorDate.value,
   activeCalendar.value,
   selectedEventIds.value,
-  highlightedEventIds.value,
+  [],
   workspaceView.value,
 ));
 const rangeTitle = computed(() => getShiftWeekRangeTitle(activeView.value, anchorDate.value));
 const rangeSubtitle = computed(() => getShiftWeekSubtitle(anchorDate.value));
-const showToolbar = computed(() => workspaceView.value === 'calendar');
-const sidebarModel = computed(() => ({
-  workspaceView: workspaceView.value,
-  searchQuery: searchQuery.value,
-  teamMembers,
-}));
 const headerModel = computed(() => ({
+  workspaceView: workspaceView.value,
   activeView: activeView.value,
   activeCalendar: activeCalendar.value,
   title: rangeTitle.value,
@@ -209,10 +193,6 @@ function goToday() {
   schedulerEvents.value = createShiftWeekEvents(activeView.value, anchorDate.value);
 }
 
-function openNewEvent() {
-  newEventForm.value = getShiftWeekNewEventDefaults(activeView.value, anchorDate.value);
-}
-
 function closeNewEvent() {
   newEventForm.value = null;
 }
@@ -225,11 +205,7 @@ function submitNewEvent(form: ShiftWeekNewEventForm) {
   closeNewEvent();
 }
 
-function handleSidebarSearchChange(event: CustomEvent<SchedulerSidebarSearchChangeDetail>) {
-  searchQuery.value = event.detail.query;
-}
-
-function handleSidebarWorkspaceChange(event: CustomEvent<SchedulerSidebarWorkspaceChangeDetail>) {
+function handleHeaderWorkspaceChange(event: CustomEvent<SchedulerHeaderWorkspaceChangeDetail>) {
   setWorkspace(event.detail.view);
 }
 

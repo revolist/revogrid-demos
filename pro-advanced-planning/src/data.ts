@@ -15,7 +15,7 @@ import {
   type ResourceEntity,
 } from '@revolist/revogrid-enterprise';
 
-export type PlanningView = 'grid' | 'gantt' | 'scheduler';
+export type PlanningView = 'grid' | 'gantt' | 'scheduler' | 'calendar';
 
 export type PlanningTask = GanttTaskSourceRow & {
   id: string;
@@ -27,7 +27,7 @@ export type PlanningTask = GanttTaskSourceRow & {
   percentDone: number;
 };
 
-export const views: PlanningView[] = ['grid', 'gantt', 'scheduler'];
+export const views: PlanningView[] = ['grid', 'gantt', 'scheduler', 'calendar'];
 
 const calendarId = 'launch-day';
 
@@ -296,6 +296,14 @@ export const schedulerConfig: EventSchedulerConfig = {
   keyboardShortcuts: false,
   currentTimeMarker: false,
   contextMenu: true,
+};
+
+export const calendarConfig: EventSchedulerConfig = {
+  ...schedulerConfig,
+  view: 'day',
+  dateRange: undefined,
+  dayColumnSize: 160,
+  timeColumnSize: 72,
 };
 
 export const schedulerResources: EventSchedulerResourceEntity[] = [...people];

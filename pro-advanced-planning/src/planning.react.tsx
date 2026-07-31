@@ -12,6 +12,7 @@ import {
   observeCurrentTheme,
 } from '../../composables/useRandomData';
 import {
+  calendarConfig,
   createTasks,
   ganttColumns,
   ganttConfig,
@@ -63,12 +64,13 @@ export default function PlanningViews() {
 
   return (
     <section className="planning-demo">
-      <nav className="planning-demo__switch" aria-label="Planning view">
+      <nav className="planning-demo__switch rv-segmented-switch" role="tablist" aria-label="Planning view">
         {views.map((view) => (
           <button
             key={view}
             type="button"
-            className={activeView === view ? 'active' : ''}
+            className={`rv-segmented-switch-item${activeView === view ? ' on' : ''}`}
+            role="tab"
             aria-selected={activeView === view}
             onClick={() => setActiveView(view)}
           >
@@ -124,9 +126,9 @@ export default function PlanningViews() {
           }
         />
       )}
-      {activeView === 'scheduler' && (
+      {(activeView === 'scheduler' || activeView === 'calendar') && (
         <PlanningGrid
-          key="scheduler"
+          key={activeView}
           className="planning-demo__grid"
           theme={isDark ? 'darkCompact' : 'compact'}
           hideAttribution
@@ -135,7 +137,7 @@ export default function PlanningViews() {
           columns={[]}
           resize
           filter
-          eventScheduler={schedulerConfig}
+          eventScheduler={activeView === 'calendar' ? calendarConfig : schedulerConfig}
           eventSchedulerResources={schedulerResources}
           eventSchedulerEvents={schedulerEvents}
           onEvent-scheduler-event-changed={(

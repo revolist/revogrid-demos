@@ -9,9 +9,7 @@ import {
   createShiftWeekConfig,
   createShiftWeekEvents,
   createShiftWeekManualEvent,
-  getShiftWeekNewEventDefaults,
   getShiftWeekRangeTitle,
-  getShiftWeekSearchMatchIds,
   getShiftWeekSubtitle,
   getShiftWeekTableRows,
   getShiftWeekTableColumns,
@@ -41,8 +39,7 @@ import {
   type SchedulerHeaderCalendarChangeDetail,
   type SchedulerHeaderNavigateDetail,
   type SchedulerHeaderViewChangeDetail,
-  type SchedulerSidebarSearchChangeDetail,
-  type SchedulerSidebarWorkspaceChangeDetail,
+  type SchedulerHeaderWorkspaceChangeDetail,
 } from './components';
 
 defineSchedulerShellElements();
@@ -54,13 +51,14 @@ defineSchedulerShellElements();
   imports: [RevoGrid, NgIf],
   template: `
     <section class="event-scheduler-shift-week-demo">
-      <revogr-scheduler-sidebar
-        [model]="sidebarModel"
-        (scheduler-sidebar-new-event)="openNewEvent()"
-        (scheduler-sidebar-search-change)="handleSidebarSearchChange($event)"
-        (scheduler-sidebar-workspace-change)="handleSidebarWorkspaceChange($event)"
-      ></revogr-scheduler-sidebar>
       <div class="event-scheduler-shift-week-main">
+        <revogr-scheduler-header
+          [model]="headerModel"
+          (scheduler-header-calendar-change)="handleHeaderCalendarChange($event)"
+          (scheduler-header-navigate)="handleHeaderNavigate($event)"
+          (scheduler-header-view-change)="handleHeaderViewChange($event)"
+          (scheduler-header-workspace-change)="handleHeaderWorkspaceChange($event)"
+        ></revogr-scheduler-header>
         <div *ngIf="workspaceView === 'table'; else schedulerGrid" class="event-scheduler-shift-week-table" role="region" aria-label="Scheduled events table">
           <revo-grid
             class="event-scheduler-shift-week-table__grid"
@@ -74,13 +72,6 @@ defineSchedulerShellElements();
           ></revo-grid>
         </div>
         <ng-template #schedulerGrid>
-          <revogr-scheduler-header
-            *ngIf="showToolbar"
-            [model]="headerModel"
-            (scheduler-header-calendar-change)="handleHeaderCalendarChange($event)"
-            (scheduler-header-navigate)="handleHeaderNavigate($event)"
-            (scheduler-header-view-change)="handleHeaderViewChange($event)"
-          ></revogr-scheduler-header>
           <revo-grid
             class="event-scheduler-shift-week-grid"
             [theme]="theme"
@@ -124,7 +115,6 @@ export class EventSchedulerShiftWeekGridComponent implements OnDestroy {
   workspaceView: ShiftWeekWorkspaceView = initialShiftWeekWorkspaceView;
   activeCalendar: ShiftWeekDemoCalendar = initialShiftWeekCalendar;
   anchorDate = initialShiftWeekAnchorDate;
-  searchQuery = '';
   tablePlugins = [AdvanceFilterPlugin, ColumnStretchPlugin, RowOddPlugin];
   tableColumns = getShiftWeekTableColumns();
   tableFilter = {};
@@ -132,8 +122,7 @@ export class EventSchedulerShiftWeekGridComponent implements OnDestroy {
   newEventStatusOptions = shiftWeekNewEventStatusOptions;
   newEventTypeOptions = shiftWeekNewEventTypeOptions;
   selectedEventIds: readonly EventSchedulerEntityId[] = [];
-  highlightedEventIds: readonly EventSchedulerEntityId[] = [];
-  schedulerConfig = createShiftWeekConfig(this.activeView, this.anchorDate, this.activeCalendar, this.selectedEventIds, this.highlightedEventIds, this.workspaceView);
+  schedulerConfig = createShiftWeekConfig(this.activeView, this.anchorDate, this.activeCalendar, this.selectedEventIds, [], this.workspaceView);
   events: readonly EventSchedulerEventEntity[] = createShiftWeekEvents(this.activeView, this.anchorDate);
   resources = shiftResources.map((resource) => ({ ...resource }));
   newEventForm: ShiftWeekNewEventForm | null = null;
@@ -150,20 +139,9 @@ export class EventSchedulerShiftWeekGridComponent implements OnDestroy {
     return getShiftWeekTableRows(this.events);
   }
 
-  get showToolbar() {
-    return this.workspaceView === 'calendar';
-  }
-
-  get sidebarModel() {
-    return {
-      workspaceView: this.workspaceView,
-      searchQuery: this.searchQuery,
-      teamMembers: this.teamMembers,
-    };
-  }
-
   get headerModel() {
     return {
+      workspaceView: this.workspaceView,
       activeView: this.activeView,
       activeCalendar: this.activeCalendar,
       title: this.rangeTitle,
@@ -181,11 +159,6 @@ export class EventSchedulerShiftWeekGridComponent implements OnDestroy {
       typeOptions: this.newEventTypeOptions,
       statusOptions: this.newEventStatusOptions,
     } : null;
-  }
-
-  setSearchQuery(query: string) {
-    this.searchQuery = query;
-    this.refreshSearchMatches();
   }
 
   setView(view: ShiftWeekDemoView) {
@@ -228,19 +201,11 @@ export class EventSchedulerShiftWeekGridComponent implements OnDestroy {
     this.refreshRange();
   }
 
-  openNewEvent() {
-    this.newEventForm = getShiftWeekNewEventDefaults(this.activeView, this.anchorDate);
-  }
-
   closeNewEvent() {
     this.newEventForm = null;
   }
 
-  handleSidebarSearchChange(event: CustomEvent<SchedulerSidebarSearchChangeDetail>) {
-    this.setSearchQuery(event.detail.query);
-  }
-
-  handleSidebarWorkspaceChange(event: CustomEvent<SchedulerSidebarWorkspaceChangeDetail>) {
+  handleHeaderWorkspaceChange(event: CustomEvent<SchedulerHeaderWorkspaceChangeDetail>) {
     this.setWorkspace(event.detail.view);
   }
 
@@ -261,13 +226,13 @@ export class EventSchedulerShiftWeekGridComponent implements OnDestroy {
       ...this.events,
       createShiftWeekManualEvent(event.detail.form),
     ];
-    this.refreshSearchMatches();
+    this.refreshSchedulerConfig();
     this.closeNewEvent();
   }
 
   handleSchedulerEvents(event: CustomEvent<EventSchedulerEventChangedDetail>) {
     this.events = event.detail.events.map((item) => ({ ...item }));
-    this.refreshSearchMatches();
+    this.refreshSchedulerConfig();
   }
 
   handleBeforeEventSelect(event: CustomEvent<EventSchedulerEventSelectedDetail>) {
@@ -281,14 +246,14 @@ export class EventSchedulerShiftWeekGridComponent implements OnDestroy {
       ...this.events,
       createShiftWeekAssignedOpenShift(event.detail),
     ];
-    this.refreshSearchMatches();
+    this.refreshSchedulerConfig();
   }
 
   handleResourceReassignRequest(event: CustomEvent<EventSchedulerResourceReassignRequestDetail>) {
     this.events = [
       ...reassignShiftWeekEvent(this.events, event.detail),
     ];
-    this.refreshSearchMatches();
+    this.refreshSchedulerConfig();
   }
 
   handleNavigateRequest(event: CustomEvent<{ action: 'previous' | 'next' | 'today' }>) {
@@ -310,16 +275,11 @@ export class EventSchedulerShiftWeekGridComponent implements OnDestroy {
   private refreshRange() {
     this.selectedEventIds = [];
     this.events = createShiftWeekEvents(this.activeView, this.anchorDate);
-    this.refreshSearchMatches();
+    this.refreshSchedulerConfig();
   }
 
   private refreshSchedulerConfig() {
-    this.schedulerConfig = createShiftWeekConfig(this.activeView, this.anchorDate, this.activeCalendar, this.selectedEventIds, this.highlightedEventIds, this.workspaceView);
-  }
-
-  private refreshSearchMatches() {
-    this.highlightedEventIds = getShiftWeekSearchMatchIds(this.events, this.searchQuery);
-    this.refreshSchedulerConfig();
+    this.schedulerConfig = createShiftWeekConfig(this.activeView, this.anchorDate, this.activeCalendar, this.selectedEventIds, [], this.workspaceView);
   }
 
   ngOnDestroy(): void {

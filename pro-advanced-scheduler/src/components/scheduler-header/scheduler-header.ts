@@ -1,8 +1,9 @@
-import type { ShiftWeekCalendarOption, ShiftWeekDemoCalendar, ShiftWeekDemoView } from '../../data';
+import type { ShiftWeekCalendarOption, ShiftWeekDemoCalendar, ShiftWeekDemoView, ShiftWeekWorkspaceView } from '../../data';
 
 export const SCHEDULER_HEADER_TAG = 'revogr-scheduler-header';
 
 export interface SchedulerHeaderModel {
+  readonly workspaceView: ShiftWeekWorkspaceView;
   readonly activeView: ShiftWeekDemoView;
   readonly activeCalendar: ShiftWeekDemoCalendar;
   readonly title: string;
@@ -20,13 +21,24 @@ export interface SchedulerHeaderViewChangeDetail {
   readonly view: ShiftWeekDemoView;
 }
 
+export interface SchedulerHeaderWorkspaceChangeDetail {
+  readonly view: ShiftWeekWorkspaceView;
+}
+
 export interface SchedulerHeaderCalendarChangeDetail {
   readonly calendar: ShiftWeekDemoCalendar;
 }
 
+const workspaceViews: readonly { readonly view: ShiftWeekWorkspaceView; readonly label: string }[] = [
+  { view: 'calendar', label: 'Calendar' },
+  { view: 'resource', label: 'Resource' },
+  { view: 'table', label: 'Table' },
+];
+
 /** Framework-neutral scheduler range navigation and view header. */
 export class SchedulerHeaderElement extends HTMLElement {
   private currentModel: SchedulerHeaderModel | null = null;
+  private workspace: HTMLElement | null = null;
   private heading: HTMLElement | null = null;
   private views: HTMLElement | null = null;
   private calendarSelect: HTMLSelectElement | null = null;
@@ -41,6 +53,7 @@ export class SchedulerHeaderElement extends HTMLElement {
   /** Controlled render model. Model updates never emit user-interaction events. */
   set model(model: SchedulerHeaderModel) {
     if (this.currentModel
+      && this.currentModel.workspaceView === model.workspaceView
       && this.currentModel.activeView === model.activeView
       && this.currentModel.activeCalendar === model.activeCalendar
       && this.currentModel.title === model.title
@@ -64,6 +77,11 @@ export class SchedulerHeaderElement extends HTMLElement {
 
   private ensureStructure(): void {
     if (this.heading) return;
+    this.workspace = document.createElement('nav');
+    this.workspace.className = 'event-scheduler-shift-week-toolbar__workspace rv-segmented-switch';
+    this.workspace.setAttribute('role', 'tablist');
+    this.workspace.setAttribute('aria-label', 'Scheduler workspace');
+
     const nav = document.createElement('div');
     nav.className = 'event-scheduler-shift-week-toolbar__nav';
     nav.append(
@@ -74,8 +92,12 @@ export class SchedulerHeaderElement extends HTMLElement {
 
     this.heading = document.createElement('div');
     this.heading.className = 'event-scheduler-shift-week-toolbar__heading';
+    const range = document.createElement('div');
+    range.className = 'event-scheduler-shift-week-toolbar__range';
+    range.append(nav, this.heading);
+
     this.views = document.createElement('div');
-    this.views.className = 'event-scheduler-shift-week-toolbar__views';
+    this.views.className = 'event-scheduler-shift-week-toolbar__views rv-segmented-switch';
     this.views.setAttribute('role', 'group');
     this.views.setAttribute('aria-label', 'Scheduler view');
 
@@ -88,7 +110,10 @@ export class SchedulerHeaderElement extends HTMLElement {
     this.calendarSelect.dataset.schedulerCalendar = '';
     this.calendarDescription = document.createElement('small');
     calendar.append(calendarLabel, this.calendarSelect, this.calendarDescription);
-    this.append(nav, this.heading, this.views, calendar);
+    const end = document.createElement('div');
+    end.className = 'event-scheduler-shift-week-toolbar__end';
+    end.append(this.views, calendar);
+    this.append(this.workspace, range, end);
   }
 
   private createNavigationButton(action: SchedulerHeaderNavigateDetail['action'], ariaLabel: string, label: string): HTMLButtonElement {
@@ -107,6 +132,24 @@ export class SchedulerHeaderElement extends HTMLElement {
     if (!this.isConnected || !this.currentModel) return;
     this.ensureStructure();
     const model = this.currentModel;
+    this.classList.toggle('event-scheduler-shift-week-toolbar--workspace-only', model.workspaceView !== 'calendar');
+
+    const workspaceButtons = workspaceViews.map(({ view, label }) => {
+      const active = model.workspaceView === view;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.setAttribute('role', 'tab');
+      button.className = [
+        'rv-segmented-switch-item',
+        active ? 'on' : '',
+      ].filter(Boolean).join(' ');
+      button.dataset.schedulerWorkspace = view;
+      button.setAttribute('aria-selected', String(active));
+      button.textContent = label;
+      return button;
+    });
+    this.workspace?.replaceChildren(...workspaceButtons);
+
     const title = document.createElement('strong');
     title.textContent = model.title;
     const subtitle = document.createElement('span');
@@ -118,7 +161,9 @@ export class SchedulerHeaderElement extends HTMLElement {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = [
+        'rv-segmented-switch-item',
         'event-scheduler-shift-week-toolbar__view',
+        active ? 'on' : '',
         active ? 'event-scheduler-shift-week-toolbar__view--active' : '',
       ].filter(Boolean).join(' ');
       button.dataset.schedulerView = view;
@@ -145,6 +190,13 @@ export class SchedulerHeaderElement extends HTMLElement {
 
   private readonly handleClick = (event: Event): void => {
     const target = event.target as HTMLElement;
+    const workspace = target.closest<HTMLButtonElement>('[data-scheduler-workspace]');
+    if (workspace?.dataset.schedulerWorkspace) {
+      this.emit<SchedulerHeaderWorkspaceChangeDetail>('scheduler-header-workspace-change', {
+        view: workspace.dataset.schedulerWorkspace as ShiftWeekWorkspaceView,
+      });
+      return;
+    }
     const navigation = target.closest<HTMLButtonElement>('[data-scheduler-navigate]');
     if (navigation?.dataset.schedulerNavigate) {
       this.emit<SchedulerHeaderNavigateDetail>('scheduler-header-navigate', {

@@ -9,6 +9,7 @@ import {
 } from '@revolist/revogrid-enterprise';
 import { currentTheme } from '../../composables/useRandomData';
 import {
+  calendarConfig,
   createTasks,
   ganttColumns,
   ganttConfig,
@@ -35,27 +36,46 @@ import {
   styleUrls: ['./planning.scss'],
   template: `
     <section class="planning-demo">
-      <nav class="planning-demo__switch" aria-label="Planning view">
+      <nav class="planning-demo__switch rv-segmented-switch" role="tablist" aria-label="Planning view">
         <button
           type="button"
-          [class.active]="activeView === 'grid'"
+          class="rv-segmented-switch-item"
+          role="tab"
+          [class.on]="activeView === 'grid'"
+          [attr.aria-selected]="activeView === 'grid'"
           (click)="activeView = 'grid'"
         >
           Grid
         </button>
         <button
           type="button"
-          [class.active]="activeView === 'gantt'"
+          class="rv-segmented-switch-item"
+          role="tab"
+          [class.on]="activeView === 'gantt'"
+          [attr.aria-selected]="activeView === 'gantt'"
           (click)="activeView = 'gantt'"
         >
           Gantt
         </button>
         <button
           type="button"
-          [class.active]="activeView === 'scheduler'"
+          class="rv-segmented-switch-item"
+          role="tab"
+          [class.on]="activeView === 'scheduler'"
+          [attr.aria-selected]="activeView === 'scheduler'"
           (click)="activeView = 'scheduler'"
         >
           Scheduler
+        </button>
+        <button
+          type="button"
+          class="rv-segmented-switch-item"
+          role="tab"
+          [class.on]="activeView === 'calendar'"
+          [attr.aria-selected]="activeView === 'calendar'"
+          (click)="activeView = 'calendar'"
+        >
+          Calendar
         </button>
       </nav>
 
@@ -106,6 +126,22 @@ import {
             (event-scheduler-event-changed)="handleSchedulerEdit($event)"
           ></revo-grid>
         }
+        @case ('calendar') {
+          <revo-grid
+            class="planning-demo__grid"
+            [hideAttribution]="true"
+            [theme]="theme"
+            [plugins]="schedulerPlugins"
+            [source]="empty"
+            [columns]="empty"
+            [resize]="true"
+            [filter]="true"
+            [eventScheduler]="calendarConfig"
+            [eventSchedulerResources]="schedulerResources"
+            [eventSchedulerEvents]="schedulerEvents"
+            (event-scheduler-event-changed)="handleSchedulerEdit($event)"
+          ></revo-grid>
+        }
       }
     </section>
   `,
@@ -121,6 +157,7 @@ export class PlanningViewsGridComponent {
   readonly ganttConfig = ganttConfig;
   readonly ganttResources = ganttResources;
   readonly schedulerConfig = schedulerConfig;
+  readonly calendarConfig = calendarConfig;
   readonly schedulerResources = schedulerResources;
   readonly ganttPlugins = [GanttPlugin];
   readonly schedulerPlugins = [EventSchedulerPlugin];

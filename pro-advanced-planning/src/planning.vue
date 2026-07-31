@@ -1,11 +1,13 @@
 <template>
   <section class="planning-demo">
-    <nav class="planning-demo__switch" aria-label="Planning view">
+    <nav class="planning-demo__switch rv-segmented-switch" role="tablist" aria-label="Planning view">
       <button
         v-for="view in views"
         :key="view"
         type="button"
-        :class="{ active: activeView === view }"
+        class="rv-segmented-switch-item"
+        :class="{ on: activeView === view }"
+        role="tab"
         :aria-selected="activeView === view"
         @click="activeView = view"
       >
@@ -45,7 +47,7 @@
     />
     <RevoGrid
       v-else
-      key="scheduler"
+      :key="activeView"
       class="planning-demo__grid"
       hide-attribution
       :theme="theme"
@@ -54,7 +56,7 @@
       :columns="[]"
       resize
       filter
-      :event-scheduler.prop="schedulerConfig"
+      :event-scheduler.prop="activeView === 'calendar' ? calendarConfig : schedulerConfig"
       :event-scheduler-resources.prop="schedulerResources"
       :event-scheduler-events.prop="schedulerEvents"
       @event-scheduler-event-changed="handleSchedulerEdit"
@@ -77,6 +79,7 @@ import {
   observeCurrentTheme,
 } from '../../composables/useRandomData';
 import {
+  calendarConfig,
   createTasks,
   ganttColumns,
   ganttConfig,

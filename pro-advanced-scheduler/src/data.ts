@@ -21,7 +21,6 @@ import {
   type EventSchedulerEventEntity,
   type EventSchedulerEventSectionContext,
   type EventSchedulerOpenShiftAssignRequestDetail,
-  type EventSchedulerResourceCellContext,
   type EventSchedulerResourceEntity,
   type EventSchedulerResourceReassignRequestDetail,
   type EventSchedulerTemplateH,
@@ -117,7 +116,7 @@ export const shiftWeekCalendarOptions: readonly ShiftWeekCalendarOption[] = [
 ];
 
 const shiftWeekBaseConfig: Omit<EventSchedulerConfig, 'view' | 'weekStartDate'> = {
-  slotMinutes: 30,
+  slotMinutes: 60,
   snapMinutes: 10,
   timeRange: { start: '06:00', end: '18:00' },
   currentTimeMarker: { enabled: true, dateTime: currentDemoDateTime },
@@ -138,7 +137,7 @@ const shiftWeekBaseConfig: Omit<EventSchedulerConfig, 'view' | 'weekStartDate'> 
   allowMove: true,
   allowResize: true,
   allowDelete: true,
-  rowSize: 28,
+  rowSize: 56,
   timeColumnSize: 64,
   dayColumnSize: 154,
   columnGrouping: false,
@@ -216,7 +215,6 @@ const shiftWeekBaseConfig: Omit<EventSchedulerConfig, 'view' | 'weekStartDate'> 
   }),
   customization: {
     cells: {
-      resourceTemplate: renderShiftWeekResourceCell,
       resourceProperties: () => ({
         class: 'shift-week-resource-cell',
       }),
@@ -669,28 +667,6 @@ function getEventStartDate(view: ShiftWeekDemoView, anchorDate: string): string 
     return normalizeShiftWeekAnchorDate(view, anchorDate);
   }
   return getWeekStartIsoDate(parseIsoDate(anchorDate));
-}
-
-function renderShiftWeekResourceCell(h: EventSchedulerTemplateH, context: EventSchedulerResourceCellContext) {
-  const resourceName = context.resource?.name ?? 'Open shift';
-  const member = getShiftWeekTeamMember(context.resource?.id ?? context.resourceId);
-  const initials = member?.initials ?? getShiftWeekInitials(resourceName);
-  const color = member?.color ?? context.resource?.color ?? 'oklch(0.55 0.2 274)';
-  const role = context.resource?.role ?? (context.unassigned ? 'Unassigned' : 'Resource');
-  return h('span', { class: 'shift-week-resource-cell__content' }, [
-    h('span', {
-      class: 'shift-week-resource-cell__avatar',
-      style: { '--shift-week-avatar-color': color },
-      title: resourceName,
-    }, initials),
-    h('span', { class: 'shift-week-resource-cell__copy' }, [
-      h('span', { class: 'shift-week-resource-cell__name' }, resourceName),
-      h('span', { class: 'shift-week-resource-cell__meta' }, role),
-    ]),
-    member?.count !== undefined
-      ? h('span', { class: 'shift-week-resource-cell__count' }, String(member.count))
-      : null,
-  ]);
 }
 
 function getDefaultNewEventDate(view: ShiftWeekDemoView, normalizedAnchor: string): string {
