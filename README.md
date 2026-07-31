@@ -27,7 +27,7 @@ Every showcase provides equivalent implementations for the major supported front
 | **Pro Advance** | Financial pivot | Financial presets, configurable row and column axes, filtering, KPIs, heatmap formatting, responsive layout, and expanded view | [Demo guide](./pro-advanced-pivot/README.md) |
 | **Pro Advance** | Event scheduler | Calendar and resource views, table view, navigation, search, event creation, open shifts, reassignment, and team scheduling | [Demo guide](./pro-advanced-scheduler/README.md) |
 | **Pro Advance** | Project Gantt | Tasks, dependencies, resources, assignments, working calendars, baselines, critical path controls, row status, and Excel export | [Demo guide](./pro-advanced-gantt/README.md) |
-| **Pro Advance** | Planning views | One editable task model shared by a data grid, Gantt, and resource scheduler | [Demo guide](./pro-advanced-planning/README.md) |
+| **Pro Advance** | Unified Planning Suite | One editable task model shared by a data grid, Gantt, scheduler, and calendar | [Demo guide](./pro-advanced-planning/README.md) |
 
 Each commercial demo guide contains a source-audited inventory of its directly registered and automatically installed Pro or Enterprise plugins, the supporting package APIs it uses, and the practical benefit of each capability.
 
@@ -125,7 +125,7 @@ pnpm dev:angular
 | Pivot | [`pivot.ts`](./pro-advanced-pivot/src/pivot.ts) | [`pivot.react.tsx`](./pro-advanced-pivot/src/pivot.react.tsx) | [`pivot.vue`](./pro-advanced-pivot/src/pivot.vue) | [`pivot.angular.ts`](./pro-advanced-pivot/src/pivot.angular.ts) |
 | Scheduler | [`scheduler.ts`](./pro-advanced-scheduler/src/scheduler.ts) | [`scheduler.react.tsx`](./pro-advanced-scheduler/src/scheduler.react.tsx) | [`scheduler.vue`](./pro-advanced-scheduler/src/scheduler.vue) | [`scheduler.angular.ts`](./pro-advanced-scheduler/src/scheduler.angular.ts) |
 | Gantt | [`gantt.ts`](./pro-advanced-gantt/src/gantt.ts) | [`gantt.react.tsx`](./pro-advanced-gantt/src/gantt.react.tsx) | [`gantt.vue`](./pro-advanced-gantt/src/gantt.vue) | [`gantt.angular.ts`](./pro-advanced-gantt/src/gantt.angular.ts) |
-| Planning views | [`planning.ts`](./pro-advanced-planning/src/planning.ts) | [`planning.react.tsx`](./pro-advanced-planning/src/planning.react.tsx) | [`planning.vue`](./pro-advanced-planning/src/planning.vue) | [`planning.angular.ts`](./pro-advanced-planning/src/planning.angular.ts) |
+| Unified Planning Suite | [`planning.ts`](./pro-advanced-planning/src/planning.ts) | [`planning.react.tsx`](./pro-advanced-planning/src/planning.react.tsx) | [`planning.vue`](./pro-advanced-planning/src/planning.vue) | [`planning.angular.ts`](./pro-advanced-planning/src/planning.angular.ts) |
 
 ## Contributing
 

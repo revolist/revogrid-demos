@@ -8,6 +8,7 @@
 
 .planning-demo__switch {
   justify-self: start;
+  margin: 4px 16px 0;
   --rv-segmented-item-color: #64748b;
   --rv-segmented-active-color: #0f172a;
 }
@@ -20,8 +21,8 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border: 0;
+  border-radius: 0;
 }
 
 .planning-demo__grid revo-grid,
@@ -44,9 +45,5 @@ planning-views-grid {
     --rv-segmented-active-bg: #1e293b;
     --rv-segmented-active-color: #f8fafc;
     --rv-segmented-active-border: #475569;
-  }
-
-  .planning-demo__grid {
-    border-color: #334155;
   }
 }

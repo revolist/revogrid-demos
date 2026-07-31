@@ -1,7 +1,7 @@
-# Grid + Gantt + Scheduler
+# Unified Planning Suite
 
-A minimal editable planning demo backed by one task array. Switch between the
-data grid, Gantt, and resource scheduler to see edits carried into the next
+An integrated Data Grid, Gantt, Scheduler, and Calendar demo backed by one task
+array. Switch between each planning surface to see edits carried into the next
 view.
 
 The Gantt and Scheduler use their built-in context menus. The plain data grid
