@@ -9,9 +9,7 @@ import {
   createShiftWeekConfig,
   createShiftWeekEvents,
   createShiftWeekManualEvent,
-  getShiftWeekNewEventDefaults,
   getShiftWeekRangeTitle,
-  getShiftWeekSearchMatchIds,
   getShiftWeekSubtitle,
   getShiftWeekTableRows,
   getShiftWeekTableColumns,
@@ -38,7 +36,6 @@ import {
 import {
   SCHEDULER_DIALOG_TAG,
   SCHEDULER_HEADER_TAG,
-  SCHEDULER_SIDEBAR_TAG,
   defineSchedulerShellElements,
   type SchedulerDialogElement,
   type SchedulerDialogSubmitDetail,
@@ -46,9 +43,7 @@ import {
   type SchedulerHeaderElement,
   type SchedulerHeaderNavigateDetail,
   type SchedulerHeaderViewChangeDetail,
-  type SchedulerSidebarElement,
-  type SchedulerSidebarSearchChangeDetail,
-  type SchedulerSidebarWorkspaceChangeDetail,
+  type SchedulerHeaderWorkspaceChangeDetail,
 } from './components';
 import './styles.scss';
 
@@ -63,7 +58,6 @@ export function load(parentSelector: string) {
   }
 
   const root = document.createElement('section');
-  const sidebar = document.createElement(SCHEDULER_SIDEBAR_TAG) as SchedulerSidebarElement;
   const main = document.createElement('div');
   const header = document.createElement(SCHEDULER_HEADER_TAG) as SchedulerHeaderElement;
   const grid = document.createElement('revo-grid');
@@ -74,7 +68,6 @@ export function load(parentSelector: string) {
   let activeCalendar: ShiftWeekDemoCalendar = initialShiftWeekCalendar;
   let anchorDate = initialShiftWeekAnchorDate;
   let selectedEventIds: readonly EventSchedulerEntityId[] = [];
-  let searchQuery = '';
   let newEventForm: ShiftWeekNewEventForm | null = null;
 
   root.className = 'event-scheduler-shift-week-demo';
@@ -96,8 +89,7 @@ export function load(parentSelector: string) {
   table.columns = getShiftWeekTableColumns();
   table.filter = {};
   table.stretch = 'all';
-  const getHighlightedEventIds = () => getShiftWeekSearchMatchIds(grid.eventSchedulerEvents ?? [], searchQuery);
-  grid.eventScheduler = createShiftWeekConfig(activeView, anchorDate, activeCalendar, selectedEventIds, getHighlightedEventIds(), workspaceView);
+  grid.eventScheduler = createShiftWeekConfig(activeView, anchorDate, activeCalendar, selectedEventIds, [], workspaceView);
   grid.eventSchedulerEvents = createShiftWeekEvents(activeView, anchorDate);
   grid.eventSchedulerResources = shiftResources.map((resource) => ({ ...resource }));
   table.className = 'event-scheduler-shift-week-table';
@@ -106,10 +98,7 @@ export function load(parentSelector: string) {
   table.hidden = true;
 
   const applySchedulerConfig = () => {
-    grid.eventScheduler = createShiftWeekConfig(activeView, anchorDate, activeCalendar, selectedEventIds, getHighlightedEventIds(), workspaceView);
-  };
-  const renderSidebar = () => {
-    sidebar.model = { workspaceView, searchQuery, teamMembers: shiftWeekTeamMembers };
+    grid.eventScheduler = createShiftWeekConfig(activeView, anchorDate, activeCalendar, selectedEventIds, [], workspaceView);
   };
   const renderTable = () => {
     table.source = getShiftWeekTableRows(grid.eventSchedulerEvents ?? []);
@@ -122,23 +111,16 @@ export function load(parentSelector: string) {
       statusOptions: shiftWeekNewEventStatusOptions,
     } : null;
   };
-  const openNewEvent = () => {
-    newEventForm = getShiftWeekNewEventDefaults(activeView, anchorDate);
-    renderNewEventDialog();
-  };
   const closeNewEvent = () => {
     newEventForm = null;
     renderNewEventDialog();
   };
   const renderWorkspace = () => {
     const tableActive = workspaceView === 'table';
-    const headerHidden = tableActive || workspaceView === 'resource';
-    header.classList.toggle('event-scheduler-shift-week-toolbar--hidden', headerHidden);
     grid.classList.toggle('event-scheduler-shift-week-grid--hidden', tableActive);
     grid.hidden = tableActive;
     table.hidden = !tableActive;
     if (tableActive) renderTable();
-    renderSidebar();
   };
   const refreshRange = () => {
     selectedEventIds = [];
@@ -167,11 +149,13 @@ export function load(parentSelector: string) {
       refreshRange();
       return;
     }
+    renderToolbar();
     applySchedulerConfig();
     renderWorkspace();
   };
   const renderToolbar = () => {
     header.model = {
+      workspaceView,
       activeView,
       activeCalendar,
       title: getShiftWeekRangeTitle(activeView, anchorDate),
@@ -201,14 +185,8 @@ export function load(parentSelector: string) {
     activeCalendar = (event as CustomEvent<SchedulerHeaderCalendarChangeDetail>).detail.calendar;
     refreshRange();
   });
-  sidebar.addEventListener('scheduler-sidebar-workspace-change', (event) => {
-    setWorkspace((event as CustomEvent<SchedulerSidebarWorkspaceChangeDetail>).detail.view);
-  });
-  sidebar.addEventListener('scheduler-sidebar-new-event', openNewEvent);
-  sidebar.addEventListener('scheduler-sidebar-search-change', (event) => {
-    searchQuery = (event as CustomEvent<SchedulerSidebarSearchChangeDetail>).detail.query;
-    applySchedulerConfig();
-    renderTable();
+  header.addEventListener('scheduler-header-workspace-change', (event) => {
+    setWorkspace((event as CustomEvent<SchedulerHeaderWorkspaceChangeDetail>).detail.view);
   });
   dialog.addEventListener('scheduler-dialog-close', closeNewEvent);
   dialog.addEventListener('scheduler-dialog-submit', (event) => {
@@ -276,11 +254,10 @@ export function load(parentSelector: string) {
   grid.addEventListener('event-scheduler-view-request', handleViewRequest);
 
   renderToolbar();
-  renderSidebar();
   renderWorkspace();
   renderNewEventDialog();
   main.append(header, grid, table);
-  root.append(sidebar, main, dialog);
+  root.append(main, dialog);
   parent.appendChild(root);
 
   grid.source = [];

@@ -7,27 +7,13 @@
 }
 
 .planning-demo__switch {
-  display: flex;
-  gap: 4px;
+  justify-self: start;
+  --rv-segmented-item-color: #64748b;
+  --rv-segmented-active-color: #0f172a;
 }
 
-.planning-demo__switch button {
-  padding: 8px 12px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: #64748b;
-  font:
-    600 13px/1 system-ui,
-    sans-serif;
+.planning-demo__switch .rv-segmented-switch-item {
   text-transform: capitalize;
-  cursor: pointer;
-}
-
-.planning-demo__switch button.active {
-  color: #0f172a;
-  background: #fff;
-  box-shadow: 0 1px 3px #0f172a1a;
 }
 
 .planning-demo__grid {
@@ -50,13 +36,14 @@ planning-views-grid {
 }
 
 @media (prefers-color-scheme: dark) {
-  .planning-demo__switch button {
-    color: #94a3b8;
-  }
-
-  .planning-demo__switch button.active {
-    color: #f8fafc;
-    background: #1e293b;
+  .planning-demo__switch {
+    --rv-segmented-bg: #111827;
+    --rv-segmented-border: #334155;
+    --rv-segmented-item-color: #94a3b8;
+    --rv-segmented-item-hover-color: #e2e8f0;
+    --rv-segmented-active-bg: #1e293b;
+    --rv-segmented-active-color: #f8fafc;
+    --rv-segmented-active-border: #475569;
   }
 
   .planning-demo__grid {

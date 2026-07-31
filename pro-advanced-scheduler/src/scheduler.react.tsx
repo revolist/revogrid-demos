@@ -8,9 +8,7 @@ import {
   createShiftWeekConfig,
   createShiftWeekEvents,
   createShiftWeekManualEvent,
-  getShiftWeekNewEventDefaults,
   getShiftWeekRangeTitle,
-  getShiftWeekSearchMatchIds,
   getShiftWeekSubtitle,
   getShiftWeekTableColumns,
   getShiftWeekTableRows,
@@ -37,7 +35,6 @@ import {
 import {
   SCHEDULER_DIALOG_TAG,
   SCHEDULER_HEADER_TAG,
-  SCHEDULER_SIDEBAR_TAG,
   defineSchedulerShellElements,
   type SchedulerDialogElement,
   type SchedulerDialogSubmitDetail,
@@ -45,9 +42,7 @@ import {
   type SchedulerHeaderElement,
   type SchedulerHeaderNavigateDetail,
   type SchedulerHeaderViewChangeDetail,
-  type SchedulerSidebarElement,
-  type SchedulerSidebarSearchChangeDetail,
-  type SchedulerSidebarWorkspaceChangeDetail,
+  type SchedulerHeaderWorkspaceChangeDetail,
 } from './components';
 import './styles.scss';
 
@@ -56,7 +51,6 @@ defineSchedulerShellElements();
 export default function EventSchedulerShiftWeek() {
   const shellRef = useRef<HTMLElement | null>(null);
   const gridRef = useRef<HTMLRevoGridElement | null>(null);
-  const sidebarRef = useRef<SchedulerSidebarElement | null>(null);
   const headerRef = useRef<SchedulerHeaderElement | null>(null);
   const dialogRef = useRef<SchedulerDialogElement | null>(null);
   const [isDark, setIsDark] = useState(() => currentTheme().isDark());
@@ -66,7 +60,6 @@ export default function EventSchedulerShiftWeek() {
   const [anchorDate, setAnchorDate] = useState(initialShiftWeekAnchorDate);
   const [events, setEvents] = useState<readonly EventSchedulerEventEntity[]>(() => createShiftWeekEvents(initialShiftWeekDemoView, initialShiftWeekAnchorDate));
   const [selectedEventIds, setSelectedEventIds] = useState<readonly EventSchedulerEntityId[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [newEventForm, setNewEventForm] = useState<ShiftWeekNewEventForm | null>(null);
   const plugins = useMemo(() => [EventSchedulerPlugin], []);
   const tablePlugins = useMemo(() => [AdvanceFilterPlugin, ColumnStretchPlugin, RowOddPlugin], []);
@@ -74,17 +67,15 @@ export default function EventSchedulerShiftWeek() {
   const columnTypes = useMemo(() => ({}), []);
   const additionalData = useMemo(() => ({}), []);
   const resources = useMemo(() => shiftResources.map((resource) => ({ ...resource })), []);
-  const highlightedEventIds = useMemo(() => getShiftWeekSearchMatchIds(events, searchQuery), [events, searchQuery]);
   const schedulerConfig = useMemo(
-    () => createShiftWeekConfig(activeView, anchorDate, activeCalendar, selectedEventIds, highlightedEventIds, workspaceView),
-    [activeView, anchorDate, activeCalendar, selectedEventIds, highlightedEventIds, workspaceView],
+    () => createShiftWeekConfig(activeView, anchorDate, activeCalendar, selectedEventIds, [], workspaceView),
+    [activeView, anchorDate, activeCalendar, selectedEventIds, workspaceView],
   );
   const rangeTitle = useMemo(() => getShiftWeekRangeTitle(activeView, anchorDate), [activeView, anchorDate]);
   const rangeSubtitle = useMemo(() => getShiftWeekSubtitle(anchorDate), [anchorDate]);
   const tableRows = useMemo(() => getShiftWeekTableRows(events), [events]);
-  const showToolbar = workspaceView === 'calendar';
-  const sidebarModel = useMemo(() => ({ workspaceView, searchQuery, teamMembers: shiftWeekTeamMembers }), [workspaceView, searchQuery]);
   const headerModel = useMemo(() => ({
+    workspaceView,
     activeView,
     activeCalendar,
     title: rangeTitle,
@@ -92,7 +83,7 @@ export default function EventSchedulerShiftWeek() {
     views: shiftWeekDemoViews,
     viewLabels: shiftWeekViewLabels,
     calendarOptions: shiftWeekCalendarOptions,
-  }), [activeView, activeCalendar, rangeTitle, rangeSubtitle]);
+  }), [workspaceView, activeView, activeCalendar, rangeTitle, rangeSubtitle]);
   const dialogModel = useMemo(() => newEventForm ? ({
     form: newEventForm,
     teamMembers: shiftWeekTeamMembers,
@@ -159,17 +150,9 @@ export default function EventSchedulerShiftWeek() {
     resetEvents(activeView, anchorDate);
   }, [activeView, anchorDate, resetEvents]);
 
-  const openNewEvent = useCallback(() => {
-    setNewEventForm(getShiftWeekNewEventDefaults(activeView, anchorDate));
-  }, [activeView, anchorDate]);
-
-  useEffect(() => {
-    if (sidebarRef.current) sidebarRef.current.model = sidebarModel;
-  }, [sidebarModel]);
-
   useEffect(() => {
     if (headerRef.current) headerRef.current.model = headerModel;
-  }, [headerModel, showToolbar]);
+  }, [headerModel]);
 
   useEffect(() => {
     if (dialogRef.current) dialogRef.current.model = dialogModel;
@@ -178,9 +161,7 @@ export default function EventSchedulerShiftWeek() {
   useEffect(() => {
     const shell = shellRef.current;
     if (!shell) return undefined;
-    const handleNewEvent = () => openNewEvent();
-    const handleSearch = (event: Event) => setSearchQuery((event as CustomEvent<SchedulerSidebarSearchChangeDetail>).detail.query);
-    const handleWorkspace = (event: Event) => setWorkspace((event as CustomEvent<SchedulerSidebarWorkspaceChangeDetail>).detail.view);
+    const handleWorkspace = (event: Event) => setWorkspace((event as CustomEvent<SchedulerHeaderWorkspaceChangeDetail>).detail.view);
     const handleNavigate = (event: Event) => {
       const { action } = (event as CustomEvent<SchedulerHeaderNavigateDetail>).detail;
       if (action === 'previous') goPrevious();
@@ -195,25 +176,21 @@ export default function EventSchedulerShiftWeek() {
       setEvents((currentEvents) => [...currentEvents, createShiftWeekManualEvent(form)]);
       setNewEventForm(null);
     };
-    shell.addEventListener('scheduler-sidebar-new-event', handleNewEvent);
-    shell.addEventListener('scheduler-sidebar-search-change', handleSearch);
-    shell.addEventListener('scheduler-sidebar-workspace-change', handleWorkspace);
+    shell.addEventListener('scheduler-header-workspace-change', handleWorkspace);
     shell.addEventListener('scheduler-header-navigate', handleNavigate);
     shell.addEventListener('scheduler-header-view-change', handleView);
     shell.addEventListener('scheduler-header-calendar-change', handleCalendar);
     shell.addEventListener('scheduler-dialog-close', handleDialogClose);
     shell.addEventListener('scheduler-dialog-submit', handleDialogSubmit);
     return () => {
-      shell.removeEventListener('scheduler-sidebar-new-event', handleNewEvent);
-      shell.removeEventListener('scheduler-sidebar-search-change', handleSearch);
-      shell.removeEventListener('scheduler-sidebar-workspace-change', handleWorkspace);
+      shell.removeEventListener('scheduler-header-workspace-change', handleWorkspace);
       shell.removeEventListener('scheduler-header-navigate', handleNavigate);
       shell.removeEventListener('scheduler-header-view-change', handleView);
       shell.removeEventListener('scheduler-header-calendar-change', handleCalendar);
       shell.removeEventListener('scheduler-dialog-close', handleDialogClose);
       shell.removeEventListener('scheduler-dialog-submit', handleDialogSubmit);
     };
-  }, [goNext, goPrevious, goToday, openNewEvent, setCalendar, setView, setWorkspace]);
+  }, [goNext, goPrevious, goToday, setCalendar, setView, setWorkspace]);
 
   useEffect(() => {
     const grid = gridRef.current;
@@ -277,8 +254,8 @@ export default function EventSchedulerShiftWeek() {
 
   return (
     <section ref={shellRef} className="event-scheduler-shift-week-demo">
-      {React.createElement(SCHEDULER_SIDEBAR_TAG, { ref: sidebarRef })}
       <div className="event-scheduler-shift-week-main">
+        {React.createElement(SCHEDULER_HEADER_TAG, { ref: headerRef })}
         {workspaceView === 'table' ? (
           <RevoGrid
             theme={isDark ? 'darkMaterial' : 'material'}
@@ -291,11 +268,7 @@ export default function EventSchedulerShiftWeek() {
             className="event-scheduler-shift-week-table"
           />
         ) : (
-          <>
-            {showToolbar ? (
-              React.createElement(SCHEDULER_HEADER_TAG, { ref: headerRef })
-            ) : null}
-            <RevoGrid
+          <RevoGrid
               ref={gridRef}
               className="event-scheduler-shift-week-grid"
               theme={isDark ? 'darkMaterial' : 'material'}
@@ -308,8 +281,7 @@ export default function EventSchedulerShiftWeek() {
               eventScheduler={schedulerConfig}
               eventSchedulerEvents={events}
               eventSchedulerResources={resources}
-            />
-          </>
+          />
         )}
       </div>
       {React.createElement(SCHEDULER_DIALOG_TAG, { ref: dialogRef })}

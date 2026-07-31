@@ -11,6 +11,7 @@ import {
   observeCurrentTheme,
 } from '../../composables/useRandomData';
 import {
+  calendarConfig,
   createTasks,
   ganttColumns,
   ganttConfig,
@@ -52,7 +53,8 @@ export function load(parentSelector: string): (() => void) | undefined {
   const panel = document.createElement('article');
 
   root.className = 'planning-demo';
-  switcher.className = 'planning-demo__switch';
+  switcher.className = 'planning-demo__switch rv-segmented-switch';
+  switcher.setAttribute('role', 'tablist');
   switcher.ariaLabel = 'Planning view';
   panel.className = 'planning-demo__grid';
   root.append(switcher, panel);
@@ -100,7 +102,7 @@ export function load(parentSelector: string): (() => void) | undefined {
       grid.columns = [];
       grid.resize = true;
       grid.filter = true;
-      grid.eventScheduler = schedulerConfig;
+      grid.eventScheduler = view === 'calendar' ? calendarConfig : schedulerConfig;
       grid.eventSchedulerResources = schedulerResources;
       grid.eventSchedulerEvents = toSchedulerEvents(tasks);
       grid.addEventListener('event-scheduler-event-changed', (event) => {
@@ -112,10 +114,10 @@ export function load(parentSelector: string): (() => void) | undefined {
     }
 
     panel.replaceChildren(grid);
-    grid.source = view === 'scheduler' ? [] : (tasks as PlanningTask[]);
+    grid.source = view === 'scheduler' || view === 'calendar' ? [] : (tasks as PlanningTask[]);
     switcher.querySelectorAll('button').forEach((button) => {
       const selected = button.dataset.view === activeView;
-      button.classList.toggle('active', selected);
+      button.classList.toggle('on', selected);
       button.ariaSelected = String(selected);
     });
   }
@@ -123,6 +125,8 @@ export function load(parentSelector: string): (() => void) | undefined {
   for (const view of views) {
     const button = document.createElement('button');
     button.type = 'button';
+    button.className = 'rv-segmented-switch-item';
+    button.setAttribute('role', 'tab');
     button.dataset.view = view;
     button.textContent = view;
     button.addEventListener('click', () => render(view));
