@@ -12,22 +12,51 @@ import {
   type GanttBeforeTaskChangeDetail,
   type GanttPluginConfig,
   type GanttTaskSourceRow,
+  type KanbanCardMoveDetail,
+  type KanbanConfig,
   type ResourceEntity,
 } from '@revolist/revogrid-enterprise';
 
-export type PlanningView = 'grid' | 'gantt' | 'scheduler';
+export type PlanningView = 'grid' | 'kanban' | 'gantt' | 'scheduler';
 
 export type PlanningTask = GanttTaskSourceRow & {
   id: string;
   name: string;
   owner: string;
   ownerAvatar: string;
+  owners: string[];
+  ownerAvatars: string[];
   startDate: string;
   endDate: string;
   percentDone: number;
+  order: number;
 };
 
-export const views: PlanningView[] = ['grid', 'gantt', 'scheduler'];
+export const views: PlanningView[] = ['grid', 'kanban', 'gantt', 'scheduler'];
+
+export const kanbanConfig: KanbanConfig<PlanningTask> = {
+  columns: [
+    { id: 'not-started', title: 'To do' },
+    { id: 'in-progress', title: 'In progress' },
+    { id: 'done', title: 'Done' },
+  ],
+  columnField: 'workflowStatus',
+  orderField: 'order',
+  swimlaneColumn: false,
+  contextMenu: {
+    hidden: { open: true, edit: true, create: true, delete: true },
+  },
+  card: {
+    titleField: 'name',
+    startDateField: 'startDate',
+    endDateField: 'endDate',
+    dateTimeZone: 'UTC',
+    progressField: 'percentDone',
+    assigneeField: 'owners',
+    assigneeAvatarField: 'ownerAvatars',
+  },
+  cardRowHeight: 168,
+};
 
 const calendarId = 'launch-day';
 
@@ -156,10 +185,13 @@ export function createTasks(): PlanningTask[] {
       name: 'Design review',
       owner: 'Ava',
       ownerAvatar: getOwnerAvatar('Ava'),
+      owners: ['Ava'],
+      ownerAvatars: [getOwnerAvatar('Ava')],
       startDate: '2026-07-28T09:00:00.000Z',
       endDate: '2026-07-28T11:00:00.000Z',
       duration: '2h',
       percentDone: 70,
+      order: 1000,
       workflowStatus: 'in-progress',
     },
     {
@@ -167,10 +199,13 @@ export function createTasks(): PlanningTask[] {
       name: 'Implementation',
       owner: 'Noah',
       ownerAvatar: getOwnerAvatar('Noah'),
+      owners: ['Noah', 'Ava'],
+      ownerAvatars: [getOwnerAvatar('Noah'), getOwnerAvatar('Ava')],
       startDate: '2026-07-28T10:00:00.000Z',
       endDate: '2026-07-28T14:00:00.000Z',
       duration: '4h',
       percentDone: 30,
+      order: 2000,
       workflowStatus: 'in-progress',
     },
     {
@@ -178,10 +213,13 @@ export function createTasks(): PlanningTask[] {
       name: 'QA pass',
       owner: 'Leo',
       ownerAvatar: getOwnerAvatar('Leo'),
+      owners: ['Leo'],
+      ownerAvatars: [getOwnerAvatar('Leo')],
       startDate: '2026-07-28T14:00:00.000Z',
       endDate: '2026-07-28T16:00:00.000Z',
       duration: '2h',
       percentDone: 0,
+      order: 1000,
       workflowStatus: 'not-started',
     },
   ];
@@ -209,10 +247,22 @@ export function updateFromGrid(
       ...task,
       [prop]: value,
       ...(prop === 'owner'
-        ? { ownerAvatar: getOwnerAvatar(String(value)) }
+        ? {
+          ownerAvatar: getOwnerAvatar(String(value)),
+          owners: [String(value)],
+          ownerAvatars: [getOwnerAvatar(String(value))],
+        }
         : {}),
     };
   });
+}
+
+export function updateFromKanban(
+  tasks: PlanningTask[],
+  detail: KanbanCardMoveDetail<PlanningTask>,
+): PlanningTask[] {
+  const changed = new Map(detail.changedCards.map((task) => [task.id, task]));
+  return tasks.map((task) => changed.get(task.id) ?? task);
 }
 
 export function updateFromGantt(
@@ -231,23 +281,20 @@ export function updateFromGanttAssignment(
   tasks: PlanningTask[],
   detail: GanttBeforeAssignmentChangeDetail,
 ): PlanningTask[] {
-  const previousIds = new Set(
-    detail.previousAssignments.map(({ resourceId }) => String(resourceId)),
-  );
-  const assignment =
-    detail.assignments.find(
-      ({ taskId, resourceId }) =>
-        String(taskId) === String(detail.taskId) &&
-        !previousIds.has(String(resourceId)),
-    ) ??
-    detail.assignments.find(
-      ({ taskId }) => String(taskId) === String(detail.taskId),
-    );
-  const owner = assignment ? String(assignment.resourceId) : '';
+  const owners = detail.assignments
+    .filter(({ taskId }) => String(taskId) === String(detail.taskId))
+    .map(({ resourceId }) => String(resourceId));
+  const owner = owners[0] ?? '';
 
   return tasks.map((task) =>
     task.id === String(detail.taskId)
-      ? { ...task, owner, ownerAvatar: getOwnerAvatar(owner) }
+      ? {
+        ...task,
+        owner,
+        ownerAvatar: getOwnerAvatar(owner),
+        owners,
+        ownerAvatars: owners.map(getOwnerAvatar),
+      }
       : task,
   );
 }
@@ -269,6 +316,8 @@ export function updateFromScheduler(
       name: event.title ?? task.name,
       owner,
       ownerAvatar: getOwnerAvatar(owner),
+      owners: owner ? [owner] : [],
+      ownerAvatars: owner ? [getOwnerAvatar(owner)] : [],
       startDate: event.startDateTime,
       endDate: event.endDateTime,
       duration: `${(Date.parse(event.endDateTime) - Date.parse(event.startDateTime)) / 3_600_000}h`,
@@ -311,15 +360,13 @@ export const ganttResources: ResourceEntity[] = people.map((person) => ({
 }));
 
 export function toGanttAssignments(tasks: PlanningTask[]): AssignmentEntity[] {
-  return tasks
-    .filter(({ owner }) => owner)
-    .map((task) => ({
-      id: `assignment-${task.id}`,
-      taskId: task.id,
-      resourceId: task.owner,
-      allocationUnits: 1,
-      responsibility: 'Owner',
-    }));
+  return tasks.flatMap((task) => task.owners.map((owner, index) => ({
+    id: `assignment-${task.id}-${owner}`,
+    taskId: task.id,
+    resourceId: owner,
+    allocationUnits: 1,
+    responsibility: index === 0 ? 'Owner' : 'Contributor',
+  })));
 }
 
 export function toSchedulerEvents(

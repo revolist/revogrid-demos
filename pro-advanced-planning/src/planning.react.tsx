@@ -3,9 +3,11 @@ import { RevoGrid } from '@revolist/react-datagrid';
 import {
   EventSchedulerPlugin,
   GanttPlugin,
+  KanbanPlugin,
   type EventSchedulerEventChangedDetail,
   type GanttBeforeAssignmentChangeDetail,
   type GanttBeforeTaskChangeDetail,
+  type KanbanCardMoveDetail,
 } from '@revolist/revogrid-enterprise';
 import {
   currentTheme,
@@ -17,6 +19,7 @@ import {
   ganttConfig,
   ganttResources,
   gridColumns,
+  kanbanConfig,
   schedulerConfig,
   schedulerResources,
   toGanttAssignments,
@@ -24,9 +27,11 @@ import {
   updateFromGantt,
   updateFromGanttAssignment,
   updateFromGrid,
+  updateFromKanban,
   updateFromScheduler,
   views,
   type PlanningView,
+  type PlanningTask,
 } from './data';
 import './planning.scss';
 
@@ -37,6 +42,7 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
   eventScheduler?: typeof schedulerConfig;
   eventSchedulerResources?: typeof schedulerResources;
   eventSchedulerEvents?: ReturnType<typeof toSchedulerEvents>;
+  kanban?: typeof kanbanConfig;
   'onGantt-before-task-change'?: (
     event: CustomEvent<GanttBeforeTaskChangeDetail>,
   ) => void;
@@ -45,6 +51,9 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
   ) => void;
   'onEvent-scheduler-event-changed'?: (
     event: CustomEvent<EventSchedulerEventChangedDetail>,
+  ) => void;
+  onKanbancardmove?: (
+    event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>,
   ) => void;
 };
 
@@ -55,6 +64,7 @@ export default function PlanningViews() {
   const [tasks, setTasks] = useState(createTasks);
   const [isDark, setIsDark] = useState(() => currentTheme().isDark());
   const ganttPlugins = useMemo(() => [GanttPlugin], []);
+  const kanbanPlugins = useMemo(() => [KanbanPlugin], []);
   const schedulerPlugins = useMemo(() => [EventSchedulerPlugin], []);
   const ganttAssignments = useMemo(() => toGanttAssignments(tasks), [tasks]);
   const schedulerEvents = useMemo(() => toSchedulerEvents(tasks), [tasks]);
@@ -121,6 +131,21 @@ export default function PlanningViews() {
             setTasks((current) =>
               updateFromGanttAssignment(current, event.detail),
             )
+          }
+        />
+      )}
+      {activeView === 'kanban' && (
+        <PlanningGrid
+          key="kanban"
+          className="planning-demo__grid"
+          theme={isDark ? 'darkCompact' : 'compact'}
+          hideAttribution
+          plugins={kanbanPlugins}
+          source={tasks}
+          columns={gridColumns}
+          kanban={kanbanConfig}
+          onKanbancardmove={(event) =>
+            setTasks((current) => updateFromKanban(current, event.detail))
           }
         />
       )}
