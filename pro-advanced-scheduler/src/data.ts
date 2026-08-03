@@ -34,7 +34,7 @@ import {
   renderShiftWeekTimeLabel,
 } from './time-label';
 
-export type ShiftWeekDemoView = 'day' | 'week' | 'month' | 'resource';
+export type ShiftWeekDemoView = 'day' | 'week' | 'month' | 'year' | 'resource';
 export type ShiftWeekDemoCalendar = 'weekday' | 'open' | 'training';
 export type ShiftWeekWorkspaceView = 'calendar' | 'resource' | 'table';
 
@@ -85,10 +85,11 @@ export const shiftWeekViewLabels: Record<ShiftWeekDemoView, string> = {
   day: 'Day',
   week: 'Week',
   month: 'Month',
+  year: 'Year',
   resource: 'Resource',
 };
 
-export const shiftWeekDemoViews: readonly ShiftWeekDemoView[] = ['day', 'week', 'month'];
+export const shiftWeekDemoViews: readonly ShiftWeekDemoView[] = ['day', 'week', 'month', 'year'];
 export const initialShiftWeekDemoView: ShiftWeekDemoView = 'week';
 export const initialShiftWeekWorkspaceView: ShiftWeekWorkspaceView = 'calendar';
 export const initialShiftWeekAnchorDate = getTodayAnchorDate(initialShiftWeekDemoView);
@@ -444,7 +445,9 @@ export function createShiftWeekConfig(
     ? 'resourceTimeline'
     : view === 'resource'
       ? 'week'
-      : view;
+      : view === 'year'
+        ? 'month'
+        : view;
   return {
     ...shiftWeekBaseConfig,
     view: schedulerView,
@@ -492,7 +495,7 @@ export function getShiftWeekSearchMatchIds(
 export function createShiftWeekEvents(view: ShiftWeekDemoView, anchorDate: string): EventSchedulerEventEntity[] {
   const startDate = getEventStartDate(view, anchorDate);
   const rotation = getShiftWeekEventRotation(startDate);
-  return [
+  const events: EventSchedulerEventEntity[] = [
     {
       id: 'shift-alex-mon-morning',
       resourceId: 'jamie',
@@ -541,6 +544,9 @@ export function createShiftWeekEvents(view: ShiftWeekDemoView, anchorDate: strin
       color: 'oklch(0.58 0.17 158)',
     },
   ];
+  return view === 'month' || view === 'year'
+    ? [...events, ...createCalendarScenarioEvents(view, startDate)]
+    : events;
 }
 
 export function createShiftWeekAssignedOpenShift(
@@ -587,6 +593,9 @@ export function normalizeShiftWeekAnchorDate(view: ShiftWeekDemoView, date: stri
   if (view === 'month') {
     return getMonthStartIsoDate(parsed);
   }
+  if (view === 'year') {
+    return `${parsed.getUTCFullYear()}-01-01`;
+  }
   return toIsoDate(parsed);
 }
 
@@ -598,6 +607,10 @@ export function navigateShiftWeekAnchorDate(view: ShiftWeekDemoView, anchorDate:
   if (view === 'month') {
     return addMonths(normalized, direction);
   }
+  if (view === 'year') {
+    const parsed = parseIsoDate(normalized);
+    return `${parsed.getUTCFullYear() + direction}-01-01`;
+  }
   return addDays(normalized, direction * 7);
 }
 
@@ -606,13 +619,18 @@ export function getShiftWeekRangeTitle(view: ShiftWeekDemoView, anchorDate: stri
   if (view === 'month') {
     return formatMonthTitle(normalized);
   }
+  if (view === 'year') {
+    return normalized.slice(0, 4);
+  }
   if (view === 'day') {
     return formatDateTitle(normalized);
   }
   return formatDateRangeTitle(normalized, addDays(normalized, 6));
 }
 
-export function getShiftWeekSubtitle(anchorDate: string): string {
+export function getShiftWeekSubtitle(anchorDate: string, view: ShiftWeekDemoView = 'week'): string {
+  if (view === 'month') return 'Calendar month';
+  if (view === 'year') return '12-month overview';
   return `Week ${getIsoWeekNumber(parseIsoDate(anchorDate))}`;
 }
 
@@ -666,6 +684,9 @@ function getEventStartDate(view: ShiftWeekDemoView, anchorDate: string): string 
   if (view === 'month') {
     return normalizeShiftWeekAnchorDate(view, anchorDate);
   }
+  if (view === 'year') {
+    return normalizeShiftWeekAnchorDate(view, anchorDate);
+  }
   return getWeekStartIsoDate(parseIsoDate(anchorDate));
 }
 
@@ -677,8 +698,66 @@ function getDefaultNewEventDate(view: ShiftWeekDemoView, normalizedAnchor: strin
   if (view === 'month') {
     return today.startsWith(normalizedAnchor.slice(0, 8)) ? today : normalizedAnchor;
   }
+  if (view === 'year') {
+    return today.startsWith(normalizedAnchor.slice(0, 4)) ? today : normalizedAnchor;
+  }
   const endDate = addDays(normalizedAnchor, 6);
   return today >= normalizedAnchor && today <= endDate ? today : normalizedAnchor;
+}
+
+function createCalendarScenarioEvents(
+  view: 'month' | 'year',
+  periodStart: string,
+): EventSchedulerEventEntity[] {
+  if (view === 'year') {
+    const year = Number(periodStart.slice(0, 4));
+    return Array.from({ length: 12 }, (_, monthIndex) => {
+      const date = toIsoDate(new Date(Date.UTC(year, monthIndex, 8 + (monthIndex % 3) * 5)));
+      return {
+        id: `year-indicator-${monthIndex + 1}`,
+        resourceId: shiftResources[monthIndex % shiftResources.length]?.id,
+        title: `${new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(parseIsoDate(date))} planning`,
+        startDateTime: createDateTime(date, 9 * 60),
+        endDateTime: createDateTime(date, 11 * 60),
+        status: monthIndex % 4 === 0 ? 'pending' : 'confirmed',
+        color: shiftResources[monthIndex % shiftResources.length]?.color,
+      };
+    });
+  }
+
+  const denseDate = addDays(periodStart, 11);
+  const multiDayStart = addDays(periodStart, 5);
+  const multiDayEnd = addDays(periodStart, 10);
+  return [
+    {
+      id: 'calendar-multi-day-release',
+      resourceId: 'sam',
+      title: 'Release readiness',
+      startDateTime: createDateTime(multiDayStart, 9 * 60 + 30),
+      endDateTime: `${multiDayEnd}T00:00:00.000Z`,
+      status: 'confirmed',
+      color: 'oklch(0.58 0.17 215)',
+      notes: 'Spans a week boundary and ends at exclusive midnight.',
+    },
+    ...Array.from({ length: 6 }, (_, index) => ({
+      id: `calendar-dense-${index + 1}`,
+      resourceId: shiftResources[index % shiftResources.length]?.id,
+      title: ['Team huddle', 'Coverage review', 'Patient round', 'Training', 'Handoff', 'Audit'][index],
+      startDateTime: createDateTime(denseDate, (8 + index) * 60),
+      endDateTime: createDateTime(denseDate, (9 + index) * 60),
+      status: index === 4 ? 'pending' : 'confirmed',
+      color: shiftResources[index % shiftResources.length]?.color,
+    })),
+    {
+      id: 'calendar-adjacent-start',
+      resourceId: 'mina',
+      title: 'Month handoff',
+      startDateTime: createDateTime(addDays(periodStart, -1), 14 * 60),
+      endDateTime: createDateTime(periodStart, 10 * 60),
+      status: 'training',
+      color: 'oklch(0.58 0.17 158)',
+    },
+  ];
 }
 
 function getShiftWeekEventRotation(startDate: string) {

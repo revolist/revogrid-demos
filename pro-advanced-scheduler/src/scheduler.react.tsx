@@ -72,7 +72,7 @@ export default function EventSchedulerShiftWeek() {
     [activeView, anchorDate, activeCalendar, selectedEventIds, workspaceView],
   );
   const rangeTitle = useMemo(() => getShiftWeekRangeTitle(activeView, anchorDate), [activeView, anchorDate]);
-  const rangeSubtitle = useMemo(() => getShiftWeekSubtitle(anchorDate), [anchorDate]);
+  const rangeSubtitle = useMemo(() => getShiftWeekSubtitle(anchorDate, activeView), [activeView, anchorDate]);
   const tableRows = useMemo(() => getShiftWeekTableRows(events), [events]);
   const headerModel = useMemo(() => ({
     workspaceView,
@@ -97,9 +97,9 @@ export default function EventSchedulerShiftWeek() {
     setEvents(createShiftWeekEvents(view, date));
   }, []);
 
-  const setView = useCallback((view: ShiftWeekDemoView) => {
+  const setView = useCallback((view: ShiftWeekDemoView, date = anchorDate) => {
     const nextView = view === 'resource' ? 'week' : view;
-    const normalizedAnchor = normalizeShiftWeekAnchorDate(view, anchorDate);
+    const normalizedAnchor = normalizeShiftWeekAnchorDate(view, date);
     setActiveViewState(nextView);
     if (view === 'resource') {
       setWorkspaceView('resource');
@@ -213,9 +213,9 @@ export default function EventSchedulerShiftWeek() {
       }
     };
     const handleViewRequest = (event: Event) => {
-      const view = (event as CustomEvent<{ view: ShiftWeekDemoView }>).detail.view;
-      if (view === 'day' || view === 'week' || view === 'month' || view === 'resource') {
-        setView(view);
+      const { view, date } = (event as CustomEvent<{ view: ShiftWeekDemoView; date?: string }>).detail;
+      if (view === 'day' || view === 'week' || view === 'month' || view === 'year' || view === 'resource') {
+        setView(view, date);
       }
     };
     const handleOpenShiftAssignRequest = (event: Event) => {

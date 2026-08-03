@@ -1,4 +1,4 @@
-export type ShiftWeekResourceRangeView = 'day' | 'week' | 'month' | 'resource';
+export type ShiftWeekResourceRangeView = 'day' | 'week' | 'month' | 'year' | 'resource';
 export type ShiftWeekResourceWorkspaceView = 'calendar' | 'resource' | 'table';
 
 export function isShiftWeekResourceWorkspace(

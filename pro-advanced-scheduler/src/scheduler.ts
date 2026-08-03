@@ -159,7 +159,7 @@ export function load(parentSelector: string) {
       activeView,
       activeCalendar,
       title: getShiftWeekRangeTitle(activeView, anchorDate),
-      subtitle: getShiftWeekSubtitle(anchorDate),
+      subtitle: getShiftWeekSubtitle(anchorDate, activeView),
       views: shiftWeekDemoViews,
       viewLabels: shiftWeekViewLabels,
       calendarOptions: shiftWeekCalendarOptions,
@@ -221,8 +221,9 @@ export function load(parentSelector: string) {
     }
   };
   const handleViewRequest = (event: Event) => {
-    const view = (event as CustomEvent<{ view: ShiftWeekDemoView }>).detail.view;
-    if (view === 'day' || view === 'week' || view === 'month' || view === 'resource') {
+    const { view, date } = (event as CustomEvent<{ view: ShiftWeekDemoView; date?: string }>).detail;
+    if (view === 'day' || view === 'week' || view === 'month' || view === 'year' || view === 'resource') {
+      if (date) anchorDate = date;
       setView(view);
     }
   };

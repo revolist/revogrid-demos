@@ -132,7 +132,7 @@ export class EventSchedulerShiftWeekGridComponent implements OnDestroy {
   }
 
   get rangeSubtitle() {
-    return getShiftWeekSubtitle(this.anchorDate);
+    return getShiftWeekSubtitle(this.anchorDate, this.activeView);
   }
 
   get tableRows() {
@@ -161,12 +161,12 @@ export class EventSchedulerShiftWeekGridComponent implements OnDestroy {
     } : null;
   }
 
-  setView(view: ShiftWeekDemoView) {
+  setView(view: ShiftWeekDemoView, date = this.anchorDate) {
     this.activeView = view === 'resource' ? 'week' : view;
     if (view === 'resource') {
       this.workspaceView = 'resource';
     }
-    this.anchorDate = normalizeShiftWeekAnchorDate(view, this.anchorDate);
+    this.anchorDate = normalizeShiftWeekAnchorDate(view, date);
     this.refreshRange();
   }
 
@@ -266,9 +266,9 @@ export class EventSchedulerShiftWeekGridComponent implements OnDestroy {
     }
   }
 
-  handleViewRequest(event: CustomEvent<{ view: ShiftWeekDemoView }>) {
-    if (event.detail.view === 'day' || event.detail.view === 'week' || event.detail.view === 'month' || event.detail.view === 'resource') {
-      this.setView(event.detail.view);
+  handleViewRequest(event: CustomEvent<{ view: ShiftWeekDemoView; date?: string }>) {
+    if (event.detail.view === 'day' || event.detail.view === 'week' || event.detail.view === 'month' || event.detail.view === 'year' || event.detail.view === 'resource') {
+      this.setView(event.detail.view, event.detail.date);
     }
   }
 

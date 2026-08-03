@@ -135,7 +135,7 @@ const schedulerConfig = computed(() => createShiftWeekConfig(
   workspaceView.value,
 ));
 const rangeTitle = computed(() => getShiftWeekRangeTitle(activeView.value, anchorDate.value));
-const rangeSubtitle = computed(() => getShiftWeekSubtitle(anchorDate.value));
+const rangeSubtitle = computed(() => getShiftWeekSubtitle(anchorDate.value, activeView.value));
 const headerModel = computed(() => ({
   workspaceView: workspaceView.value,
   activeView: activeView.value,
@@ -153,13 +153,13 @@ const dialogModel = computed(() => newEventForm.value ? ({
   statusOptions: newEventStatusOptions,
 }) : null);
 
-function setView(view: ShiftWeekDemoView) {
+function setView(view: ShiftWeekDemoView, date = anchorDate.value) {
   activeView.value = view;
   if (view === 'resource') {
     workspaceView.value = 'resource';
     activeView.value = 'week';
   }
-  anchorDate.value = normalizeShiftWeekAnchorDate(view, anchorDate.value);
+  anchorDate.value = normalizeShiftWeekAnchorDate(view, date);
   selectedEventIds.value = [];
   schedulerEvents.value = createShiftWeekEvents(activeView.value, anchorDate.value);
 }
@@ -262,9 +262,9 @@ function handleNavigateRequest(event: CustomEvent<{ action: 'previous' | 'next' 
   }
 }
 
-function handleViewRequest(event: CustomEvent<{ view: ShiftWeekDemoView }>) {
-  if (event.detail.view === 'day' || event.detail.view === 'week' || event.detail.view === 'month' || event.detail.view === 'resource') {
-    setView(event.detail.view);
+function handleViewRequest(event: CustomEvent<{ view: ShiftWeekDemoView; date?: string }>) {
+  if (event.detail.view === 'day' || event.detail.view === 'week' || event.detail.view === 'month' || event.detail.view === 'year' || event.detail.view === 'resource') {
+    setView(event.detail.view, event.detail.date);
   }
 }
 </script>
