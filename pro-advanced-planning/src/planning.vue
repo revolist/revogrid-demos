@@ -31,6 +31,18 @@
       @afteredit="handleGridEdit"
     />
     <RevoGrid
+      v-else-if="activeView === 'kanban'"
+      key="kanban"
+      class="planning-demo__grid"
+      hide-attribution
+      :theme="theme"
+      :plugins="kanbanPlugins"
+      :source="tasks"
+      :columns="gridColumns"
+      :kanban.prop="kanbanConfig"
+      @kanbancardmove="handleKanbanMove"
+    />
+    <RevoGrid
       v-else-if="activeView === 'gantt'"
       key="gantt"
       class="planning-demo__grid"
@@ -70,9 +82,11 @@ import RevoGrid from '@revolist/vue3-datagrid';
 import {
   EventSchedulerPlugin,
   GanttPlugin,
+  KanbanPlugin,
   type EventSchedulerEventChangedDetail,
   type GanttBeforeAssignmentChangeDetail,
   type GanttBeforeTaskChangeDetail,
+  type KanbanCardMoveDetail,
 } from '@revolist/revogrid-enterprise';
 import {
   currentTheme,
@@ -85,6 +99,7 @@ import {
   ganttConfig,
   ganttResources,
   gridColumns,
+  kanbanConfig,
   schedulerConfig,
   schedulerResources,
   toGanttAssignments,
@@ -92,9 +107,11 @@ import {
   updateFromGantt,
   updateFromGanttAssignment,
   updateFromGrid,
+  updateFromKanban,
   updateFromScheduler,
   views,
   type PlanningView,
+  type PlanningTask,
 } from './data';
 import './planning.scss';
 
@@ -103,6 +120,7 @@ const tasks = ref(createTasks());
 const isDark = ref(currentTheme().isDark());
 const theme = computed(() => (isDark.value ? 'darkCompact' : 'compact'));
 const ganttPlugins = [GanttPlugin];
+const kanbanPlugins = [KanbanPlugin];
 const schedulerPlugins = [EventSchedulerPlugin];
 const ganttAssignments = computed(() => toGanttAssignments(tasks.value));
 const schedulerEvents = computed(() => toSchedulerEvents(tasks.value));
@@ -114,6 +132,10 @@ onBeforeUnmount(disconnectTheme);
 
 function handleGridEdit(event: CustomEvent) {
   tasks.value = updateFromGrid(tasks.value, event.detail);
+}
+
+function handleKanbanMove(event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>) {
+  tasks.value = updateFromKanban(tasks.value, event.detail);
 }
 
 function handleGanttEdit(event: CustomEvent<GanttBeforeTaskChangeDetail>) {

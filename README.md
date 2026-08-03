@@ -6,7 +6,7 @@
 
 [![RevoGrid](https://img.shields.io/badge/RevoGrid-Demos-1f6feb?style=for-the-badge)](https://github.com/revolist/revogrid)
 [![Frameworks](https://img.shields.io/badge/Frameworks-TS_%7C_React_%7C_Vue_%7C_Angular-8250df?style=for-the-badge)](#framework-support)
-[![Demos](https://img.shields.io/badge/Showcases-8-2ea44f?style=for-the-badge)](#demo-catalog)
+[![Demos](https://img.shields.io/badge/Showcases-9-2ea44f?style=for-the-badge)](#demo-catalog)
 
 </div>
 
@@ -25,6 +25,7 @@ Every showcase provides equivalent implementations for the major supported front
 | **Pro** | E-commerce analytics | Customer profiles, grouped analytics columns, filtering, column controls, context menus, and styled Excel export configuration | [Demo guide](./pro-e-commerce/README.md) |
 | **Pro** | Project table | Project grouping, status filtering, custom editors, toolbar actions, context menus, and project presets | [Demo guide](./pro-project-table/README.md) |
 | **Pro Advance** | Financial pivot | Financial presets, configurable row and column axes, filtering, KPIs, heatmap formatting, responsive layout, and expanded view | [Demo guide](./pro-advanced-pivot/README.md) |
+| **Pro Advance** | Enterprise Kanban | One canonical source projected into workflow columns with swimlanes, WIP limits, card rules, collapse controls, and drag-and-drop | [Demo guide](./pro-advanced-kanban/README.md) |
 | **Pro Advance** | Event scheduler | Calendar and resource views, table view, navigation, search, event creation, open shifts, reassignment, and team scheduling | [Demo guide](./pro-advanced-scheduler/README.md) |
 | **Pro Advance** | Project Gantt | Tasks, dependencies, resources, assignments, working calendars, baselines, critical path controls, row status, and Excel export | [Demo guide](./pro-advanced-gantt/README.md) |
 | **Pro Advance** | Unified Planning Suite | One editable task model shared by a data grid, Gantt, scheduler, and calendar | [Demo guide](./pro-advanced-planning/README.md) |
@@ -42,6 +43,7 @@ revogrid-demos/
 ├── pro-e-commerce/             # Pro e-commerce analytics
 ├── pro-project-table/          # Pro project tracker table
 ├── pro-advanced-pivot/         # Financial pivot showcase
+├── pro-advanced-kanban/        # Enterprise Kanban showcase
 ├── pro-advanced-scheduler/     # Shift and event scheduler
 ├── pro-advanced-planning/      # Grid, Gantt, and Scheduler showcase
 └── pro-advanced-gantt/
@@ -84,6 +86,7 @@ After `pnpm install`, start any demo from the repository root:
 pnpm dev:core
 pnpm dev:excel
 pnpm dev:pivot
+pnpm dev:kanban
 pnpm dev:scheduler
 pnpm dev:gantt
 pnpm dev:planning
@@ -102,7 +105,7 @@ pnpm dev:pivot:angular
 ```
 
 The same `:ts`, `:react`, `:vue`, and `:angular` suffixes work for `core`,
-`excel`, `scheduler`, `gantt`, `planning`, `ecommerce`, and `project`.
+`excel`, `kanban`, `scheduler`, `gantt`, `planning`, `ecommerce`, and `project`.
 
 You can also run a demo from its package directory:
 
@@ -123,6 +126,7 @@ pnpm dev:angular
 | E-commerce | [`ecommerce.ts`](./pro-e-commerce/src/ecommerce.ts) | [`ecommerce.react.tsx`](./pro-e-commerce/src/ecommerce.react.tsx) | [`ecommerce.vue`](./pro-e-commerce/src/ecommerce.vue) | [`ecommerce.angular.ts`](./pro-e-commerce/src/ecommerce.angular.ts) |
 | Project table | [`project-table.ts`](./pro-project-table/src/project-table.ts) | [`project-table.react.tsx`](./pro-project-table/src/project-table.react.tsx) | [`project-table.vue`](./pro-project-table/src/project-table.vue) | [`project-table.angular.ts`](./pro-project-table/src/project-table.angular.ts) |
 | Pivot | [`pivot.ts`](./pro-advanced-pivot/src/pivot.ts) | [`pivot.react.tsx`](./pro-advanced-pivot/src/pivot.react.tsx) | [`pivot.vue`](./pro-advanced-pivot/src/pivot.vue) | [`pivot.angular.ts`](./pro-advanced-pivot/src/pivot.angular.ts) |
+| Kanban | [`kanban.ts`](./pro-advanced-kanban/src/kanban.ts) | [`kanban.react.tsx`](./pro-advanced-kanban/src/kanban.react.tsx) | [`kanban.vue`](./pro-advanced-kanban/src/kanban.vue) | [`kanban.angular.ts`](./pro-advanced-kanban/src/kanban.angular.ts) |
 | Scheduler | [`scheduler.ts`](./pro-advanced-scheduler/src/scheduler.ts) | [`scheduler.react.tsx`](./pro-advanced-scheduler/src/scheduler.react.tsx) | [`scheduler.vue`](./pro-advanced-scheduler/src/scheduler.vue) | [`scheduler.angular.ts`](./pro-advanced-scheduler/src/scheduler.angular.ts) |
 | Gantt | [`gantt.ts`](./pro-advanced-gantt/src/gantt.ts) | [`gantt.react.tsx`](./pro-advanced-gantt/src/gantt.react.tsx) | [`gantt.vue`](./pro-advanced-gantt/src/gantt.vue) | [`gantt.angular.ts`](./pro-advanced-gantt/src/gantt.angular.ts) |
 | Unified Planning Suite | [`planning.ts`](./pro-advanced-planning/src/planning.ts) | [`planning.react.tsx`](./pro-advanced-planning/src/planning.react.tsx) | [`planning.vue`](./pro-advanced-planning/src/planning.vue) | [`planning.angular.ts`](./pro-advanced-planning/src/planning.angular.ts) |

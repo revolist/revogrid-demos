@@ -3,9 +3,11 @@ import { RevoGrid } from '@revolist/angular-datagrid';
 import {
   EventSchedulerPlugin,
   GanttPlugin,
+  KanbanPlugin,
   type EventSchedulerEventChangedDetail,
   type GanttBeforeAssignmentChangeDetail,
   type GanttBeforeTaskChangeDetail,
+  type KanbanCardMoveDetail,
 } from '@revolist/revogrid-enterprise';
 import { currentTheme } from '../../composables/useRandomData';
 import {
@@ -15,6 +17,7 @@ import {
   ganttConfig,
   ganttResources,
   gridColumns,
+  kanbanConfig,
   schedulerConfig,
   schedulerResources,
   toGanttAssignments,
@@ -22,6 +25,7 @@ import {
   updateFromGantt,
   updateFromGanttAssignment,
   updateFromGrid,
+  updateFromKanban,
   updateFromScheduler,
   type PlanningTask,
   type PlanningView,
@@ -46,6 +50,16 @@ import {
           (click)="activeView = 'grid'"
         >
           Grid
+        </button>
+        <button
+          type="button"
+          class="rv-segmented-switch-item"
+          role="tab"
+          [class.on]="activeView === 'kanban'"
+          [attr.aria-selected]="activeView === 'kanban'"
+          (click)="activeView = 'kanban'"
+        >
+          Kanban
         </button>
         <button
           type="button"
@@ -110,6 +124,18 @@ import {
             (gantt-before-assignment-change)="handleGanttAssignmentEdit($event)"
           ></revo-grid>
         }
+        @case ('kanban') {
+          <revo-grid
+            class="planning-demo__grid"
+            [hideAttribution]="true"
+            [theme]="theme"
+            [plugins]="kanbanPlugins"
+            [source]="tasks"
+            [columns]="gridColumns"
+            [kanban]="kanbanConfig"
+            (kanbancardmove)="handleKanbanMove($event)"
+          ></revo-grid>
+        }
         @case ('scheduler') {
           <revo-grid
             class="planning-demo__grid"
@@ -155,16 +181,22 @@ export class PlanningViewsGridComponent {
   readonly gridColumns = gridColumns;
   readonly ganttColumns = ganttColumns;
   readonly ganttConfig = ganttConfig;
+  readonly kanbanConfig = kanbanConfig;
   readonly ganttResources = ganttResources;
   readonly schedulerConfig = schedulerConfig;
   readonly calendarConfig = calendarConfig;
   readonly schedulerResources = schedulerResources;
   readonly ganttPlugins = [GanttPlugin];
+  readonly kanbanPlugins = [KanbanPlugin];
   readonly schedulerPlugins = [EventSchedulerPlugin];
   readonly empty: never[] = [];
 
   handleGridEdit(event: CustomEvent) {
     this.setTasks(updateFromGrid(this.tasks, event.detail));
+  }
+
+  handleKanbanMove(event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>) {
+    this.setTasks(updateFromKanban(this.tasks, event.detail));
   }
 
   handleGanttEdit(event: CustomEvent<GanttBeforeTaskChangeDetail>) {

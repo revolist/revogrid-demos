@@ -13,7 +13,15 @@
   --rv-segmented-active-color: #0f172a;
 }
 
-.planning-demo__switch .rv-segmented-switch-item {
+.planning-demo__switch button {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #64748b;
+  font:
+    500 13px/1 system-ui,
+    sans-serif;
   text-transform: capitalize;
 }
 

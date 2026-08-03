@@ -1,12 +1,10 @@
 {
-  "name": "revogrid-demo-pro-advanced-planning",
+  "name": "revogrid-demo-pro-advanced-kanban",
   "version": "1.0.0",
-  "description": "Minimal editable RevoGrid, Kanban, Gantt, and Scheduler showcase.",
+  "description": "RevoGrid Enterprise Kanban demo for TypeScript, React, Vue, and Angular.",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=18"
-  },
+  "engines": { "node": ">=18" },
   "scripts": {
     "dev": "pnpm dev:ts",
     "dev:ts": "vite --mode ts",

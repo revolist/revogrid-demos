@@ -2,9 +2,11 @@ import { defineCustomElements } from '@revolist/revogrid/loader';
 import {
   EventSchedulerPlugin,
   GanttPlugin,
+  KanbanPlugin,
   type EventSchedulerEventChangedDetail,
   type GanttBeforeAssignmentChangeDetail,
   type GanttBeforeTaskChangeDetail,
+  type KanbanCardMoveDetail,
 } from '@revolist/revogrid-enterprise';
 import {
   currentTheme,
@@ -17,6 +19,7 @@ import {
   ganttConfig,
   ganttResources,
   gridColumns,
+  kanbanConfig,
   schedulerConfig,
   schedulerResources,
   toGanttAssignments,
@@ -24,6 +27,7 @@ import {
   updateFromGantt,
   updateFromGanttAssignment,
   updateFromGrid,
+  updateFromKanban,
   updateFromScheduler,
   views,
   type PlanningTask,
@@ -40,6 +44,7 @@ type PlanningGridElement = HTMLRevoGridElement & {
   eventScheduler?: typeof schedulerConfig;
   eventSchedulerResources?: typeof schedulerResources;
   eventSchedulerEvents?: ReturnType<typeof toSchedulerEvents>;
+  kanban?: typeof kanbanConfig;
 };
 
 export function load(parentSelector: string): (() => void) | undefined {
@@ -77,6 +82,16 @@ export function load(parentSelector: string): (() => void) | undefined {
         tasks = updateFromGrid(
           tasks,
           event.detail as Parameters<typeof updateFromGrid>[1],
+        );
+      });
+    } else if (view === 'kanban') {
+      grid.plugins = [KanbanPlugin];
+      grid.columns = gridColumns;
+      grid.kanban = kanbanConfig;
+      grid.addEventListener('kanbancardmove', (event) => {
+        tasks = updateFromKanban(
+          tasks,
+          (event as CustomEvent<KanbanCardMoveDetail<PlanningTask>>).detail,
         );
       });
     } else if (view === 'gantt') {
