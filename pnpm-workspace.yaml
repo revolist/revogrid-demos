@@ -1,3 +1,6 @@
 packages:
   - "core-free"
-  - "pro-*"
+  - "pro-excel"
+  - "pro-e-commerce"
+  - "pro-project-table"
+  - "pro-advanced-planning"

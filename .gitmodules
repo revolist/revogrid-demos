@@ -1,0 +1,12 @@
+[submodule "features/pivot"]
+	path = features/pivot
+	url = https://github.com/revolist/pivot.git
+[submodule "features/gantt"]
+	path = features/gantt
+	url = https://github.com/revolist/gantt.git
+[submodule "features/kanban"]
+	path = features/kanban
+	url = https://github.com/revolist/kanban.git
+[submodule "features/scheduler"]
+	path = features/scheduler
+	url = https://github.com/revolist/scheduler.git

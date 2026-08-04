@@ -5,6 +5,7 @@ import vue from '@vitejs/plugin-vue';
 import { trialCssAliases } from '../vite.trial-aliases';
 
 export default defineConfig(({ mode }) => ({
+  base: './',
   resolve: {
     alias: trialCssAliases,
     ...(mode === 'angular' ? { mainFields: ['module'] } : {}),

@@ -1,0 +1,70 @@
+[
+  {
+    "slug": "core",
+    "title": "RevoGrid Core",
+    "summary": "A high-performance HR data grid with grouped columns, custom renderers, row movement, and adaptive light and dark themes.",
+    "edition": "Core",
+    "sourceDir": "core-free",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/core-free",
+    "productUrl": "https://rv-grid.com/",
+    "frameworks": ["ts", "react", "vue", "angular"],
+    "highlights": ["Large datasets", "Custom cell rendering", "Typed framework wrappers"],
+    "media": { "poster": "assets/core-free-walkthrough-poster.png", "walkthroughMp4": "assets/core-free-walkthrough.mp4" }
+  },
+  {
+    "slug": "excel",
+    "title": "RevoGrid Excel Workbench",
+    "summary": "A spreadsheet-grade workspace with formulas, history, autofill, multi-range selection, validation, export, and collaboration patterns.",
+    "edition": "Pro",
+    "sourceDir": "pro-excel",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-excel",
+    "productUrl": "https://pro.rv-grid.com/",
+    "trialUrl": "https://pro.rv-grid.com/guides/installation-npm-trial/",
+    "pricingUrl": "https://rv-grid.com/pricing/",
+    "frameworks": ["ts", "react", "vue", "angular"],
+    "highlights": ["Formula workflows", "Excel import and export", "Validation and history"],
+    "media": { "poster": "assets/pro-excel-walkthrough-poster.png", "walkthroughMp4": "assets/pro-excel-walkthrough.mp4" }
+  },
+  {
+    "slug": "ecommerce",
+    "title": "E-commerce Analytics",
+    "summary": "A polished customer analytics grid with expressive filters, grouped metrics, column controls, contextual actions, and Excel export.",
+    "edition": "Pro",
+    "sourceDir": "pro-e-commerce",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-e-commerce",
+    "productUrl": "https://pro.rv-grid.com/",
+    "trialUrl": "https://pro.rv-grid.com/guides/installation-npm-trial/",
+    "pricingUrl": "https://rv-grid.com/pricing/",
+    "frameworks": ["ts", "react", "vue", "angular"],
+    "highlights": ["Customer insights", "Advanced filtering", "Styled export"],
+    "media": { "poster": "assets/pro-e-commerce-walkthrough-poster.png", "walkthroughMp4": "assets/pro-e-commerce-walkthrough.mp4" }
+  },
+  {
+    "slug": "project-table",
+    "title": "Project Portfolio",
+    "summary": "A delivery portfolio for grouping, filtering, editing, prioritizing, and managing project work with production toolbar patterns.",
+    "edition": "Pro",
+    "sourceDir": "pro-project-table",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-project-table",
+    "productUrl": "https://pro.rv-grid.com/",
+    "trialUrl": "https://pro.rv-grid.com/guides/installation-npm-trial/",
+    "pricingUrl": "https://rv-grid.com/pricing/",
+    "frameworks": ["ts", "react", "vue", "angular"],
+    "highlights": ["Project grouping", "Custom editors", "Saved presets"],
+    "media": { "poster": "assets/pro-project-table-walkthrough-poster.png", "walkthroughMp4": "assets/pro-project-table-walkthrough.mp4" }
+  },
+  {
+    "slug": "planning",
+    "title": "Unified Planning Suite",
+    "summary": "One editable task model presented through coordinated Grid, Gantt, Scheduler, and Calendar planning surfaces.",
+    "edition": "Pro Advanced",
+    "sourceDir": "pro-advanced-planning",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-advanced-planning",
+    "productUrl": "https://pro.rv-grid.com/",
+    "trialUrl": "https://pro.rv-grid.com/guides/installation-npm-trial/",
+    "pricingUrl": "https://rv-grid.com/pricing/",
+    "frameworks": ["ts", "react", "vue", "angular"],
+    "highlights": ["Shared task model", "Coordinated planning views", "Enterprise workflows"],
+    "media": { "poster": "assets/pro-advanced-planning-walkthrough-poster.png", "walkthroughMp4": "assets/pro-advanced-planning-walkthrough.mp4" }
+  }
+]

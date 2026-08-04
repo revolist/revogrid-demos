@@ -1,189 +1,124 @@
 <div align="center">
 
-# RevoGrid Demos
+# RevoGrid Examples
 
-**Production-style examples for RevoGrid Core, Pro, and Pro Advance.**
+**Nine production-style showcases. Four feature repositories. One polished gallery.**
 
-[![RevoGrid](https://img.shields.io/badge/RevoGrid-Demos-1f6feb?style=for-the-badge)](https://github.com/revolist/revogrid)
-[![Frameworks](https://img.shields.io/badge/Frameworks-TS_%7C_React_%7C_Vue_%7C_Angular-8250df?style=for-the-badge)](#framework-support)
-[![Demos](https://img.shields.io/badge/Showcases-9-2ea44f?style=for-the-badge)](#demo-catalog)
+[![Pages](https://img.shields.io/github/actions/workflow/status/revolist/revogrid-demos/pages.yml?branch=main&label=gallery)](https://example.rv-grid.com/)
+[![Frameworks](https://img.shields.io/badge/TypeScript%20%7C%20React%20%7C%20Vue%20%7C%20Angular-4f46e5)](#showcases)
+[![RevoGrid](https://img.shields.io/badge/RevoGrid-4.25.1-2563eb)](https://rv-grid.com/)
+
+[View gallery](https://example.rv-grid.com/) · [Request trial](https://pro.rv-grid.com/guides/installation-npm-trial/) · [Get Pro Advanced](https://rv-grid.com/pricing/)
 
 </div>
 
-## About
+## Architecture
 
-This repository contains focused source examples for [RevoGrid](https://github.com/revolist/revogrid). The demos cover the free Core grid and Pro spreadsheet, e-commerce, project table, Pivot, Scheduler, and Gantt use cases.
-
-Every showcase provides equivalent implementations for the major supported frontend approaches, making it easier to compare integrations or adapt an example to an existing application.
-
-## Demo catalog
-
-| Edition | Demo | Highlights | Source |
-| --- | --- | --- | --- |
-| **Core** | HR data grid | Async large-data loading, grouped columns, custom cell templates, column types, row drag handling, and light/dark themes | [Demo guide](./core-free/README.md) |
-| **Pro** | Spreadsheet workbench | Formula bar, XLSX export, history, autofill, multi-range selection, merged cells, validation, context menus, and collaborative presence simulation | [Demo guide](./pro-excel/README.md) |
-| **Pro** | E-commerce analytics | Customer profiles, grouped analytics columns, filtering, column controls, context menus, and styled Excel export configuration | [Demo guide](./pro-e-commerce/README.md) |
-| **Pro** | Project table | Project grouping, status filtering, custom editors, toolbar actions, context menus, and project presets | [Demo guide](./pro-project-table/README.md) |
-| **Pro Advance** | Financial pivot | Financial presets, configurable row and column axes, filtering, KPIs, heatmap formatting, responsive layout, and expanded view | [Demo guide](./pro-advanced-pivot/README.md) |
-| **Pro Advance** | Enterprise Kanban | One canonical source projected into workflow columns with swimlanes, WIP limits, card rules, collapse controls, and drag-and-drop | [Demo guide](./pro-advanced-kanban/README.md) |
-| **Pro Advance** | Event scheduler | Calendar and resource views, table view, navigation, search, event creation, open shifts, reassignment, and team scheduling | [Demo guide](./pro-advanced-scheduler/README.md) |
-| **Pro Advance** | Project Gantt | Tasks, dependencies, resources, assignments, working calendars, baselines, critical path controls, row status, and Excel export | [Demo guide](./pro-advanced-gantt/README.md) |
-| **Pro Advance** | Unified Planning Suite | One editable task model shared by a data grid, Gantt, scheduler, and calendar | [Demo guide](./pro-advanced-planning/README.md) |
-
-Each commercial demo guide contains a source-audited inventory of its directly registered and automatically installed Pro or Enterprise plugins, the supporting package APIs it uses, and the practical benefit of each capability.
-
-## Repository structure
+`revogrid-demos` is the deployment and discovery layer for RevoGrid examples.
+Pivot, Gantt, Kanban, and Scheduler are complete public repositories pinned as
+Git submodules. The parent validates each child `feature.json`, builds every
+showcase recursively, and assembles the site deployed to
+`example.rv-grid.com`.
 
 ```text
 revogrid-demos/
-├── package.json                # Root scripts and package-manager contract
-├── pnpm-workspace.yaml         # Workspace package discovery
-├── core-free/                  # Core HR data-grid showcase
-├── pro-excel/                  # Pro spreadsheet workbench
-├── pro-e-commerce/             # Pro e-commerce analytics
-├── pro-project-table/          # Pro project tracker table
-├── pro-advanced-pivot/         # Financial pivot showcase
-├── pro-advanced-kanban/        # Enterprise Kanban showcase
-├── pro-advanced-scheduler/     # Shift and event scheduler
-├── pro-advanced-planning/      # Grid, Gantt, and Scheduler showcase
-└── pro-advanced-gantt/
-    └── src/
-        ├── gantt.*             # Gantt framework implementations
-        └── shared/             # Shared project data and configuration
+├── features/
+│   ├── pivot/                 # revolist/pivot submodule
+│   ├── gantt/                 # revolist/gantt submodule
+│   ├── kanban/                # revolist/kanban submodule
+│   └── scheduler/             # revolist/scheduler submodule
+├── core-free/                 # retained Core showcase
+├── pro-excel/                 # retained spreadsheet showcase
+├── pro-e-commerce/            # retained commerce showcase
+├── pro-project-table/         # retained project showcase
+├── pro-advanced-planning/     # retained planning suite
+├── gallery/                   # visual system and retained metadata
+└── scripts/                   # setup, build, test, media delegation
 ```
 
-## Framework support
+Submodules are pinned to exact commits. Production builds never follow moving
+branches.
 
-Each demo includes four implementation variants:
+## Showcases
 
-| File type | Framework |
-| --- | --- |
-| `*.ts` | Vanilla TypeScript and Web Components |
-| `*.tsx` | React |
-| `*.vue` | Vue 3 |
-| `*Angular.ts` or `angular.ts` | Angular |
+| Edition | Showcase | Source | Live route |
+| --- | --- | --- | --- |
+| Core | RevoGrid Core | [`core-free`](./core-free/) | [`/core/`](https://example.rv-grid.com/core/) |
+| Pro | Excel Workbench | [`pro-excel`](./pro-excel/) | [`/excel/`](https://example.rv-grid.com/excel/) |
+| Pro | E-commerce Analytics | [`pro-e-commerce`](./pro-e-commerce/) | [`/ecommerce/`](https://example.rv-grid.com/ecommerce/) |
+| Pro | Project Portfolio | [`pro-project-table`](./pro-project-table/) | [`/project-table/`](https://example.rv-grid.com/project-table/) |
+| Pro Advanced | Pivot | [`revolist/pivot`](https://github.com/revolist/pivot) | [`/pivot/`](https://example.rv-grid.com/pivot/) |
+| Pro Advanced | Gantt | [`revolist/gantt`](https://github.com/revolist/gantt) | [`/gantt/`](https://example.rv-grid.com/gantt/) |
+| Pro Advanced | Kanban | [`revolist/kanban`](https://github.com/revolist/kanban) | [`/kanban/`](https://example.rv-grid.com/kanban/) |
+| Pro Advanced | Scheduler | [`revolist/scheduler`](https://github.com/revolist/scheduler) | [`/scheduler/`](https://example.rv-grid.com/scheduler/) |
+| Pro Advanced | Unified Planning Suite | [`pro-advanced-planning`](./pro-advanced-planning/) | [`/planning/`](https://example.rv-grid.com/planning/) |
 
-The supporting files next to each implementation contain shared data, styles, configuration, templates, and demo-specific helpers.
+Every route has a detail page and a canonical live demo at
+`/<showcase>/demo/`. Feature descriptions, recipes, frameworks, links, media,
+and output paths are read directly from each child repository's validated
+`feature.json`.
 
-## Using an example
+## Local development
 
-These workspace packages contain demo source code rather than standalone applications. They are intended to be integrated into a compatible RevoGrid project or used as implementation references. Each demo has a dedicated `package.json` containing the combined dependencies for its TypeScript, React, Vue, and Angular variants.
-
-1. Choose the edition and feature you want to explore.
-2. Open the file matching your framework.
-3. Run `pnpm install` once from the repository root.
-4. Copy the implementation and its adjacent shared files into your application.
-5. Resolve the demo's local imports against your project structure.
-6. Align package versions with your host application when integrating the example.
-
-> Pro and Pro Advance examples use `@revolist/revogrid-pro` and `@revolist/revogrid-enterprise`. Keep registry credentials and package tokens outside source control.
-
-### Run the demos
-
-After `pnpm install`, start any demo from the repository root:
+Clone with submodules and provide trial-registry authentication outside the
+repository:
 
 ```bash
-pnpm dev                 # Default: Unified Planning Suite
-pnpm dev:core
-pnpm dev:excel
-pnpm dev:pivot
-pnpm dev:kanban
-pnpm dev:scheduler
-pnpm dev:gantt
-pnpm dev:planning
-pnpm dev:ecommerce
-pnpm dev:project
-```
-
-Build or preview that same default project from the repository root:
-
-```bash
+git clone --recurse-submodules https://github.com/revolist/revogrid-demos.git
+cd revogrid-demos
+export NODE_AUTH_TOKEN="<trial token>"
+pnpm setup
 pnpm build
-pnpm preview
+pnpm dev
 ```
 
-Each short command starts the Vanilla TypeScript variant. Append a framework name
-to run another implementation:
+`pnpm setup` initializes nested repositories and performs frozen parent and
+child installs. `pnpm build` builds four child repositories, five retained
+showcases, then assembles `dist/`.
+
+Useful validation commands:
 
 ```bash
-pnpm dev:pivot:ts
-pnpm dev:pivot:react
-pnpm dev:pivot:vue
-pnpm dev:pivot:angular
+pnpm test
+pnpm test:e2e
+pnpm media:inspect --feature pivot
+pnpm media:record --feature gantt
 ```
 
-The same `:ts`, `:react`, `:vue`, and `:angular` suffixes work for `core`,
-`excel`, `kanban`, `scheduler`, `gantt`, `planning`, `ecommerce`, and `project`.
-
-You can also run a demo from its package directory:
+Each feature repository also supports the same standalone commands:
 
 ```bash
-cd pro-advanced-pivot
-pnpm dev            # TypeScript
-pnpm dev:react
-pnpm dev:vue
-pnpm dev:angular
+pnpm dev
+pnpm build
+pnpm build:frameworks
+pnpm test
+pnpm test:e2e
+pnpm media:inspect
+pnpm media:record
 ```
 
-### Regenerate demo media
+## Trial and licensed installs
 
-The README previews are scripted browser walkthroughs recorded at 1440×900 and
-encoded as full-quality MP4, optimized GIF, and poster PNG files. Build the demo
-outputs first, then run the recorder from the repository root:
+Showcase source imports the production package names
+`@revolist/revogrid-pro` and `@revolist/revogrid-enterprise`. Dependency
+specifications alias those imports to the 2.5.0 trial packages by default.
+Licensed users change package specifications and registry configuration; no
+source imports need to be rewritten. RevoGrid core and framework wrappers are
+pinned to the validated 4.25.1 line.
 
-```bash
-pnpm media:inspect                         # Save a still of every built demo to /tmp
-pnpm media:record                          # Record all demos
-pnpm media:record -- --demo=pro-excel     # Record one demo
-pnpm media:record -- --from=pro-advanced-kanban
-```
+Never commit registry tokens, credentials, proprietary implementation source,
+or commercial license material.
 
-The recorder requires Playwright's Chromium browser and `ffmpeg`. It writes each
-asset set to the matching demo's `assets/` directory so README links remain
-portable on GitHub.
+## Publishing
 
-### GitHub Pages preview
+The Pages workflow checks out submodules recursively, performs frozen installs,
+builds the complete gallery, validates routes and links, and deploys only the
+parent `dist/` artifact. `CNAME` preserves the existing
+`example.rv-grid.com` custom-domain configuration.
 
-The `Deploy planning preview to GitHub Pages` workflow builds the default
-TypeScript planning project and deploys `pro-advanced-planning/dist`. Enable
-GitHub Pages with GitHub Actions as its source; the workflow reads the public
-`@revolist` packages from GitHub Packages using its built-in `GITHUB_TOKEN`.
-The deployed preview uses `https://example.rv-grid.com/` as its custom domain.
-Configure that domain in the repository's Pages settings; its DNS CNAME points
-to `revolist.github.io`.
+## Licensing and support
 
-## Example entry points
-
-| Demo | TypeScript | React | Vue | Angular |
-| --- | --- | --- | --- | --- |
-| HR data grid | [`hr.ts`](./core-free/src/hr.ts) | [`hr.react.tsx`](./core-free/src/hr.react.tsx) | [`hr.vue`](./core-free/src/hr.vue) | [`hr.angular.ts`](./core-free/src/hr.angular.ts) |
-| Spreadsheet | [`excel.ts`](./pro-excel/src/excel.ts) | [`excel.react.tsx`](./pro-excel/src/excel.react.tsx) | [`excel.vue`](./pro-excel/src/excel.vue) | [`excel.angular.ts`](./pro-excel/src/excel.angular.ts) |
-| E-commerce | [`ecommerce.ts`](./pro-e-commerce/src/ecommerce.ts) | [`ecommerce.react.tsx`](./pro-e-commerce/src/ecommerce.react.tsx) | [`ecommerce.vue`](./pro-e-commerce/src/ecommerce.vue) | [`ecommerce.angular.ts`](./pro-e-commerce/src/ecommerce.angular.ts) |
-| Project table | [`project-table.ts`](./pro-project-table/src/project-table.ts) | [`project-table.react.tsx`](./pro-project-table/src/project-table.react.tsx) | [`project-table.vue`](./pro-project-table/src/project-table.vue) | [`project-table.angular.ts`](./pro-project-table/src/project-table.angular.ts) |
-| Pivot | [`pivot.ts`](./pro-advanced-pivot/src/pivot.ts) | [`pivot.react.tsx`](./pro-advanced-pivot/src/pivot.react.tsx) | [`pivot.vue`](./pro-advanced-pivot/src/pivot.vue) | [`pivot.angular.ts`](./pro-advanced-pivot/src/pivot.angular.ts) |
-| Kanban | [`kanban.ts`](./pro-advanced-kanban/src/kanban.ts) | [`kanban.react.tsx`](./pro-advanced-kanban/src/kanban.react.tsx) | [`kanban.vue`](./pro-advanced-kanban/src/kanban.vue) | [`kanban.angular.ts`](./pro-advanced-kanban/src/kanban.angular.ts) |
-| Scheduler | [`scheduler.ts`](./pro-advanced-scheduler/src/scheduler.ts) | [`scheduler.react.tsx`](./pro-advanced-scheduler/src/scheduler.react.tsx) | [`scheduler.vue`](./pro-advanced-scheduler/src/scheduler.vue) | [`scheduler.angular.ts`](./pro-advanced-scheduler/src/scheduler.angular.ts) |
-| Gantt | [`gantt.ts`](./pro-advanced-gantt/src/gantt.ts) | [`gantt.react.tsx`](./pro-advanced-gantt/src/gantt.react.tsx) | [`gantt.vue`](./pro-advanced-gantt/src/gantt.vue) | [`gantt.angular.ts`](./pro-advanced-gantt/src/gantt.angular.ts) |
-| Unified Planning Suite | [`planning.ts`](./pro-advanced-planning/src/planning.ts) | [`planning.react.tsx`](./pro-advanced-planning/src/planning.react.tsx) | [`planning.vue`](./pro-advanced-planning/src/planning.vue) | [`planning.angular.ts`](./pro-advanced-planning/src/planning.angular.ts) |
-
-## Contributing
-
-When adding or updating a showcase:
-
-1. Put it in the directory for the correct edition and feature.
-2. Keep the four framework variants behaviorally aligned.
-3. Share data and feature configuration where practical.
-4. Include the styles and helper files needed to understand the example.
-5. Add focused tests for reusable data or configuration logic.
-6. Never commit private registry credentials, license keys, or commercial package tokens.
-
-## Useful links
-
-- [RevoGrid on GitHub](https://github.com/revolist/revogrid)
-- [Report an issue](https://github.com/revolist/revogrid-demos/issues)
-
----
-
-<div align="center">
-  Explore RevoGrid features in the framework you already use.
-</div>
+Feature repositories license their example, recipe, documentation, and media
+tooling under MIT. RevoGrid Pro and Enterprise runtime packages retain their
+commercial license. Use the relevant feature repository for example issues and
+[RevoGrid support](https://rv-grid.com/contact/) for product or licensing help.
