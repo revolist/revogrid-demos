@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
-import { featureSlugs, loadCatalog, root } from './catalog.mjs';
+import { featureDirectory, featureSlugs, loadCatalog, root } from './catalog.mjs';
 
 const action = process.argv[2];
 
@@ -11,12 +11,12 @@ function run(command, args, cwd = root) {
 }
 
 function runChildren(script) {
-  for (const slug of featureSlugs) run('pnpm', [script], join(root, 'features', slug));
+  for (const slug of featureSlugs) run('pnpm', [script], join(root, featureDirectory(slug)));
 }
 
 async function runBuild() {
   runChildren('build');
-  const retained = (await loadCatalog()).filter((showcase) => !showcase.sourceDir.startsWith('features/'));
+  const retained = (await loadCatalog()).filter((showcase) => !featureSlugs.includes(showcase.slug));
   for (const showcase of retained) run('pnpm', ['build'], join(root, showcase.sourceDir));
   run('node', ['scripts/build-gallery.mjs']);
 }
@@ -24,7 +24,9 @@ async function runBuild() {
 if (action === 'setup') {
   run('git', ['submodule', 'update', '--init', '--recursive']);
   run('pnpm', ['install', '--frozen-lockfile']);
-  for (const slug of featureSlugs) run('pnpm', ['install', '--ignore-workspace', '--frozen-lockfile'], join(root, 'features', slug));
+  for (const slug of featureSlugs) {
+    run('pnpm', ['install', '--ignore-workspace', '--frozen-lockfile'], join(root, featureDirectory(slug)));
+  }
 } else if (action === 'build') {
   await runBuild();
 } else if (action === 'test') {

@@ -9,7 +9,7 @@ const output = join(root, 'dist');
 test('feature repositories are pinned submodules with public canonical URLs', async () => {
   const modules = await readFile(join(root, '.gitmodules'), 'utf8');
   for (const slug of featureSlugs) {
-    assert.match(modules, new RegExp(`path = features/${slug}`));
+    assert.match(modules, new RegExp(`path = pro-advanced-${slug}`));
     assert.match(modules, new RegExp(`url = https://github\\.com/revolist/${slug}\\.git`));
   }
   assert.doesNotMatch(modules, /branch\s*=/);

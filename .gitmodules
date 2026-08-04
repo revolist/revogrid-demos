@@ -1,12 +1,12 @@
-[submodule "features/pivot"]
-	path = features/pivot
+[submodule "pro-advanced-pivot"]
+	path = pro-advanced-pivot
 	url = https://github.com/revolist/pivot.git
-[submodule "features/gantt"]
-	path = features/gantt
+[submodule "pro-advanced-gantt"]
+	path = pro-advanced-gantt
 	url = https://github.com/revolist/gantt.git
-[submodule "features/kanban"]
-	path = features/kanban
+[submodule "pro-advanced-kanban"]
+	path = pro-advanced-kanban
 	url = https://github.com/revolist/kanban.git
-[submodule "features/scheduler"]
-	path = features/scheduler
+[submodule "pro-advanced-scheduler"]
+	path = pro-advanced-scheduler
 	url = https://github.com/revolist/scheduler.git

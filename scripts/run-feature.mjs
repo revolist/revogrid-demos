@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
-import { featureSlugs, root } from './catalog.mjs';
+import { featureDirectory, featureSlugs, root } from './catalog.mjs';
 
 const script = process.argv[2];
 const args = process.argv.slice(3);
@@ -15,7 +15,7 @@ if (!featureSlugs.includes(feature)) {
 }
 
 const result = spawnSync('pnpm', [script], {
-  cwd: join(root, 'features', feature),
+  cwd: join(root, featureDirectory(feature)),
   env: process.env,
   stdio: 'inherit',
 });

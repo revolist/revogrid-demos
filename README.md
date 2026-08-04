@@ -22,11 +22,10 @@ showcase recursively, and assembles the site deployed to
 
 ```text
 revogrid-demos/
-├── features/
-│   ├── pivot/                 # revolist/pivot submodule
-│   ├── gantt/                 # revolist/gantt submodule
-│   ├── kanban/                # revolist/kanban submodule
-│   └── scheduler/             # revolist/scheduler submodule
+├── pro-advanced-pivot/        # revolist/pivot submodule
+├── pro-advanced-gantt/        # revolist/gantt submodule
+├── pro-advanced-kanban/       # revolist/kanban submodule
+├── pro-advanced-scheduler/    # revolist/scheduler submodule
 ├── core-free/                 # retained Core showcase
 ├── pro-excel/                 # retained spreadsheet showcase
 ├── pro-e-commerce/            # retained commerce showcase
