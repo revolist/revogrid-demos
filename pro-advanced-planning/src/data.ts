@@ -43,9 +43,6 @@ export const kanbanConfig: KanbanConfig<PlanningTask> = {
   columnField: 'workflowStatus',
   orderField: 'order',
   swimlaneColumn: false,
-  contextMenu: {
-    hidden: { open: true, edit: true, create: true, delete: true },
-  },
   card: {
     titleField: 'name',
     startDateField: 'startDate',
