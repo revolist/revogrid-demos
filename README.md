@@ -65,7 +65,7 @@ repository:
 ```bash
 git clone --recurse-submodules https://github.com/revolist/revogrid-demos.git
 cd revogrid-demos
-export NODE_AUTH_TOKEN="<GitHub token with read:packages>"
+export GITHUB_TOKEN="<GitHub token with read:packages>"
 pnpm run setup
 pnpm build
 pnpm dev

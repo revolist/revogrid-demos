@@ -32,13 +32,11 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: '@revolist'
 
       - name: Initialize and install parent and feature repositories
         run: pnpm run setup
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build recursive gallery
         run: pnpm build
