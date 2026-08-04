@@ -4,7 +4,6 @@
 
 **Nine production-style showcases. Four feature repositories. One polished gallery.**
 
-[![Pages](https://img.shields.io/github/actions/workflow/status/revolist/revogrid-demos/pages.yml?branch=main&label=gallery)](https://example.rv-grid.com/)
 [![Frameworks](https://img.shields.io/badge/TypeScript%20%7C%20React%20%7C%20Vue%20%7C%20Angular-4f46e5)](#showcases)
 [![RevoGrid](https://img.shields.io/badge/RevoGrid-4.25.1-2563eb)](https://rv-grid.com/)
 
