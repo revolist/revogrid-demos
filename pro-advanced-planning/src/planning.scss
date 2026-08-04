@@ -45,23 +45,23 @@ planning-views-grid {
 }
 
 :where(.dark, [data-theme^='dark']) .planning-demo__switch {
-  --rv-segmented-bg: #111827;
-  --rv-segmented-border: #334155;
-  --rv-segmented-item-color: #94a3b8;
-  --rv-segmented-item-hover-color: #e2e8f0;
-  --rv-segmented-active-bg: #1e293b;
-  --rv-segmented-active-color: #f8fafc;
-  --rv-segmented-active-border: #475569;
+  --rv-segmented-bg: var(--rv-ui-surface-sunken);
+  --rv-segmented-border: var(--rv-ui-border);
+  --rv-segmented-item-color: var(--rv-ui-text-muted);
+  --rv-segmented-item-hover-color: var(--rv-ui-text);
+  --rv-segmented-active-bg: var(--rv-ui-surface-elevated);
+  --rv-segmented-active-color: var(--rv-ui-text);
+  --rv-segmented-active-border: var(--rv-ui-border-strong);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light):not([data-theme^='light']) .planning-demo__switch {
-    --rv-segmented-bg: #111827;
-    --rv-segmented-border: #334155;
-    --rv-segmented-item-color: #94a3b8;
-    --rv-segmented-item-hover-color: #e2e8f0;
-    --rv-segmented-active-bg: #1e293b;
-    --rv-segmented-active-color: #f8fafc;
-    --rv-segmented-active-border: #475569;
+    --rv-segmented-bg: var(--rv-ui-surface-sunken);
+    --rv-segmented-border: var(--rv-ui-border);
+    --rv-segmented-item-color: var(--rv-ui-text-muted);
+    --rv-segmented-item-hover-color: var(--rv-ui-text);
+    --rv-segmented-active-bg: var(--rv-ui-surface-elevated);
+    --rv-segmented-active-color: var(--rv-ui-text);
+    --rv-segmented-active-border: var(--rv-ui-border-strong);
   }
 }

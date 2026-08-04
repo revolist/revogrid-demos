@@ -25,11 +25,11 @@ $colors: (
   muted: #1e2534,
   muted-strong: #596780,
   header-placeholder: #596780,
-  dark-surface: #131722,
-  dark-elevated: #171d2b,
-  dark-border: #2b3445,
-  dark-text: #f6f8fb,
-  dark-muted: #a8b3c7
+  dark-surface: var(--rv-ui-surface-sunken, #111111),
+  dark-elevated: var(--rv-ui-surface, #1f1f1f),
+  dark-border: var(--rv-ui-border, #3a3a3a),
+  dark-text: var(--rv-ui-text, #f5f5f5),
+  dark-muted: var(--rv-ui-text-muted, #a3a3a3)
 );
 
 $semantic-colors: (

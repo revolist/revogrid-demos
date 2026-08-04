@@ -96,6 +96,9 @@ const dateCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (
   { value, prop },
 ) => formatGanttTableDate(String(value ?? ''), ganttConfig, String(prop));
 
+const workflowStatusColumn = createDefaultTaskTableColumn('workflowStatus');
+const percentDoneColumn = createDefaultTaskTableColumn('percentDone');
+
 export const gridColumns: ColumnRegular[] = [
   { prop: 'name', name: 'Task', size: 180, filter: true, sortable: true },
   {
@@ -108,6 +111,14 @@ export const gridColumns: ColumnRegular[] = [
     avatarLabelProp: 'owner',
     avatarSize: 20,
     cellTemplate: avatarWithTextRenderer,
+  },
+  {
+    ...workflowStatusColumn,
+    name: 'Status',
+    size: 148,
+    readonly: true,
+    filter: true,
+    sortable: true,
   },
   {
     prop: 'startDate',
@@ -128,7 +139,7 @@ export const gridColumns: ColumnRegular[] = [
     cellTemplate: dateCellTemplate,
   },
   {
-    prop: 'percentDone',
+    ...percentDoneColumn,
     name: 'Progress',
     size: 110,
     filter: true,

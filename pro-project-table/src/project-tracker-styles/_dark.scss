@@ -5,33 +5,34 @@
   --rv-column-add-popup-text: #{token(dark-text)};
   --rv-column-add-popup-muted: #{token(dark-muted)};
   --rv-column-add-popup-border: #{token(dark-border)};
-  --rv-column-add-popup-soft: #20283a;
+  --rv-column-add-popup-soft: var(--rv-ui-surface-elevated, #262626);
   --rv-column-add-popup-shadow: 0 22px 60px rgba(0, 0, 0, 0.42), 0 8px 22px rgba(0, 0, 0, 0.24);
-  --rv-column-add-trigger-bg: #20283a;
-  --rv-column-add-trigger-hover: #263149;
+  --rv-column-add-trigger-bg: var(--rv-ui-surface-elevated, #262626);
+  --rv-column-add-trigger-hover: var(--rv-ui-surface-hover, #2f2f2f);
   --rv-column-add-trigger-color: #7db3ff;
 
   .project-grid-shell,
   .project-grid-toolbar,
   revo-grid.project-tracker-grid,
   revo-grid.color-grid revogr-header .rgHeaderCell {
-    --pipeline-border: #30394a;
-    --pipeline-soft: #1a2030;
+    --pipeline-border: var(--rv-ui-border, #3a3a3a);
+    --pipeline-soft: var(--rv-ui-surface-sunken, #111111);
     --pipeline-text: #{token(dark-text)};
     --pipeline-muted: #{token(dark-muted)};
     --revo-grid-background: #{token(dark-surface)};
     --revo-grid-foreground: #{token(dark-surface)};
     --revo-grid-header-bg: #{token(dark-surface)};
-    --revo-grid-border: #30394a;
-    --revo-grid-cell-border: #30394a;
+    --revo-grid-border: var(--rv-ui-border, #3a3a3a);
+    --revo-grid-cell-border: var(--rv-ui-border, #3a3a3a);
     --revo-grid-text: #{token(dark-text)};
-    --project-header-divider: #3a4558;
+    --project-header-divider: var(--rv-ui-border-strong, #525252);
 
     color: token(dark-text);
   }
 
   revo-grid.project-tracker-grid {
     --revo-grid-cell-disabled-bg: rgba(18, 24, 36, 0.46);
+    --revo-grid-row-hover: var(--rv-ui-surface-hover, #2f2f2f);
 
     .rgCell:not(revo-grid.project-tracker-grid revo-grid .rgCell),
     .rgHeaderCell:not(revo-grid.project-tracker-grid revo-grid .rgHeaderCell) {
@@ -69,7 +70,7 @@
     revogr-data .rgRow.groupingRow,
     revogr-data .rgRow.groupingRow .rgCell,
     .project-group-label {
-      background: #111827 !important;
+      background: transparent !important;
       color: token(dark-text);
     }
 
@@ -78,7 +79,7 @@
     revogr-data .rgRow.groupingRow:not(revo-grid.project-tracker-grid revo-grid .rgRow):hover > div > div,
     revogr-data .rgRow.groupingRow:not(revo-grid.project-tracker-grid revo-grid .rgRow):hover .rgCell,
     revogr-data .rgRow.groupingRow:not(revo-grid.project-tracker-grid revo-grid .rgRow):hover .project-group-label {
-      background: #162235 !important;
+      background: var(--revo-grid-row-hover) !important;
     }
 
     .project-group-count,

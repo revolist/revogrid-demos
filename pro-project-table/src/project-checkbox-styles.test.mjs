@@ -6,6 +6,24 @@ const styles = readFileSync(
   new URL('./project-tracker-styles/_grid.scss', import.meta.url),
   'utf8',
 );
+const darkStyles = readFileSync(
+  new URL('./project-tracker-styles/_dark.scss', import.meta.url),
+  'utf8',
+);
+
+test('dark grouping rows use the same neutral surfaces as project rows', () => {
+  assert.match(darkStyles, /--revo-grid-row-hover:\s*var\(--rv-ui-surface-hover,/);
+  assert.match(
+    darkStyles,
+    /\.rgRow\.groupingRow,[\s\S]*?\.project-group-label\s*\{[\s\S]*?background:\s*transparent\s*!important;/,
+  );
+  assert.match(
+    darkStyles,
+    /\.rgRow\.groupingRow[^\{]*:hover[\s\S]*?\.project-group-label\s*\{[\s\S]*?background:\s*var\(--revo-grid-row-hover\)\s*!important;/,
+  );
+  assert.doesNotMatch(darkStyles, /background:\s*#111827\s*!important/);
+  assert.doesNotMatch(darkStyles, /background:\s*#162235\s*!important/);
+});
 
 test('row selection checkboxes use the shared Pro checkbox glyph', () => {
   assert.match(

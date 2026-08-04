@@ -208,17 +208,17 @@
 // remains a standalone fallback when the example is opened outside the catalog.
 html[data-theme='dark'] .kanban-showcase,
 .kanban-showcase:has(> .kanban-showcase__grid[theme^='dark']) {
-  background: #0f1624;
+  background: var(--rv-ui-surface-sunken, #111111);
 }
 
 html[data-theme='dark'] .kanban-showcase__grid,
 .kanban-showcase__grid[theme^='dark'] {
-  --kanban-board-background: #0f1624;
-  --kanban-surface: #172033;
-  --kanban-card-background: #182235;
-  --kanban-border: #2a364b;
-  --kanban-text: #edf2fb;
-  --kanban-muted: #99a5b8;
+  --kanban-board-background: var(--rv-ui-surface-sunken, #111111);
+  --kanban-surface: var(--rv-ui-surface, #1f1f1f);
+  --kanban-card-background: var(--rv-ui-surface-elevated, #262626);
+  --kanban-border: var(--rv-ui-border, #3a3a3a);
+  --kanban-text: var(--rv-ui-text, #f5f5f5);
+  --kanban-muted: var(--rv-ui-text-muted, #a3a3a3);
   --kanban-accent: #202e50;
   --kanban-accent-strong: #8fa5ff;
 }
@@ -243,14 +243,14 @@ html[data-theme='dark'] .kanban-showcase-priority--calm,
 .kanban-showcase__grid[theme^='dark'] .kanban-showcase-priority--calm { color: #a9b5c8; background: #263146; }
 
 @media (prefers-color-scheme: dark) {
-  .kanban-showcase { background: #0f1624; }
+  .kanban-showcase { background: var(--rv-ui-surface-sunken, #111111); }
   .kanban-showcase__grid {
-    --kanban-board-background: #0f1624;
-    --kanban-surface: #172033;
-    --kanban-card-background: #182235;
-    --kanban-border: #2a364b;
-    --kanban-text: #edf2fb;
-    --kanban-muted: #99a5b8;
+    --kanban-board-background: var(--rv-ui-surface-sunken, #111111);
+    --kanban-surface: var(--rv-ui-surface, #1f1f1f);
+    --kanban-card-background: var(--rv-ui-surface-elevated, #262626);
+    --kanban-border: var(--rv-ui-border, #3a3a3a);
+    --kanban-text: var(--rv-ui-text, #f5f5f5);
+    --kanban-muted: var(--rv-ui-text-muted, #a3a3a3);
     --kanban-accent: #202e50;
     --kanban-accent-strong: #8fa5ff;
   }

@@ -3,7 +3,7 @@
 }
 
 :where(.dark, [data-theme='dark']) .financial-pivot-showcase {
-  --financial-pivot-expanded-background: #111827;
+  --financial-pivot-expanded-background: var(--rv-ui-surface-sunken);
 }
 
 financial-pivot-header {
@@ -17,17 +17,17 @@ financial-pivot-header {
 }
 
 :where(.dark, [data-theme='dark']) financial-pivot-header {
-  --financial-header-text: #f8fafc;
-  --financial-header-button-border: #475569;
-  --financial-header-button-hover: #1e293b;
-  --rv-segmented-bg: #111827;
-  --rv-segmented-border: #334155;
-  --rv-segmented-item-color: #94a3b8;
-  --rv-segmented-item-hover-color: #e2e8f0;
-  --rv-segmented-active-bg: #1e293b;
-  --rv-segmented-active-color: #f8fafc;
+  --financial-header-text: var(--rv-ui-text);
+  --financial-header-button-border: var(--rv-ui-border-strong);
+  --financial-header-button-hover: var(--rv-ui-surface-hover);
+  --rv-segmented-bg: var(--rv-ui-surface-sunken);
+  --rv-segmented-border: var(--rv-ui-border);
+  --rv-segmented-item-color: var(--rv-ui-text-muted);
+  --rv-segmented-item-hover-color: var(--rv-ui-text);
+  --rv-segmented-active-bg: var(--rv-ui-surface-elevated);
+  --rv-segmented-active-color: var(--rv-ui-text);
   --rv-segmented-active-shadow: rgb(0 0 0 / 0.35);
-  --rv-segmented-active-border: #475569;
+  --rv-segmented-active-border: var(--rv-ui-border-strong);
 }
 
 .financial-pivot-header {

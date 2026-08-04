@@ -14,6 +14,17 @@ const schedulerSources = [
 const schedulerHeaderSource = readSource('./components/scheduler-header/scheduler-header.ts');
 
 describe('scheduler segmented view styles', () => {
+  it('provides one achromatic dark surface palette for Pro UI consumers', () => {
+    expect(sharedUiStyles).toContain('--rv-ui-surface:');
+    expect(sharedUiStyles).toContain('--rv-ui-surface-elevated:');
+    expect(sharedUiStyles).toContain('--rv-ui-surface-sunken:');
+    expect(sharedUiStyles).toContain('--rv-ui-border:');
+    expect(sharedUiStyles).toContain('--rv-ui-text-muted:');
+    expect(sharedUiStyles).toContain('--rv-ui-surface:             #1f1f1f;');
+    expect(sharedUiStyles).toContain('--rv-ui-surface-elevated:    #262626;');
+    expect(sharedUiStyles).toContain('--rv-ui-surface-sunken:      #111111;');
+  });
+
   it('shares one reset and interaction style across both segmented controls', () => {
     const segmentedButtonRule = sharedUiStyles.match(/\.rv-segmented-switch-item\s*\{([\s\S]*?)(?=\n\})/);
 
