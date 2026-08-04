@@ -34,9 +34,7 @@ jobs:
           scope: '@revolist'
 
       - name: Install dependencies
-        # 2.5.0 is the pending stable trial release. Allow the first Pages run
-        # after publication to resolve it before the lockfile is refreshed.
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -54,7 +52,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://example.rv-grid.com/
     runs-on: ubuntu-latest
     needs: build
     steps:

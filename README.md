@@ -131,6 +131,9 @@ The `Deploy planning preview to GitHub Pages` workflow builds the default
 TypeScript planning project and deploys `pro-advanced-planning/dist`. Enable
 GitHub Pages with GitHub Actions as its source; the workflow reads the public
 `@revolist` packages from GitHub Packages using its built-in `GITHUB_TOKEN`.
+The deployed preview uses `https://example.rv-grid.com/` as its custom domain.
+Configure that domain in the repository's Pages settings; its DNS CNAME points
+to `revolist.github.io`.
 
 ## Example entry points
 
