@@ -29,8 +29,13 @@
 
 .kanban-showcase-column-heading,
 .kanban-showcase-card-topline,
+.kanban-showcase-card-context,
 .kanban-showcase-card-meta,
-.kanban-showcase-owner,
+.kanban-showcase-avatar-stack,
+.kanban-showcase-activity,
+.kanban-showcase-activity > span,
+.kanban-showcase-due,
+.kanban-showcase-progress__copy,
 .kanban-showcase-priority,
 .kanban-showcase-points {
   display: flex;
@@ -110,12 +115,33 @@
   min-width: 0;
   min-height: 0;
   height: 100%;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
-  gap: 8px;
+  grid-template-rows: 20px 20px auto minmax(0, 1fr) 30px 24px;
+  gap: 7px;
   overflow: hidden;
+}
+.kanban-showcase-card-content > * {
+  min-height: 0;
+  height: auto !important;
+}
+.kanban-showcase-card-id,
+.kanban-showcase-card-context,
+.kanban-showcase-due,
+.kanban-showcase-label,
+.kanban-showcase-progress__copy,
+.kanban-showcase-activity,
+.kanban-showcase-activity > span,
+.kanban-showcase-points {
+  height: auto !important;
+  max-height: 24px;
 }
 .kanban-showcase-card-topline,
 .kanban-showcase-card-meta {
+  min-width: 0;
+  max-height: 24px;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kanban-showcase-card-context {
   min-width: 0;
   justify-content: space-between;
   gap: 8px;
@@ -145,6 +171,28 @@
 .kanban-showcase-priority--critical { color: #c6384f; background: #fff0f2; }
 .kanban-showcase-priority--attention { color: #b26c08; background: #fff7e6; }
 .kanban-showcase-priority--calm { color: #607086; background: #f1f4f8; }
+.kanban-showcase-label {
+  max-width: 130px;
+  padding: 3px 8px;
+  overflow: hidden;
+  border-radius: 6px;
+  color: #4057a8;
+  background: #eef2ff;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kanban-showcase-due {
+  flex: 0 0 auto;
+  gap: 4px;
+  color: #7c8799;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
 .kanban-showcase-card-title {
   display: -webkit-box;
   min-width: 0;
@@ -165,26 +213,68 @@
   font-size: 11.5px;
   line-height: 1.5;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
+}
+.kanban-showcase-progress {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  gap: 5px;
+}
+.kanban-showcase-progress__copy {
+  justify-content: space-between;
+  color: #7c8799;
+  font-size: 9.5px;
+  line-height: 12px;
+}
+.kanban-showcase-progress__copy strong {
+  color: #4d5c73;
+  font-size: 10px;
+  font-weight: 600;
+}
+.kanban-showcase-progress__track {
+  display: block;
+  width: 100%;
+  height: 5px !important;
+  max-height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e9edf3;
+}
+.kanban-showcase-progress__bar {
+  display: block;
+  height: 100% !important;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #5b73e8, #7c5ce7);
 }
 .kanban-showcase-card-meta {
   align-self: end;
-  padding-top: 1px;
   color: #697386;
   font-size: 11px;
 }
-.kanban-showcase-owner {
+.kanban-showcase-avatar-stack {
   min-width: 0;
-  gap: 6px;
-  overflow: hidden;
-  font-weight: 500;
+  height: 18px !important;
+  overflow: visible;
 }
-.kanban-showcase-owner > :last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
+.kanban-showcase-avatar-stack > * + * {
+  margin-inline-start: -5px;
+}
+.kanban-showcase-owner__avatar {
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1.5px var(--kanban-card-background), 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+.kanban-showcase-activity {
+  flex: 0 0 auto;
+  gap: 8px;
+}
+.kanban-showcase-activity > span {
+  gap: 3px;
+  color: #7c8799;
+  font-size: 10px;
+  font-weight: 500;
   white-space: nowrap;
 }
-.kanban-showcase-owner__avatar { box-shadow: 0 0 0 2px var(--kanban-card-background); }
 .kanban-showcase-points {
   flex: 0 0 auto;
   gap: 4px;
@@ -197,7 +287,7 @@
 .kanban-showcase-card--high { border-inline-start-width: 3px; }
 
 .kanban-drag-preview .kanban-showcase-card-content {
-  gap: 6px;
+  gap: 5px;
 }
 .kanban-drag-preview .kanban-showcase-card-title,
 .kanban-drag-preview .kanban-showcase-card-content p {

@@ -2,6 +2,12 @@
 
 A self-contained RevoGrid Pro project tracker implemented in Vanilla TypeScript, React, Vue, and Angular.
 
+## Demo preview
+
+[![Pro Project Table walkthrough](./assets/pro-project-table-walkthrough.gif)](./assets/pro-project-table-walkthrough.mp4)
+
+_Click the animated preview to open the full-quality MP4._
+
 ## What it features
 
 - Project grouping by section, status, priority, risk, department, or owner, with expandable groups and group-level metrics

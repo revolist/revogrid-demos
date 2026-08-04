@@ -125,6 +125,23 @@ pnpm dev:vue
 pnpm dev:angular
 ```
 
+### Regenerate demo media
+
+The README previews are scripted browser walkthroughs recorded at 1440×900 and
+encoded as full-quality MP4, optimized GIF, and poster PNG files. Build the demo
+outputs first, then run the recorder from the repository root:
+
+```bash
+pnpm media:inspect                         # Save a still of every built demo to /tmp
+pnpm media:record                          # Record all demos
+pnpm media:record -- --demo=pro-excel     # Record one demo
+pnpm media:record -- --from=pro-advanced-kanban
+```
+
+The recorder requires Playwright's Chromium browser and `ffmpeg`. It writes each
+asset set to the matching demo's `assets/` directory so README links remain
+portable on GitHub.
+
 ### GitHub Pages preview
 
 The `Deploy planning preview to GitHub Pages` workflow builds the default

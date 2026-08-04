@@ -2,6 +2,12 @@
 
 A customer analytics RevoGrid Pro demo implemented in Vanilla TypeScript, React, Vue, and Angular.
 
+## Demo preview
+
+[![Pro E-commerce Analytics walkthrough](./assets/pro-e-commerce-walkthrough.gif)](./assets/pro-e-commerce-walkthrough.mp4)
+
+_Click the animated preview to open the full-quality MP4._
+
 ## What it features
 
 - Grouped Profile and Commerce columns for customer and transaction metrics

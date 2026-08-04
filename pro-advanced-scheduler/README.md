@@ -2,6 +2,12 @@
 
 An Enterprise event and shift-scheduling workspace implemented in Vanilla TypeScript, React, Vue, and Angular.
 
+## Demo preview
+
+[![Advanced Scheduler walkthrough](./assets/pro-advanced-scheduler-walkthrough.gif)](./assets/pro-advanced-scheduler-walkthrough.mp4)
+
+_Click the animated preview to open the full-quality MP4._
+
 ## What it features
 
 - Calendar and resource timeline views plus a synchronized table view

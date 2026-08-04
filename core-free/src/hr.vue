@@ -56,7 +56,7 @@ import { VGrid, type ColumnGrouping, type ColumnRegular, BasePlugin, type Plugin
 import { getHRColumnsCount, getHRData, HR_OPTIONS } from './sys-data/hr.data';
 import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE, withHRShortDate } from './sys-data/hr.columns';
-import { currentThemeVue } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
 import './hr.css';
@@ -65,7 +65,7 @@ const props = defineProps<{
   isDark?: boolean;
 }>();
 
-const { isDark: pageIsDark } = currentThemeVue();
+const pageIsDark = ref(currentTheme().isDark());
 const loading = ref(false);
 const currentSize = ref(100);
 const options = HR_OPTIONS;
@@ -75,6 +75,7 @@ const gridTheme = computed(() => (props.isDark === true || pageIsDark.value) ? '
 const progressPercent = computed(() => getHRProgressPercent(progress.value));
 const loadingDigits = computed(() => getHRLoadingDigits(progress.value));
 let activeController: AbortController | undefined;
+let disconnectTheme: (() => void) | undefined;
 
 // column types
 const columnTypes = ref<any>({});
@@ -154,6 +155,10 @@ function onSizeChange() {
 }
 
 onMounted(async () => {
+  disconnectTheme = observeCurrentTheme((isDark) => {
+    pageIsDark.value = isDark;
+  });
+
   // Load column types in parallel with data to optimize initial load time
   const [DateCol, NumeralCol, SelectCol] = await Promise.all([
     import('@revolist/revogrid-column-date'),
@@ -173,5 +178,6 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   activeController?.abort();
+  disconnectTheme?.();
 });
 </script>

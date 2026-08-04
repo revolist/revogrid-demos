@@ -2,6 +2,12 @@
 
 An Enterprise financial-analysis demo that combines RevoGrid Pivot with Pro grid plugins across Vanilla TypeScript, React, Vue, and Angular.
 
+## Demo preview
+
+[![Advanced Financial Pivot walkthrough](./assets/pro-advanced-pivot-walkthrough.gif)](./assets/pro-advanced-pivot-walkthrough.mp4)
+
+_Click the animated preview to open the full-quality MP4._
+
 ## What it features
 
 - Configurable row, column, value, and filter dimensions

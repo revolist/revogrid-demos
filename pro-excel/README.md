@@ -2,6 +2,12 @@
 
 A spreadsheet-style RevoGrid Pro demo implemented in Vanilla TypeScript, React, Vue, and Angular.
 
+## Demo preview
+
+[![Pro Excel Workbench walkthrough](./assets/pro-excel-walkthrough.gif)](./assets/pro-excel-walkthrough.mp4)
+
+_Click the animated preview to open the full-quality MP4._
+
 ## What it features
 
 - Formula editing, named ranges, dependency highlighting, and computed cells

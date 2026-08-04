@@ -10,6 +10,8 @@
     "dev": "pnpm dev:planning",
     "build": "pnpm --filter revogrid-demo-pro-advanced-planning build",
     "preview": "pnpm --filter revogrid-demo-pro-advanced-planning preview",
+    "media:inspect": "node scripts/record-demos.mjs --inspect",
+    "media:record": "node scripts/record-demos.mjs",
     "dev:core": "pnpm --filter revogrid-demo-core-free dev",
     "dev:core:react": "pnpm --filter revogrid-demo-core-free dev:react",
     "dev:core:vue": "pnpm --filter revogrid-demo-core-free dev:vue",
@@ -49,6 +51,7 @@
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.6.3",
-    "jsdom": "^29.1.1"
+    "jsdom": "^29.1.1",
+    "playwright": "1.59.1"
   }
 }

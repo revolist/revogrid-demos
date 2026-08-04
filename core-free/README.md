@@ -2,6 +2,12 @@
 
 A free RevoGrid Core demo built as an HR dataset explorer. It demonstrates the same experience in Vanilla TypeScript, React, Vue, and Angular without using RevoGrid Pro or Enterprise.
 
+## Demo preview
+
+[![Core HR Grid walkthrough](./assets/core-free-walkthrough.gif)](./assets/core-free-walkthrough.mp4)
+
+_Click the animated preview to open the full-quality MP4._
+
 ## What it features
 
 - Asynchronous generation of large HR datasets with loading progress

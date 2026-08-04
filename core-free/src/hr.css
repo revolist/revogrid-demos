@@ -54,6 +54,20 @@
   color: var(--revo-grid-text);
 }
 
+.hr-scale-grid[theme*='dark'] {
+  --revo-grid-background: var(--showcase-surface, #212529);
+  --revo-grid-foreground: var(--showcase-text-1, #fff);
+  --revo-grid-text: var(--showcase-text-1, rgba(255, 255, 255, 0.9));
+  --revo-grid-border: var(--showcase-border, rgba(255, 255, 255, 0.2));
+  --revo-grid-cell-border: var(--showcase-border, #424242);
+  --revo-grid-header-bg: var(--showcase-surface-2, #343a40);
+  --revo-grid-header-color: var(--showcase-text-1, #fff);
+  --revo-grid-header-border: var(--showcase-border-strong, #505050);
+  --revo-grid-row-hover: var(--showcase-hover, rgba(80, 80, 80, 0.5));
+  --revo-grid-row-headers-bg: var(--showcase-surface-2, rgba(52, 58, 64, 0.8));
+  --revo-grid-row-headers-color: var(--showcase-text-3, rgba(255, 255, 255, 0.8));
+}
+
 hr-demo-grid {
   display: flex;
   flex-direction: column;
