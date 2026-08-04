@@ -6,10 +6,10 @@ canonical live routes and pins each repository as a submodule.
 
 | Previous path | Repository | Canonical example |
 | --- | --- | --- |
-| `pro-advanced-pivot/` | `https://github.com/revolist/pivot` | `https://example.rv-grid.com/pivot/demo/` |
-| `pro-advanced-gantt/` | `https://github.com/revolist/gantt` | `https://example.rv-grid.com/gantt/demo/` |
-| `pro-advanced-kanban/` | `https://github.com/revolist/kanban` | `https://example.rv-grid.com/kanban/demo/` |
-| `pro-advanced-scheduler/` | `https://github.com/revolist/scheduler` | `https://example.rv-grid.com/scheduler/demo/` |
+| `pro-advanced-pivot/` | `https://github.com/revolist/pivot` | `https://pivot.rv-grid.com/demo/` |
+| `pro-advanced-gantt/` | `https://github.com/revolist/gantt` | `https://gantt.rv-grid.com/demo/` |
+| `pro-advanced-kanban/` | `https://github.com/revolist/kanban` | `https://kanban.rv-grid.com/demo/` |
+| `pro-advanced-scheduler/` | `https://github.com/revolist/scheduler` | `https://scheduler.rv-grid.com/demo/` |
 
 The migration does not change RevoGrid runtime APIs or package exports. Trial
 and licensed consumers continue to import the production package names.

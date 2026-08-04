@@ -6,13 +6,13 @@ import { featureSlugs, loadCatalog, root } from '../scripts/catalog.mjs';
 
 const output = join(root, 'dist');
 
-test('feature repositories are pinned submodules with public canonical URLs', async () => {
+test('feature repositories track their public main branches', async () => {
   const modules = await readFile(join(root, '.gitmodules'), 'utf8');
   for (const slug of featureSlugs) {
     assert.match(modules, new RegExp(`path = pro-advanced-${slug}`));
     assert.match(modules, new RegExp(`url = https://github\\.com/revolist/${slug}\\.git`));
   }
-  assert.doesNotMatch(modules, /branch\s*=/);
+  assert.equal((modules.match(/branch\s*=\s*main/g) ?? []).length, featureSlugs.length);
   assert.doesNotMatch(modules, /private\/tmp/);
 });
 
@@ -22,7 +22,7 @@ test('child metadata is complete and remains the source for feature copy', async
   for (const slug of featureSlugs) {
     const showcase = catalog.find((entry) => entry.slug === slug);
     assert.ok(showcase);
-    assert.equal(showcase.liveDemoUrl, `https://example.rv-grid.com/${slug}/demo/`);
+    assert.equal(showcase.liveDemoUrl, `https://${slug}.rv-grid.com/demo/`);
     assert.deepEqual(showcase.frameworks, ['ts', 'react', 'vue', 'angular']);
     assert.ok(showcase.recipes.length >= 2);
   }

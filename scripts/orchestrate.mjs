@@ -22,7 +22,7 @@ async function runBuild() {
 }
 
 if (action === 'setup') {
-  run('git', ['submodule', 'update', '--init', '--recursive']);
+  run('git', ['submodule', 'update', '--init', '--remote', '--recursive']);
   run('pnpm', ['install', '--frozen-lockfile']);
   for (const slug of featureSlugs) {
     run('pnpm', ['install', '--ignore-workspace', '--frozen-lockfile'], join(root, featureDirectory(slug)));

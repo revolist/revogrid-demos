@@ -15,7 +15,7 @@
 ## Architecture
 
 `revogrid-demos` is the deployment and discovery layer for RevoGrid examples.
-Pivot, Gantt, Kanban, and Scheduler are complete public repositories pinned as
+Pivot, Gantt, Kanban, and Scheduler are complete public repositories included as
 Git submodules. The parent validates each child `feature.json`, builds every
 showcase recursively, and assembles the site deployed to
 `example.rv-grid.com`.
@@ -35,8 +35,8 @@ revogrid-demos/
 └── scripts/                   # setup, build, test, media delegation
 ```
 
-Submodules are pinned to exact commits. Production builds never follow moving
-branches.
+Submodules track each feature repository's `main` branch. `pnpm run setup`
+initializes them and advances every checkout to the latest remote `main`.
 
 ## Showcases
 
@@ -46,16 +46,16 @@ branches.
 | Pro | Excel Workbench | [`pro-excel`](./pro-excel/) | [`/excel/`](https://example.rv-grid.com/excel/) |
 | Pro | E-commerce Analytics | [`pro-e-commerce`](./pro-e-commerce/) | [`/ecommerce/`](https://example.rv-grid.com/ecommerce/) |
 | Pro | Project Portfolio | [`pro-project-table`](./pro-project-table/) | [`/project-table/`](https://example.rv-grid.com/project-table/) |
-| Pro Advanced | Pivot | [`revolist/pivot`](https://github.com/revolist/pivot) | [`/pivot/`](https://example.rv-grid.com/pivot/) |
-| Pro Advanced | Gantt | [`revolist/gantt`](https://github.com/revolist/gantt) | [`/gantt/`](https://example.rv-grid.com/gantt/) |
-| Pro Advanced | Kanban | [`revolist/kanban`](https://github.com/revolist/kanban) | [`/kanban/`](https://example.rv-grid.com/kanban/) |
-| Pro Advanced | Scheduler | [`revolist/scheduler`](https://github.com/revolist/scheduler) | [`/scheduler/`](https://example.rv-grid.com/scheduler/) |
+| Pro Advanced | Pivot | [`revolist/pivot`](https://github.com/revolist/pivot) | [`pivot.rv-grid.com`](https://pivot.rv-grid.com/demo/) |
+| Pro Advanced | Gantt | [`revolist/gantt`](https://github.com/revolist/gantt) | [`gantt.rv-grid.com`](https://gantt.rv-grid.com/demo/) |
+| Pro Advanced | Kanban | [`revolist/kanban`](https://github.com/revolist/kanban) | [`kanban.rv-grid.com`](https://kanban.rv-grid.com/demo/) |
+| Pro Advanced | Scheduler | [`revolist/scheduler`](https://github.com/revolist/scheduler) | [`scheduler.rv-grid.com`](https://scheduler.rv-grid.com/demo/) |
 | Pro Advanced | Unified Planning Suite | [`pro-advanced-planning`](./pro-advanced-planning/) | [`/planning/`](https://example.rv-grid.com/planning/) |
 
-Every route has a detail page and a canonical live demo at
-`/<showcase>/demo/`. Feature descriptions, recipes, frameworks, links, media,
-and output paths are read directly from each child repository's validated
-`feature.json`.
+The gallery retains detail and demo routes at `/<showcase>/` and
+`/<showcase>/demo/`. Feature live-demo links use the dedicated subdomains.
+Descriptions, recipes, frameworks, links, media, and output paths are read
+directly from each child repository's validated `feature.json`.
 
 ## Local development
 
@@ -65,7 +65,7 @@ repository:
 ```bash
 git clone --recurse-submodules https://github.com/revolist/revogrid-demos.git
 cd revogrid-demos
-export NODE_AUTH_TOKEN="<trial token>"
+export NODE_AUTH_TOKEN="<GitHub token with read:packages>"
 pnpm run setup
 pnpm build
 pnpm dev
@@ -118,6 +118,6 @@ parent `dist/` artifact. `CNAME` preserves the existing
 ## Licensing and support
 
 Feature repositories license their example, recipe, documentation, and media
-tooling under MIT. RevoGrid Pro and Enterprise runtime packages retain their
-commercial license. Use the relevant feature repository for example issues and
+tooling under MIT. Commercial RevoGrid runtime packages retain their product
+license. Use the relevant feature repository for example issues and
 [RevoGrid support](https://rv-grid.com/contact/) for product or licensing help.
