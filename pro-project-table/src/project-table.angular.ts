@@ -7,6 +7,7 @@ import type { ColumnProp } from '@revolist/revogrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createProjectColumns,
+  createProjectColumnTypes,
   createProjectColumnAddPopupConfig,
   createProjectContextMenus,
   createProjectGrouping,
@@ -20,7 +21,6 @@ import {
   getProjectHideableColumns,
   getSelectedProjectIndexes,
   projectFilterConfig,
-  projectGridPreset,
   projectPlugins,
   projectRowOrder,
   projectRowSelect,
@@ -61,9 +61,9 @@ defineProjectTrackerToolbarElement();
         [theme]="theme"
         [canMoveColumns]="true"
         [columns]="columns"
+        [columnTypes]="columnTypes"
         [source]="projectRows"
         [grouping]="grouping"
-        [gridPreset]="gridPreset"
         [plugins]="plugins"
         [rowOrder]="projectRowOrder"
         [rowSelect]="projectRowSelect"
@@ -231,7 +231,7 @@ export class ColorGridComponent implements OnDestroy {
     this.theme = isDark ? 'darkMaterial' : 'material';
   });
   columns = createProjectColumns();
-  gridPreset = projectGridPreset;
+  columnTypes = createProjectColumnTypes();
   plugins = projectPlugins;
   projectRowOrder = projectRowOrder;
   projectRowSelect = projectRowSelect;

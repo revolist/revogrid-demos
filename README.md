@@ -76,13 +76,14 @@ These workspace packages contain demo source code rather than standalone applica
 5. Resolve the demo's local imports against your project structure.
 6. Align package versions with your host application when integrating the example.
 
-> Pro and Pro Advance examples require access to their corresponding commercial packages. Keep registry credentials and package tokens outside source control.
+> Pro and Pro Advance examples use `@revolist/revogrid-pro` and `@revolist/revogrid-enterprise`. Keep registry credentials and package tokens outside source control.
 
 ### Run the demos
 
 After `pnpm install`, start any demo from the repository root:
 
 ```bash
+pnpm dev                 # Default: Unified Planning Suite
 pnpm dev:core
 pnpm dev:excel
 pnpm dev:pivot
@@ -92,6 +93,13 @@ pnpm dev:gantt
 pnpm dev:planning
 pnpm dev:ecommerce
 pnpm dev:project
+```
+
+Build or preview that same default project from the repository root:
+
+```bash
+pnpm build
+pnpm preview
 ```
 
 Each short command starts the Vanilla TypeScript variant. Append a framework name
@@ -116,6 +124,13 @@ pnpm dev:react
 pnpm dev:vue
 pnpm dev:angular
 ```
+
+### GitHub Pages preview
+
+The `Deploy planning preview to GitHub Pages` workflow builds the default
+TypeScript planning project and deploys `pro-advanced-planning/dist`. Enable
+GitHub Pages with GitHub Actions as its source; the workflow reads the public
+`@revolist` packages from GitHub Packages using its built-in `GITHUB_TOKEN`.
 
 ## Example entry points
 

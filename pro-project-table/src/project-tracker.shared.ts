@@ -11,11 +11,11 @@ import {
   projectStatusOptions,
 } from './project-tracker/options';
 import {
-  projectGridPreset,
   projectPlugins,
   projectRowOrder,
   projectRowSelect,
 } from './project-tracker/plugins';
+import { createProjectColumnTypes } from './project-tracker/column-types';
 import { projectFilterConfig } from './project-tracker/filters';
 import {
   createProjectRows,
@@ -79,6 +79,7 @@ export {
   clearProjectFilters,
   clearProjectSelection,
   createProjectColumnAddPopupConfig,
+  createProjectColumnTypes,
   createProjectColumns,
   createProjectContextMenus,
   createProjectGrouping,
@@ -97,7 +98,6 @@ export {
   getSelectedProjectIndexes,
   openProjectColumnHeaderFilter,
   openProjectStatusHeaderFilter,
-  projectGridPreset,
   projectDepartmentOptions,
   projectDynamicColumnProp,
   projectFilterConfig,

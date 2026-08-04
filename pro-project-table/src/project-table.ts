@@ -4,6 +4,7 @@ import type { ColumnProp } from '@revolist/revogrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createProjectColumns,
+  createProjectColumnTypes,
   createProjectColumnAddPopupConfig,
   createProjectContextMenus,
   createProjectGrouping,
@@ -17,7 +18,6 @@ import {
   getProjectHideableColumns,
   getSelectedProjectIndexes,
   projectFilterConfig,
-  projectGridPreset,
   projectPlugins,
   projectRowOrder,
   projectRowSelect,
@@ -101,9 +101,9 @@ export function load(parentSelector: string) {
     grid.theme = darkTheme ? 'darkMaterial' : 'material';
   });
   grid.columns = columns;
+  grid.columnTypes = createProjectColumnTypes();
   grid.source = projectRows;
   grid.grouping = createProjectGrouping(() => projectRows, groupBy, groupsExpanded, collapsedGroups);
-  grid.gridPreset = projectGridPreset;
   grid.plugins = projectPlugins;
   grid.rowOrder = projectRowOrder;
   grid.rowSelect = projectRowSelect;

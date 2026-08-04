@@ -265,16 +265,29 @@
     color: token(dark-text);
   }
 
-  revo-grid.color-grid revogr-header .rgHeaderCell .filter-input input[type="text"],
-  revo-grid.color-grid revogr-header .rgHeaderCell .filter-header-selection-trigger.rv-filter {
-    border-color: #334055 !important;
+  revo-grid.color-grid revogr-header .rgHeaderCell .filter-input input[type="text"] {
+    border-color: token(dark-border) !important;
     background: token(dark-elevated) !important;
     color: token(dark-text);
     -webkit-text-fill-color: token(dark-text);
 
     &:disabled {
-      border-color: #334055 !important;
+      border-color: token(dark-border) !important;
       background: token(dark-elevated) !important;
+      color: token(dark-text);
+      -webkit-text-fill-color: token(dark-text);
+    }
+  }
+
+  revo-grid.color-grid revogr-header .rgHeaderCell .filter-header-selection-trigger.rv-filter {
+    border-color: transparent !important;
+    background: transparent !important;
+    color: token(dark-text);
+    -webkit-text-fill-color: token(dark-text);
+
+    &:disabled {
+      border-color: transparent !important;
+      background: transparent !important;
       color: token(dark-text);
       -webkit-text-fill-color: token(dark-text);
     }

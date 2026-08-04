@@ -1,19 +1,29 @@
 import {
-  GridPresetPlugin,
-  type GridPresetConfig,
-} from '@revolist/revogrid-presets';
-import type {
-  RowOrderPluginConfig,
-  RowSelectConfig,
+  AdvanceFilterPlugin,
+  ColumnAddPopupPlugin,
+  ColumnHidePlugin,
+  ColumnStretchPlugin,
+  ContextMenuPlugin,
+  DimensionAnimationPlugin,
+  EventManagerPlugin,
+  FilterHeaderPlugin,
+  RowOrderPlugin,
+  RowSelectPlugin,
+  type RowOrderPluginConfig,
+  type RowSelectConfig,
 } from '@revolist/revogrid-pro';
 
-export const projectGridPreset: GridPresetConfig = {
-  presets: ['common-column-types', 'project-pipeline'],
-  conflictPolicy: 'silent',
-};
-
 export const projectPlugins = [
-  GridPresetPlugin,
+  EventManagerPlugin,
+  RowOrderPlugin,
+  RowSelectPlugin,
+  ContextMenuPlugin,
+  ColumnStretchPlugin,
+  DimensionAnimationPlugin,
+  AdvanceFilterPlugin,
+  FilterHeaderPlugin,
+  ColumnHidePlugin,
+  ColumnAddPopupPlugin,
 ];
 
 export const projectRowOrder: RowOrderPluginConfig = {

@@ -10,6 +10,10 @@ const darkStyles = readFileSync(
   new URL('./project-tracker-styles/_dark.scss', import.meta.url),
   'utf8',
 );
+const headerFilterStyles = readFileSync(
+  new URL('./project-tracker-styles/_header-filters.scss', import.meta.url),
+  'utf8',
+);
 
 test('dark grouping rows use the same neutral surfaces as project rows', () => {
   assert.match(darkStyles, /--revo-grid-row-hover:\s*var\(--rv-ui-surface-hover,/);
@@ -23,6 +27,25 @@ test('dark grouping rows use the same neutral surfaces as project rows', () => {
   );
   assert.doesNotMatch(darkStyles, /background:\s*#111827\s*!important/);
   assert.doesNotMatch(darkStyles, /background:\s*#162235\s*!important/);
+});
+
+test('dark selection header filters stay unboxed while text filters keep their surface', () => {
+  assert.match(
+    headerFilterStyles,
+    /\.filter-input\s*\{[\s\S]*?justify-content:\s*center\s*!important;/,
+  );
+  assert.match(
+    darkStyles,
+    /\.filter-input input\[type="text"\]\s*\{[\s\S]*?border-color:\s*token\(dark-border\)\s*!important;[\s\S]*?background:\s*token\(dark-elevated\)\s*!important;[\s\S]*?&:disabled\s*\{[\s\S]*?border-color:\s*token\(dark-border\)\s*!important;/,
+  );
+  assert.match(
+    darkStyles,
+    /\.filter-header-selection-trigger\.rv-filter\s*\{[\s\S]*?border-color:\s*transparent\s*!important;[\s\S]*?background:\s*transparent\s*!important;/,
+  );
+  assert.doesNotMatch(
+    darkStyles,
+    /\.filter-input input\[type="text"\],[\s\S]*?\.filter-header-selection-trigger\.rv-filter\s*\{/,
+  );
 });
 
 test('row selection checkboxes use the shared Pro checkbox glyph', () => {

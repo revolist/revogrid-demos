@@ -7,6 +7,9 @@
     "pnpm": ">=10"
   },
   "scripts": {
+    "dev": "pnpm dev:planning",
+    "build": "pnpm --filter revogrid-demo-pro-advanced-planning build",
+    "preview": "pnpm --filter revogrid-demo-pro-advanced-planning preview",
     "dev:core": "pnpm --filter revogrid-demo-core-free dev",
     "dev:core:react": "pnpm --filter revogrid-demo-core-free dev:react",
     "dev:core:vue": "pnpm --filter revogrid-demo-core-free dev:vue",

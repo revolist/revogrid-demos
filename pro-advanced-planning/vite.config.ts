@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import vue from '@vitejs/plugin-vue';
+import { trialCssAliases } from '../vite.trial-aliases';
 
 export default defineConfig(async ({ mode }) => {
   let angular;
@@ -15,8 +16,12 @@ export default defineConfig(async ({ mode }) => {
   }
 
   return {
+    base: './',
     esbuild: { jsx: 'automatic' },
-    resolve: mode === 'angular' ? { mainFields: ['module'] } : undefined,
+    resolve: {
+      alias: trialCssAliases,
+      ...(mode === 'angular' ? { mainFields: ['module'] } : {}),
+    },
     plugins: [
       ...(angular ? [angular()] : []),
       react(),

@@ -17,7 +17,8 @@
     "build:ts": "vite build --mode ts",
     "build:react": "vite build --mode react",
     "build:vue": "vite build --mode vue",
-    "build:angular": "vite build --mode angular"
+    "build:angular": "vite build --mode angular",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@angular/common": "^20.0.0",
@@ -28,8 +29,8 @@
     "@revolist/angular-datagrid": "latest",
     "@revolist/react-datagrid": "latest",
     "@revolist/revogrid": "latest",
-    "@revolist/revogrid-enterprise": "latest",
-    "@revolist/revogrid-pro": "latest",
+    "@revolist/revogrid-enterprise": "npm:@revolist/rv-enterprise-trial@2.5.0",
+    "@revolist/revogrid-pro": "npm:@revolist/rv-pro-trial@2.5.0",
     "@revolist/vue3-datagrid": "latest",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

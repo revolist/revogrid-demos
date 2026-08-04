@@ -1,15 +1,16 @@
 <!-- src/components/showcase-color/Color.svelte -->
 <script lang="ts">
   import { RevoGrid } from '@revolist/svelte-datagrid';
-  import { GridPresetPlugin } from '@revolist/revogrid-presets';
   import { COLUMNS_COLOR, PLUGINS_COLOR } from './color.config';
+  import { createProjectColumnTypes } from './project-tracker/column-types';
   import { DATA_COLOR } from './color.data';
   import { GROUPING_COLOR } from './color.grouping';
   import { currentTheme } from '../../composables/useRandomData';
 
   const { isDark } = currentTheme();
   let hiddenColumns: string[] = [];
-  const plugins = [GridPresetPlugin, ...PLUGINS_COLOR];
+  const plugins = PLUGINS_COLOR;
+  const columnTypes = createProjectColumnTypes();
 
   function toggleHideColumn(e: CustomEvent<string[]>) {
     hiddenColumns = e.detail;
@@ -23,7 +24,7 @@
     columns={COLUMNS_COLOR}
     source={DATA_COLOR}
     grouping={GROUPING_COLOR}
-    gridPreset="common-column-types"
+    {columnTypes}
     plugins={plugins}
     filter={true}
     hideColumns={hiddenColumns}

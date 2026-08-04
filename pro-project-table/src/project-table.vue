@@ -11,11 +11,11 @@
         class="project-tracker-grid skip-style color-grid cell-border"
         :theme="isDark ? 'darkMaterial' : 'material'"
         :can-move-columns="true"
-        :columns="columns"
-        :source="projectRows"
+      :columns="columns"
+      :column-types="columnTypes"
+      :source="projectRows"
         :grouping="grouping"
-        :grid-preset.prop="gridPreset"
-        :plugins="plugins"
+      :plugins="plugins"
         :row-order.prop="projectRowOrder"
         :row-select.prop="projectRowSelect"
         stretch="last"
@@ -102,6 +102,7 @@ import type { ColumnProp } from '@revolist/revogrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createProjectColumns,
+  createProjectColumnTypes,
   createProjectColumnAddPopupConfig,
   createProjectContextMenus,
   createProjectGrouping,
@@ -115,7 +116,6 @@ import {
   getProjectHideableColumns,
   getSelectedProjectIndexes,
   projectFilterConfig,
-  projectGridPreset,
   projectPlugins,
   projectRowOrder,
   projectRowSelect,
@@ -163,7 +163,7 @@ const taskDraft = ref<ProjectTaskDraft>(createProjectTaskDraft());
 
 const options = computed(() => getProjectFilterOptions(projectRows.value));
 const columns = shallowRef(createProjectColumns());
-const gridPreset = projectGridPreset;
+const columnTypes = createProjectColumnTypes();
 const plugins = projectPlugins;
 const grouping = computed(() => createProjectGrouping(() => projectRows.value, groupBy.value, groupsExpanded.value, collapsedGroups.value));
 const contextMenus = computed(() => createProjectContextMenus({

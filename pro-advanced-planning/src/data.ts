@@ -36,9 +36,9 @@ export const views: PlanningView[] = ['grid', 'kanban', 'gantt', 'scheduler', 'c
 
 export const kanbanConfig: KanbanConfig<PlanningTask> = {
   columns: [
-    { id: 'not-started', title: 'To do' },
-    { id: 'in-progress', title: 'In progress' },
-    { id: 'done', title: 'Done' },
+    { prop: 'not-started', name: 'Not Started' },
+    { prop: 'in-progress', name: 'In Progress' },
+    { prop: 'done', name: 'Done' },
   ],
   columnField: 'workflowStatus',
   orderField: 'order',
@@ -331,6 +331,7 @@ export function updateFromScheduler(
       ownerAvatars: owner ? [getOwnerAvatar(owner)] : [],
       startDate: event.startDateTime,
       endDate: event.endDateTime,
+      workflowStatus: event.status ?? task.workflowStatus,
       duration: `${(Date.parse(event.endDateTime) - Date.parse(event.startDateTime)) / 3_600_000}h`,
     } as PlanningTask;
   });

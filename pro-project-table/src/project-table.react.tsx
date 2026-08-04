@@ -5,6 +5,7 @@ import type { ColumnProp } from '@revolist/revogrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createProjectColumns,
+  createProjectColumnTypes,
   createProjectColumnAddPopupConfig,
   createProjectContextMenus,
   createProjectGrouping,
@@ -18,7 +19,6 @@ import {
   getProjectHideableColumns,
   getSelectedProjectIndexes,
   projectFilterConfig,
-  projectGridPreset,
   projectPlugins,
   projectRowOrder,
   projectRowSelect,
@@ -61,7 +61,7 @@ function Color() {
 
   const options = useMemo(() => getProjectFilterOptions(projectRows), [projectRows]);
   const [columns, setColumns] = useState(() => createProjectColumns());
-  const gridPreset = useMemo(() => projectGridPreset, []);
+  const columnTypes = useMemo(() => createProjectColumnTypes(), []);
   const plugins = useMemo(() => projectPlugins, []);
   const grouping = useMemo(() => createProjectGrouping(() => projectRows, groupBy, groupsExpanded, collapsedGroups), [projectRows, groupBy, groupsExpanded, collapsedGroups]);
   const RevoGridComponent = RevoGrid as any;
@@ -199,9 +199,9 @@ function Color() {
           theme={isDark ? 'darkMaterial' : 'material'}
           canMoveColumns={true}
           columns={columns}
+          columnTypes={columnTypes}
           source={projectRows}
           grouping={grouping}
-          gridPreset={gridPreset}
           plugins={plugins}
           rowOrder={projectRowOrder}
           rowSelect={projectRowSelect}
