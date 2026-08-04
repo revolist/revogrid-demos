@@ -36,7 +36,7 @@ jobs:
           scope: '@revolist'
 
       - name: Initialize and install parent and feature repositories
-        run: pnpm setup
+        run: pnpm run setup
         env:
           NODE_AUTH_TOKEN: ${{ secrets.REVOGRID_TRIAL_TOKEN }}
 

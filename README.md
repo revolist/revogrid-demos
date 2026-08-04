@@ -67,12 +67,12 @@ repository:
 git clone --recurse-submodules https://github.com/revolist/revogrid-demos.git
 cd revogrid-demos
 export NODE_AUTH_TOKEN="<trial token>"
-pnpm setup
+pnpm run setup
 pnpm build
 pnpm dev
 ```
 
-`pnpm setup` initializes nested repositories and performs frozen parent and
+`pnpm run setup` initializes nested repositories and performs frozen parent and
 child installs. `pnpm build` builds four child repositories, five retained
 showcases, then assembles `dist/`.
 
