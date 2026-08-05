@@ -3,8 +3,6 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { JSDOM } from 'jsdom';
-import { mountGridFilterBadges } from './filter-badges.ts';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const readSource = file => readFile(join(root, file), 'utf8');
@@ -12,18 +10,19 @@ const readSource = file => readFile(join(root, file), 'utf8');
 test('advanced filtering showcase exposes every requested behavior', async () => {
   const source = await readSource('filtering.shared.ts');
 
-  assert.equal((source.match(/columnTemplate: columnTypeRenderer/g) ?? []).length, 8);
+  assert.equal((source.match(/columnTemplate: columnTypeRenderer/g) ?? []).length, 9);
   assert.match(source, /name: 'Order date',[\s\S]*?size: 180/);
   assert.match(source, /case 'high-value-europe'/);
   assert.match(source, /case 'recent-expedited'/);
   assert.match(source, /case 'review-queue'/);
   assert.match(source, /cascadeOptions:\s*{\s*enabled: true,\s*showDependencyNumbers: true/);
-  assert.match(source, /mountGridFilterBadges\(\{/);
+  assert.match(source, /mountAdvancedFilterBadges\(\{/);
+  assert.match(source, /ORDER_EXPLORER_QUICK_FILTER_EXAMPLE = 'Lisbon pending'/);
+  assert.match(source, /quickFilter = \{/);
 });
 
 test('all framework examples use direct grid properties', async () => {
   const files = [
-    'filter-badges.ts',
     'filtering.shared.ts',
     'filtering.ts',
     'filtering.react.tsx',
@@ -39,72 +38,33 @@ test('all framework examples use direct grid properties', async () => {
     assert.match(source, /plugins/);
     assert.match(source, /columnTypes/);
     assert.match(source, /filter/);
+    assert.match(source, /QuickFilter|quickFilter/);
   }
 });
 
-test('standalone badge adapter stays customizable and DOM-safe', async () => {
-  const source = await readSource('filter-badges.ts');
+test('showcase reuses the public customizable advanced-filter badge component', async () => {
+  const source = await readSource('filtering.shared.ts');
 
-  assert.match(source, /renderBadge\?:/);
-  assert.match(source, /render\?:/);
-  assert.match(source, /value instanceof Node/);
-  assert.match(source, /document\.createTextNode/);
-  assert.doesNotMatch(source, /innerHTML/);
-  assert.match(source, /grid\.filter = \{ \.\.\.current, multiFilterItems:/);
+  assert.match(source, /mountAdvancedFilterBadges\(\{/);
+  assert.match(source, /formatLabel: formatOrderExplorerFilterBadge/);
+  assert.doesNotMatch(source, /filter-badges/);
 });
 
-test('badge adapter follows plugin-originated models and preserves host attributes', async () => {
-  const dom = new JSDOM('<div id="grid"></div><div id="badges" role="region"></div>');
-  const previousNode = globalThis.Node;
-  const previousDocument = globalThis.document;
-  const previousCustomEvent = globalThis.CustomEvent;
-  globalThis.Node = dom.window.Node;
-  globalThis.document = dom.window.document;
-  globalThis.CustomEvent = dom.window.CustomEvent;
+test('remote recipe documents and transports the complete callback payload', async () => {
+  const [source, main] = await Promise.all([
+    readSource('remote.shared.ts'),
+    readSource('main.ts'),
+  ]);
 
-  try {
-    const grid = dom.window.document.querySelector('#grid');
-    const root = dom.window.document.querySelector('#badges');
-    grid.componentOnReady = async () => grid;
-    grid.filter = { multiFilterItems: {} };
-    const controller = await mountGridFilterBadges({ grid, root });
-    const items = {
-      status: [{ id: 1, type: 'eq', value: 'Pending Review', relation: 'and' }],
-    };
-
-    grid.dispatchEvent(new dom.window.CustomEvent('beforefilterapply', {
-      detail: { filterItems: items },
-    }));
-    grid.dispatchEvent(new dom.window.CustomEvent('afterfilterapply', {
-      detail: { multiFilterItems: items },
-    }));
-    await new Promise(resolve => queueMicrotask(resolve));
-    assert.match(root.textContent, /status: eq/);
-    assert.equal(root.getAttribute('role'), 'list');
-
-    root.setAttribute('aria-label', 'Application label');
-    controller.destroy();
-    assert.equal(root.getAttribute('role'), 'region');
-    assert.equal(root.getAttribute('aria-label'), 'Application label');
-
-    const customRoot = dom.window.document.createElement('div');
-    customRoot.setAttribute('role', 'region');
-    const customController = await mountGridFilterBadges({
-      grid,
-      root: customRoot,
-      render: () => 'Custom badges',
-    });
-    customRoot.setAttribute('role', 'navigation');
-    customController.refresh(items);
-    assert.equal(customRoot.getAttribute('role'), 'navigation');
-    customController.destroy();
-    assert.equal(customRoot.getAttribute('role'), 'navigation');
-  } finally {
-    globalThis.Node = previousNode;
-    globalThis.document = previousDocument;
-    globalThis.CustomEvent = previousCustomEvent;
-    dom.window.close();
-  }
+  assert.match(source, /Pagination\(skip, take, order, single, multi, quickFilter\)/);
+  assert.match(source, /Infinity\(skip, limit, order, single, multi, quickFilter\)/);
+  assert.match(source, /value instanceof Set/);
+  assert.match(source, /value instanceof Date/);
+  assert.match(source, /singleConditionFilters/);
+  assert.match(source, /multiConditionFilters/);
+  assert.match(source, /quickFilter/);
+  assert.doesNotMatch(source, /\bfetch\s*\(/);
+  assert.match(main, /recipe.*remote/);
 });
 
 test('framework examples follow their lifecycle conventions', async () => {

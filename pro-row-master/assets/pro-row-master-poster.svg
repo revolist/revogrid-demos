@@ -1,0 +1,66 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="100" y1="20" x2="1500" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EAF7FF"/>
+      <stop offset="1" stop-color="#EEF4FF"/>
+    </linearGradient>
+    <linearGradient id="detail" x1="220" y1="440" x2="1380" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E0F2FE"/>
+      <stop offset="1" stop-color="#F0FDF4"/>
+    </linearGradient>
+    <filter id="shadow" x="70" y="62" width="1460" height="790" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#16213A" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" rx="48" fill="url(#bg)"/>
+  <circle cx="1470" cy="110" r="220" fill="#0EA5E9" fill-opacity="0.08"/>
+  <circle cx="120" cy="820" r="240" fill="#22C55E" fill-opacity="0.08"/>
+  <g filter="url(#shadow)">
+    <rect x="120" y="100" width="1360" height="700" rx="28" fill="white"/>
+    <rect x="120" y="100" width="1360" height="100" rx="28" fill="#172033"/>
+    <rect x="120" y="174" width="1360" height="26" fill="#172033"/>
+    <text x="166" y="151" fill="white" font-family="Arial, sans-serif" font-size="28" font-weight="700">Portfolio explorer</text>
+    <text x="166" y="181" fill="#B8C3D8" font-family="Arial, sans-serif" font-size="17">Virtualized tree rows with full-width master detail</text>
+    <rect x="1258" y="132" width="176" height="36" rx="18" fill="#0C4A6E"/>
+    <text x="1280" y="155" fill="#BAE6FD" font-family="Arial, sans-serif" font-size="14" font-weight="700">TREE + DETAIL</text>
+    <rect x="148" y="228" width="1304" height="58" fill="#F8FAFC"/>
+    <g fill="#475569" font-family="Arial, sans-serif" font-size="16" font-weight="700">
+      <text x="180" y="264">Initiative</text><text x="620" y="264">Type</text><text x="760" y="264">Owner</text><text x="940" y="264">Status</text><text x="1080" y="264">Progress</text><text x="1240" y="264">Budget</text>
+    </g>
+    <g fill="#334155" font-family="Arial, sans-serif" font-size="16">
+      <text x="180" y="326">▼  North Star Operations</text><text x="620" y="326">Portfolio</text><text x="760" y="326">Avery Brooks</text><text x="940" y="326">On Track</text><text x="1080" y="326">72%</text><text x="1240" y="326">$4.8M</text>
+      <text x="210" y="382">▼  Fulfillment Modernization</text><text x="620" y="382">Program</text><text x="760" y="382">Mina Chen</text><text x="940" y="382">On Track</text><text x="1080" y="382">68%</text><text x="1240" y="382">$1.9M</text>
+      <text x="240" y="438">▾  Warehouse Routing Console</text><text x="620" y="438">Project</text><text x="760" y="438">Sam Rivera</text><text x="940" y="438">On Track</text><text x="1080" y="438">82%</text><text x="1240" y="438">$620K</text>
+    </g>
+    <rect x="148" y="466" width="1304" height="292" rx="16" fill="url(#detail)" stroke="#7DD3FC"/>
+    <text x="184" y="510" fill="#0369A1" font-family="Arial, sans-serif" font-size="13" font-weight="700">MASTER DETAIL</text>
+    <text x="184" y="552" fill="#172033" font-family="Arial, sans-serif" font-size="29" font-weight="700">Warehouse Routing Console</text>
+    <rect x="555" y="526" width="94" height="32" rx="16" fill="#DCFCE7"/>
+    <text x="572" y="547" fill="#166534" font-family="Arial, sans-serif" font-size="14" font-weight="700">On Track</text>
+    <text x="184" y="590" fill="#526078" font-family="Arial, sans-serif" font-size="16">A live console that lets operations redirect orders before pick-pack handoff.</text>
+    <text x="184" y="632" fill="#64748B" font-family="Arial, sans-serif" font-size="14">Progress</text>
+    <text x="590" y="632" fill="#172033" font-family="Arial, sans-serif" font-size="14" font-weight="700">82%</text>
+    <rect x="184" y="648" width="430" height="10" rx="5" fill="#CBD5E1"/>
+    <rect x="184" y="648" width="353" height="10" rx="5" fill="#0EA5E9"/>
+    <rect x="184" y="686" width="112" height="34" rx="8" fill="white" stroke="#C7D2FE"/>
+    <rect x="306" y="686" width="156" height="34" rx="8" fill="white" stroke="#CBD5E1"/>
+    <rect x="472" y="686" width="130" height="34" rx="8" fill="white" stroke="#CBD5E1"/>
+    <text x="205" y="708" fill="#3730A3" font-family="Arial, sans-serif" font-size="13" font-weight="700">Project</text>
+    <text x="326" y="708" fill="#475569" font-family="Arial, sans-serif" font-size="13">Sam Rivera</text>
+    <text x="492" y="708" fill="#475569" font-family="Arial, sans-serif" font-size="13">Mar–Jul</text>
+    <rect x="700" y="504" width="704" height="104" rx="12" fill="white" fill-opacity="0.86"/>
+    <text x="724" y="532" fill="#64748B" font-family="Arial, sans-serif" font-size="12" font-weight="700">MILESTONES</text>
+    <text x="724" y="562" fill="#334155" font-family="Arial, sans-serif" font-size="14">● Route simulation approved</text>
+    <text x="724" y="586" fill="#334155" font-family="Arial, sans-serif" font-size="14">● Supervisor workflow shipped</text>
+    <rect x="700" y="624" width="220" height="94" rx="12" fill="#FFF7ED"/>
+    <rect x="934" y="624" width="220" height="94" rx="12" fill="white" fill-opacity="0.9"/>
+    <rect x="1168" y="624" width="236" height="94" rx="12" fill="white" fill-opacity="0.9"/>
+    <text x="718" y="650" fill="#9A3412" font-family="Arial, sans-serif" font-size="11" font-weight="700">RISK</text>
+    <text x="718" y="678" fill="#7C2D12" font-family="Arial, sans-serif" font-size="14">No blockers reported</text>
+    <text x="952" y="650" fill="#64748B" font-family="Arial, sans-serif" font-size="11" font-weight="700">NEXT REVIEW</text>
+    <text x="952" y="678" fill="#334155" font-family="Arial, sans-serif" font-size="14">Tuesday delivery sync</text>
+    <text x="1186" y="650" fill="#64748B" font-family="Arial, sans-serif" font-size="11" font-weight="700">TEAM</text>
+    <text x="1186" y="678" fill="#334155" font-family="Arial, sans-serif" font-size="14">3 accountable leads</text>
+    <g stroke="#E2E8F0"><path d="M148 286H1452"/><path d="M148 342H1452"/><path d="M148 398H1452"/><path d="M148 454H1452"/></g>
+  </g>
+</svg>

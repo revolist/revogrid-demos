@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import type { MultiFilterItem } from '@revolist/revogrid';
+import type { AdvancedFilterBadgesController } from '@revolist/revogrid-pro';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import { currentTheme } from '../../composables/useRandomData';
 import {
@@ -17,10 +18,13 @@ import {
   createOrderExplorerRows,
   getOrderExplorerVisibleCount,
   mountOrderExplorerFilterBadges,
+  mountOrderExplorerQuickBadge,
+  setOrderExplorerQuickFilter,
+  ORDER_EXPLORER_QUICK_FILTER_EXAMPLE,
   orderExplorerPlugins,
+  type OrderExplorerQuickBadgeController,
   type OrderExplorerPreset,
 } from './filtering.shared';
-import type { GridFilterBadgesController } from './filter-badges';
 import './filtering.scss';
 
 @Component({
@@ -37,21 +41,35 @@ import './filtering.scss';
           <button class="rv-btn" type="button" (click)="applyPreset('recent-expedited')">Recent expedited</button>
           <button class="rv-btn" type="button" (click)="applyPreset('review-queue')">Review queue</button>
         </div>
+        <div class="order-explorer__search">
+          <input
+            class="order-explorer__search-input"
+            type="search"
+            [value]="quickText"
+            placeholder="Global search — try “Lisbon pending”"
+            aria-label="Search all visible columns"
+            (input)="onQuickInput($event)"
+          />
+          <button class="rv-btn" type="button" (click)="applyQuickFilter(quickFilterExample)">Try example</button>
+        </div>
         <div class="order-explorer__summary">
           <span class="order-explorer__count" aria-live="polite">
             {{ visibleCount.toLocaleString() }} of {{ source.length.toLocaleString() }} orders
           </span>
           <button class="rv-btn-secondary" type="button" (click)="clearAll()">Clear All</button>
+          <a class="rv-btn" href="?recipe=remote">Remote recipe</a>
         </div>
       </div>
-      <div #badgesRef></div>
+      <div class="order-explorer__active-filters">
+        <div #quickBadgeRef class="order-explorer__quick-chip" role="list"></div>
+        <div #badgesRef></div>
+      </div>
       <div class="order-explorer__grid">
         <revo-grid
           #gridRef
           class="h-full w-full"
           [theme]="theme"
           [columns]="columns"
-          [source]="source"
           [plugins]="plugins"
           [columnTypes]="columnTypes"
           [filter]="filter"
@@ -59,6 +77,7 @@ import './filtering.scss';
           [hideAttribution]="true"
           [readonly]="true"
           [resize]="true"
+          [source]="source"
         ></revo-grid>
       </div>
     </section>
@@ -67,6 +86,7 @@ import './filtering.scss';
 export class FilteringGridComponent implements AfterViewInit, OnDestroy {
   @ViewChild('gridRef') gridRef?: any;
   @ViewChild('badgesRef') badgesRef?: any;
+  @ViewChild('quickBadgeRef') quickBadgeRef?: any;
 
   readonly theme = currentTheme().isDark() ? 'darkMaterial' : 'material';
   readonly source = createOrderExplorerRows();
@@ -76,7 +96,10 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
   readonly stretch = 'all';
   filter = createOrderExplorerFilter(createOrderExplorerInitialFilters());
   visibleCount = this.source.length;
-  private badges?: GridFilterBadgesController;
+  quickText = '';
+  readonly quickFilterExample = ORDER_EXPLORER_QUICK_FILTER_EXAMPLE;
+  private badges?: AdvancedFilterBadgesController;
+  private quickBadge?: OrderExplorerQuickBadgeController;
   private destroyed = false;
 
   private get grid(): HTMLRevoGridElement | undefined {
@@ -90,12 +113,16 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     const grid = this.grid;
     const badgesRoot = this.badgesRef?.nativeElement ?? this.badgesRef;
+    const quickBadgeRoot = this.quickBadgeRef?.nativeElement ?? this.quickBadgeRef;
     grid?.addEventListener('afterfilterapply', this.syncFilterState);
     if (grid && badgesRoot) {
       void mountOrderExplorerFilterBadges(grid, badgesRoot).then(badges => {
         if (this.destroyed) badges.destroy();
         else this.badges = badges;
       });
+    }
+    if (quickBadgeRoot) {
+      this.quickBadge = mountOrderExplorerQuickBadge(quickBadgeRoot, () => this.applyQuickFilter(''));
     }
     void getOrderExplorerVisibleCount(grid, this.source.length).then(count => {
       this.visibleCount = count;
@@ -105,6 +132,7 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy() {
     this.destroyed = true;
     this.badges?.destroy();
+    this.quickBadge?.destroy();
     this.grid?.removeEventListener('afterfilterapply', this.syncFilterState);
   }
 
@@ -114,6 +142,17 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
 
   clearAll() {
     this.applyFilterItems({});
+    this.applyQuickFilter('');
+  }
+
+  onQuickInput(event: Event) {
+    this.applyQuickFilter((event.target as HTMLInputElement).value);
+  }
+
+  applyQuickFilter(text: string) {
+    this.quickText = text;
+    if (this.grid) setOrderExplorerQuickFilter(this.grid, text);
+    this.quickBadge?.refresh(text);
   }
 
   private applyFilterItems(items: MultiFilterItem) {

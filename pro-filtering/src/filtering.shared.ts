@@ -8,6 +8,7 @@ import type {
 import NumberColumnType from '@revolist/revogrid-column-numeral';
 import {
   AdvanceFilterPlugin,
+  type AdvancedFilterBadgeFormatContext,
   ColumnStretchPlugin,
   FILTER_DATE,
   FilterHeaderPlugin,
@@ -15,22 +16,21 @@ import {
   FIlTER_SLIDER,
   RowOddPlugin,
   columnTypeRenderer,
+  mountAdvancedFilterBadges,
 } from '@revolist/revogrid-pro';
-import {
-  type FilterBadgeFormatContext,
-  mountGridFilterBadges,
-} from './filter-badges';
 
 export type OrderStatus = 'Processing' | 'Pending Review' | 'Payment Hold' | 'Shipped' | 'Delivered';
 export type OrderRegion = 'Europe' | 'North America' | 'Asia Pacific' | 'Latin America';
 export type OrderCategory = 'Electronics' | 'Home' | 'Fashion' | 'Sports';
 export type OrderExpedited = 'Yes' | 'No';
+export type OrderCity = 'Lisbon' | 'Berlin' | 'Paris' | 'New York' | 'Toronto' | 'Tokyo' | 'Sydney' | 'São Paulo';
 
 export interface OrderExplorerRow {
   orderNumber: string;
   customer: string;
   status: OrderStatus;
   region: OrderRegion;
+  city: OrderCity;
   category: OrderCategory;
   expedited: OrderExpedited;
   total: number;
@@ -43,6 +43,10 @@ const CUSTOMERS = [
   'Avery Johnson', 'Mina Patel', 'Lucas Martin', 'Sofia Rossi', 'Noah Williams',
   'Emma Dubois', 'Mateo Silva', 'Yuki Tanaka', 'Amara Okafor', 'Oliver Smith',
 ] as const;
+
+const CITIES: readonly OrderCity[] = [
+  'Lisbon', 'Berlin', 'Paris', 'New York', 'Toronto', 'Tokyo', 'Sydney', 'São Paulo',
+];
 
 export const ORDER_STATUSES: readonly OrderStatus[] = [
   'Processing', 'Pending Review', 'Payment Hold', 'Shipped', 'Delivered',
@@ -67,6 +71,7 @@ const COLUMN_LABELS: Record<string, string> = {
   customer: 'Customer',
   status: 'Status',
   region: 'Region',
+  city: 'City',
   category: 'Category',
   expedited: 'Expedited',
   total: 'Total',
@@ -149,6 +154,14 @@ export function createOrderExplorerColumns(): ColumnRegular[] {
       columnTemplate: columnTypeRenderer,
     },
     {
+      name: 'City',
+      prop: 'city',
+      size: 130,
+      filter: 'string',
+      columnType: 'string',
+      columnTemplate: columnTypeRenderer,
+    },
+    {
       name: 'Category',
       prop: 'category',
       size: 132,
@@ -201,6 +214,7 @@ export function createOrderExplorerRows(count = 1000, now = new Date()): OrderEx
       customer: CUSTOMERS[(index * 7) % CUSTOMERS.length],
       status: ORDER_STATUSES[(index * 3 + Math.floor(index / 11)) % ORDER_STATUSES.length],
       region: ORDER_REGIONS[(index * 5 + Math.floor(index / 7)) % ORDER_REGIONS.length],
+      city: CITIES[(index * 3 + Math.floor(index / 9)) % CITIES.length],
       category: ORDER_CATEGORIES[(index * 11 + Math.floor(index / 5)) % ORDER_CATEGORIES.length],
       expedited: index % 4 === 0 || index % 11 === 0 ? 'Yes' : 'No',
       total: Math.round((45 + ((index * 7919) % 245000) / 100) * 100) / 100,
@@ -272,6 +286,8 @@ export function cloneOrderExplorerFilterItems(items: MultiFilterItem = {}): Mult
       ...filter,
       value: filter.value instanceof Set
         ? new Set(filter.value)
+        : filter.value instanceof Date
+          ? new Date(filter.value)
         : filter.value && typeof filter.value === 'object'
           ? { ...filter.value }
           : filter.value,
@@ -354,7 +370,7 @@ export function formatOrderExplorerFilterBadge({
   prop,
   filter,
   index,
-}: FilterBadgeFormatContext) {
+}: AdvancedFilterBadgeFormatContext) {
   const relation = index ? `${String(filter.relation ?? 'and').toUpperCase()} ` : '';
   return `${COLUMN_LABELS[String(prop)] ?? String(prop)}: ${relation}${formatFilterValue(String(prop), filter)}`;
 }
@@ -363,7 +379,7 @@ export function mountOrderExplorerFilterBadges(
   grid: HTMLRevoGridElement,
   root: HTMLElement,
 ) {
-  return mountGridFilterBadges({
+  return mountAdvancedFilterBadges({
     grid,
     root,
     className: 'order-explorer__chips',
@@ -379,4 +395,48 @@ export async function getOrderExplorerVisibleCount(
 ): Promise<number> {
   if (!grid) return fallback;
   return (await grid.getVisibleSource()).length;
+}
+
+export const ORDER_EXPLORER_QUICK_FILTER_EXAMPLE = 'Lisbon pending';
+
+export type QuickFilterInput = string | {
+  text: string;
+  columns?: Array<string | number>;
+  debounceMs?: number;
+};
+
+export function setOrderExplorerQuickFilter(grid: HTMLRevoGridElement, text: string) {
+  (grid as HTMLRevoGridElement & { quickFilter?: QuickFilterInput }).quickFilter = {
+    text,
+    debounceMs: 150,
+  };
+}
+
+export interface OrderExplorerQuickBadgeController {
+  refresh(text: string): void;
+  destroy(): void;
+}
+
+export function mountOrderExplorerQuickBadge(
+  root: HTMLElement,
+  onRemove: () => void,
+): OrderExplorerQuickBadgeController {
+  const refresh = (text: string) => {
+    root.replaceChildren();
+    const normalized = text.trim().replace(/\s+/g, ' ');
+    if (!normalized) return;
+    const badge = document.createElement('span');
+    badge.className = 'rv-btn-pill rv-filter-badge order-explorer__chip';
+    badge.setAttribute('role', 'listitem');
+    badge.append(document.createTextNode(`Search: ${normalized}`));
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'rv-chip-remove';
+    remove.setAttribute('aria-label', `Remove Search: ${normalized} filter`);
+    remove.textContent = '×';
+    remove.addEventListener('click', onRemove);
+    badge.append(remove);
+    root.append(badge);
+  };
+  return { refresh, destroy: () => root.replaceChildren() };
 }

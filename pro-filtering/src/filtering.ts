@@ -10,6 +10,9 @@ import {
   createOrderExplorerRows,
   getOrderExplorerVisibleCount,
   mountOrderExplorerFilterBadges,
+  mountOrderExplorerQuickBadge,
+  setOrderExplorerQuickFilter,
+  ORDER_EXPLORER_QUICK_FILTER_EXAMPLE,
   orderExplorerPlugins,
   type OrderExplorerPreset,
   type OrderExplorerRow,
@@ -82,9 +85,41 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
   presetButtons.forEach(([label, preset]) => {
     presets.append(createButton(label, () => applyFilterItems(createOrderExplorerPreset(preset))));
   });
-  summary.append(createButton('Clear All', () => applyFilterItems({}), 'rv-btn-secondary'));
-  toolbar.append(presets, summary);
-  container.append(toolbar, badgesRoot, grid);
+  const search = document.createElement('div');
+  search.className = 'order-explorer__search';
+  const searchInput = document.createElement('input');
+  searchInput.className = 'order-explorer__search-input';
+  searchInput.type = 'search';
+  searchInput.placeholder = 'Global search — try “Lisbon pending”';
+  searchInput.setAttribute('aria-label', 'Search all visible columns');
+  const quickBadgeRoot = document.createElement('div');
+  quickBadgeRoot.className = 'order-explorer__quick-chip';
+  quickBadgeRoot.setAttribute('role', 'list');
+  let quickBadge: ReturnType<typeof mountOrderExplorerQuickBadge> | undefined;
+  const applyQuickFilter = (text: string) => {
+    searchInput.value = text;
+    setOrderExplorerQuickFilter(grid, text);
+    quickBadge?.refresh(text);
+  };
+  searchInput.addEventListener('input', () => applyQuickFilter(searchInput.value));
+  search.append(
+    searchInput,
+    createButton('Try example', () => applyQuickFilter(ORDER_EXPLORER_QUICK_FILTER_EXAMPLE)),
+  );
+  summary.append(createButton('Clear All', () => {
+    applyFilterItems({});
+    applyQuickFilter('');
+  }, 'rv-btn-secondary'));
+  const remoteRecipeLink = document.createElement('a');
+  remoteRecipeLink.className = 'rv-btn';
+  remoteRecipeLink.href = '?recipe=remote';
+  remoteRecipeLink.textContent = 'Remote recipe';
+  summary.append(remoteRecipeLink);
+  toolbar.append(presets, search, summary);
+  const activeFilters = document.createElement('div');
+  activeFilters.className = 'order-explorer__active-filters';
+  activeFilters.append(quickBadgeRoot, badgesRoot);
+  container.append(toolbar, activeFilters, grid);
 
   grid.addEventListener('afterfilterapply', async () => {
     renderCount(await getOrderExplorerVisibleCount(grid, source.length));
@@ -97,10 +132,12 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
   renderCount(source.length);
   grid.source = source;
   const badges = mountOrderExplorerFilterBadges(grid, badgesRoot);
+  quickBadge = mountOrderExplorerQuickBadge(quickBadgeRoot, () => applyQuickFilter(''));
 
   return () => {
     disconnectTheme();
     void badges.then(controller => controller.destroy());
+    quickBadge?.destroy();
     grid.remove();
     container.remove();
   };

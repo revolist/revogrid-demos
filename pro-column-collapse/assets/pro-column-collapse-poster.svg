@@ -1,0 +1,48 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="50" x2="1480" y2="850" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4F0FF"/>
+      <stop offset="1" stop-color="#E9F8F1"/>
+    </linearGradient>
+    <filter id="shadow" x="70" y="80" width="1460" height="760" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#16213A" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" rx="48" fill="url(#bg)"/>
+  <circle cx="1450" cy="120" r="210" fill="#7C3AED" fill-opacity="0.08"/>
+  <circle cx="130" cy="790" r="240" fill="#16A34A" fill-opacity="0.08"/>
+  <g filter="url(#shadow)">
+    <rect x="120" y="120" width="1360" height="660" rx="28" fill="white"/>
+    <rect x="120" y="120" width="1360" height="104" rx="28" fill="#172033"/>
+    <rect x="120" y="196" width="1360" height="28" fill="#172033"/>
+    <text x="168" y="170" fill="white" font-family="Arial, sans-serif" font-size="28" font-weight="700">Contact workspace</text>
+    <text x="168" y="202" fill="#B8C3D8" font-family="Arial, sans-serif" font-size="17">Focus the grid by collapsing grouped columns</text>
+    <circle cx="1220" cy="172" r="7" fill="#16A34A"/>
+    <text x="1238" y="178" fill="#D7DFEC" font-family="Arial, sans-serif" font-size="16">Sealed</text>
+    <circle cx="1330" cy="172" r="7" fill="#8B5CF6"/>
+    <text x="1348" y="178" fill="#D7DFEC" font-family="Arial, sans-serif" font-size="16">Collapsible</text>
+    <rect x="148" y="252" width="1304" height="82" rx="12" fill="#F4F2FF"/>
+    <rect x="148" y="252" width="350" height="82" rx="12" fill="#E8E1FF"/>
+    <rect x="510" y="252" width="590" height="82" rx="12" fill="#E7F8EF"/>
+    <rect x="1112" y="252" width="340" height="82" rx="12" fill="#E8E1FF"/>
+    <text x="180" y="302" fill="#5930A8" font-family="Arial, sans-serif" font-size="21" font-weight="700">Personal Information  ›</text>
+    <text x="542" y="302" fill="#147A48" font-family="Arial, sans-serif" font-size="21" font-weight="700">Address  ‹</text>
+    <text x="1144" y="302" fill="#5930A8" font-family="Arial, sans-serif" font-size="21" font-weight="700">Contact  ›</text>
+    <rect x="148" y="346" width="1304" height="56" fill="#F8FAFC"/>
+    <text x="180" y="381" fill="#3D4B64" font-family="Arial, sans-serif" font-size="18" font-weight="700">Age</text>
+    <text x="542" y="381" fill="#3D4B64" font-family="Arial, sans-serif" font-size="18" font-weight="700">Street</text>
+    <text x="820" y="381" fill="#3D4B64" font-family="Arial, sans-serif" font-size="18" font-weight="700">City</text>
+    <text x="980" y="381" fill="#3D4B64" font-family="Arial, sans-serif" font-size="18" font-weight="700">Country</text>
+    <text x="1144" y="381" fill="#3D4B64" font-family="Arial, sans-serif" font-size="18" font-weight="700">Email</text>
+    <g fill="#35425A" font-family="Arial, sans-serif" font-size="17">
+      <text x="180" y="446">30</text><text x="542" y="446">123 Main St</text><text x="820" y="446">New York</text><text x="980" y="446">USA</text><text x="1144" y="446">john@example.com</text>
+      <text x="180" y="512">28</text><text x="542" y="512">456 Oak Ave</text><text x="820" y="512">São Paulo</text><text x="980" y="512">Brazil</text><text x="1144" y="512">jane@example.com</text>
+      <text x="180" y="578">35</text><text x="542" y="578">789 Pine Rd</text><text x="820" y="578">Madrid</text><text x="980" y="578">Spain</text><text x="1144" y="578">bob@example.com</text>
+      <text x="180" y="644">32</text><text x="542" y="644">22 Garden Walk</text><text x="820" y="644">London</text><text x="980" y="644">UK</text><text x="1144" y="644">aisha@example.com</text>
+      <text x="180" y="710">41</text><text x="542" y="710">8 Sakura Lane</text><text x="820" y="710">Tokyo</text><text x="980" y="710">Japan</text><text x="1144" y="710">kenji@example.com</text>
+    </g>
+    <g stroke="#E5EAF1">
+      <path d="M148 402H1452"/><path d="M148 468H1452"/><path d="M148 534H1452"/><path d="M148 600H1452"/><path d="M148 666H1452"/><path d="M498 252V752"/><path d="M800 334V752"/><path d="M960 334V752"/><path d="M1100 252V752"/>
+    </g>
+  </g>
+</svg>
