@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
   },
   "scripts": {
     "dev": "pnpm dev:ts",
@@ -48,7 +48,7 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitejs/plugin-vue": "^5.2.1",
-    "typescript": "~5.9.2",
+    "typescript": "~6.0.3",
     "vite": "^6.3.5",
     "vue-tsc": "^2.2.10"
   }

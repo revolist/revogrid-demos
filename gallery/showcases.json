@@ -54,6 +54,20 @@
     "media": { "poster": "assets/pro-project-table-walkthrough-poster.png", "walkthroughMp4": "assets/pro-project-table-walkthrough.mp4" }
   },
   {
+    "slug": "filtering",
+    "title": "Advanced Filtering: Order Explorer",
+    "summary": "An order workspace with ready-to-use filter presets, cascading selection options, date and range filtering, and grid-synchronized removable badges.",
+    "edition": "Pro",
+    "sourceDir": "pro-filtering",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-filtering",
+    "productUrl": "https://pro.rv-grid.com/",
+    "trialUrl": "https://pro.rv-grid.com/guides/installation-npm-trial/",
+    "pricingUrl": "https://rv-grid.com/pricing/",
+    "frameworks": ["ts", "react", "vue", "angular"],
+    "highlights": ["Ready-to-use presets", "Cascading selection filters", "Grid-synchronized badges"],
+    "media": { "poster": "assets/pro-filtering-poster.svg" }
+  },
+  {
     "slug": "planning",
     "title": "Unified Planning Suite",
     "summary": "One editable task model presented through coordinated Grid, Gantt, Scheduler, and Calendar planning surfaces.",

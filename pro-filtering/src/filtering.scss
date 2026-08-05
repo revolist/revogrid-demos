@@ -1,0 +1,73 @@
+.order-explorer {
+  display: flex;
+  min-height: 0;
+  height: 100%;
+  flex-direction: column;
+  gap: 12px;
+  color: inherit;
+}
+
+.order-explorer__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.order-explorer__presets,
+.order-explorer__summary,
+.order-explorer__chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-explorer__eyebrow {
+  margin: 0 8px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--rv-ui-text-muted, #64748b);
+}
+
+.order-explorer__count {
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.order-explorer__chips {
+  min-height: 32px;
+}
+
+.order-explorer__chip {
+  font-weight: 500;
+}
+
+.order-explorer__empty {
+  font-size: 13px;
+  color: var(--rv-ui-text-muted, #64748b);
+}
+
+.order-explorer__grid {
+  --revo-grid-header-font-weight: 500;
+
+  min-height: 420px;
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+}
+
+.order-explorer__grid revo-grid,
+revo-grid.order-explorer__grid {
+  width: 100%;
+  height: 100%;
+}
+
+.dark .order-explorer__grid {
+  border-color: #334155;
+}

@@ -2,7 +2,7 @@
 
 # RevoGrid Examples
 
-**Nine production-style showcases. Four feature repositories. One polished gallery.**
+**Ten production-style showcases. Four feature repositories. One polished gallery.**
 
 [![Frameworks](https://img.shields.io/badge/TypeScript%20%7C%20React%20%7C%20Vue%20%7C%20Angular-4f46e5)](#showcases)
 [![RevoGrid](https://img.shields.io/badge/RevoGrid-4.25.1-2563eb)](https://rv-grid.com/)
@@ -29,6 +29,7 @@ revogrid-demos/
 ├── pro-excel/                 # retained spreadsheet showcase
 ├── pro-e-commerce/            # retained commerce showcase
 ├── pro-project-table/         # retained project showcase
+├── pro-filtering/             # retained advanced filtering showcase
 ├── pro-advanced-planning/     # retained planning suite
 ├── gallery/                   # visual system and retained metadata
 └── scripts/                   # setup, build, test, media delegation
@@ -45,6 +46,7 @@ initializes them and advances every checkout to the latest remote `main`.
 | Pro | Excel Workbench | [`pro-excel`](./pro-excel/) | [`/excel/`](https://example.rv-grid.com/excel/) |
 | Pro | E-commerce Analytics | [`pro-e-commerce`](./pro-e-commerce/) | [`/ecommerce/`](https://example.rv-grid.com/ecommerce/) |
 | Pro | Project Portfolio | [`pro-project-table`](./pro-project-table/) | [`/project-table/`](https://example.rv-grid.com/project-table/) |
+| Pro | Advanced Filtering: Order Explorer | [`pro-filtering`](./pro-filtering/) | [`/filtering/`](https://example.rv-grid.com/filtering/) |
 | Pro Advanced | Pivot | [`revolist/pivot`](https://github.com/revolist/pivot) | [`pivot.rv-grid.com`](https://pivot.rv-grid.com/demo/) |
 | Pro Advanced | Gantt | [`revolist/gantt`](https://github.com/revolist/gantt) | [`gantt.rv-grid.com`](https://gantt.rv-grid.com/demo/) |
 | Pro Advanced | Kanban | [`revolist/kanban`](https://github.com/revolist/kanban) | [`kanban.rv-grid.com`](https://kanban.rv-grid.com/demo/) |
@@ -57,6 +59,9 @@ Descriptions, recipes, frameworks, links, media, and output paths are read
 directly from each child repository's validated `feature.json`.
 
 ## Local development
+
+Use Node.js 22.22.3+, 24.15.0+, or a newer supported release. This matches the
+Angular 22 toolchain used by the framework variants and CI.
 
 Clone with submodules and provide trial-registry authentication outside the
 repository:
@@ -71,7 +76,7 @@ pnpm dev
 ```
 
 `pnpm run setup` initializes nested repositories and performs frozen parent and
-child installs. `pnpm build` builds four child repositories, five retained
+child installs. `pnpm build` builds four child repositories, six retained
 showcases, then assembles `dist/`.
 
 Useful validation commands:
