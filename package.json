@@ -8,6 +8,7 @@
   },
   "scripts": {
     "setup": "node scripts/orchestrate.mjs setup",
+    "setup:fresh": "node scripts/orchestrate.mjs setup --no-lockfile",
     "dev": "node scripts/serve-gallery.mjs",
     "build": "node scripts/orchestrate.mjs build",
     "build:gallery": "node scripts/build-gallery.mjs",
