@@ -12,6 +12,12 @@
           {{ opt.label }}
         </option>
       </select>
+      <span class="text-sm font-medium">Theme</span>
+      <select class="hr-select" v-model="selectedTheme">
+        <option v-for="opt in themeOptions" :key="opt.value" :value="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
       <div v-if="loading" class="text-sm opacity-50 animate-pulse ml-2">Loading data...</div>
     </div>
 
@@ -20,6 +26,7 @@
         class="hr-scale-grid grow h-full w-full"
         style="height: 100%; width: 100%"
         :theme="gridTheme"
+        :theme-definitions="themeDefinitions"
         :source="rows"
         :columns="columns"
         :column-types="columnTypes"
@@ -59,6 +66,7 @@ import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE, withHRShortDate }
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
+import { getInitialHRTheme, HR_THEME_DEFINITIONS, HR_THEME_OPTIONS } from './hr-themes';
 import './hr.css';
 
 const props = defineProps<{
@@ -69,9 +77,12 @@ const pageIsDark = ref(currentTheme().isDark());
 const loading = ref(false);
 const currentSize = ref(100);
 const options = HR_OPTIONS;
+const themeOptions = HR_THEME_OPTIONS;
+const themeDefinitions = HR_THEME_DEFINITIONS;
 const rows = ref<any[]>([]);
 const progress = ref<HRGenerationProgress>({ loaded: 0, total: currentSize.value });
-const gridTheme = computed(() => (props.isDark === true || pageIsDark.value) ? 'darkCompact' : 'compact');
+const selectedTheme = ref(getInitialHRTheme(props.isDark === true || pageIsDark.value));
+const gridTheme = computed(() => selectedTheme.value);
 const progressPercent = computed(() => getHRProgressPercent(progress.value));
 const loadingDigits = computed(() => getHRLoadingDigits(progress.value));
 let activeController: AbortController | undefined;
@@ -157,6 +168,7 @@ function onSizeChange() {
 onMounted(async () => {
   disconnectTheme = observeCurrentTheme((isDark) => {
     pageIsDark.value = isDark;
+    selectedTheme.value = getInitialHRTheme(props.isDark === true || isDark);
   });
 
   // Load column types in parallel with data to optimize initial load time
