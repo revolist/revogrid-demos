@@ -12,6 +12,7 @@ import {
   InfinityScrollPlugin,
   PaginationPlugin,
   RowOddPlugin,
+  serializeFilterValue,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -42,17 +43,6 @@ interface RemoteRequest {
 
 const rows = createOrderExplorerRows();
 
-function normalizeTransportValue(value: unknown): any {
-  if (value instanceof Set) return Array.from(value, normalizeTransportValue);
-  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.toISOString();
-  if (Array.isArray(value)) return value.map(normalizeTransportValue);
-  if (value && Object.prototype.toString.call(value) === '[object Object]') {
-    return Object.fromEntries(Object.entries(value as Record<string, unknown>)
-      .map(([key, nested]) => [key, normalizeTransportValue(nested)]));
-  }
-  return value;
-}
-
 function transportRequest(
   mode: RemoteMode,
   skip: number,
@@ -62,7 +52,7 @@ function transportRequest(
   multiConditionFilters?: MultiFilterItem,
   quickFilter?: Omit<QuickFilter, 'debounceMs'>,
 ): RemoteRequest {
-  return normalizeTransportValue({
+  return serializeFilterValue({
     mode,
     skip,
     take,
@@ -70,7 +60,7 @@ function transportRequest(
     singleConditionFilters,
     multiConditionFilters,
     quickFilter,
-  });
+  }) as RemoteRequest;
 }
 
 function matchesFilter(value: unknown, item: FilterData) {

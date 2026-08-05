@@ -58,8 +58,10 @@ test('remote recipe documents and transports the complete callback payload', asy
 
   assert.match(source, /Pagination\(skip, take, order, single, multi, quickFilter\)/);
   assert.match(source, /Infinity\(skip, limit, order, single, multi, quickFilter\)/);
-  assert.match(source, /value instanceof Set/);
-  assert.match(source, /value instanceof Date/);
+  assert.match(source, /serializeFilterValue/);
+  assert.match(source, /new Set/);
+  assert.match(source, /new Date/);
+  assert.doesNotMatch(source, /function normalizeTransportValue/);
   assert.match(source, /singleConditionFilters/);
   assert.match(source, /multiConditionFilters/);
   assert.match(source, /quickFilter/);
