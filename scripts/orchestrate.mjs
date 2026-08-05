@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { featureDirectory, featureSlugs, loadCatalog, root } from './catalog.mjs';
 
 const action = process.argv[2];
+const noLockfile = process.argv.includes('--no-lockfile');
 
 function run(command, args, cwd = root) {
   const result = spawnSync(command, args, { cwd, env: process.env, stdio: 'inherit' });
@@ -22,10 +23,11 @@ async function runBuild() {
 }
 
 if (action === 'setup') {
+  const installMode = noLockfile ? '--no-lockfile' : '--frozen-lockfile';
   run('git', ['submodule', 'update', '--init', '--remote', '--recursive']);
-  run('pnpm', ['install', '--frozen-lockfile']);
+  run('pnpm', ['install', installMode]);
   for (const slug of featureSlugs) {
-    run('pnpm', ['install', '--ignore-workspace', '--frozen-lockfile'], join(root, featureDirectory(slug)));
+    run('pnpm', ['install', '--ignore-workspace', installMode], join(root, featureDirectory(slug)));
   }
 } else if (action === 'build') {
   await runBuild();
