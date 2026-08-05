@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "engines": {
-    "node": ">=18",
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0",
     "pnpm": ">=10"
   },
   "scripts": {
@@ -52,12 +52,19 @@
     "dev:project": "pnpm --filter revogrid-demo-pro-project-table dev",
     "dev:project:react": "pnpm --filter revogrid-demo-pro-project-table dev:react",
     "dev:project:vue": "pnpm --filter revogrid-demo-pro-project-table dev:vue",
-    "dev:project:angular": "pnpm --filter revogrid-demo-pro-project-table dev:angular"
+    "dev:project:angular": "pnpm --filter revogrid-demo-pro-project-table dev:angular",
+    "dev:filtering": "pnpm --filter revogrid-demo-pro-filtering dev",
+    "dev:filtering:react": "pnpm --filter revogrid-demo-pro-filtering dev:react",
+    "dev:filtering:vue": "pnpm --filter revogrid-demo-pro-filtering dev:vue",
+    "dev:filtering:angular": "pnpm --filter revogrid-demo-pro-filtering dev:angular"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.6.3",
+    "@angular/build": "^22.1.0",
+    "@angular/compiler-cli": "^22.1.0",
     "@playwright/test": "1.59.1",
     "jsdom": "^29.1.1",
-    "playwright": "1.59.1"
+    "playwright": "1.59.1",
+    "typescript": "~6.0.3"
   }
 }

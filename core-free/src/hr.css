@@ -187,11 +187,14 @@ revo-grid .rgCell.disabled.drag-icon {
   overflow: hidden;
 }
 
-.hr-grid-wrapper > revo-grid.hr-scale-grid {
+.hr-grid-wrapper > revo-grid.hr-scale-grid[theme] {
   position: absolute;
   inset: 0;
   width: 100%;
   height: auto;
+  /* Material and Compact inherit their surface by default. Paint the demo
+     grid with the resolved theme surface instead of the docs page surface. */
+  background-color: var(--rg-theme-background);
 }
 
 .hr-loading-overlay {

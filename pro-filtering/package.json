@@ -1,12 +1,10 @@
 {
-  "name": "revogrid-demo-pro-advanced-planning",
+  "name": "revogrid-demo-pro-filtering",
   "version": "1.0.0",
-  "description": "Minimal editable RevoGrid, Kanban, Gantt, and Scheduler showcase.",
+  "description": "RevoGrid Pro advanced filtering demo for TypeScript, React, Vue, and Angular.",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
-  },
+  "engines": { "node": "^22.22.3 || ^24.15.0 || >=26.0.0" },
   "scripts": {
     "dev": "pnpm dev:ts",
     "dev:ts": "vite --mode ts",
@@ -18,20 +16,21 @@
     "build:react": "vite build --mode react",
     "build:vue": "vite build --mode vue",
     "build:angular": "vite build --mode angular",
-    "preview": "vite preview"
+    "test": "node --test src/filtering.test.mjs"
   },
   "dependencies": {
     "@angular/common": "^22.1.0",
     "@angular/compiler": "^22.1.0",
     "@angular/core": "^22.1.0",
     "@angular/platform-browser": "^22.1.0",
-    "@angular/platform-browser-dynamic": "^22.1.0",
+    "@fortawesome/fontawesome-free": "^7.3.1",
     "@revolist/angular-datagrid": "4.25.1",
     "@revolist/react-datagrid": "4.25.1",
     "@revolist/revogrid": "4.25.1",
-    "@revolist/revogrid-enterprise": "npm:@revolist/rv-enterprise-trial@2.5.4",
+    "@revolist/revogrid-column-numeral": "2.0.11",
     "@revolist/revogrid-pro": "npm:@revolist/rv-pro-trial@2.5.4",
     "@revolist/vue3-datagrid": "4.25.1",
+    "numeral": "^2.0.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "rxjs": "~7.8.0",
@@ -40,16 +39,13 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular/build": "^22.1.0",
-    "@angular/cli": "^22.1.0",
-    "@angular/compiler-cli": "^22.1.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitejs/plugin-vue": "^5.2.1",
+    "jsdom": "^29.1.1",
     "sass-embedded": "^1.83.4",
     "typescript": "~6.0.3",
-    "vite": "^6.3.5",
-    "vue-tsc": "^2.2.10"
+    "vite": "^6.3.5"
   }
 }

@@ -14,7 +14,7 @@ _Click the animated preview to open the full-quality MP4._
 - Filtering, single-column sorting, Shift-click multi-column sorting, range selection, row headers, resizing, and grouped columns
 - Custom cell rendering and a reusable color-select column type
 - Date, numeral, and select column packages
-- Dynamic columns and light/dark themes
+- Dynamic columns and a selector for every built-in and modern preset theme
 - A small custom `BasePlugin` example for row-drag text
 
 ## Run it
