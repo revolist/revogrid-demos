@@ -4,6 +4,7 @@ import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE, withHRShortDate } from './sys-data/hr.columns';
 import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
 import { getHRLoadingOverlayHtml } from './hr-loading';
+import { getInitialHRTheme, HR_THEME_DEFINITIONS, HR_THEME_OPTIONS } from './hr-themes';
 import './hr.css';
 
 defineCustomElements();
@@ -16,6 +17,7 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
   let currentSize = 100;
   let rows: any[] = [];
   let loading = false;
+  let currentTheme = getInitialHRTheme(isDark);
   let activeController: AbortController | undefined;
   let progress: HRGenerationProgress = { loaded: 0, total: currentSize };
 
@@ -27,6 +29,10 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
       <select class="hr-select" id="size-select">
         ${HR_OPTIONS.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
       </select>
+      <span class="text-sm font-medium">Theme</span>
+      <select class="hr-select" id="theme-select">
+        ${HR_THEME_OPTIONS.map(opt => `<option value="${opt.value}"${opt.value === currentTheme ? ' selected' : ''}>${opt.label}</option>`).join('')}
+      </select>
       <div id="loading-indicator" class="text-sm opacity-50 animate-pulse ml-2" style="display: none;">Loading data...</div>
     </div>
     <div class="hr-grid-wrapper flex-1 min-h-0" id="grid-container"></div>
@@ -35,6 +41,7 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
 
   const gridContainer = container.querySelector('#grid-container')!;
   const select = container.querySelector('#size-select') as HTMLSelectElement;
+  const themeSelect = container.querySelector('#theme-select') as HTMLSelectElement;
   const loadingIndicator = container.querySelector('#loading-indicator') as HTMLElement;
   let overlayElement: HTMLElement | undefined;
 
@@ -42,7 +49,8 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
   grid.className = 'hr-scale-grid grow h-full w-full';
   grid.style.height = '100%';
   grid.style.width = '100%';
-  grid.theme = isDark ? 'darkMaterial' : 'compact';
+  grid.themeDefinitions = HR_THEME_DEFINITIONS;
+  grid.theme = currentTheme;
   grid.hideAttribution = true;
   grid.canMoveColumns = true;
   grid.rowSize = 36;
@@ -157,6 +165,11 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
   select.addEventListener('change', (e) => {
     currentSize = parseInt((e.target as HTMLSelectElement).value, 10);
     loadRows(currentSize);
+  });
+
+  themeSelect.addEventListener('change', (event) => {
+    currentTheme = (event.target as HTMLSelectElement).value;
+    grid.theme = currentTheme;
   });
 
   // Initial load

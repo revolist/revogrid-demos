@@ -16,6 +16,7 @@ import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE, withHRShortDate } from './sys-data/hr.columns';
 import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
+import { getInitialHRTheme, HR_THEME_DEFINITIONS, HR_THEME_OPTIONS } from './hr-themes';
 import './hr.css';
 
 @Component({
@@ -37,6 +38,12 @@ import './hr.css';
             <option [value]="opt.value">{{ opt.label }}</option>
           }
         </select>
+        <span class="text-sm font-medium">Theme</span>
+        <select class="hr-select" [value]="selectedTheme()" (change)="onThemeChange($event)">
+          @for (opt of themeOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
         @if (loading()) {
             <div class="text-sm opacity-50 animate-pulse ml-2">Loading data...</div>
         }
@@ -47,6 +54,7 @@ import './hr.css';
           class="hr-scale-grid grow h-full w-full"
           style="height: 100%; width: 100%"
           [theme]="theme()"
+          [themeDefinitions]="themeDefinitions"
           [source]="rows()"
           [columns]="columns()"
           [columnTypes]="columnTypes()"
@@ -79,9 +87,12 @@ export class HRDemoGridComponent implements OnInit, OnDestroy {
   @Input() isDark = false;
 
   readonly options = HR_OPTIONS;
+  readonly themeOptions = HR_THEME_OPTIONS;
+  readonly themeDefinitions = HR_THEME_DEFINITIONS;
   readonly loading = signal(false);
   readonly rows = signal<any[]>([]);
   readonly currentSize = signal(100);
+  readonly selectedTheme = signal(getInitialHRTheme());
   readonly progress = signal<HRGenerationProgress>({ loaded: 0, total: 100 });
   readonly columnTypes = signal<any>({});
   readonly plugins = [
@@ -97,7 +108,7 @@ export class HRDemoGridComponent implements OnInit, OnDestroy {
     },
   ];
 
-  readonly theme = computed(() => this.isDark ? 'darkMaterial' : 'compact');
+  readonly theme = computed(() => this.selectedTheme());
   readonly progressPercent = computed(() => getHRProgressPercent(this.progress()));
   readonly loadingDigits = computed(() => getHRLoadingDigits(this.progress()));
   private activeController?: AbortController;
@@ -133,6 +144,8 @@ export class HRDemoGridComponent implements OnInit, OnDestroy {
   });
 
   async ngOnInit() {
+    this.selectedTheme.set(getInitialHRTheme(this.isDark));
+
     const [DateCol, NumeralCol, SelectCol] = await Promise.all([
       import('@revolist/revogrid-column-date'),
       import('@revolist/revogrid-column-numeral'),
@@ -179,6 +192,10 @@ export class HRDemoGridComponent implements OnInit, OnDestroy {
     const size = parseInt(event.target.value, 10);
     this.currentSize.set(size);
     this.loadData(size);
+  }
+
+  onThemeChange(event: Event) {
+    this.selectedTheme.set((event.target as HTMLSelectElement).value);
   }
 
   ngOnDestroy() {

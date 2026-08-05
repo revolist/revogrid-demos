@@ -7,6 +7,7 @@ import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE, withHRShortDate } from './sys-data/hr.columns';
 import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
+import { getInitialHRTheme, HR_THEME_DEFINITIONS, HR_THEME_OPTIONS } from './hr-themes';
 import DateCol from '@revolist/revogrid-column-date';
 import NumeralCol from '@revolist/revogrid-column-numeral';
 import SelectCol from '@revolist/revogrid-column-select';
@@ -19,6 +20,7 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentSize, setCurrentSize] = useState(100);
+  const [selectedTheme, setSelectedTheme] = useState(() => getInitialHRTheme(isDark));
   const [columnTypes, setColumnTypes] = useState<any>({});
   const [progress, setProgress] = useState<HRGenerationProgress>({ loaded: 0, total: 100 });
   const activeController = useRef<AbortController | null>(null);
@@ -76,6 +78,10 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
       activeController.current?.abort();
     };
   }, []);
+
+  useEffect(() => {
+    setSelectedTheme(getInitialHRTheme(isDark));
+  }, [isDark]);
 
   const columns = useMemo(() => {
     const dropdownSource = Array.from(new Set(rows.map(r => r.company))).filter(Boolean) as string[];
@@ -137,6 +143,18 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
             </option>
           ))}
         </select>
+        <span className="text-sm font-medium">Theme</span>
+        <select
+          className="hr-select"
+          value={selectedTheme}
+          onChange={event => setSelectedTheme(event.target.value)}
+        >
+          {HR_THEME_OPTIONS.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
         {loading && <div className="text-sm opacity-50 animate-pulse ml-2">Loading data...</div>}
       </div>
 
@@ -144,7 +162,8 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
         <RevoGrid
           className="hr-scale-grid grow h-full w-full"
           style={{ height: '100%', width: '100%' }}
-          theme={isDark ? 'darkMaterial' : 'compact'}
+          theme={selectedTheme}
+          themeDefinitions={HR_THEME_DEFINITIONS}
           source={rows}
           columns={columns}
           columnTypes={columnTypes}
