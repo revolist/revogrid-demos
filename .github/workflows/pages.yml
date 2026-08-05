@@ -31,10 +31,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
 
       - name: Initialize and install parent and feature repositories
-        run: pnpm run setup
+        run: pnpm run setup:fresh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
