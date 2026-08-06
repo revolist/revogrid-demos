@@ -73,6 +73,7 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
     count.textContent = `${visible.toLocaleString()} of ${source.length.toLocaleString()} orders`;
   };
 
+  // Presets and header filters use the same public `filter` property.
   const applyFilterItems = (items: MultiFilterItem) => {
     grid.filter = createOrderExplorerFilter(items);
   };
@@ -110,11 +111,6 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
     applyFilterItems({});
     applyQuickFilter('');
   }, 'rv-btn-secondary'));
-  const remoteRecipeLink = document.createElement('a');
-  remoteRecipeLink.className = 'rv-btn';
-  remoteRecipeLink.href = '?recipe=remote';
-  remoteRecipeLink.textContent = 'Remote recipe';
-  summary.append(remoteRecipeLink);
   toolbar.append(presets, search, summary);
   const activeFilters = document.createElement('div');
   activeFilters.className = 'order-explorer__active-filters';

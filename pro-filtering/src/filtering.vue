@@ -23,7 +23,6 @@
           {{ visibleCount.toLocaleString() }} of {{ source.length.toLocaleString() }} orders
         </span>
         <button class="rv-btn-secondary" type="button" @click="clearAll">Clear All</button>
-        <a class="rv-btn" href="?recipe=remote">Remote recipe</a>
       </div>
     </div>
     <div class="order-explorer__active-filters">
@@ -94,6 +93,7 @@ function getGrid(): HTMLRevoGridElement | undefined {
   return gridRef.value?.$el ?? gridRef.value;
 }
 
+// Presets and header filters use the same public `filter` property.
 function applyFilterItems(items: MultiFilterItem) {
   filter.value = createOrderExplorerFilter(items);
   const grid = getGrid();
@@ -121,6 +121,16 @@ function clearAll() {
   applyQuickFilter();
 }
 
+function disposeOrderExplorer() {
+  destroyed = true;
+  disconnectTheme?.();
+  disconnectTheme = undefined;
+  badges?.destroy();
+  badges = undefined;
+  quickBadge?.destroy();
+  quickBadge = undefined;
+}
+
 async function syncFilterState() {
   visibleCount.value = await getOrderExplorerVisibleCount(getGrid(), source.value.length);
 }
@@ -145,9 +155,6 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  destroyed = true;
-  disconnectTheme?.();
-  badges?.destroy();
-  quickBadge?.destroy();
+  disposeOrderExplorer();
 });
 </script>

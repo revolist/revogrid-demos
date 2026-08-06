@@ -33,6 +33,7 @@ export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
   const [visibleCount, setVisibleCount] = useState(source.length);
   const [quickText, setQuickText] = useState('');
 
+  // Presets and header filters use the same public `filter` property.
   const applyFilterItems = useCallback((items: MultiFilterItem) => {
     const nextFilter = createOrderExplorerFilter(items);
     setFilter(nextFilter);
@@ -106,7 +107,6 @@ export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
             applyFilterItems({});
             applyQuickFilter('');
           }}>Clear All</button>
-          <a className="rv-btn" href="?recipe=remote">Remote recipe</a>
         </div>
       </div>
       <div className="order-explorer__active-filters">

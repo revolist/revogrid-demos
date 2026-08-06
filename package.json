@@ -72,7 +72,11 @@
     "dev:row-master": "pnpm --filter revogrid-demo-pro-row-master dev",
     "dev:row-master:react": "pnpm --filter revogrid-demo-pro-row-master dev:react",
     "dev:row-master:vue": "pnpm --filter revogrid-demo-pro-row-master dev:vue",
-    "dev:row-master:angular": "pnpm --filter revogrid-demo-pro-row-master dev:angular"
+    "dev:row-master:angular": "pnpm --filter revogrid-demo-pro-row-master dev:angular",
+    "dev:audit-history": "pnpm --filter revogrid-demo-pro-audit-history dev",
+    "dev:audit-history:react": "pnpm --filter revogrid-demo-pro-audit-history dev:react",
+    "dev:audit-history:vue": "pnpm --filter revogrid-demo-pro-audit-history dev:vue",
+    "dev:audit-history:angular": "pnpm --filter revogrid-demo-pro-audit-history dev:angular"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.6.3",

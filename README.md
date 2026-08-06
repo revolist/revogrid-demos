@@ -2,7 +2,7 @@
 
 # RevoGrid Examples
 
-**Fourteen production-style showcases. Four feature repositories. One polished gallery.**
+**Fifteen production-style showcases. Four feature repositories. One polished gallery.**
 
 [![Frameworks](https://img.shields.io/badge/TypeScript%20%7C%20React%20%7C%20Vue%20%7C%20Angular-4f46e5)](#showcases)
 [![RevoGrid](https://img.shields.io/badge/RevoGrid-4.25.1-2563eb)](https://rv-grid.com/)
@@ -33,6 +33,7 @@ revogrid-demos/
 ├── pro-infinity-scroll/       # retained remote loading showcase
 ├── pro-column-collapse/       # retained grouped-column showcase
 ├── pro-row-master/            # retained master-detail showcase
+├── pro-audit-history/         # retained accountable change-log showcase
 ├── pro-tree-data/             # retained hierarchical data showcase
 ├── pro-advanced-planning/     # retained planning suite
 ├── gallery/                   # visual system and retained metadata
@@ -54,6 +55,7 @@ initializes them and advances every checkout to the latest remote `main`.
 | Pro | Infinity Scroll: Remote Directory | [`pro-infinity-scroll`](./pro-infinity-scroll/) | [`/infinity-scroll/`](https://example.rv-grid.com/infinity-scroll/) |
 | Pro | Column Collapse: Contact Workspace | [`pro-column-collapse`](./pro-column-collapse/) | [`/column-collapse/`](https://example.rv-grid.com/column-collapse/) |
 | Pro | Row Master: Portfolio Explorer | [`pro-row-master`](./pro-row-master/) | [`/row-master/`](https://example.rv-grid.com/row-master/) |
+| Pro | Audit History: Invoice Ledger | [`pro-audit-history`](./pro-audit-history/) | [`/audit-history/`](https://example.rv-grid.com/audit-history/) |
 | Pro | Tree Data: Organization Explorer | [`pro-tree-data`](./pro-tree-data/) | [`/tree-data/`](https://example.rv-grid.com/tree-data/) |
 | Pro Advanced | Pivot | [`revolist/pivot`](https://github.com/revolist/pivot) | [`pivot.rv-grid.com`](https://pivot.rv-grid.com/demo/) |
 | Pro Advanced | Gantt | [`revolist/gantt`](https://github.com/revolist/gantt) | [`gantt.rv-grid.com`](https://gantt.rv-grid.com/demo/) |
@@ -84,7 +86,7 @@ pnpm dev
 ```
 
 `pnpm run setup` initializes nested repositories and performs frozen parent and
-child installs. `pnpm build` builds four child repositories, ten retained
+child installs. `pnpm build` builds four child repositories, eleven retained
 showcases, then assembles `dist/`.
 
 Useful validation commands:

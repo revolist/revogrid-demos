@@ -9,7 +9,7 @@ async function bootstrap() {
       const [{ createElement }, { createRoot }, { default: Demo }] = await Promise.all([
         import('react'),
         import('react-dom/client'),
-        import('./filtering.react'),
+        import('./audit-history.react'),
       ]);
       createRoot(document.querySelector('#app')!).render(createElement(Demo));
       break;
@@ -17,7 +17,7 @@ async function bootstrap() {
     case 'vue': {
       const [{ createApp }, { default: Demo }] = await Promise.all([
         import('vue'),
-        import('./filtering.vue'),
+        import('./audit-history.vue'),
       ]);
       createApp(Demo).mount('#app');
       break;
@@ -25,16 +25,16 @@ async function bootstrap() {
     case 'angular': {
       await import('zone.js');
       await import('@angular/compiler');
-      document.querySelector('#app')!.innerHTML = '<filtering-grid></filtering-grid>';
-      const [{ bootstrapApplication }, { FilteringGridComponent }] = await Promise.all([
+      document.querySelector('#app')!.innerHTML = '<audit-history-grid></audit-history-grid>';
+      const [{ bootstrapApplication }, { AuditHistoryGridComponent }] = await Promise.all([
         import('@angular/platform-browser'),
-        import('./filtering.angular'),
+        import('./audit-history.angular'),
       ]);
-      await bootstrapApplication(FilteringGridComponent);
+      await bootstrapApplication(AuditHistoryGridComponent);
       break;
     }
     default: {
-      const { load } = await import('./filtering');
+      const { load } = await import('./audit-history');
       load('#app');
     }
   }

@@ -56,7 +56,7 @@
   {
     "slug": "filtering",
     "title": "Advanced Filtering: Order Explorer",
-    "summary": "An order workspace with presets, cross-column quick search, cascading selections, date and range filtering, synchronized badges, and a deterministic remote-data recipe.",
+    "summary": "An order workspace with presets, cross-column quick search, cascading selections, date and range filtering, and synchronized badges.",
     "edition": "Pro",
     "sourceDir": "pro-filtering",
     "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-filtering",
@@ -64,7 +64,7 @@
     "trialUrl": "https://pro.rv-grid.com/guides/installation-npm-trial/",
     "pricingUrl": "https://rv-grid.com/pricing/",
     "frameworks": ["ts", "react", "vue", "angular"],
-    "highlights": ["Cross-column quick search", "Cascading selection filters", "Remote Pagination and Infinity recipe"],
+    "highlights": ["Cross-column quick search", "Cascading selection filters", "Reusable filter presets"],
     "media": { "poster": "assets/pro-filtering-poster.svg" }
   },
   {
@@ -108,6 +108,20 @@
     "frameworks": ["ts", "react", "vue", "angular"],
     "highlights": ["Full-width master detail", "Tree and detail composition", "Async project insights"],
     "media": { "poster": "assets/pro-row-master-poster.svg" }
+  },
+  {
+    "slug": "audit-history",
+    "title": "Audit History: Invoice Ledger",
+    "summary": "An accountable invoice workspace with attributed edits, scope-aware review, before-and-after comparison, exports, restore actions, and replay feedback.",
+    "edition": "Pro",
+    "sourceDir": "pro-audit-history",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-audit-history",
+    "productUrl": "https://pro.rv-grid.com/guides/data-manage/audit-history/",
+    "trialUrl": "https://pro.rv-grid.com/guides/installation-npm-trial/",
+    "pricingUrl": "https://rv-grid.com/pricing/",
+    "frameworks": ["ts", "react", "vue", "angular"],
+    "highlights": ["Attributed change ledger", "Compare and restore workflows", "Audit export and filtering"],
+    "media": { "poster": "assets/pro-audit-history-poster.svg" }
   },
   {
     "slug": "tree-data",

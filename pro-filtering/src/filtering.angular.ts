@@ -25,13 +25,13 @@ import {
   type OrderExplorerQuickBadgeController,
   type OrderExplorerPreset,
 } from './filtering.shared';
-import './filtering.scss';
 
 @Component({
   selector: 'filtering-grid',
   standalone: true,
   imports: [RevoGrid],
   encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./filtering.scss'],
   template: `
     <section class="order-explorer" aria-label="Advanced Filtering: Order Explorer">
       <div class="order-explorer__toolbar">
@@ -57,7 +57,6 @@ import './filtering.scss';
             {{ visibleCount.toLocaleString() }} of {{ source.length.toLocaleString() }} orders
           </span>
           <button class="rv-btn-secondary" type="button" (click)="clearAll()">Clear All</button>
-          <a class="rv-btn" href="?recipe=remote">Remote recipe</a>
         </div>
       </div>
       <div class="order-explorer__active-filters">
@@ -130,9 +129,15 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.disposeOrderExplorer();
+  }
+
+  private disposeOrderExplorer() {
     this.destroyed = true;
     this.badges?.destroy();
+    this.badges = undefined;
     this.quickBadge?.destroy();
+    this.quickBadge = undefined;
     this.grid?.removeEventListener('afterfilterapply', this.syncFilterState);
   }
 
@@ -155,6 +160,7 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
     this.quickBadge?.refresh(text);
   }
 
+  // Presets and header filters use the same public `filter` property.
   private applyFilterItems(items: MultiFilterItem) {
     this.filter = createOrderExplorerFilter(items);
     if (this.grid) this.grid.filter = this.filter;

@@ -4,8 +4,6 @@ An Order Explorer implemented in Vanilla TypeScript, React, Vue, and Angular.
 It combines Core text and number filters with RevoGrid Pro selection, slider,
 date, expression, header, cascade, global quick search, and active-filter badge workflows.
 
-Add `?recipe=remote` to the live URL for the separate deterministic remote-filtering recipe. It switches between Pagination and Infinity Scroll and displays the complete transport payload, including multi-condition filters and normalized quick search.
-
 ## What it features
 
 - Nine typed columns with consistent header icons and a wider Order date column
@@ -38,4 +36,3 @@ used by the RevoGrid showcase gallery.
 - `src/filtering.angular.ts` — Angular
 - `src/filtering.shared.ts` — data, columns, presets, filters, and badges
 - `src/filtering.scss` — shared presentation
-- `src/remote.*` — the separate remote Pagination/Infinity recipe

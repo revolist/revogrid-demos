@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 const featureSlugs = ['pivot', 'gantt', 'kanban', 'scheduler'];
-const retainedSlugs = ['core', 'excel', 'ecommerce', 'project-table', 'filtering', 'infinity-scroll', 'column-collapse', 'row-master', 'tree-data', 'planning'];
+const retainedSlugs = ['core', 'excel', 'ecommerce', 'project-table', 'filtering', 'infinity-scroll', 'column-collapse', 'row-master', 'audit-history', 'tree-data', 'planning'];
 
 test('gallery is complete, keyboard navigable, and responsive', async ({ page }) => {
   const errors: string[] = [];
@@ -9,8 +9,8 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Fourteen complete ways');
-  await expect(page.locator('.showcase-card')).toHaveCount(14);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Fifteen complete ways');
+  await expect(page.locator('.showcase-card')).toHaveCount(15);
   await page.keyboard.press('Tab');
   await expect(page.locator(':focus')).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
@@ -28,6 +28,33 @@ for (const slug of [...featureSlugs, ...retainedSlugs]) {
     await expect(page.locator('revo-grid').first()).toBeVisible({ timeout: 15_000 });
   });
 }
+
+test('audit history attributes a live edit and appends it to the ledger', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/audit-history/demo/');
+
+  const grid = page.locator('revo-grid');
+  const customerCell = grid.locator('.rgCell[data-rgcol="1"][data-rgrow="0"]').first();
+  await expect(page.locator('.rv-audit-history-panel')).toBeVisible({ timeout: 15_000 });
+  await customerCell.dblclick();
+  await grid.locator('input').fill('Northwind Labs');
+  await page.keyboard.press('Enter');
+
+  await expect.poll(() => grid.evaluate(async element => {
+    const plugins = await (element as HTMLRevoGridElement).getPlugins();
+    const audit = plugins.find(plugin => typeof (plugin as { getRecords?: unknown }).getRecords === 'function') as { getRecords: () => Array<{ changes: Array<{ newValue?: unknown }> }> } | undefined;
+    return audit?.getRecords().length;
+  })).toBe(5);
+  const latestValue = await grid.evaluate(async element => {
+    const plugins = await (element as HTMLRevoGridElement).getPlugins();
+    const audit = plugins.find(plugin => typeof (plugin as { getRecords?: unknown }).getRecords === 'function') as { getRecords: () => Array<{ changes: Array<{ newValue?: unknown }> }> };
+    return audit.getRecords().at(-1)?.changes[0]?.newValue;
+  });
+  expect(latestValue).toBe('Northwind Labs');
+  expect(errors).toEqual([]);
+});
 
 test('feature pages expose trial and upgrade paths', async ({ page }) => {
   for (const slug of featureSlugs) {
@@ -63,31 +90,5 @@ test('filtering showcase composes global search, chips, and Clear All responsive
   await explorer.getByRole('button', { name: 'Clear All' }).click();
   await expect(explorer.getByRole('listitem')).toHaveCount(0);
   await expect(count).toHaveText('1,000 of 1,000 orders');
-  expect(errors).toEqual([]);
-});
-
-test('remote filtering recipe forwards JSON-safe multi-condition and quick-filter payloads', async ({ page }) => {
-  const errors: string[] = [];
-  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
-  page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/filtering/demo/?recipe=remote');
-
-  const output = page.locator('.remote-filter-recipe__request pre');
-  await expect(page.locator('.remote-filter-recipe revo-grid')).toBeVisible({ timeout: 15_000 });
-  await page.getByRole('button', { name: 'Apply mixed filters' }).click();
-  await expect(output).toContainText('"mode": "pagination"');
-  await page.getByRole('searchbox', { name: 'Remote global search' }).fill('Lisbon pending');
-
-  await expect(output).toContainText('"text": "Lisbon pending"');
-  const request = JSON.parse(await output.textContent() ?? '{}');
-  expect(request.mode).toBe('pagination');
-  expect(request.singleConditionFilters).toBeDefined();
-  expect(request.multiConditionFilters.status[0].value).toBeInstanceOf(Array);
-  expect(request.multiConditionFilters.total[0].value).toEqual({ fromValue: 250, toValue: 800 });
-  expect(request.multiConditionFilters.orderDate[0].value).toBe('2026-01-01T00:00:00.000Z');
-  expect(request.quickFilter).toEqual({ text: 'Lisbon pending' });
-
-  await page.getByRole('button', { name: 'Infinity Scroll' }).click();
-  await expect(output).toContainText('"mode": "infinity"');
   expect(errors).toEqual([]);
 });
