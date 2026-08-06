@@ -57,7 +57,8 @@ test('all framework variants use direct audit bindings and panel cleanup', async
     assert.match(source, /CellFlashPlugin/);
     assert.match(source, /defineAuditHistoryPanel/);
     assert.match(source, /auditHistory/);
-    assert.match(source, /Invoice review ledger/);
+    assert.match(source, /audit-workspace/);
+    assert.doesNotMatch(source, /audit-hero|audit-metrics|audit-hint|Invoice review ledger/);
   }
 
   assert.ok(typescript.indexOf('parent.appendChild(showcase)') < typescript.indexOf('grid.source = source'));
@@ -70,4 +71,43 @@ test('all framework variants use direct audit bindings and panel cleanup', async
   assert.match(angular, /standalone: true/);
   assert.match(angular, /encapsulation: ViewEncapsulation.None/);
   assert.match(angular, /ngOnDestroy/);
+});
+
+test('all framework variants reactively apply the native RevoGrid theme', async () => {
+  const files = [
+    'audit-history.ts',
+    'audit-history.react.tsx',
+    'audit-history.vue',
+    'audit-history.angular.ts',
+  ];
+  const sources = await Promise.all(files.map(readSource));
+  const styles = await readSource('audit-history.scss');
+
+  for (const source of sources) {
+    assert.match(source, /currentTheme/);
+    assert.match(source, /observeCurrentTheme/);
+    assert.match(source, /darkMaterial/);
+  }
+  assert.doesNotMatch(styles, /@media \(prefers-color-scheme: dark\)/);
+  assert.doesNotMatch(styles, /\.audit-showcase\.is-dark/);
+});
+
+test('showcase surfaces stay transparent and inherit the host theme', async () => {
+  const styles = await readSource('audit-history.scss');
+
+  assert.match(styles, /\.audit-showcase\s*\{[^}]*background:\s*transparent/);
+  assert.match(styles, /\.audit-workspace\s*\{[^}]*background:\s*transparent/);
+  assert.doesNotMatch(styles, /background:\s*#eef1f7/);
+  assert.doesNotMatch(styles, /background:\s*rgba\(255,\s*255,\s*255/);
+  assert.doesNotMatch(styles, /(?:^|\n)\s*(?::root|body|#app)\s*\{/);
+});
+
+test('showcase presents only the borderless grid workspace', async () => {
+  const styles = await readSource('audit-history.scss');
+
+  assert.doesNotMatch(styles, /\.audit-(?:hero|eyebrow|metrics|hint)\b/);
+  assert.match(styles, /\.audit-showcase\s*\{[^}]*padding:\s*0/);
+  assert.match(styles, /\.audit-workspace\s*\{[^}]*border:\s*0/);
+  assert.match(styles, /\.audit-workspace\s*\{[^}]*border-radius:\s*0/);
+  assert.match(styles, /\.audit-workspace\s*\{[^}]*box-shadow:\s*none/);
 });

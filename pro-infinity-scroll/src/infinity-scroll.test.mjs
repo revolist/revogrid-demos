@@ -63,3 +63,30 @@ test('framework variants follow demo lifecycle conventions', async () => {
   assert.match(angular, /standalone: true/);
   assert.match(angular, /encapsulation: ViewEncapsulation.None/);
 });
+
+test('all framework variants reactively apply the native RevoGrid theme', async () => {
+  const files = [
+    'infinity-scroll.ts',
+    'infinity-scroll.react.tsx',
+    'infinity-scroll.vue',
+    'infinity-scroll.angular.ts',
+  ];
+  const sources = await Promise.all(files.map(readSource));
+  const styles = await readSource('infinity-scroll.scss');
+
+  for (const source of sources) {
+    assert.match(source, /currentTheme/);
+    assert.match(source, /observeCurrentTheme/);
+    assert.match(source, /darkMaterial/);
+  }
+  assert.doesNotMatch(styles, /@media \(prefers-color-scheme: dark\)/);
+});
+
+test('showcase chrome stays transparent and inherits the host theme', async () => {
+  const styles = await readSource('infinity-scroll.scss');
+
+  assert.match(styles, /\.infinity-showcase\s*\{[^}]*background:\s*transparent/);
+  assert.match(styles, /\.infinity-showcase\s*\{[^}]*border:\s*0/);
+  assert.match(styles, /\.infinity-showcase\s*\{[^}]*border-radius:\s*0/);
+  assert.match(styles, /\.infinity-toolbar\s*\{[^}]*background:\s*transparent/);
+});

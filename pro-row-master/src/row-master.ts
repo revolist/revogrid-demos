@@ -5,12 +5,12 @@ import {
   MasterRowPlugin,
   TreeDataPlugin,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createMasterColumns,
   createMasterRowConfig,
   createMasterRows,
   createMasterTreeConfig,
-  prefersDarkTheme,
   type MasterProjectRow,
 } from './row-master.shared';
 import './row-master.scss';
@@ -38,7 +38,8 @@ export function load(parentSelector: string, rows?: MasterProjectRow[]) {
 
   const grid = document.createElement('revo-grid');
   grid.className = 'row-master-grid';
-  grid.theme = prefersDarkTheme() ? 'darkMaterial' : 'material';
+  const initialDarkTheme = currentTheme().isDark();
+  grid.theme = initialDarkTheme ? 'darkMaterial' : 'material';
   grid.columns = createMasterColumns(source);
   grid.plugins = plugins;
   grid.masterRow = createMasterRowConfig();
@@ -49,8 +50,12 @@ export function load(parentSelector: string, rows?: MasterProjectRow[]) {
   container.appendChild(grid);
   parent.appendChild(container);
   grid.source = source;
+  const disconnectTheme = observeCurrentTheme((isDark) => {
+    grid.theme = isDark ? 'darkMaterial' : 'material';
+  });
 
   return () => {
+    disconnectTheme();
     grid.remove();
     container.remove();
   };

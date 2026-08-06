@@ -237,7 +237,3 @@ export function createMasterRowConfig(delayMs = 500): RowMasterConfig {
     },
   };
 }
-
-export function prefersDarkTheme() {
-  return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
-}

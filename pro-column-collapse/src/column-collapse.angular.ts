@@ -1,4 +1,4 @@
-import { Component, Input, NO_ERRORS_SCHEMA, ViewEncapsulation } from '@angular/core';
+import { Component, Input, NO_ERRORS_SCHEMA, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import {
   AdvanceFilterPlugin,
@@ -7,10 +7,10 @@ import {
   RowOddPlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createColumnCollapseColumns,
   createColumnCollapseRows,
-  prefersDarkTheme,
   type ContactRow,
 } from './column-collapse.shared';
 import './column-collapse.scss';
@@ -46,7 +46,7 @@ import './column-collapse.scss';
     </section>
   `,
 })
-export class ColumnCollapseGridComponent {
+export class ColumnCollapseGridComponent implements OnDestroy {
   private providedRows?: ContactRow[];
 
   @Input()
@@ -59,8 +59,15 @@ export class ColumnCollapseGridComponent {
     return this.providedRows;
   }
 
-  readonly theme = prefersDarkTheme() ? 'darkMaterial' : 'material';
+  theme: HTMLRevoGridElement['theme'] = currentTheme().isDark() ? 'darkMaterial' : 'material';
+  private readonly disconnectTheme = observeCurrentTheme((isDark) => {
+    this.theme = isDark ? 'darkMaterial' : 'material';
+  });
   readonly columns = createColumnCollapseColumns();
   readonly plugins = [ColumnCollapsePlugin, AdvanceFilterPlugin, FilterHeaderPlugin, RowSelectPlugin, RowOddPlugin];
   source = createColumnCollapseRows();
+
+  ngOnDestroy() {
+    this.disconnectTheme();
+  }
 }

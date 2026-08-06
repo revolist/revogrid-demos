@@ -1,4 +1,4 @@
-import { Component, Input, NO_ERRORS_SCHEMA, ViewEncapsulation } from '@angular/core';
+import { Component, Input, NO_ERRORS_SCHEMA, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import {
   CellColumnFocusVerifyPlugin,
@@ -6,12 +6,12 @@ import {
   MasterRowPlugin,
   TreeDataPlugin,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createMasterColumns,
   createMasterRowConfig,
   createMasterRows,
   createMasterTreeConfig,
-  prefersDarkTheme,
   type MasterProjectRow,
 } from './row-master.shared';
 import './row-master.scss';
@@ -45,17 +45,24 @@ import './row-master.scss';
     </section>
   `,
 })
-export class RowMasterGridComponent {
+export class RowMasterGridComponent implements OnDestroy {
   @Input()
   set rows(value: MasterProjectRow[] | undefined) {
     this.source = value?.length ? value : createMasterRows();
     this.columns = createMasterColumns(this.source);
   }
 
-  readonly theme = prefersDarkTheme() ? 'darkMaterial' : 'material';
+  theme: HTMLRevoGridElement['theme'] = currentTheme().isDark() ? 'darkMaterial' : 'material';
+  private readonly disconnectTheme = observeCurrentTheme((isDark) => {
+    this.theme = isDark ? 'darkMaterial' : 'material';
+  });
   readonly plugins = [TreeDataPlugin, MasterRowPlugin, CellColumnFocusVerifyPlugin, ColumnStretchPlugin];
   readonly masterRow = createMasterRowConfig();
   readonly tree = createMasterTreeConfig();
   source = createMasterRows();
   columns = createMasterColumns(this.source);
+
+  ngOnDestroy() {
+    this.disconnectTheme();
+  }
 }

@@ -5,13 +5,13 @@ import {
   EventManagerPlugin,
   defineAuditHistoryPanel,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createAuditColumns,
   createAuditHistoryConfig,
   createCellFlashConfig,
   createInvoiceRows,
   createPanelOptions,
-  prefersDarkTheme,
   type InvoiceRow,
 } from './audit-history.shared';
 import './audit-history.scss';
@@ -28,26 +28,12 @@ export function load(parentSelector: string, rows?: InvoiceRow[]) {
   const showcase = document.createElement('section');
   showcase.className = 'audit-showcase';
   showcase.setAttribute('aria-label', 'Invoice audit history workspace');
-  showcase.innerHTML = `
-    <header class="audit-hero">
-      <div>
-        <span class="audit-eyebrow"><i></i> Live control log</span>
-        <h1>Invoice review ledger</h1>
-        <p>Edit any business field. Every change is attributed, reviewable, exportable, and reversible.</p>
-      </div>
-      <div class="audit-metrics" aria-label="Workspace metrics">
-        <span><strong>8</strong> open invoices</span>
-        <span><strong>4</strong> recorded actions</span>
-        <span><strong>100%</strong> attributable</span>
-      </div>
-    </header>
-    <div class="audit-hint"><span>Try it</span> Double-click a Customer, Status, Owner, Date, Amount, or Risk cell, then inspect the new record.</div>`;
 
   const workspace = document.createElement('div');
   workspace.className = 'audit-workspace';
   const grid = document.createElement('revo-grid');
   grid.className = 'audit-grid';
-  grid.theme = prefersDarkTheme() ? 'darkMaterial' : 'material';
+  grid.theme = currentTheme().isDark() ? 'darkMaterial' : 'material';
   grid.columns = createAuditColumns();
   grid.plugins = plugins;
   grid.auditHistory = createAuditHistoryConfig();
@@ -63,8 +49,12 @@ export function load(parentSelector: string, rows?: InvoiceRow[]) {
   parent.appendChild(showcase);
   const panelHandle = defineAuditHistoryPanel(panel, grid, createPanelOptions());
   grid.source = source;
+  const disconnectTheme = observeCurrentTheme((isDark) => {
+    grid.theme = isDark ? 'darkMaterial' : 'material';
+  });
 
   return () => {
+    disconnectTheme();
     panelHandle.destroy();
     grid.remove();
     panel.remove();

@@ -154,7 +154,3 @@ export function createTreeConfig(rows: TreeDataRow[], stickyParents = true) {
     animation: true,
   };
 }
-
-export function prefersDarkTheme() {
-  return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
-}

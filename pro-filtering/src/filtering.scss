@@ -27,10 +27,10 @@
   width: 100%;
   height: 32px;
   min-height: 32px;
-  border: 1px solid var(--rv-ui-border, #cbd5e1);
+  border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
   border-radius: 8px;
   padding: 6px 12px;
-  background: var(--rv-ui-surface, #fff);
+  background: transparent;
   color: inherit;
   font: inherit;
   font-size: 0.875rem;
@@ -39,23 +39,11 @@
 }
 
 .order-explorer__presets,
-.order-explorer__summary,
-.order-explorer__chips {
+.order-explorer__summary {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-}
-
-.order-explorer__active-filters {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-.order-explorer__quick-chip:empty {
-  display: none;
 }
 
 .order-explorer__eyebrow {
@@ -73,26 +61,13 @@
   font-weight: 500;
 }
 
-.order-explorer__chips {
-  min-height: 32px;
-}
-
-.order-explorer__chip {
-  font-weight: 500;
-}
-
-.order-explorer__empty {
-  font-size: 13px;
-  color: var(--rv-ui-text-muted, #64748b);
-}
-
 .order-explorer__grid {
   --revo-grid-header-font-weight: 500;
 
   min-height: 420px;
   flex: 1;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
   border-radius: 14px;
 }
 
@@ -100,10 +75,6 @@
 revo-grid.order-explorer__grid {
   width: 100%;
   height: 100%;
-}
-
-.dark .order-explorer__grid {
-  border-color: #334155;
 }
 
 @media (max-width: 720px) {

@@ -56,3 +56,27 @@ test('framework variants follow demo lifecycle conventions', async () => {
   assert.match(angular, /standalone: true/);
   assert.match(angular, /encapsulation: ViewEncapsulation.None/);
 });
+
+test('all framework variants react to the resolved host theme', async () => {
+  const files = ['tree.ts', 'tree.react.tsx', 'tree.vue', 'tree.angular.ts'];
+  const sources = await Promise.all(files.map(readSource));
+  const styles = await readSource('tree.scss');
+
+  for (const source of sources) {
+    assert.match(source, /currentTheme/);
+    assert.match(source, /observeCurrentTheme/);
+    assert.match(source, /darkMaterial/);
+  }
+  assert.doesNotMatch(styles, /\.tree-showcase\.is-dark/);
+  assert.doesNotMatch(styles, /@media \(prefers-color-scheme: dark\)/);
+});
+
+test('showcase chrome stays transparent and inherits the host theme', async () => {
+  const styles = await readSource('tree.scss');
+
+  assert.match(styles, /\.tree-showcase\s*\{[^}]*background:\s*transparent/);
+  assert.match(styles, /\.tree-showcase\s*\{[^}]*border:\s*0/);
+  assert.match(styles, /\.tree-showcase\s*\{[^}]*border-radius:\s*0/);
+  assert.match(styles, /\.tree-toolbar\s*\{[^}]*background:\s*transparent/);
+  assert.match(styles, /\.tree-button,[^{]*\{[^}]*background:\s*transparent/);
+});

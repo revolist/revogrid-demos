@@ -9,6 +9,7 @@ import {
   RowSelectPlugin,
   type InfinityScrollConfig,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import { exportInfinityScrollRows } from './infinity-scroll.export';
 import {
   createInfinityScrollColumns,
@@ -16,7 +17,6 @@ import {
   createInfinityScrollPinnedBottomRows,
   createInfinityScrollPinnedTopRows,
   createInfinityScrollRows,
-  prefersDarkTheme,
   type InfinityScrollQuickFilter,
   type InfinityScrollUser,
 } from './infinity-scroll.shared';
@@ -60,7 +60,7 @@ export function load(parentSelector: string, rows?: InfinityScrollUser[]) {
   const columns = createInfinityScrollColumns();
   const grid = document.createElement('revo-grid');
   grid.className = 'infinity-grid';
-  grid.theme = prefersDarkTheme() ? 'darkMaterial' : 'material';
+  grid.theme = currentTheme().isDark() ? 'darkMaterial' : 'material';
   grid.columns = columns;
   grid.plugins = plugins;
   grid.stretch = 'last';
@@ -114,8 +114,12 @@ export function load(parentSelector: string, rows?: InfinityScrollUser[]) {
   container.append(toolbar, grid);
   parent.appendChild(container);
   grid.source = source;
+  const disconnectTheme = observeCurrentTheme((isDark) => {
+    grid.theme = isDark ? 'darkMaterial' : 'material';
+  });
 
   return () => {
+    disconnectTheme();
     exportButton.removeEventListener('click', exportAll);
     grid.remove();
     container.remove();

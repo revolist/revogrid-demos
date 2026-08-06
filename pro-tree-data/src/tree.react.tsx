@@ -1,15 +1,15 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import {
   ExportExcelPlugin,
   TREE_COLLAPSE_ALL_EVENT,
   TREE_EXPAND_ALL_EVENT,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createTreeColumns,
   createTreeConfig,
   createTreeRows,
-  prefersDarkTheme,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
@@ -29,8 +29,11 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
   const rowSelect = useMemo(() => TREE_ROW_SELECT_CONFIG, []);
   const [stickyParents, setStickyParents] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
   const tree = useMemo(() => createTreeConfig(source, stickyParents), [source, stickyParents]);
   const pluginProps = useMemo(() => ({ rowOrder, rowSelect, tree }) as any, [rowOrder, rowSelect, tree]);
+
+  useEffect(() => observeCurrentTheme(setDarkTheme), []);
 
   const expandAll = () => gridRef.current?.dispatchEvent(new CustomEvent(TREE_EXPAND_ALL_EVENT));
   const collapseAll = () => gridRef.current?.dispatchEvent(new CustomEvent(TREE_COLLAPSE_ALL_EVENT));
@@ -68,7 +71,7 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
       <RevoGrid
         ref={gridRef}
         className="tree-grid"
-        theme={prefersDarkTheme() ? 'darkMaterial' : 'material'}
+        theme={darkTheme ? 'darkMaterial' : 'material'}
         columns={columns}
         source={source}
         plugins={plugins}

@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import {
   AdvanceFilterPlugin,
@@ -33,10 +33,10 @@ import {
   RowOddPlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createColumnCollapseColumns,
   createColumnCollapseRows,
-  prefersDarkTheme,
   type ContactRow,
 } from './column-collapse.shared';
 import './column-collapse.scss';
@@ -45,5 +45,14 @@ const props = defineProps<{ rows?: ContactRow[] }>();
 const rows = ref(props.rows?.length ? props.rows : createColumnCollapseRows());
 const columns = createColumnCollapseColumns();
 const plugins = [ColumnCollapsePlugin, AdvanceFilterPlugin, FilterHeaderPlugin, RowSelectPlugin, RowOddPlugin];
-const darkTheme = ref(prefersDarkTheme());
+const darkTheme = ref(currentTheme().isDark());
+let disconnectTheme: (() => void) | undefined;
+
+onMounted(() => {
+  disconnectTheme = observeCurrentTheme((isDark) => {
+    darkTheme.value = isDark;
+  });
+});
+
+onUnmounted(() => disconnectTheme?.());
 </script>

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import type { ColumnProp, FilterCollectionItem, MultiFilterItem } from '@revolist/revogrid';
 import {
@@ -10,6 +10,7 @@ import {
   RowSelectPlugin,
   type InfinityScrollConfig,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import { exportInfinityScrollRows } from './infinity-scroll.export';
 import {
   createInfinityScrollColumns,
@@ -17,7 +18,6 @@ import {
   createInfinityScrollPinnedBottomRows,
   createInfinityScrollPinnedTopRows,
   createInfinityScrollRows,
-  prefersDarkTheme,
   type InfinityScrollQuickFilter,
   type InfinityScrollUser,
 } from './infinity-scroll.shared';
@@ -26,6 +26,7 @@ import './infinity-scroll.scss';
 export default function InfinityScroll({ rows }: { rows?: InfinityScrollUser[] }) {
   const [status, setStatus] = useState('Initializing remote source…');
   const [exporting, setExporting] = useState(false);
+  const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
   const dataset = useMemo(() => rows?.length ? rows : createInfinityScrollRows(), [rows]);
   const source = useMemo<InfinityScrollUser[]>(() => [], []);
   const columns = useMemo(() => createInfinityScrollColumns(), []);
@@ -42,6 +43,8 @@ export default function InfinityScroll({ rows }: { rows?: InfinityScrollUser[] }
     rows: dataset,
     selectionFilterType: FIlTER_SELECTION,
   }), [dataset]);
+
+  useEffect(() => observeCurrentTheme(setDarkTheme), []);
 
   const loadData = useCallback(async (
     skip: number,
@@ -71,7 +74,7 @@ export default function InfinityScroll({ rows }: { rows?: InfinityScrollUser[] }
         columns,
         total: dataset.length,
         loadData: serverLoader,
-        theme: prefersDarkTheme() ? 'darkMaterial' : 'material',
+        theme: darkTheme ? 'darkMaterial' : 'material',
         setStatus,
       });
     } finally {
@@ -92,7 +95,7 @@ export default function InfinityScroll({ rows }: { rows?: InfinityScrollUser[] }
       </div>
       <RevoGrid
         className="infinity-grid"
-        theme={prefersDarkTheme() ? 'darkMaterial' : 'material'}
+        theme={darkTheme ? 'darkMaterial' : 'material'}
         columns={columns}
         source={source}
         pinnedTopSource={pinnedTopSource}

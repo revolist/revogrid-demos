@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import {
   CellColumnFocusVerifyPlugin,
@@ -30,12 +30,12 @@ import {
   MasterRowPlugin,
   TreeDataPlugin,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createMasterColumns,
   createMasterRowConfig,
   createMasterRows,
   createMasterTreeConfig,
-  prefersDarkTheme,
   type MasterProjectRow,
 } from './row-master.shared';
 import './row-master.scss';
@@ -46,5 +46,14 @@ const columns = createMasterColumns(rows.value);
 const plugins = [TreeDataPlugin, MasterRowPlugin, CellColumnFocusVerifyPlugin, ColumnStretchPlugin];
 const masterRow = createMasterRowConfig();
 const tree = createMasterTreeConfig();
-const darkTheme = ref(prefersDarkTheme());
+const darkTheme = ref(typeof window !== 'undefined' && currentTheme().isDark());
+let disconnectTheme: (() => void) | undefined;
+
+onMounted(() => {
+  disconnectTheme = observeCurrentTheme((isDark) => {
+    darkTheme.value = isDark;
+  });
+});
+
+onUnmounted(() => disconnectTheme?.());
 </script>

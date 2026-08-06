@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, NO_ERRORS_SCHEMA, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, NO_ERRORS_SCHEMA, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import type { ColumnProp, FilterCollectionItem, MultiFilterItem } from '@revolist/revogrid';
 import {
@@ -10,6 +10,7 @@ import {
   RowSelectPlugin,
   type InfinityScrollConfig,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import { exportInfinityScrollRows } from './infinity-scroll.export';
 import {
   createInfinityScrollColumns,
@@ -17,7 +18,6 @@ import {
   createInfinityScrollPinnedBottomRows,
   createInfinityScrollPinnedTopRows,
   createInfinityScrollRows,
-  prefersDarkTheme,
   type InfinityScrollQuickFilter,
   type InfinityScrollUser,
 } from './infinity-scroll.shared';
@@ -56,10 +56,14 @@ import './infinity-scroll.scss';
     </section>
   `,
 })
-export class InfinityScrollGridComponent {
+export class InfinityScrollGridComponent implements OnDestroy {
   @Input() rows?: InfinityScrollUser[];
 
-  readonly theme = prefersDarkTheme() ? 'darkMaterial' : 'material';
+  theme: HTMLRevoGridElement['theme'] = currentTheme().isDark() ? 'darkMaterial' : 'material';
+  private readonly disconnectTheme = observeCurrentTheme((isDark) => {
+    this.theme = isDark ? 'darkMaterial' : 'material';
+    this.cdr.detectChanges();
+  });
   readonly source: InfinityScrollUser[] = [];
   readonly columns = createInfinityScrollColumns();
   readonly plugins = [InfinityScrollPlugin, AdvanceFilterPlugin, RowOddPlugin, RowSelectPlugin, ColumnStretchPlugin];
@@ -75,6 +79,10 @@ export class InfinityScrollGridComponent {
   infinityScroll: Partial<InfinityScrollConfig> = this.createConfig();
 
   constructor(private readonly cdr: ChangeDetectorRef) {}
+
+  ngOnDestroy() {
+    this.disconnectTheme();
+  }
 
   private createConfig(): Partial<InfinityScrollConfig> {
     return {

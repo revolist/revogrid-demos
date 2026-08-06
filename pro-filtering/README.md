@@ -2,7 +2,7 @@
 
 An Order Explorer implemented in Vanilla TypeScript, React, Vue, and Angular.
 It combines Core text and number filters with RevoGrid Pro selection, slider,
-date, expression, header, cascade, global quick search, and active-filter badge workflows.
+date, expression, header, cascade, and global quick search workflows.
 
 ## What it features
 
@@ -10,7 +10,6 @@ date, expression, header, cascade, global quick search, and active-filter badge 
 - Cross-column multi-word quick search (try `Lisbon pending`)
 - Predefined High-value Europe, Recent expedited, and Review queue filters
 - Selection values derived from rows matching filters on the other columns
-- Reusable grid-synchronized badges with remove and clear actions
 - Selection, slider, date, expression, text, and number operators
 - Deterministic 1,000-order dataset and live visible-row count
 - Shared Pro button and pill styles with 500-weight labels
@@ -34,5 +33,5 @@ used by the RevoGrid showcase gallery.
 - `src/filtering.react.tsx` — React
 - `src/filtering.vue` — Vue
 - `src/filtering.angular.ts` — Angular
-- `src/filtering.shared.ts` — data, columns, presets, filters, and badges
+- `src/filtering.shared.ts` — data, columns, presets, and filters
 - `src/filtering.scss` — shared presentation

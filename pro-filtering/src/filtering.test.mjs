@@ -8,10 +8,9 @@ const root = dirname(fileURLToPath(import.meta.url));
 const readSource = file => readFile(join(root, file), 'utf8');
 
 test('advanced filtering showcase exposes every requested behavior', async () => {
-  const [columns, config, badges] = await Promise.all([
+  const [columns, config] = await Promise.all([
     readSource('filtering.columns.ts'),
     readSource('filtering.config.ts'),
-    readSource('filtering.badges.ts'),
   ]);
 
   assert.equal((columns.match(/columnTemplate: columnTypeRenderer/g) ?? []).length, 9);
@@ -20,7 +19,6 @@ test('advanced filtering showcase exposes every requested behavior', async () =>
   assert.match(config, /case 'recent-expedited'/);
   assert.match(config, /case 'review-queue'/);
   assert.match(config, /cascadeOptions:\s*{\s*enabled: true,\s*showDependencyNumbers: true/);
-  assert.match(badges, /mountAdvancedFilterBadges\(\{/);
   assert.match(config, /ORDER_EXPLORER_QUICK_FILTER_EXAMPLE = 'Lisbon pending'/);
   assert.match(config, /quickFilter = \{/);
 });
@@ -70,12 +68,36 @@ test('all framework examples use direct grid properties', async () => {
   }
 });
 
-test('showcase reuses the public customizable advanced-filter badge component', async () => {
-  const source = await readSource('filtering.badges.ts');
+test('showcase does not depend on unavailable advanced-filter badge exports', async () => {
+  const files = [
+    'filtering.shared.ts',
+    'filtering.ts',
+    'filtering.react.tsx',
+    'filtering.vue',
+    'filtering.angular.ts',
+  ];
+  const sources = await Promise.all(files.map(readSource));
 
-  assert.match(source, /mountAdvancedFilterBadges\(\{/);
-  assert.match(source, /formatLabel: formatOrderExplorerFilterBadge/);
-  assert.doesNotMatch(source, /filter-badges/);
+  for (const source of sources) {
+    assert.doesNotMatch(source, /mountAdvancedFilterBadges|AdvancedFilterBadges|mountOrderExplorerFilterBadges/);
+    assert.doesNotMatch(source, /badgesRef|order-explorer__active-filters/);
+  }
+  await assert.rejects(readSource('filtering.badges.ts'), { code: 'ENOENT' });
+});
+
+test('frameworks wait for grid readiness before assigning advanced filter config', async () => {
+  const [typescript, react, vue, angular] = await Promise.all([
+    readSource('filtering.ts'),
+    readSource('filtering.react.tsx'),
+    readSource('filtering.vue'),
+    readSource('filtering.angular.ts'),
+  ]);
+
+  assert.ok(typescript.indexOf('componentOnReady') < typescript.indexOf('grid.filter = initialFilter'));
+  assert.match(react, /useState<ColumnFilterConfig \| undefined>\(undefined\)/);
+  assert.match(react, /componentOnReady[\s\S]*?grid\.filter = initialFilter/);
+  assert.match(vue, /const filter = ref<ColumnFilterConfig>[\s\S]*?componentOnReady[\s\S]*?grid\.filter = initialFilter/);
+  assert.match(angular, /filter: ColumnFilterConfig \| undefined[\s\S]*?componentOnReady[\s\S]*?grid\.filter = initialFilter/);
 });
 
 test('shared filtering modules stay small and focused', async () => {
@@ -88,7 +110,7 @@ test('shared filtering modules stay small and focused', async () => {
   }
 
   const facade = await readSource('filtering.shared.ts');
-  for (const module of ['badges', 'columns', 'config', 'data']) {
+  for (const module of ['columns', 'config', 'data']) {
     assert.match(facade, new RegExp(`export \\* from './filtering\\.${module}'`));
   }
 });
@@ -128,10 +150,31 @@ test('framework examples follow their lifecycle conventions', async () => {
   assert.match(angular, /encapsulation: ViewEncapsulation.None/);
 });
 
+test('all framework variants reactively apply the native RevoGrid theme', async () => {
+  const files = ['filtering.ts', 'filtering.react.tsx', 'filtering.vue', 'filtering.angular.ts'];
+  const sources = await Promise.all(files.map(readSource));
+  const styles = await readSource('filtering.scss');
+
+  for (const source of sources) {
+    assert.match(source, /currentTheme/);
+    assert.match(source, /observeCurrentTheme/);
+    assert.match(source, /darkMaterial/);
+  }
+  assert.doesNotMatch(styles, /@media \(prefers-color-scheme: dark\)/);
+  assert.doesNotMatch(styles, /\.order-explorer\.is-dark/);
+});
+
 test('showcase UI uses medium font weight only', async () => {
   const styles = await readSource('filtering.scss');
 
   assert.match(styles, /font-weight:\s*500/);
   assert.match(styles, /--revo-grid-header-font-weight:\s*500/);
   assert.doesNotMatch(styles, /font-weight:\s*(?:bold|[6-9]00)/);
+});
+
+test('showcase controls keep the host background visible', async () => {
+  const styles = await readSource('filtering.scss');
+
+  assert.match(styles, /\.order-explorer__search-input\s*\{[^}]*background:\s*transparent/);
+  assert.doesNotMatch(styles, /background:\s*var\(--rv-ui-surface,\s*#fff\)/);
 });

@@ -38,18 +38,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, shallowRef } from 'vue';
+import { computed, onMounted, onUnmounted, ref, shallowRef } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import {
   ExportExcelPlugin,
   TREE_COLLAPSE_ALL_EVENT,
   TREE_EXPAND_ALL_EVENT,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createTreeColumns,
   createTreeConfig,
   createTreeRows,
-  prefersDarkTheme,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
@@ -65,8 +65,17 @@ const plugins = [...TREE_PLUGINS];
 const columnTypes = TREE_COLUMN_TYPES;
 const stickyParents = ref(true);
 const exporting = ref(false);
-const darkTheme = ref(prefersDarkTheme());
+const darkTheme = ref(typeof window !== 'undefined' && currentTheme().isDark());
 const treeConfig = computed(() => createTreeConfig(rows.value, stickyParents.value));
+let disconnectTheme: (() => void) | undefined;
+
+onMounted(() => {
+  disconnectTheme = observeCurrentTheme((isDark) => {
+    darkTheme.value = isDark;
+  });
+});
+
+onUnmounted(() => disconnectTheme?.());
 
 function getGrid() {
   const current = gridRef.value;

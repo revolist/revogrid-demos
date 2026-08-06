@@ -9,8 +9,6 @@ import {
   createOrderExplorerPreset,
   createOrderExplorerRows,
   getOrderExplorerVisibleCount,
-  mountOrderExplorerFilterBadges,
-  mountOrderExplorerQuickBadge,
   setOrderExplorerQuickFilter,
   ORDER_EXPLORER_QUICK_FILTER_EXAMPLE,
   orderExplorerPlugins,
@@ -56,7 +54,6 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
   count.setAttribute('aria-live', 'polite');
   summary.append(count);
 
-  const badgesRoot = document.createElement('div');
   const grid = document.createElement('revo-grid');
   grid.className = 'order-explorer__grid';
   grid.theme = currentTheme().isDark() ? 'darkMaterial' : 'material';
@@ -64,7 +61,6 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
   grid.plugins = orderExplorerPlugins;
   grid.columnTypes = createOrderExplorerColumnTypes();
   grid.stretch = 'all';
-  grid.filter = createOrderExplorerFilter(createOrderExplorerInitialFilters());
   grid.hideAttribution = true;
   grid.readonly = true;
   grid.resize = true;
@@ -93,14 +89,9 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
   searchInput.type = 'search';
   searchInput.placeholder = 'Global search — try “Lisbon pending”';
   searchInput.setAttribute('aria-label', 'Search all visible columns');
-  const quickBadgeRoot = document.createElement('div');
-  quickBadgeRoot.className = 'order-explorer__quick-chip';
-  quickBadgeRoot.setAttribute('role', 'list');
-  let quickBadge: ReturnType<typeof mountOrderExplorerQuickBadge> | undefined;
   const applyQuickFilter = (text: string) => {
     searchInput.value = text;
     setOrderExplorerQuickFilter(grid, text);
-    quickBadge?.refresh(text);
   };
   searchInput.addEventListener('input', () => applyQuickFilter(searchInput.value));
   search.append(
@@ -112,28 +103,28 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
     applyQuickFilter('');
   }, 'rv-btn-secondary'));
   toolbar.append(presets, search, summary);
-  const activeFilters = document.createElement('div');
-  activeFilters.className = 'order-explorer__active-filters';
-  activeFilters.append(quickBadgeRoot, badgesRoot);
-  container.append(toolbar, activeFilters, grid);
+  container.append(toolbar, grid);
 
   grid.addEventListener('afterfilterapply', async () => {
     renderCount(await getOrderExplorerVisibleCount(grid, source.length));
   });
 
   parent.appendChild(container);
+  let destroyed = false;
   const disconnectTheme = observeCurrentTheme((isDark) => {
     grid.theme = isDark ? 'darkMaterial' : 'material';
   });
   renderCount(source.length);
-  grid.source = source;
-  const badges = mountOrderExplorerFilterBadges(grid, badgesRoot);
-  quickBadge = mountOrderExplorerQuickBadge(quickBadgeRoot, () => applyQuickFilter(''));
+  void grid.componentOnReady().then(() => {
+    if (destroyed) return;
+    const initialFilter = createOrderExplorerFilter(createOrderExplorerInitialFilters());
+    grid.filter = initialFilter;
+    grid.source = source;
+  });
 
   return () => {
+    destroyed = true;
     disconnectTheme();
-    void badges.then(controller => controller.destroy());
-    quickBadge?.destroy();
     grid.remove();
     container.remove();
   };

@@ -4,11 +4,11 @@ import {
   TREE_COLLAPSE_ALL_EVENT,
   TREE_EXPAND_ALL_EVENT,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createTreeColumns,
   createTreeConfig,
   createTreeRows,
-  prefersDarkTheme,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
@@ -58,7 +58,8 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
 
   const grid = document.createElement('revo-grid');
   grid.className = 'tree-grid';
-  grid.theme = prefersDarkTheme() ? 'darkMaterial' : 'material';
+  const initialDarkTheme = currentTheme().isDark();
+  grid.theme = initialDarkTheme ? 'darkMaterial' : 'material';
   grid.columns = createTreeColumns();
   grid.plugins = TREE_PLUGINS;
   grid.columnTypes = TREE_COLUMN_TYPES;
@@ -98,8 +99,12 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   container.append(toolbar, grid);
   parent.appendChild(container);
   grid.source = source;
+  const disconnectTheme = observeCurrentTheme((isDark) => {
+    grid.theme = isDark ? 'darkMaterial' : 'material';
+  });
 
   return () => {
+    disconnectTheme();
     expandButton.removeEventListener('click', expandAll);
     collapseButton.removeEventListener('click', collapseAll);
     exportButton.removeEventListener('click', exportToExcel);

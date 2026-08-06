@@ -57,3 +57,30 @@ test('framework variants follow standalone demo lifecycle conventions', async ()
   assert.match(angular, /standalone: true/);
   assert.match(angular, /encapsulation: ViewEncapsulation.None/);
 });
+
+test('all framework variants reactively apply the native RevoGrid theme', async () => {
+  const files = [
+    'column-collapse.ts',
+    'column-collapse.react.tsx',
+    'column-collapse.vue',
+    'column-collapse.angular.ts',
+  ];
+  const sources = await Promise.all(files.map(readSource));
+  const styles = await readSource('column-collapse.scss');
+
+  for (const source of sources) {
+    assert.match(source, /currentTheme/);
+    assert.match(source, /observeCurrentTheme/);
+    assert.match(source, /darkMaterial/);
+  }
+  assert.doesNotMatch(styles, /@media \(prefers-color-scheme: dark\)/);
+  assert.doesNotMatch(styles, /\.column-collapse-showcase\.is-dark/);
+});
+
+test('showcase chrome stays transparent and inherits the host theme', async () => {
+  const styles = await readSource('column-collapse.scss');
+
+  assert.match(styles, /\.column-collapse-showcase\s*\{[^}]*background:\s*transparent/);
+  assert.match(styles, /\.column-collapse-toolbar\s*\{[^}]*background:\s*transparent/);
+  assert.doesNotMatch(styles, /background:\s*#(?:fff|ffffff|f8fafc)/i);
+});

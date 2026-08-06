@@ -25,10 +25,6 @@
         <button class="rv-btn-secondary" type="button" @click="clearAll">Clear All</button>
       </div>
     </div>
-    <div class="order-explorer__active-filters">
-      <div ref="quickBadgeRef" class="order-explorer__quick-chip" role="list"></div>
-      <div ref="badgesRef"></div>
-    </div>
     <div class="order-explorer__grid">
       <RevoGrid
         ref="gridRef"
@@ -51,8 +47,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
-import type { MultiFilterItem } from '@revolist/revogrid';
-import type { AdvancedFilterBadgesController } from '@revolist/revogrid-pro';
+import type { ColumnFilterConfig, MultiFilterItem } from '@revolist/revogrid';
 import RevoGrid from '@revolist/vue3-datagrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -63,29 +58,22 @@ import {
   createOrderExplorerPreset,
   createOrderExplorerRows,
   getOrderExplorerVisibleCount,
-  mountOrderExplorerFilterBadges,
-  mountOrderExplorerQuickBadge,
   setOrderExplorerQuickFilter,
   ORDER_EXPLORER_QUICK_FILTER_EXAMPLE,
   orderExplorerPlugins,
-  type OrderExplorerQuickBadgeController,
   type OrderExplorerPreset,
 } from './filtering.shared';
 import './filtering.scss';
 
 const isDark = ref(currentTheme().isDark());
 const gridRef = ref<any>(null);
-const badgesRef = ref<HTMLElement | null>(null);
-const quickBadgeRef = ref<HTMLElement | null>(null);
 const source = ref(createOrderExplorerRows());
 const columns = ref(createOrderExplorerColumns());
-const filter = ref(createOrderExplorerFilter(createOrderExplorerInitialFilters()));
+const filter = ref<ColumnFilterConfig>();
 const visibleCount = ref(source.value.length);
 const quickText = ref('');
 const plugins = [...orderExplorerPlugins];
 const columnTypes = createOrderExplorerColumnTypes();
-let badges: AdvancedFilterBadgesController | undefined;
-let quickBadge: OrderExplorerQuickBadgeController | undefined;
 let destroyed = false;
 let disconnectTheme: (() => void) | undefined;
 
@@ -107,7 +95,6 @@ function applyPreset(preset: OrderExplorerPreset) {
 function applyQuickFilter() {
   const grid = getGrid();
   if (grid) setOrderExplorerQuickFilter(grid, quickText.value);
-  quickBadge?.refresh(quickText.value);
 }
 
 function useQuickFilterExample() {
@@ -125,10 +112,6 @@ function disposeOrderExplorer() {
   destroyed = true;
   disconnectTheme?.();
   disconnectTheme = undefined;
-  badges?.destroy();
-  badges = undefined;
-  quickBadge?.destroy();
-  quickBadge = undefined;
 }
 
 async function syncFilterState() {
@@ -140,17 +123,11 @@ onMounted(async () => {
     isDark.value = value;
   });
   const grid = getGrid();
-  if (quickBadgeRef.value) {
-    quickBadge = mountOrderExplorerQuickBadge(quickBadgeRef.value, () => {
-      quickText.value = '';
-      applyQuickFilter();
-    });
-  }
-  if (grid && badgesRef.value) {
-    const controller = await mountOrderExplorerFilterBadges(grid, badgesRef.value);
-    if (destroyed) controller.destroy();
-    else badges = controller;
-  }
+  await grid?.componentOnReady?.();
+  if (destroyed || !grid) return;
+  const initialFilter = createOrderExplorerFilter(createOrderExplorerInitialFilters());
+  filter.value = initialFilter;
+  grid.filter = initialFilter;
   visibleCount.value = await getOrderExplorerVisibleCount(grid, source.value.length);
 });
 

@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import type { ColumnProp, FilterCollectionItem, MultiFilterItem } from '@revolist/revogrid';
 import {
@@ -38,6 +38,7 @@ import {
   RowSelectPlugin,
   type InfinityScrollConfig,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import { exportInfinityScrollRows } from './infinity-scroll.export';
 import {
   createInfinityScrollColumns,
@@ -45,7 +46,6 @@ import {
   createInfinityScrollPinnedBottomRows,
   createInfinityScrollPinnedTopRows,
   createInfinityScrollRows,
-  prefersDarkTheme,
   type InfinityScrollQuickFilter,
   type InfinityScrollUser,
 } from './infinity-scroll.shared';
@@ -60,7 +60,8 @@ const pinnedTopSource = createInfinityScrollPinnedTopRows();
 const pinnedBottomSource = createInfinityScrollPinnedBottomRows();
 const status = ref('Initializing remote source…');
 const exporting = ref(false);
-const darkTheme = ref(prefersDarkTheme());
+const darkTheme = ref(currentTheme().isDark());
+let disconnectTheme: (() => void) | undefined;
 const serverLoader = createInfinityScrollDataLoader({
   rows: rows.value,
   selectionFilterType: FIlTER_SELECTION,
@@ -86,6 +87,14 @@ const infinityScroll = computed<Partial<InfinityScrollConfig>>(() => ({
   total: rows.value.length,
   loadData,
 }));
+
+onMounted(() => {
+  disconnectTheme = observeCurrentTheme((isDark) => {
+    darkTheme.value = isDark;
+  });
+});
+
+onUnmounted(() => disconnectTheme?.());
 
 async function exportAll() {
   exporting.value = true;

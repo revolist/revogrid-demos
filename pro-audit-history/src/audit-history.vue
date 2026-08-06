@@ -1,18 +1,5 @@
 <template>
   <section class="audit-showcase" aria-label="Invoice audit history workspace">
-    <header class="audit-hero">
-      <div>
-        <span class="audit-eyebrow"><i></i> Live control log</span>
-        <h1>Invoice review ledger</h1>
-        <p>Edit any business field. Every change is attributed, reviewable, exportable, and reversible.</p>
-      </div>
-      <div class="audit-metrics" aria-label="Workspace metrics">
-        <span><strong>8</strong> open invoices</span>
-        <span><strong>4</strong> recorded actions</span>
-        <span><strong>100%</strong> attributable</span>
-      </div>
-    </header>
-    <div class="audit-hint"><span>Try it</span> Double-click a Customer, Status, Owner, Date, Amount, or Risk cell, then inspect the new record.</div>
     <div class="audit-workspace">
       <RevoGrid
         ref="gridRef"
@@ -41,13 +28,13 @@ import {
   EventManagerPlugin,
   defineAuditHistoryPanel,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createAuditColumns,
   createAuditHistoryConfig,
   createCellFlashConfig,
   createInvoiceRows,
   createPanelOptions,
-  prefersDarkTheme,
   type InvoiceRow,
 } from './audit-history.shared';
 import './audit-history.scss';
@@ -58,16 +45,23 @@ const columns = createAuditColumns();
 const plugins = [EventManagerPlugin, AuditHistoryPlugin, CellFlashPlugin];
 const auditHistory = createAuditHistoryConfig();
 const cellFlash = createCellFlashConfig();
-const darkTheme = ref(prefersDarkTheme());
+const darkTheme = ref(currentTheme().isDark());
 const gridRef = ref<{ $el?: HTMLRevoGridElement } | null>(null);
 const panelRef = ref<HTMLElement | null>(null);
 let panelHandle: ReturnType<typeof defineAuditHistoryPanel> | undefined;
+let disconnectTheme: (() => void) | undefined;
 
 onMounted(async () => {
+  disconnectTheme = observeCurrentTheme((isDark) => {
+    darkTheme.value = isDark;
+  });
   await nextTick();
   const grid = gridRef.value?.$el;
   if (grid && panelRef.value) panelHandle = defineAuditHistoryPanel(panelRef.value, grid, createPanelOptions());
 });
 
-onUnmounted(() => panelHandle?.destroy());
+onUnmounted(() => {
+  disconnectTheme?.();
+  panelHandle?.destroy();
+});
 </script>

@@ -6,10 +6,10 @@ import {
   RowOddPlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createColumnCollapseColumns,
   createColumnCollapseRows,
-  prefersDarkTheme,
   type ContactRow,
 } from './column-collapse.shared';
 import './column-collapse.scss';
@@ -46,7 +46,7 @@ export function load(parentSelector: string, rows?: ContactRow[]) {
 
   const grid = document.createElement('revo-grid');
   grid.className = 'column-collapse-grid';
-  grid.theme = prefersDarkTheme() ? 'darkMaterial' : 'material';
+  grid.theme = currentTheme().isDark() ? 'darkMaterial' : 'material';
   grid.columns = createColumnCollapseColumns();
   grid.plugins = plugins;
   grid.rowHeaders = true;
@@ -56,8 +56,12 @@ export function load(parentSelector: string, rows?: ContactRow[]) {
   container.appendChild(grid);
   parent.appendChild(container);
   grid.source = rows?.length ? rows : createColumnCollapseRows();
+  const disconnectTheme = observeCurrentTheme((isDark) => {
+    grid.theme = isDark ? 'darkMaterial' : 'material';
+  });
 
   return () => {
+    disconnectTheme();
     grid.remove();
     container.remove();
   };

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import {
   CellColumnFocusVerifyPlugin,
@@ -6,12 +6,12 @@ import {
   MasterRowPlugin,
   TreeDataPlugin,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createMasterColumns,
   createMasterRowConfig,
   createMasterRows,
   createMasterTreeConfig,
-  prefersDarkTheme,
   type MasterProjectRow,
 } from './row-master.shared';
 import './row-master.scss';
@@ -27,6 +27,9 @@ export default function RowMaster({ rows }: { rows?: MasterProjectRow[] }) {
   ], []);
   const masterRow = useMemo(() => createMasterRowConfig(), []);
   const tree = useMemo(() => createMasterTreeConfig(), []);
+  const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
+
+  useEffect(() => observeCurrentTheme(setDarkTheme), []);
 
   return (
     <section className="row-master-showcase" aria-label="Row Master portfolio explorer">
@@ -39,7 +42,7 @@ export default function RowMaster({ rows }: { rows?: MasterProjectRow[] }) {
       </div>
       <RevoGrid
         className="row-master-grid"
-        theme={prefersDarkTheme() ? 'darkMaterial' : 'material'}
+        theme={darkTheme ? 'darkMaterial' : 'material'}
         source={source}
         columns={columns}
         plugins={plugins}

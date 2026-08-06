@@ -66,3 +66,26 @@ test('all framework variants preserve plugin composition and lifecycle conventio
   assert.match(angular, /standalone: true/);
   assert.match(angular, /encapsulation: ViewEncapsulation.None/);
 });
+
+test('all framework variants react to the resolved host theme', async () => {
+  const files = ['row-master.ts', 'row-master.react.tsx', 'row-master.vue', 'row-master.angular.ts'];
+  const sources = await Promise.all(files.map(readSource));
+  const styles = await readSource('row-master.scss');
+
+  for (const source of sources) {
+    assert.match(source, /currentTheme/);
+    assert.match(source, /observeCurrentTheme/);
+    assert.match(source, /darkMaterial/);
+  }
+  assert.doesNotMatch(styles, /\.row-master-showcase\.is-dark/);
+  assert.doesNotMatch(styles, /@media \(prefers-color-scheme: dark\)/);
+});
+
+test('showcase chrome stays transparent and inherits the host theme', async () => {
+  const styles = await readSource('row-master.scss');
+
+  assert.match(styles, /\.row-master-showcase\s*\{[^}]*background:\s*transparent/);
+  assert.match(styles, /\.row-master-showcase\s*\{[^}]*border:\s*0/);
+  assert.match(styles, /\.row-master-showcase\s*\{[^}]*border-radius:\s*0/);
+  assert.match(styles, /\.row-master-toolbar\s*\{[^}]*background:\s*transparent/);
+});

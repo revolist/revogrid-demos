@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import {
   AdvanceFilterPlugin,
@@ -7,10 +7,10 @@ import {
   RowOddPlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createColumnCollapseColumns,
   createColumnCollapseRows,
-  prefersDarkTheme,
   type ContactRow,
 } from './column-collapse.shared';
 import './column-collapse.scss';
@@ -25,6 +25,9 @@ export default function ColumnCollapse({ rows }: { rows?: ContactRow[] }) {
     RowSelectPlugin,
     RowOddPlugin,
   ], []);
+  const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
+
+  useEffect(() => observeCurrentTheme(setDarkTheme), []);
 
   return (
     <section className="column-collapse-showcase" aria-label="Column Collapse contact workspace">
@@ -40,7 +43,7 @@ export default function ColumnCollapse({ rows }: { rows?: ContactRow[] }) {
       </div>
       <RevoGrid
         className="column-collapse-grid"
-        theme={prefersDarkTheme() ? 'darkMaterial' : 'material'}
+        theme={darkTheme ? 'darkMaterial' : 'material'}
         columns={columns}
         source={source}
         plugins={plugins}

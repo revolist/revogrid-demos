@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { MultiFilterItem } from '@revolist/revogrid';
+import type { ColumnFilterConfig, MultiFilterItem } from '@revolist/revogrid';
 import { RevoGrid } from '@revolist/react-datagrid';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createOrderExplorerColumns,
   createOrderExplorerColumnTypes,
@@ -10,8 +10,6 @@ import {
   createOrderExplorerPreset,
   createOrderExplorerRows,
   getOrderExplorerVisibleCount,
-  mountOrderExplorerFilterBadges,
-  mountOrderExplorerQuickBadge,
   setOrderExplorerQuickFilter,
   ORDER_EXPLORER_QUICK_FILTER_EXAMPLE,
   orderExplorerPlugins,
@@ -21,17 +19,32 @@ import {
 import './filtering.scss';
 
 export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
-  const { isDark } = currentTheme();
   const gridRef = useRef<HTMLRevoGridElement>(null);
-  const badgesRef = useRef<HTMLDivElement>(null);
-  const quickBadgeRef = useRef<HTMLDivElement>(null);
   const source = useMemo(() => rows?.length ? rows : createOrderExplorerRows(), [rows]);
   const columns = useMemo(() => createOrderExplorerColumns(), []);
   const plugins = useMemo(() => [...orderExplorerPlugins], []);
   const columnTypes = useMemo(() => createOrderExplorerColumnTypes(), []);
-  const [filter, setFilter] = useState(() => createOrderExplorerFilter(createOrderExplorerInitialFilters()));
+  const [filter, setFilter] = useState<ColumnFilterConfig | undefined>(undefined);
   const [visibleCount, setVisibleCount] = useState(source.length);
   const [quickText, setQuickText] = useState('');
+  const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
+
+  useEffect(() => observeCurrentTheme(setDarkTheme), []);
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    let cancelled = false;
+    void grid.componentOnReady().then(() => {
+      if (cancelled) return;
+      const initialFilter = createOrderExplorerFilter(createOrderExplorerInitialFilters());
+      setFilter(initialFilter);
+      grid.filter = initialFilter;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Presets and header filters use the same public `filter` property.
   const applyFilterItems = useCallback((items: MultiFilterItem) => {
@@ -51,33 +64,16 @@ export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
 
   useEffect(() => {
     const grid = gridRef.current;
-    const badgesRoot = badgesRef.current;
-    if (!grid || !badgesRoot) return;
-    let destroyed = false;
-    let badges: Awaited<ReturnType<typeof mountOrderExplorerFilterBadges>> | undefined;
+    if (!grid) return;
     const syncFilterState = async () => {
       setVisibleCount(await getOrderExplorerVisibleCount(grid, source.length));
     };
     grid.addEventListener('afterfilterapply', syncFilterState);
-    void mountOrderExplorerFilterBadges(grid, badgesRoot).then(controller => {
-      if (destroyed) controller.destroy();
-      else badges = controller;
-    });
     void getOrderExplorerVisibleCount(grid, source.length).then(setVisibleCount);
     return () => {
-      destroyed = true;
-      badges?.destroy();
       grid.removeEventListener('afterfilterapply', syncFilterState);
     };
   }, [source.length]);
-
-  useEffect(() => {
-    const root = quickBadgeRef.current;
-    if (!root) return;
-    const controller = mountOrderExplorerQuickBadge(root, () => applyQuickFilter(''));
-    controller.refresh(quickText);
-    return () => controller.destroy();
-  }, [applyQuickFilter, quickText]);
 
   return (
     <section className="order-explorer" aria-label="Advanced Filtering: Order Explorer">
@@ -109,15 +105,11 @@ export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
           }}>Clear All</button>
         </div>
       </div>
-      <div className="order-explorer__active-filters">
-        <div ref={quickBadgeRef} className="order-explorer__quick-chip" role="list"></div>
-        <div ref={badgesRef}></div>
-      </div>
       <div className="order-explorer__grid">
         <RevoGrid
           ref={gridRef}
           className="h-full w-full"
-          theme={isDark() ? 'darkMaterial' : 'material'}
+          theme={darkTheme ? 'darkMaterial' : 'material'}
           columns={columns}
           plugins={plugins}
           columnTypes={columnTypes}

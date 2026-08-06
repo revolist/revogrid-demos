@@ -1,15 +1,15 @@
-import { Component, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import {
   ExportExcelPlugin,
   TREE_COLLAPSE_ALL_EVENT,
   TREE_EXPAND_ALL_EVENT,
 } from '@revolist/revogrid-pro';
+import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createTreeColumns,
   createTreeConfig,
   createTreeRows,
-  prefersDarkTheme,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
@@ -62,10 +62,13 @@ import './tree.scss';
     </section>
   `,
 })
-export class TreeDataGridComponent {
+export class TreeDataGridComponent implements OnDestroy {
   @ViewChild('grid', { read: ElementRef }) gridElement?: ElementRef<HTMLRevoGridElement>;
 
-  readonly theme = prefersDarkTheme() ? 'darkMaterial' : 'material';
+  theme: HTMLRevoGridElement['theme'] = currentTheme().isDark() ? 'darkMaterial' : 'material';
+  private readonly disconnectTheme = observeCurrentTheme((isDark) => {
+    this.theme = isDark ? 'darkMaterial' : 'material';
+  });
   readonly rows = createTreeRows();
   readonly columns = createTreeColumns();
   readonly plugins = TREE_PLUGINS;
@@ -75,6 +78,10 @@ export class TreeDataGridComponent {
   stickyParents = true;
   exporting = false;
   treeConfig = createTreeConfig(this.rows);
+
+  ngOnDestroy() {
+    this.disconnectTheme();
+  }
 
   expandAll() {
     this.gridElement?.nativeElement.dispatchEvent(new CustomEvent(TREE_EXPAND_ALL_EVENT));

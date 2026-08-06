@@ -78,7 +78,3 @@ export function createColumnCollapseColumns(): ColumnData {
     },
   ];
 }
-
-export function prefersDarkTheme() {
-  return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
