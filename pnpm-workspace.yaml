@@ -8,5 +8,6 @@ packages:
   - "pro-tree-data"
   - "pro-infinity-scroll"
   - "pro-column-collapse"
+  - "pro-data-grid-context-menu"
   - "pro-row-master"
   - "pro-audit-history"

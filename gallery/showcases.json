@@ -96,6 +96,20 @@
     "media": { "poster": "assets/pro-column-collapse-poster.svg" }
   },
   {
+    "slug": "data-grid-context-menu",
+    "title": "Universal Data Grid Context Menu",
+    "summary": "A spreadsheet-style command surface for cells, rows, row groups, columns, and grouped headers with selection-aware clipboard, filtering, sizing, schema, and export actions.",
+    "edition": "Pro",
+    "sourceDir": "pro-data-grid-context-menu",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-data-grid-context-menu",
+    "productUrl": "https://pro.rv-grid.com/guides/data-grid/context-menu/",
+    "trialUrl": "https://pro.rv-grid.com/guides/installation-npm-trial/",
+    "pricingUrl": "https://rv-grid.com/pricing/",
+    "frameworks": ["ts", "react", "vue", "angular"],
+    "highlights": ["Semantic menu surfaces", "Stable item customization", "Readonly-aware clipboard and mutations"],
+    "media": { "poster": "assets/pro-data-grid-context-menu-poster.svg" }
+  },
+  {
     "slug": "row-master",
     "title": "Row Master: Portfolio Explorer",
     "summary": "A hierarchical project portfolio with virtualized, full-width master-detail workspaces, async operational insights, and accessible detail interactions.",
