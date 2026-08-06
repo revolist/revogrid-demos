@@ -1,10 +1,6 @@
 <template>
   <section class="tree-showcase" aria-label="Tree Data organization explorer">
     <div class="tree-toolbar">
-      <div class="tree-toolbar__intro">
-        <span class="tree-eyebrow">Organization explorer</span>
-        <strong>Interactive hierarchy</strong>
-      </div>
       <div class="tree-toolbar__actions">
         <button class="tree-button" type="button" @click="expandAll">Expand all</button>
         <button class="tree-button" type="button" @click="collapseAll">Collapse all</button>
@@ -21,14 +17,16 @@
       ref="gridRef"
       class="tree-grid"
       :theme="darkTheme ? 'darkMaterial' : 'material'"
+      :plugins="plugins"
       :columns="columns"
       :source="rows"
-      :plugins="plugins"
       :column-types="columnTypes"
       :row-order.prop="TREE_ROW_ORDER_CONFIG"
       :row-select.prop="TREE_ROW_SELECT_CONFIG"
       :tree.prop="treeConfig"
+      :sticky-cells.prop="TREE_STICKY_CELLS_CONFIG"
       :range="true"
+      :readonly="true"
       :resize="true"
       :filter="true"
       :stretch="true"
@@ -38,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, shallowRef } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import {
   ExportExcelPlugin,
@@ -50,20 +48,22 @@ import {
   createTreeColumns,
   createTreeConfig,
   createTreeRows,
+  initializeTreeStickyColumns,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
   TREE_ROW_ORDER_CONFIG,
   TREE_ROW_SELECT_CONFIG,
+  TREE_STICKY_CELLS_CONFIG,
 } from './tree.shared';
 import './tree.scss';
 
 const gridRef = ref<{ $el: HTMLRevoGridElement } | HTMLRevoGridElement | null>(null);
 const rows = ref(createTreeRows());
-const columns = shallowRef(createTreeColumns());
+const stickyParents = ref(true);
+const columns = computed(() => createTreeColumns(rows.value, stickyParents.value));
 const plugins = [...TREE_PLUGINS];
 const columnTypes = TREE_COLUMN_TYPES;
-const stickyParents = ref(true);
 const exporting = ref(false);
 const darkTheme = ref(typeof window !== 'undefined' && currentTheme().isDark());
 const treeConfig = computed(() => createTreeConfig(rows.value, stickyParents.value));
@@ -73,6 +73,8 @@ onMounted(() => {
   disconnectTheme = observeCurrentTheme((isDark) => {
     darkTheme.value = isDark;
   });
+  const grid = getGrid();
+  if (grid) void initializeTreeStickyColumns(grid, rows.value, treeConfig.value);
 });
 
 onUnmounted(() => disconnectTheme?.());

@@ -6,8 +6,8 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { trialCssAliases } from '../vite.trial-aliases';
 
-const localProEntry = fileURLToPath(new URL('../../../packages/pro/dist/revogrid-pro.js', import.meta.url));
-const localProCss = fileURLToPath(new URL('../../../packages/pro/dist/revogrid-pro.css', import.meta.url));
+const localProEntry = fileURLToPath(new URL('../../../../packages/pro/dist/revogrid-pro.js', import.meta.url));
+const localProCss = fileURLToPath(new URL('../../../../packages/pro/dist/revogrid-pro.css', import.meta.url));
 
 const proAliases = existsSync(localProEntry)
   ? {

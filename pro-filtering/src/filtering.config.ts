@@ -3,10 +3,20 @@ import type {
   FilterData,
   MultiFilterItem,
 } from '@revolist/revogrid';
-import { FIlTER_SELECTION, FIlTER_SLIDER } from '@revolist/revogrid-pro';
+import {
+  FIlTER_SELECTION,
+  FIlTER_SLIDER,
+  type AdvancedFilterBadgesOptions,
+} from '@revolist/revogrid-pro';
 import { ORDER_OPTIONS_BY_PROP } from './filtering.data';
 
 export type OrderExplorerPreset = 'high-value-europe' | 'recent-expedited' | 'review-queue';
+
+export const orderExplorerFilterBadgeOptions = {
+  className: 'order-explorer__active-filters',
+  badgeClassName: 'order-explorer__filter-badge',
+  renderEmpty: () => null,
+} satisfies AdvancedFilterBadgesOptions;
 
 export function normalizeFilterOption(value: string): string {
   return value.toLowerCase().trim();

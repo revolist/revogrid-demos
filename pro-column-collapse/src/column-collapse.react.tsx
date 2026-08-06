@@ -3,6 +3,7 @@ import { RevoGrid } from '@revolist/react-datagrid';
 import {
   AdvanceFilterPlugin,
   ColumnCollapsePlugin,
+  ColumnMoveAdvancedPlugin,
   FilterHeaderPlugin,
   RowOddPlugin,
   RowSelectPlugin,
@@ -19,6 +20,7 @@ export default function ColumnCollapse({ rows }: { rows?: ContactRow[] }) {
   const source = useMemo(() => rows?.length ? rows : createColumnCollapseRows(), [rows]);
   const columns = useMemo(() => createColumnCollapseColumns(), []);
   const plugins = useMemo(() => [
+    ColumnMoveAdvancedPlugin,
     ColumnCollapsePlugin,
     AdvanceFilterPlugin,
     FilterHeaderPlugin,
@@ -31,16 +33,6 @@ export default function ColumnCollapse({ rows }: { rows?: ContactRow[] }) {
 
   return (
     <section className="column-collapse-showcase" aria-label="Column Collapse contact workspace">
-      <div className="column-collapse-toolbar">
-        <div>
-          <strong>Contact workspace</strong>
-          <span>Collapse a grouped header to keep only its sealed column visible.</span>
-        </div>
-        <div className="column-collapse-legend" aria-label="Column collapse legend">
-          <span><i className="column-collapse-dot column-collapse-dot--sealed" />Sealed</span>
-          <span><i className="column-collapse-dot column-collapse-dot--hidden" />Collapsible</span>
-        </div>
-      </div>
       <RevoGrid
         className="column-collapse-grid"
         theme={darkTheme ? 'darkMaterial' : 'material'}

@@ -9,11 +9,13 @@ import {
   createTreeColumns,
   createTreeConfig,
   createTreeRows,
+  initializeTreeStickyColumns,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
   TREE_ROW_ORDER_CONFIG,
   TREE_ROW_SELECT_CONFIG,
+  TREE_STICKY_CELLS_CONFIG,
   type TreeDataRow,
 } from './tree.shared';
 import './tree.scss';
@@ -39,9 +41,6 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
 
   const toolbar = document.createElement('div');
   toolbar.className = 'tree-toolbar';
-  const intro = document.createElement('div');
-  intro.className = 'tree-toolbar__intro';
-  intro.innerHTML = '<span class="tree-eyebrow">Organization explorer</span><strong>Interactive hierarchy</strong>';
   const actions = document.createElement('div');
   actions.className = 'tree-toolbar__actions';
   const expandButton = createButton('Expand all');
@@ -54,14 +53,14 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   stickyInput.checked = true;
   stickyLabel.append(stickyInput, document.createTextNode('Sticky parents'));
   actions.append(expandButton, collapseButton, exportButton, stickyLabel);
-  toolbar.append(intro, actions);
+  toolbar.append(actions);
 
   const grid = document.createElement('revo-grid');
   grid.className = 'tree-grid';
   const initialDarkTheme = currentTheme().isDark();
   grid.theme = initialDarkTheme ? 'darkMaterial' : 'material';
-  grid.columns = createTreeColumns();
   grid.plugins = TREE_PLUGINS;
+  grid.columns = createTreeColumns(source);
   grid.columnTypes = TREE_COLUMN_TYPES;
   Object.assign(grid, {
     rowOrder: TREE_ROW_ORDER_CONFIG,
@@ -69,6 +68,8 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
     tree: createTreeConfig(source),
   });
   grid.range = true;
+  grid.readonly = true;
+  grid.stickyCells = TREE_STICKY_CELLS_CONFIG;
   grid.resize = true;
   grid.filter = true;
   grid.stretch = true;
@@ -78,6 +79,7 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   const collapseAll = () => grid.dispatchEvent(new CustomEvent(TREE_COLLAPSE_ALL_EVENT));
   const toggleSticky = () => {
     Object.assign(grid, { tree: createTreeConfig(source, stickyInput.checked) });
+    grid.columns = createTreeColumns(source, stickyInput.checked);
   };
   const exportToExcel = async () => {
     exportButton.disabled = true;
@@ -99,6 +101,7 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   container.append(toolbar, grid);
   parent.appendChild(container);
   grid.source = source;
+  void initializeTreeStickyColumns(grid, source, createTreeConfig(source));
   const disconnectTheme = observeCurrentTheme((isDark) => {
     grid.theme = isDark ? 'darkMaterial' : 'material';
   });

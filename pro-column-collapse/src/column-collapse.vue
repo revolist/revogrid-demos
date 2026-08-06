@@ -1,15 +1,5 @@
 <template>
   <section class="column-collapse-showcase" aria-label="Column Collapse contact workspace">
-    <div class="column-collapse-toolbar">
-      <div>
-        <strong>Contact workspace</strong>
-        <span>Collapse a grouped header to keep only its sealed column visible.</span>
-      </div>
-      <div class="column-collapse-legend" aria-label="Column collapse legend">
-        <span><i class="column-collapse-dot column-collapse-dot--sealed"></i>Sealed</span>
-        <span><i class="column-collapse-dot column-collapse-dot--hidden"></i>Collapsible</span>
-      </div>
-    </div>
     <RevoGrid
       class="column-collapse-grid"
       :theme="darkTheme ? 'darkMaterial' : 'material'"
@@ -29,6 +19,7 @@ import RevoGrid from '@revolist/vue3-datagrid';
 import {
   AdvanceFilterPlugin,
   ColumnCollapsePlugin,
+  ColumnMoveAdvancedPlugin,
   FilterHeaderPlugin,
   RowOddPlugin,
   RowSelectPlugin,
@@ -44,7 +35,14 @@ import './column-collapse.scss';
 const props = defineProps<{ rows?: ContactRow[] }>();
 const rows = ref(props.rows?.length ? props.rows : createColumnCollapseRows());
 const columns = createColumnCollapseColumns();
-const plugins = [ColumnCollapsePlugin, AdvanceFilterPlugin, FilterHeaderPlugin, RowSelectPlugin, RowOddPlugin];
+const plugins = [
+  ColumnMoveAdvancedPlugin,
+  ColumnCollapsePlugin,
+  AdvanceFilterPlugin,
+  FilterHeaderPlugin,
+  RowSelectPlugin,
+  RowOddPlugin,
+];
 const darkTheme = ref(currentTheme().isDark());
 let disconnectTheme: (() => void) | undefined;
 

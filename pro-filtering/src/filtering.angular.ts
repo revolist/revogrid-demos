@@ -1,11 +1,16 @@
 import {
-  AfterViewInit,
+  type AfterViewInit,
   Component,
-  OnDestroy,
+  ElementRef,
+  type OnDestroy,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import type { ColumnFilterConfig, MultiFilterItem } from '@revolist/revogrid';
+import {
+  mountAdvancedFilterBadges,
+  type AdvancedFilterBadgesController,
+} from '@revolist/revogrid-pro';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -18,6 +23,7 @@ import {
   getOrderExplorerVisibleCount,
   setOrderExplorerQuickFilter,
   ORDER_EXPLORER_QUICK_FILTER_EXAMPLE,
+  orderExplorerFilterBadgeOptions,
   orderExplorerPlugins,
   type OrderExplorerPreset,
 } from './filtering.shared';
@@ -55,6 +61,7 @@ import {
           <button class="rv-btn-secondary" type="button" (click)="clearAll()">Clear All</button>
         </div>
       </div>
+      <div #badgesRef class="order-explorer__active-filters"></div>
       <div class="order-explorer__grid">
         <revo-grid
           #gridRef
@@ -76,6 +83,7 @@ import {
 })
 export class FilteringGridComponent implements AfterViewInit, OnDestroy {
   @ViewChild('gridRef') gridRef?: any;
+  @ViewChild('badgesRef', { read: ElementRef }) badgesRef?: ElementRef<HTMLElement>;
 
   theme: HTMLRevoGridElement['theme'] = currentTheme().isDark() ? 'darkMaterial' : 'material';
   readonly source = createOrderExplorerRows();
@@ -83,11 +91,12 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
   readonly plugins = orderExplorerPlugins;
   readonly columnTypes = createOrderExplorerColumnTypes();
   readonly stretch = 'all';
-  filter: ColumnFilterConfig | undefined;
+  filter: ColumnFilterConfig = createOrderExplorerFilter(createOrderExplorerInitialFilters());
   visibleCount = this.source.length;
   quickText = '';
   readonly quickFilterExample = ORDER_EXPLORER_QUICK_FILTER_EXAMPLE;
   private destroyed = false;
+  private badgesController?: AdvancedFilterBadgesController;
   private readonly disconnectTheme = observeCurrentTheme((isDark) => {
     this.theme = isDark ? 'darkMaterial' : 'material';
   });
@@ -103,11 +112,24 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
   async ngAfterViewInit() {
     const grid = this.grid;
     await grid?.componentOnReady?.();
-    if (this.destroyed || !grid) return;
-    const initialFilter = createOrderExplorerFilter(createOrderExplorerInitialFilters());
-    this.filter = initialFilter;
-    grid.filter = initialFilter;
-    grid?.addEventListener('afterfilterapply', this.syncFilterState);
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    const badgesRoot = this.badgesRef?.nativeElement;
+    if (this.destroyed || !grid || !badgesRoot) return;
+    grid.addEventListener('afterfilterapply', this.syncFilterState);
+    grid.filter = this.filter;
+    grid.columns = createOrderExplorerColumns();
+    void mountAdvancedFilterBadges({
+        grid,
+        root: badgesRoot,
+        ...orderExplorerFilterBadgeOptions,
+      })
+      .then(controller => {
+        if (this.destroyed) controller.destroy();
+        else this.badgesController = controller;
+      })
+      .catch(() => {
+        // Filtering remains available when optional badge discovery is unavailable.
+      });
     void getOrderExplorerVisibleCount(grid, this.source.length).then(count => {
       this.visibleCount = count;
     });
@@ -119,6 +141,8 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
 
   private disposeOrderExplorer() {
     this.destroyed = true;
+    this.badgesController?.destroy();
+    this.badgesController = undefined;
     this.disconnectTheme();
     this.grid?.removeEventListener('afterfilterapply', this.syncFilterState);
   }
@@ -144,6 +168,9 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
   // Presets and header filters use the same public `filter` property.
   private applyFilterItems(items: MultiFilterItem) {
     this.filter = createOrderExplorerFilter(items);
-    if (this.grid) this.grid.filter = this.filter;
+    if (this.grid) {
+      this.grid.filter = this.filter;
+      this.grid.columns = createOrderExplorerColumns();
+    }
   }
 }

@@ -20,6 +20,16 @@ test('contact data and grouped column definitions are deterministic', () => {
   assert.deepEqual(columns.map(group => group.name), ['Personal Information', 'Address', 'Contact']);
   assert.equal(columns.filter(group => group.collapsed).length, 2);
   assert.equal(columns.flatMap(group => group.children ?? []).filter(column => column.sealed).length, 3);
+  const personalColumns = columns[0].children ?? [];
+  assert.equal(personalColumns[0].prop, 'age');
+  assert.deepEqual(
+    personalColumns.map(column => column.prop),
+    ['age', 'firstName', 'lastName'],
+  );
+  assert.equal(personalColumns[0].sealed, true);
+  assert.equal(personalColumns[0].pin, 'colPinStart');
+  assert.equal(personalColumns[0].rowSelect, true);
+  assert.equal(personalColumns[0].size, 125);
   assert.notStrictEqual(createColumnCollapseRows()[0], rows[0]);
 });
 
@@ -33,10 +43,12 @@ test('all framework variants preserve the Column Collapse integrations', async (
   const sources = await Promise.all(files.map(readSource));
 
   for (const source of sources) {
+    assert.match(source, /ColumnMoveAdvancedPlugin/);
     assert.match(source, /ColumnCollapsePlugin/);
     assert.match(source, /FilterHeaderPlugin/);
     assert.match(source, /RowSelectPlugin/);
-    assert.match(source, /Contact workspace/);
+    assert.doesNotMatch(source, /Contact workspace|column-collapse-(?:toolbar|legend|dot)/);
+    assert.match(source, /(?:const|readonly) plugins[^;]*ColumnMoveAdvancedPlugin[^;]*ColumnCollapsePlugin/);
   }
 });
 
@@ -77,10 +89,13 @@ test('all framework variants reactively apply the native RevoGrid theme', async 
   assert.doesNotMatch(styles, /\.column-collapse-showcase\.is-dark/);
 });
 
-test('showcase chrome stays transparent and inherits the host theme', async () => {
+test('showcase renders only the borderless grid workspace', async () => {
   const styles = await readSource('column-collapse.scss');
+  const showcaseBlock = styles.match(/\.column-collapse-showcase\s*\{([^}]*)\}/)?.[1] ?? '';
 
   assert.match(styles, /\.column-collapse-showcase\s*\{[^}]*background:\s*transparent/);
-  assert.match(styles, /\.column-collapse-toolbar\s*\{[^}]*background:\s*transparent/);
+  assert.doesNotMatch(styles, /\.column-collapse-(?:toolbar|legend|dot)\b/);
+  assert.doesNotMatch(showcaseBlock, /(?:^|\s)border:/);
+  assert.doesNotMatch(showcaseBlock, /border-radius:/);
   assert.doesNotMatch(styles, /background:\s*#(?:fff|ffffff|f8fafc)/i);
 });

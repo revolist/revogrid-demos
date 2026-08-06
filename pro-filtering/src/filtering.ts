@@ -1,5 +1,9 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import type { MultiFilterItem } from '@revolist/revogrid';
+import {
+  mountAdvancedFilterBadges,
+  type AdvancedFilterBadgesController,
+} from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createOrderExplorerColumns,
@@ -11,6 +15,7 @@ import {
   getOrderExplorerVisibleCount,
   setOrderExplorerQuickFilter,
   ORDER_EXPLORER_QUICK_FILTER_EXAMPLE,
+  orderExplorerFilterBadgeOptions,
   orderExplorerPlugins,
   type OrderExplorerPreset,
   type OrderExplorerRow,
@@ -65,6 +70,9 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
   grid.readonly = true;
   grid.resize = true;
 
+  const badges = document.createElement('div');
+  badges.className = 'order-explorer__active-filters';
+
   const renderCount = (visible: number) => {
     count.textContent = `${visible.toLocaleString()} of ${source.length.toLocaleString()} orders`;
   };
@@ -72,6 +80,7 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
   // Presets and header filters use the same public `filter` property.
   const applyFilterItems = (items: MultiFilterItem) => {
     grid.filter = createOrderExplorerFilter(items);
+    grid.columns = createOrderExplorerColumns();
   };
 
   const presetButtons: Array<[string, OrderExplorerPreset]> = [
@@ -103,7 +112,7 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
     applyQuickFilter('');
   }, 'rv-btn-secondary'));
   toolbar.append(presets, search, summary);
-  container.append(toolbar, grid);
+  container.append(toolbar, badges, grid);
 
   grid.addEventListener('afterfilterapply', async () => {
     renderCount(await getOrderExplorerVisibleCount(grid, source.length));
@@ -114,16 +123,33 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
   const disconnectTheme = observeCurrentTheme((isDark) => {
     grid.theme = isDark ? 'darkMaterial' : 'material';
   });
+  let badgesController: AdvancedFilterBadgesController | undefined;
   renderCount(source.length);
-  void grid.componentOnReady().then(() => {
+  void grid.componentOnReady().then(async () => {
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
     if (destroyed) return;
+    grid.source = source;
     const initialFilter = createOrderExplorerFilter(createOrderExplorerInitialFilters());
     grid.filter = initialFilter;
-    grid.source = source;
+    grid.columns = createOrderExplorerColumns();
+    void mountAdvancedFilterBadges({
+        grid,
+        root: badges,
+        ...orderExplorerFilterBadgeOptions,
+      })
+      .then(controller => {
+        if (destroyed) controller.destroy();
+        else badgesController = controller;
+      })
+      .catch(() => {
+        // Filtering remains available when optional badge discovery is unavailable.
+      });
   });
 
   return () => {
     destroyed = true;
+    badgesController?.destroy();
+    badgesController = undefined;
     disconnectTheme();
     grid.remove();
     container.remove();

@@ -1,12 +1,5 @@
 <template>
   <section class="row-master-showcase" aria-label="Row Master portfolio explorer">
-    <div class="row-master-toolbar">
-      <div>
-        <strong>Portfolio explorer</strong>
-        <span>Expand a leaf initiative to open its virtualized master-detail workspace.</span>
-      </div>
-      <div class="row-master-toolbar__badge">Tree + master detail</div>
-    </div>
     <RevoGrid
       class="row-master-grid"
       :theme="darkTheme ? 'darkMaterial' : 'material'"

@@ -24,13 +24,6 @@ import './row-master.scss';
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <section class="row-master-showcase" aria-label="Row Master portfolio explorer">
-      <div class="row-master-toolbar">
-        <div>
-          <strong>Portfolio explorer</strong>
-          <span>Expand a leaf initiative to open its virtualized master-detail workspace.</span>
-        </div>
-        <div class="row-master-toolbar__badge">Tree + master detail</div>
-      </div>
       <revo-grid
         class="row-master-grid"
         [theme]="theme"

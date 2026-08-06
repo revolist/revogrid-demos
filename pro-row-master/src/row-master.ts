@@ -27,14 +27,6 @@ export function load(parentSelector: string, rows?: MasterProjectRow[]) {
   const container = document.createElement('section');
   container.className = 'row-master-showcase';
   container.setAttribute('aria-label', 'Row Master portfolio explorer');
-  container.innerHTML = `
-    <div class="row-master-toolbar">
-      <div>
-        <strong>Portfolio explorer</strong>
-        <span>Expand a leaf initiative to open its virtualized master-detail workspace.</span>
-      </div>
-      <div class="row-master-toolbar__badge">Tree + master detail</div>
-    </div>`;
 
   const grid = document.createElement('revo-grid');
   grid.className = 'row-master-grid';

@@ -10,11 +10,13 @@ import {
   createTreeColumns,
   createTreeConfig,
   createTreeRows,
+  initializeTreeStickyColumns,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
   TREE_ROW_ORDER_CONFIG,
   TREE_ROW_SELECT_CONFIG,
+  TREE_STICKY_CELLS_CONFIG,
   type TreeDataRow,
 } from './tree.shared';
 import './tree.scss';
@@ -22,18 +24,28 @@ import './tree.scss';
 export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
   const source = useMemo(() => rows?.length ? rows : createTreeRows(), [rows]);
-  const columns = useMemo(() => createTreeColumns(), []);
+  const [stickyParents, setStickyParents] = useState(true);
+  const columns = useMemo(() => createTreeColumns(source, stickyParents), [source, stickyParents]);
   const plugins = useMemo(() => [...TREE_PLUGINS], []);
   const columnTypes = useMemo(() => ({ ...TREE_COLUMN_TYPES }), []);
   const rowOrder = useMemo(() => TREE_ROW_ORDER_CONFIG, []);
   const rowSelect = useMemo(() => TREE_ROW_SELECT_CONFIG, []);
-  const [stickyParents, setStickyParents] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
   const tree = useMemo(() => createTreeConfig(source, stickyParents), [source, stickyParents]);
-  const pluginProps = useMemo(() => ({ rowOrder, rowSelect, tree }) as any, [rowOrder, rowSelect, tree]);
+  const pluginProps = useMemo(() => ({
+    rowOrder,
+    rowSelect,
+    stickyCells: TREE_STICKY_CELLS_CONFIG,
+    tree,
+  }) as any, [rowOrder, rowSelect, tree]);
 
-  useEffect(() => observeCurrentTheme(setDarkTheme), []);
+  useEffect(() => {
+    const disconnectTheme = observeCurrentTheme(setDarkTheme);
+    const grid = gridRef.current;
+    if (grid) void initializeTreeStickyColumns(grid, source, tree);
+    return disconnectTheme;
+  }, []);
 
   const expandAll = () => gridRef.current?.dispatchEvent(new CustomEvent(TREE_EXPAND_ALL_EVENT));
   const collapseAll = () => gridRef.current?.dispatchEvent(new CustomEvent(TREE_COLLAPSE_ALL_EVENT));
@@ -52,10 +64,6 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
   return (
     <section className="tree-showcase" aria-label="Tree Data organization explorer">
       <div className="tree-toolbar">
-        <div className="tree-toolbar__intro">
-          <span className="tree-eyebrow">Organization explorer</span>
-          <strong>Interactive hierarchy</strong>
-        </div>
         <div className="tree-toolbar__actions">
           <button className="tree-button" type="button" onClick={expandAll}>Expand all</button>
           <button className="tree-button" type="button" onClick={collapseAll}>Collapse all</button>
@@ -72,12 +80,13 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
         ref={gridRef}
         className="tree-grid"
         theme={darkTheme ? 'darkMaterial' : 'material'}
+        plugins={plugins}
         columns={columns}
         source={source}
-        plugins={plugins}
         columnTypes={columnTypes}
         {...pluginProps}
         range={true}
+        readonly={true}
         resize={true}
         filter={true}
         stretch={true}

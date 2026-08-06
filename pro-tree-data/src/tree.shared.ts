@@ -9,6 +9,7 @@ import {
   RowOddPlugin,
   RowOrderPlugin,
   RowSelectPlugin,
+  type StickyCellsConfig,
   StickyCellsPlugin,
   TreeDataPlugin,
 } from '@revolist/revogrid-pro';
@@ -45,6 +46,10 @@ export const TREE_ROW_SELECT_CONFIG = {
   rowOrder: true,
 };
 
+export const TREE_STICKY_CELLS_CONFIG: StickyCellsConfig = {
+  maxRows: 2,
+};
+
 export const TREE_EXPORT_CONFIG: ExportExcelEvent = {
   sheetName: 'Tree Data',
   workbookName: 'tree-data.xlsx',
@@ -68,16 +73,28 @@ export function createTreeRows(): TreeDataRow[] {
     { id: 'platform', parentId: 'product', avatar: 'NS', fullName: 'Noah Smith', team: 'Platform', role: 'Engineering lead', status: 'On track', salary: 176000 },
     { id: 'platform-api', parentId: 'platform', avatar: 'EG', fullName: 'Eva Green', team: 'Platform', role: 'API engineer', status: 'At risk', salary: 154000 },
     { id: 'platform-grid', parentId: 'platform', avatar: 'LB', fullName: 'Liam Brown', team: 'Platform', role: 'Grid engineer', status: 'On track', salary: 158000 },
+    { id: 'platform-security', parentId: 'platform', avatar: 'GY', fullName: 'Grace Young', team: 'Platform', role: 'Security engineer', status: 'On track', salary: 157000 },
+    { id: 'platform-infrastructure', parentId: 'platform', avatar: 'LK', fullName: 'Lucas King', team: 'Platform', role: 'Infrastructure engineer', status: 'Planned', salary: 156000 },
+    { id: 'platform-reliability', parentId: 'platform', avatar: 'EW', fullName: 'Ella Wright', team: 'Platform', role: 'Reliability engineer', status: 'On track', salary: 159000 },
     { id: 'experience', parentId: 'product', avatar: 'OL', fullName: 'Olivia Lee', team: 'Experience', role: 'Design lead', status: 'Planned', salary: 165000 },
     { id: 'experience-design', parentId: 'experience', avatar: 'MW', fullName: 'Mia Wilson', team: 'Experience', role: 'Product designer', status: 'On track', salary: 142000 },
     { id: 'experience-research', parentId: 'experience', avatar: 'ED', fullName: 'Ethan Davis', team: 'Experience', role: 'UX researcher', status: 'Blocked', salary: 137000 },
+    { id: 'experience-content', parentId: 'experience', avatar: 'LS', fullName: 'Leo Scott', team: 'Experience', role: 'Content designer', status: 'On track', salary: 139000 },
+    { id: 'experience-systems', parentId: 'experience', avatar: 'ZA', fullName: 'Zoe Adams', team: 'Experience', role: 'Design systems engineer', status: 'At risk', salary: 147000 },
+    { id: 'experience-accessibility', parentId: 'experience', avatar: 'AB', fullName: 'Aria Baker', team: 'Experience', role: 'Accessibility lead', status: 'On track', salary: 145000 },
     { id: 'data', parentId: null, avatar: 'AM', fullName: 'Ava Martin', team: 'Data', role: 'VP Data', status: 'On track', salary: 202000 },
     { id: 'analytics', parentId: 'data', avatar: 'JC', fullName: 'James Clark', team: 'Analytics', role: 'Analytics lead', status: 'At risk', salary: 171000 },
     { id: 'analytics-bi', parentId: 'analytics', avatar: 'SH', fullName: 'Sofia Hall', team: 'Analytics', role: 'BI engineer', status: 'On track', salary: 149000 },
     { id: 'analytics-science', parentId: 'analytics', avatar: 'AP', fullName: 'Amelia Parker', team: 'Analytics', role: 'Data scientist', status: 'Planned', salary: 162000 },
+    { id: 'analytics-engineering', parentId: 'analytics', avatar: 'DE', fullName: 'Daniel Evans', team: 'Analytics', role: 'Data engineer', status: 'On track', salary: 153000 },
+    { id: 'analytics-ml', parentId: 'analytics', avatar: 'CT', fullName: 'Chloe Turner', team: 'Analytics', role: 'ML engineer', status: 'At risk', salary: 164000 },
+    { id: 'analytics-insights', parentId: 'analytics', avatar: 'OC', fullName: 'Oscar Collins', team: 'Analytics', role: 'Insights engineer', status: 'On track', salary: 150000 },
     { id: 'operations', parentId: 'data', avatar: 'JL', fullName: 'Jack Lewis', team: 'Operations', role: 'Operations lead', status: 'On track', salary: 151000 },
     { id: 'operations-quality', parentId: 'operations', avatar: 'CH', fullName: 'Charlotte Harris', team: 'Operations', role: 'Quality analyst', status: 'On track', salary: 126000 },
     { id: 'operations-enablement', parentId: 'operations', avatar: 'HM', fullName: 'Henry Moore', team: 'Operations', role: 'Enablement manager', status: 'At risk', salary: 133000 },
+    { id: 'operations-programs', parentId: 'operations', avatar: 'LS', fullName: 'Lily Stewart', team: 'Operations', role: 'Program manager', status: 'Planned', salary: 138000 },
+    { id: 'operations-release', parentId: 'operations', avatar: 'BM', fullName: 'Benjamin Morris', team: 'Operations', role: 'Release manager', status: 'On track', salary: 136000 },
+    { id: 'operations-support', parentId: 'operations', avatar: 'ER', fullName: 'Emily Rogers', team: 'Operations', role: 'Support operations', status: 'On track', salary: 129000 },
   ];
 }
 
@@ -87,7 +104,11 @@ function statusTemplate(h: Parameters<NonNullable<ColumnRegular['cellTemplate']>
   return h('span', { class: `tree-status tree-status--${tone}` }, label);
 }
 
-export function createTreeColumns(): ColumnRegular[] {
+export function createTreeColumns(
+  rows: TreeDataRow[] = createTreeRows(),
+  stickyParents = true,
+): ColumnRegular[] {
+  const parentIds = new Set(rows.flatMap(row => row.parentId === null ? [] : [row.parentId]));
   const childCell = ({ model }: { model: Record<string, unknown> }) => ({
     subRow: Boolean(model.parentId),
   });
@@ -108,6 +129,7 @@ export function createTreeColumns(): ColumnRegular[] {
       avatarSize: 22,
       cellTemplate: avatarWithTextRenderer,
       cellProperties: childCell,
+      stickyCell: ({ model }) => stickyParents && parentIds.has(String(model.id)),
     },
     {
       name: 'Team',
@@ -145,6 +167,18 @@ export function createTreeColumns(): ColumnRegular[] {
       }),
     },
   ];
+}
+
+export async function initializeTreeStickyColumns(
+  grid: HTMLRevoGridElement,
+  rows: TreeDataRow[],
+  tree: ReturnType<typeof createTreeConfig>,
+) {
+  await grid.componentOnReady();
+  if (!grid.isConnected) return;
+  grid.tree = tree;
+  grid.stickyCells = TREE_STICKY_CELLS_CONFIG;
+  grid.columns = createTreeColumns(rows, tree.stickyParents);
 }
 
 export function createTreeConfig(rows: TreeDataRow[], stickyParents = true) {

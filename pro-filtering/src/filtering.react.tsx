@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ColumnFilterConfig, MultiFilterItem } from '@revolist/revogrid';
+import {
+  mountAdvancedFilterBadges,
+  type AdvancedFilterBadgesController,
+} from '@revolist/revogrid-pro';
 import { RevoGrid } from '@revolist/react-datagrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -12,6 +16,7 @@ import {
   getOrderExplorerVisibleCount,
   setOrderExplorerQuickFilter,
   ORDER_EXPLORER_QUICK_FILTER_EXAMPLE,
+  orderExplorerFilterBadgeOptions,
   orderExplorerPlugins,
   type OrderExplorerPreset,
   type OrderExplorerRow,
@@ -20,11 +25,15 @@ import './filtering.scss';
 
 export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
+  const badgesRef = useRef<HTMLDivElement>(null);
+  const badgesControllerRef = useRef<AdvancedFilterBadgesController>();
   const source = useMemo(() => rows?.length ? rows : createOrderExplorerRows(), [rows]);
   const columns = useMemo(() => createOrderExplorerColumns(), []);
   const plugins = useMemo(() => [...orderExplorerPlugins], []);
   const columnTypes = useMemo(() => createOrderExplorerColumnTypes(), []);
-  const [filter, setFilter] = useState<ColumnFilterConfig | undefined>(undefined);
+  const [filter, setFilter] = useState<ColumnFilterConfig>(() =>
+    createOrderExplorerFilter(createOrderExplorerInitialFilters()),
+  );
   const [visibleCount, setVisibleCount] = useState(source.length);
   const [quickText, setQuickText] = useState('');
   const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
@@ -35,14 +44,28 @@ export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
     const grid = gridRef.current;
     if (!grid) return;
     let cancelled = false;
-    void grid.componentOnReady().then(() => {
-      if (cancelled) return;
-      const initialFilter = createOrderExplorerFilter(createOrderExplorerInitialFilters());
-      setFilter(initialFilter);
-      grid.filter = initialFilter;
+    void grid.componentOnReady().then(async () => {
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      if (cancelled || !badgesRef.current) return;
+      grid.filter = filter;
+      grid.columns = createOrderExplorerColumns();
+      void mountAdvancedFilterBadges({
+          grid,
+          root: badgesRef.current,
+          ...orderExplorerFilterBadgeOptions,
+        })
+        .then(controller => {
+          if (cancelled) controller.destroy();
+          else badgesControllerRef.current = controller;
+        })
+        .catch(() => {
+          // Filtering remains available when optional badge discovery is unavailable.
+        });
     });
     return () => {
       cancelled = true;
+      badgesControllerRef.current?.destroy();
+      badgesControllerRef.current = undefined;
     };
   }, []);
 
@@ -50,7 +73,10 @@ export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
   const applyFilterItems = useCallback((items: MultiFilterItem) => {
     const nextFilter = createOrderExplorerFilter(items);
     setFilter(nextFilter);
-    if (gridRef.current) gridRef.current.filter = nextFilter;
+    if (gridRef.current) {
+      gridRef.current.filter = nextFilter;
+      gridRef.current.columns = createOrderExplorerColumns();
+    }
   }, []);
 
   const applyPreset = (preset: OrderExplorerPreset) => {
@@ -105,6 +131,7 @@ export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
           }}>Clear All</button>
         </div>
       </div>
+      <div ref={badgesRef} className="order-explorer__active-filters"></div>
       <div className="order-explorer__grid">
         <RevoGrid
           ref={gridRef}

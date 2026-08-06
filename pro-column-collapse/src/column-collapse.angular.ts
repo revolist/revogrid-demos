@@ -3,6 +3,7 @@ import { RevoGrid } from '@revolist/angular-datagrid';
 import {
   AdvanceFilterPlugin,
   ColumnCollapsePlugin,
+  ColumnMoveAdvancedPlugin,
   FilterHeaderPlugin,
   RowOddPlugin,
   RowSelectPlugin,
@@ -23,16 +24,6 @@ import './column-collapse.scss';
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <section class="column-collapse-showcase" aria-label="Column Collapse contact workspace">
-      <div class="column-collapse-toolbar">
-        <div>
-          <strong>Contact workspace</strong>
-          <span>Collapse a grouped header to keep only its sealed column visible.</span>
-        </div>
-        <div class="column-collapse-legend" aria-label="Column collapse legend">
-          <span><i class="column-collapse-dot column-collapse-dot--sealed"></i>Sealed</span>
-          <span><i class="column-collapse-dot column-collapse-dot--hidden"></i>Collapsible</span>
-        </div>
-      </div>
       <revo-grid
         class="column-collapse-grid"
         [theme]="theme"
@@ -64,7 +55,14 @@ export class ColumnCollapseGridComponent implements OnDestroy {
     this.theme = isDark ? 'darkMaterial' : 'material';
   });
   readonly columns = createColumnCollapseColumns();
-  readonly plugins = [ColumnCollapsePlugin, AdvanceFilterPlugin, FilterHeaderPlugin, RowSelectPlugin, RowOddPlugin];
+  readonly plugins = [
+    ColumnMoveAdvancedPlugin,
+    ColumnCollapsePlugin,
+    AdvanceFilterPlugin,
+    FilterHeaderPlugin,
+    RowSelectPlugin,
+    RowOddPlugin,
+  ];
   source = createColumnCollapseRows();
 
   ngOnDestroy() {

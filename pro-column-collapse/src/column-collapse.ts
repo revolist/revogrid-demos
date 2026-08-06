@@ -2,6 +2,7 @@ import { defineCustomElements } from '@revolist/revogrid/loader';
 import {
   AdvanceFilterPlugin,
   ColumnCollapsePlugin,
+  ColumnMoveAdvancedPlugin,
   FilterHeaderPlugin,
   RowOddPlugin,
   RowSelectPlugin,
@@ -17,6 +18,7 @@ import './column-collapse.scss';
 defineCustomElements();
 
 const plugins = [
+  ColumnMoveAdvancedPlugin,
   ColumnCollapsePlugin,
   AdvanceFilterPlugin,
   FilterHeaderPlugin,
@@ -31,18 +33,6 @@ export function load(parentSelector: string, rows?: ContactRow[]) {
   const container = document.createElement('section');
   container.className = 'column-collapse-showcase';
   container.setAttribute('aria-label', 'Column Collapse contact workspace');
-  container.innerHTML = `
-    <div class="column-collapse-toolbar">
-      <div>
-        <strong>Contact workspace</strong>
-        <span>Collapse a grouped header to keep only its sealed column visible.</span>
-      </div>
-      <div class="column-collapse-legend" aria-label="Column collapse legend">
-        <span><i class="column-collapse-dot column-collapse-dot--sealed"></i>Sealed</span>
-        <span><i class="column-collapse-dot column-collapse-dot--hidden"></i>Collapsible</span>
-      </div>
-    </div>
-  `;
 
   const grid = document.createElement('revo-grid');
   grid.className = 'column-collapse-grid';

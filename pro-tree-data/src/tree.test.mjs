@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { createTreeRows } from './tree.shared.ts';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const readSource = file => readFile(join(root, file), 'utf8');
@@ -36,7 +37,96 @@ test('all four frameworks expose matching tree controls', async () => {
     assert.match(source, /TREE_COLLAPSE_ALL_EVENT/);
     assert.match(source, /ExportExcelPlugin/);
     assert.match(source, /Sticky parents/);
+    assert.doesNotMatch(source, /Organization explorer|Interactive hierarchy|tree-(?:toolbar__intro|eyebrow)/);
   }
+
+  const styles = await readSource('tree.scss');
+  assert.doesNotMatch(styles, /\.tree-(?:toolbar__intro|eyebrow)\b/);
+});
+
+test('all framework variants keep tree cells readonly without changing presentation', async () => {
+  const [typescript, react, vue, angular, styles] = await Promise.all([
+    readSource('tree.ts'),
+    readSource('tree.react.tsx'),
+    readSource('tree.vue'),
+    readSource('tree.angular.ts'),
+    readSource('tree.scss'),
+  ]);
+
+  assert.match(typescript, /grid\.readonly = true/);
+  assert.match(react, /readonly=\{true\}/);
+  assert.match(vue, /:readonly="true"/);
+  assert.match(angular, /\[readonly\]="true"/);
+  assert.doesNotMatch(styles, /readonly|read-only/);
+});
+
+test('all framework variants configure sticky parent rows', async () => {
+  const [shared, typescript, react, vue, angular] = await Promise.all([
+    readSource('tree.shared.ts'),
+    readSource('tree.ts'),
+    readSource('tree.react.tsx'),
+    readSource('tree.vue'),
+    readSource('tree.angular.ts'),
+  ]);
+
+  assert.match(shared, /TREE_STICKY_CELLS_CONFIG[\s\S]*?maxRows:\s*2/);
+  assert.match(typescript, /grid\.stickyCells = TREE_STICKY_CELLS_CONFIG/);
+  assert.match(react, /stickyCells:\s*TREE_STICKY_CELLS_CONFIG/);
+  assert.match(vue, /:sticky-cells\.prop="TREE_STICKY_CELLS_CONFIG"/);
+  assert.match(angular, /\[stickyCells\]="stickyCells"/);
+});
+
+test('expanded tree has enough rows to exercise internal sticky scrolling', () => {
+  const rows = createTreeRows();
+
+  assert.ok(rows.length >= 24);
+  assert.ok(rows.filter(row => row.parentId !== null).length >= 20);
+});
+
+test('plugins are applied before columns so tree sticky decorators see the initial column set', async () => {
+  const [typescript, react, vue, angular] = await Promise.all([
+    readSource('tree.ts'),
+    readSource('tree.react.tsx'),
+    readSource('tree.vue'),
+    readSource('tree.angular.ts'),
+  ]);
+
+  assert.ok(typescript.indexOf('grid.plugins = TREE_PLUGINS') < typescript.indexOf('grid.columns = createTreeColumns('));
+  assert.ok(react.indexOf('plugins={plugins}') < react.indexOf('columns={columns}'));
+  assert.ok(vue.indexOf(':plugins="plugins"') < vue.indexOf(':columns="columns"'));
+  assert.ok(angular.indexOf('[plugins]="plugins"') < angular.indexOf('[columns]="columns"'));
+});
+
+test('frameworks refresh tree columns once plugins are ready', async () => {
+  const [shared, typescript, react, vue, angular] = await Promise.all([
+    readSource('tree.shared.ts'),
+    readSource('tree.ts'),
+    readSource('tree.react.tsx'),
+    readSource('tree.vue'),
+    readSource('tree.angular.ts'),
+  ]);
+
+  assert.match(shared, /initializeTreeStickyColumns[\s\S]*?componentOnReady[\s\S]*?grid\.tree = tree[\s\S]*?grid\.stickyCells = TREE_STICKY_CELLS_CONFIG[\s\S]*?grid\.columns = createTreeColumns\(rows,/);
+  assert.match(typescript, /initializeTreeStickyColumns\(grid,/);
+  assert.match(react, /useEffect[\s\S]*?initializeTreeStickyColumns\(grid,/);
+  assert.match(vue, /onMounted[\s\S]*?initializeTreeStickyColumns\(grid,/);
+  assert.match(angular, /ngAfterViewInit[\s\S]*?initializeTreeStickyColumns/);
+});
+
+test('tree columns explicitly track sticky parent IDs and checkbox changes', async () => {
+  const [shared, typescript, react, vue, angular] = await Promise.all([
+    readSource('tree.shared.ts'),
+    readSource('tree.ts'),
+    readSource('tree.react.tsx'),
+    readSource('tree.vue'),
+    readSource('tree.angular.ts'),
+  ]);
+
+  assert.match(shared, /createTreeColumns\(\s*rows:[\s\S]*?parentIds[\s\S]*?stickyCell:[\s\S]*?stickyParents/);
+  assert.match(typescript, /toggleSticky[\s\S]*?grid\.columns = createTreeColumns/);
+  assert.match(react, /createTreeColumns\(source, stickyParents\)[\s\S]*?\[source, stickyParents\]/);
+  assert.match(vue, /computed\(\(\) => createTreeColumns\(rows\.value, stickyParents\.value\)\)/);
+  assert.match(angular, /setStickyParents[\s\S]*?this\.columns = createTreeColumns/);
 });
 
 test('framework variants follow demo lifecycle conventions', async () => {
@@ -78,5 +168,5 @@ test('showcase chrome stays transparent and inherits the host theme', async () =
   assert.match(styles, /\.tree-showcase\s*\{[^}]*border:\s*0/);
   assert.match(styles, /\.tree-showcase\s*\{[^}]*border-radius:\s*0/);
   assert.match(styles, /\.tree-toolbar\s*\{[^}]*background:\s*transparent/);
-  assert.match(styles, /\.tree-button,[^{]*\{[^}]*background:\s*transparent/);
+  assert.match(styles, /\.tree-button,[^{]*\{[^}]*@include demo-controls\.scheduler-button/);
 });

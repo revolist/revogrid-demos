@@ -1,0 +1,60 @@
+@mixin scheduler-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  appearance: none;
+  height: 36px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  border: 1px solid var(
+    --demo-toolbar-control-border,
+    color-mix(in srgb, currentColor 22%, transparent)
+  );
+  border-radius: 8px;
+  background: var(--demo-toolbar-control-bg, transparent);
+  color: var(--demo-toolbar-control-text, inherit);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 8%);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease,
+    transform 120ms ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(
+      --demo-toolbar-control-hover-border,
+      color-mix(in srgb, currentColor 42%, transparent)
+    );
+    background: var(
+      --demo-toolbar-control-hover-bg,
+      color-mix(in srgb, currentColor 6%, transparent)
+    );
+  }
+
+  &:active:not(:disabled) {
+    box-shadow: 0 1px 1px rgb(15 23 42 / 6%);
+    transform: translateY(1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--demo-toolbar-control-focus-surface, transparent);
+    box-shadow: 0 0 0 4px var(
+      --demo-toolbar-control-focus-ring,
+      color-mix(in srgb, #2563eb 28%, transparent)
+    );
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.55;
+  }
+}

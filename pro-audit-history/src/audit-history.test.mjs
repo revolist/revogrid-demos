@@ -111,3 +111,10 @@ test('showcase presents only the borderless grid workspace', async () => {
   assert.match(styles, /\.audit-workspace\s*\{[^}]*border-radius:\s*0/);
   assert.match(styles, /\.audit-workspace\s*\{[^}]*box-shadow:\s*none/);
 });
+
+test('risk indicators keep their dot beside longer labels', async () => {
+  const styles = await readSource('audit-history.scss');
+  const dotBlock = styles.match(/\.risk-dot::before\s*\{([^}]*)\}/)?.[1] ?? '';
+
+  assert.match(dotBlock, /flex:\s*0\s+0\s+7px/);
+});

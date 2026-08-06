@@ -90,3 +90,37 @@ test('showcase chrome stays transparent and inherits the host theme', async () =
   assert.match(styles, /\.infinity-showcase\s*\{[^}]*border-radius:\s*0/);
   assert.match(styles, /\.infinity-toolbar\s*\{[^}]*background:\s*transparent/);
 });
+
+test('toolbar buttons share the Scheduler control treatment', async () => {
+  const [shared, infinity, filtering, tree, scheduler, pivot, pivotHeader] = await Promise.all([
+    readSource('../../styles/_scheduler-button.scss'),
+    readSource('infinity-scroll.scss'),
+    readSource('../../pro-filtering/src/filtering.scss'),
+    readSource('../../pro-tree-data/src/tree.scss'),
+    readSource('../../pro-advanced-scheduler/src/styles.scss'),
+    readSource('../../pro-advanced-pivot/src/financial-pivot-header/financial-pivot-header.scss'),
+    readSource('../../pro-advanced-pivot/src/financial-pivot-header/financial-pivot-header.ts'),
+  ]);
+
+  assert.match(shared, /@mixin scheduler-button/);
+  assert.match(shared, /height:\s*36px/);
+  assert.match(shared, /border-radius:\s*8px/);
+  assert.match(shared, /box-shadow:\s*0 1px 2px/);
+  assert.match(shared, /&:focus-visible/);
+  assert.match(shared, /--demo-toolbar-control-bg,\s*transparent/);
+  assert.match(shared, /color-mix\(in srgb, currentColor/);
+  assert.doesNotMatch(shared, /background:\s*(?:#fff(?:fff)?|white)\b/i);
+  for (const styles of [infinity, filtering, tree, scheduler]) {
+    assert.match(styles, /@use '\.\.\/\.\.\/styles\/scheduler-button' as demo-controls/);
+    assert.match(styles, /@include demo-controls\.scheduler-button/);
+  }
+  assert.match(pivot, /@use '\.\.\/\.\.\/\.\.\/styles\/scheduler-button' as demo-controls/);
+  assert.match(pivot, /@include demo-controls\.scheduler-button/);
+  assert.doesNotMatch(pivot, /--financial-header-button-(?:border|hover)/);
+  assert.match(pivot, /:where\(\.dark, \[data-theme\^='dark'\]\) \.financial-pivot-showcase/);
+  assert.match(pivot, /:where\(\.dark, \[data-theme\^='dark'\]\) financial-pivot-header/);
+  assert.match(scheduler, /:root\[data-theme='dark'\] \.event-scheduler-shift-week-demo/);
+  assert.match(scheduler, /:has\(\.event-scheduler-shift-week-grid\[theme\^='dark'\]\)/);
+  assert.match(pivotHeader, /rv-segmented-switch financial-pivot-header__preset-switch/);
+  assert.match(pivotHeader, /rv-segmented-switch-item/);
+});

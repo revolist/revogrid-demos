@@ -1,3 +1,5 @@
+@use '../../styles/scheduler-button' as demo-controls;
+
 .order-explorer {
   display: flex;
   min-height: 0;
@@ -7,12 +9,17 @@
   color: inherit;
 }
 
+.order-explorer :is(.rv-btn, .rv-btn-secondary) {
+  @include demo-controls.scheduler-button;
+}
+
 .order-explorer__toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px 16px;
+  margin-inline: 10px;
 }
 
 .order-explorer__search {
@@ -61,14 +68,40 @@
   font-weight: 500;
 }
 
+.order-explorer__active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  margin-inline: 10px;
+}
+
+.order-explorer__active-filters:empty {
+  display: none;
+}
+
+.order-explorer__filter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, #2563eb 32%, transparent);
+  border-radius: 999px;
+  padding: 3px 10px;
+  background: color-mix(in srgb, #2563eb 9%, transparent);
+  color: inherit;
+  font-size: 12px;
+  font-weight: 500;
+}
+
 .order-explorer__grid {
   --revo-grid-header-font-weight: 500;
 
   min-height: 420px;
   flex: 1;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
-  border-radius: 14px;
 }
 
 .order-explorer__grid revo-grid,

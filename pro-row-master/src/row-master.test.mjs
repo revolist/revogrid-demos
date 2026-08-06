@@ -53,7 +53,7 @@ test('all framework variants preserve plugin composition and lifecycle conventio
     assert.match(source, /TreeDataPlugin/);
     assert.match(source, /CellColumnFocusVerifyPlugin/);
     assert.match(source, /masterRow/);
-    assert.match(source, /Portfolio explorer/);
+    assert.doesNotMatch(source, /Portfolio explorer|Tree \+ master detail|row-master-toolbar/);
     assert.doesNotMatch(source, /additionalData/);
   }
 
@@ -81,11 +81,11 @@ test('all framework variants react to the resolved host theme', async () => {
   assert.doesNotMatch(styles, /@media \(prefers-color-scheme: dark\)/);
 });
 
-test('showcase chrome stays transparent and inherits the host theme', async () => {
+test('showcase renders only the borderless grid workspace', async () => {
   const styles = await readSource('row-master.scss');
 
   assert.match(styles, /\.row-master-showcase\s*\{[^}]*background:\s*transparent/);
   assert.match(styles, /\.row-master-showcase\s*\{[^}]*border:\s*0/);
   assert.match(styles, /\.row-master-showcase\s*\{[^}]*border-radius:\s*0/);
-  assert.match(styles, /\.row-master-toolbar\s*\{[^}]*background:\s*transparent/);
+  assert.doesNotMatch(styles, /\.row-master-toolbar(?:__badge)?\b/);
 });

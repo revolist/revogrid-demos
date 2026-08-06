@@ -68,9 +68,8 @@ test('all framework examples use direct grid properties', async () => {
   }
 });
 
-test('showcase does not depend on unavailable advanced-filter badge exports', async () => {
+test('all framework examples mount filter badges through the Pro 2.5.6 API', async () => {
   const files = [
-    'filtering.shared.ts',
     'filtering.ts',
     'filtering.react.tsx',
     'filtering.vue',
@@ -79,10 +78,25 @@ test('showcase does not depend on unavailable advanced-filter badge exports', as
   const sources = await Promise.all(files.map(readSource));
 
   for (const source of sources) {
-    assert.doesNotMatch(source, /mountAdvancedFilterBadges|AdvancedFilterBadges|mountOrderExplorerFilterBadges/);
-    assert.doesNotMatch(source, /badgesRef|order-explorer__active-filters/);
+    assert.match(source, /mountAdvancedFilterBadges/);
+    assert.match(source, /AdvancedFilterBadgesController/);
+    assert.match(source, /\.destroy\(\)/);
+    assert.match(source, /order-explorer__active-filters/);
+    assert.doesNotMatch(source, /createOrderExplorerFilterBadges|activeBadges|renderBadges/);
   }
-  await assert.rejects(readSource('filtering.badges.ts'), { code: 'ENOENT' });
+
+  const config = await readSource('filtering.config.ts');
+  assert.match(config, /AdvancedFilterBadgesOptions/);
+  assert.match(config, /orderExplorerFilterBadgeOptions/);
+
+  const packageJson = JSON.parse(await readSource('../package.json'));
+  assert.equal(
+    packageJson.dependencies['@revolist/revogrid-pro'],
+    'npm:@revolist/rv-pro-trial@2.5.6',
+  );
+
+  const styles = await readSource('filtering.scss');
+  assert.match(styles, /\.order-explorer__filter-badge/);
 });
 
 test('frameworks wait for grid readiness before assigning advanced filter config', async () => {
@@ -94,10 +108,58 @@ test('frameworks wait for grid readiness before assigning advanced filter config
   ]);
 
   assert.ok(typescript.indexOf('componentOnReady') < typescript.indexOf('grid.filter = initialFilter'));
-  assert.match(react, /useState<ColumnFilterConfig \| undefined>\(undefined\)/);
-  assert.match(react, /componentOnReady[\s\S]*?grid\.filter = initialFilter/);
-  assert.match(vue, /const filter = ref<ColumnFilterConfig>[\s\S]*?componentOnReady[\s\S]*?grid\.filter = initialFilter/);
-  assert.match(angular, /filter: ColumnFilterConfig \| undefined[\s\S]*?componentOnReady[\s\S]*?grid\.filter = initialFilter/);
+  assert.match(react, /useState<ColumnFilterConfig>\(\(\) =>[\s\S]*?createOrderExplorerInitialFilters/);
+  assert.match(vue, /const filter = ref<ColumnFilterConfig>\([\s\S]*?createOrderExplorerInitialFilters/);
+  assert.match(angular, /filter: ColumnFilterConfig = createOrderExplorerFilter\(createOrderExplorerInitialFilters\(\)\)/);
+});
+
+test('all frameworks apply the default preset without waiting for badge discovery', async () => {
+  const [config, typescript, react, vue, angular] = await Promise.all([
+    readSource('filtering.config.ts'),
+    readSource('filtering.ts'),
+    readSource('filtering.react.tsx'),
+    readSource('filtering.vue'),
+    readSource('filtering.angular.ts'),
+  ]);
+
+  assert.match(config, /createOrderExplorerInitialFilters[\s\S]*?createOrderExplorerPreset\('high-value-europe'\)/);
+  assert.ok(typescript.indexOf('grid.source = source') < typescript.indexOf('grid.filter = initialFilter'));
+  for (const source of [typescript, react, vue, angular]) {
+    assert.doesNotMatch(
+      source,
+      /componentOnReady[\s\S]*?grid\.plugins = \[\.\.\.orderExplorerPlugins\]/,
+      'hydrated plugins should not be rebuilt while the default filter is applied',
+    );
+    assert.match(
+      source,
+      /componentOnReady[\s\S]*?requestAnimationFrame[\s\S]*?grid\.filter/,
+      'the default filter should wait for the framework wrapper first render flush',
+    );
+    const initialFilterIndex = source.search(/grid\.filter = (?:initialFilter|filter|this\.filter)/);
+    assert.notEqual(initialFilterIndex, -1, 'a default filter should be assigned to the grid');
+    assert.ok(
+      initialFilterIndex < source.indexOf('mountAdvancedFilterBadges({'),
+      'the default filter should be assigned before optional badge discovery begins',
+    );
+    assert.match(
+      source.slice(initialFilterIndex),
+      /grid\.columns = (?:createOrderExplorerColumns\(\)|columns\.value)/,
+      'columns should refresh after the default filter so header values render',
+    );
+  }
+});
+
+test('Vite resolves the monorepo-local Pro distribution before trial aliases', async () => {
+  const [config, angular] = await Promise.all([
+    readSource('../vite.config.ts'),
+    readSource('filtering.angular.ts'),
+  ]);
+
+  assert.match(config, /\.\.\/\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/revogrid-pro\.js/);
+  assert.match(config, /\.\.\/\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/revogrid-pro\.css/);
+  assert.match(config, /existsSync\(localProEntry\)/);
+  assert.match(angular, /type AfterViewInit/);
+  assert.match(angular, /type OnDestroy/);
 });
 
 test('shared filtering modules stay small and focused', async () => {
@@ -174,7 +236,12 @@ test('showcase UI uses medium font weight only', async () => {
 
 test('showcase controls keep the host background visible', async () => {
   const styles = await readSource('filtering.scss');
+  const toolbarBlock = styles.match(/\.order-explorer__toolbar\s*\{([^}]*)\}/)?.[1] ?? '';
+  const gridBlock = styles.match(/\.order-explorer__grid\s*\{([^}]*)\}/)?.[1] ?? '';
 
+  assert.match(toolbarBlock, /margin-inline:\s*10px/);
   assert.match(styles, /\.order-explorer__search-input\s*\{[^}]*background:\s*transparent/);
+  assert.doesNotMatch(gridBlock, /(?:^|\s)border:/);
+  assert.doesNotMatch(gridBlock, /border-radius:/);
   assert.doesNotMatch(styles, /background:\s*var\(--rv-ui-surface,\s*#fff\)/);
 });

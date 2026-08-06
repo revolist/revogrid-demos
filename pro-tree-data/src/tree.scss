@@ -1,6 +1,7 @@
+@use '../../styles/scheduler-button' as demo-controls;
+
 .tree-showcase {
   --tree-border: color-mix(in srgb, currentColor 18%, transparent);
-  --tree-muted: color-mix(in srgb, currentColor 64%, transparent);
   display: flex;
   width: 100%;
   height: 100%;
@@ -16,32 +17,16 @@
 .tree-toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 16px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--tree-border);
   background: transparent;
 }
 
-.tree-toolbar__intro {
-  display: flex;
-  min-width: 170px;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.tree-toolbar__intro strong,
-.tree-eyebrow,
 .tree-button,
 .tree-sticky {
-  font-weight: 500;
-}
-
-.tree-eyebrow {
-  color: var(--tree-muted);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  @include demo-controls.scheduler-button;
 }
 
 .tree-toolbar__actions {
@@ -52,35 +37,7 @@
   gap: 8px;
 }
 
-.tree-button,
 .tree-sticky {
-  min-height: 34px;
-  border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
-  border-radius: 8px;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-size: 13px;
-}
-
-.tree-button {
-  padding: 0 12px;
-  cursor: pointer;
-}
-
-.tree-button:hover {
-  border-color: color-mix(in srgb, currentColor 42%, transparent);
-  background: color-mix(in srgb, currentColor 7%, transparent);
-}
-
-.tree-button:disabled {
-  cursor: wait;
-  opacity: 0.6;
-}
-
-.tree-sticky {
-  display: inline-flex;
-  align-items: center;
   gap: 7px;
   padding: 0 10px;
 }
@@ -129,11 +86,6 @@
 }
 
 @media (max-width: 760px) {
-  .tree-toolbar {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
   .tree-toolbar__actions {
     justify-content: flex-start;
   }

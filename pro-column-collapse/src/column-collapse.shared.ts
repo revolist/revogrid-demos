@@ -40,17 +40,17 @@ export function createColumnCollapseColumns(): ColumnData {
       collapsed: true,
       columnTemplate: columnTypeRenderer,
       children: [
-        { prop: 'firstName', name: 'First Name', size: 155, pin: 'colPinStart' },
-        { prop: 'lastName', name: 'Last Name', size: 145, pin: 'colPinStart' },
         {
           prop: 'age',
           name: 'Age',
-          size: 105,
+          size: 125,
           sealed: true,
           rowSelect: true,
           filterPlaceholder: 'Age?',
           pin: 'colPinStart',
         },
+        { prop: 'firstName', name: 'First Name', size: 155, pin: 'colPinStart' },
+        { prop: 'lastName', name: 'Last Name', size: 145, pin: 'colPinStart' },
       ],
     },
     {

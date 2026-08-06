@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, type AfterViewInit, type OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import {
   ExportExcelPlugin,
@@ -10,11 +10,13 @@ import {
   createTreeColumns,
   createTreeConfig,
   createTreeRows,
+  initializeTreeStickyColumns,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
   TREE_ROW_ORDER_CONFIG,
   TREE_ROW_SELECT_CONFIG,
+  TREE_STICKY_CELLS_CONFIG,
 } from './tree.shared';
 import './tree.scss';
 
@@ -26,10 +28,6 @@ import './tree.scss';
   template: `
     <section class="tree-showcase" aria-label="Tree Data organization explorer">
       <div class="tree-toolbar">
-        <div class="tree-toolbar__intro">
-          <span class="tree-eyebrow">Organization explorer</span>
-          <strong>Interactive hierarchy</strong>
-        </div>
         <div class="tree-toolbar__actions">
           <button class="tree-button" type="button" (click)="expandAll()">Expand all</button>
           <button class="tree-button" type="button" (click)="collapseAll()">Collapse all</button>
@@ -46,14 +44,16 @@ import './tree.scss';
         #grid
         class="tree-grid"
         [theme]="theme"
+        [plugins]="plugins"
         [columns]="columns"
         [source]="rows"
-        [plugins]="plugins"
         [columnTypes]="columnTypes"
         [rowOrder]="rowOrder"
         [rowSelect]="rowSelect"
         [tree]="treeConfig"
+        [stickyCells]="stickyCells"
         [range]="true"
+        [readonly]="true"
         [resize]="true"
         [filter]="true"
         [stretch]="true"
@@ -62,7 +62,7 @@ import './tree.scss';
     </section>
   `,
 })
-export class TreeDataGridComponent implements OnDestroy {
+export class TreeDataGridComponent implements AfterViewInit, OnDestroy {
   @ViewChild('grid', { read: ElementRef }) gridElement?: ElementRef<HTMLRevoGridElement>;
 
   theme: HTMLRevoGridElement['theme'] = currentTheme().isDark() ? 'darkMaterial' : 'material';
@@ -70,14 +70,20 @@ export class TreeDataGridComponent implements OnDestroy {
     this.theme = isDark ? 'darkMaterial' : 'material';
   });
   readonly rows = createTreeRows();
-  readonly columns = createTreeColumns();
+  columns = createTreeColumns(this.rows);
   readonly plugins = TREE_PLUGINS;
   readonly columnTypes = TREE_COLUMN_TYPES;
   readonly rowOrder = TREE_ROW_ORDER_CONFIG;
   readonly rowSelect = TREE_ROW_SELECT_CONFIG;
+  readonly stickyCells = TREE_STICKY_CELLS_CONFIG;
   stickyParents = true;
   exporting = false;
   treeConfig = createTreeConfig(this.rows);
+
+  ngAfterViewInit() {
+    const grid = this.gridElement?.nativeElement;
+    if (grid) void initializeTreeStickyColumns(grid, this.rows, this.treeConfig);
+  }
 
   ngOnDestroy() {
     this.disconnectTheme();
@@ -94,6 +100,7 @@ export class TreeDataGridComponent implements OnDestroy {
   setStickyParents(event: Event) {
     this.stickyParents = (event.target as HTMLInputElement).checked;
     this.treeConfig = createTreeConfig(this.rows, this.stickyParents);
+    this.columns = createTreeColumns(this.rows, this.stickyParents);
   }
 
   async exportToExcel() {

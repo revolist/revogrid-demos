@@ -33,13 +33,6 @@ export default function RowMaster({ rows }: { rows?: MasterProjectRow[] }) {
 
   return (
     <section className="row-master-showcase" aria-label="Row Master portfolio explorer">
-      <div className="row-master-toolbar">
-        <div>
-          <strong>Portfolio explorer</strong>
-          <span>Expand a leaf initiative to open its virtualized master-detail workspace.</span>
-        </div>
-        <div className="row-master-toolbar__badge">Tree + master detail</div>
-      </div>
       <RevoGrid
         className="row-master-grid"
         theme={darkTheme ? 'darkMaterial' : 'material'}
