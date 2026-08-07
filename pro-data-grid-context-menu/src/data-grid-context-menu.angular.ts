@@ -5,16 +5,16 @@ import {
   AutoSizeColumnPlugin,
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
+  DialogPlugin,
   ExportExcelPlugin,
   MultiRangeSelectionPlugin,
-  RowAutoSizePlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
-  createContextMenuRowAutoSize,
+  createContextMenuRowHeaders,
   createDataGridContextMenuConfig,
   createTeamGrouping,
   createTeamRows,
@@ -30,7 +30,7 @@ import {
   schemas: [NO_ERRORS_SCHEMA],
   styleUrls: ['./data-grid-context-menu.scss'],
   template: `
-    <section class="data-grid-context-menu-showcase" aria-label="Universal Data Grid Context Menu workspace">
+    <section class="data-grid-context-menu-showcase" aria-label="Data Grid Context Menu & Formatting workspace">
       <revo-grid
         class="data-grid-context-menu-grid"
         [theme]="theme"
@@ -38,10 +38,9 @@ import {
         [columns]="columns"
         [grouping]="grouping"
         [rowSize]="rowSize"
-        [rowAutoSize]="rowAutoSize"
         [plugins]="plugins"
         [additionalData]="additionalData"
-        [rowHeaders]="true"
+        [rowHeaders]="rowHeaders"
         [range]="true"
         [resize]="true"
         [hideAttribution]="true"
@@ -69,12 +68,12 @@ export class DataGridContextMenuGridComponent implements OnDestroy {
   readonly columns = createContextMenuColumns();
   readonly grouping = createTeamGrouping();
   readonly rowSize = DATA_GRID_CONTEXT_MENU_ROW_SIZE;
-  readonly rowAutoSize = createContextMenuRowAutoSize();
+  readonly rowHeaders = createContextMenuRowHeaders();
   readonly plugins = [
     DataGridContextMenuPlugin,
+    DialogPlugin,
     AdvanceFilterPlugin,
     AutoSizeColumnPlugin,
-    RowAutoSizePlugin,
     RowSelectPlugin,
     ColumnCollapsePlugin,
     MultiRangeSelectionPlugin,

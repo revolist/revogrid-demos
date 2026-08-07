@@ -4,16 +4,16 @@ import {
   AutoSizeColumnPlugin,
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
+  DialogPlugin,
   ExportExcelPlugin,
   MultiRangeSelectionPlugin,
-  RowAutoSizePlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
-  createContextMenuRowAutoSize,
+  createContextMenuRowHeaders,
   createDataGridContextMenuConfig,
   createTeamGrouping,
   createTeamRows,
@@ -26,9 +26,9 @@ defineCustomElements();
 
 const plugins = [
   DataGridContextMenuPlugin,
+  DialogPlugin,
   AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
-  RowAutoSizePlugin,
   RowSelectPlugin,
   ColumnCollapsePlugin,
   MultiRangeSelectionPlugin,
@@ -41,18 +41,17 @@ export function load(parentSelector: string, rows?: TeamRow[]) {
 
   const showcase = document.createElement('section');
   showcase.className = 'data-grid-context-menu-showcase';
-  showcase.setAttribute('aria-label', 'Universal Data Grid Context Menu workspace');
+  showcase.setAttribute('aria-label', 'Data Grid Context Menu & Formatting workspace');
 
   const grid = document.createElement('revo-grid');
   grid.className = 'data-grid-context-menu-grid';
   grid.theme = getDataGridContextMenuTheme(currentTheme().isDark());
   grid.rowSize = DATA_GRID_CONTEXT_MENU_ROW_SIZE;
-  grid.rowAutoSize = createContextMenuRowAutoSize();
   grid.columns = createContextMenuColumns();
   grid.plugins = plugins;
   grid.grouping = createTeamGrouping();
   grid.dataGridContextMenu = createDataGridContextMenuConfig();
-  grid.rowHeaders = true;
+  grid.rowHeaders = createContextMenuRowHeaders();
   grid.range = true;
   grid.resize = true;
   grid.hideAttribution = true;

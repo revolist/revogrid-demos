@@ -97,7 +97,7 @@
   },
   {
     "slug": "data-grid-context-menu",
-    "title": "Universal Data Grid Context Menu",
+    "title": "Data Grid Context Menu & Formatting",
     "summary": "A spreadsheet-style command surface for cells, rows, row groups, columns, and grouped headers with selection-aware clipboard, filtering, sizing, schema, and export actions.",
     "edition": "Pro",
     "sourceDir": "pro-data-grid-context-menu",

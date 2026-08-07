@@ -5,16 +5,16 @@ import {
   AutoSizeColumnPlugin,
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
+  DialogPlugin,
   ExportExcelPlugin,
   MultiRangeSelectionPlugin,
-  RowAutoSizePlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
-  createContextMenuRowAutoSize,
+  createContextMenuRowHeaders,
   createDataGridContextMenuConfig,
   createTeamGrouping,
   createTeamRows,
@@ -27,12 +27,12 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
   const source = useMemo(() => rows?.length ? rows : createTeamRows(), [rows]);
   const columns = useMemo(() => createContextMenuColumns(), []);
   const grouping = useMemo(() => createTeamGrouping(), []);
-  const rowAutoSize = useMemo(() => createContextMenuRowAutoSize(), []);
+  const rowHeaders = useMemo(() => createContextMenuRowHeaders(), []);
   const plugins = useMemo(() => [
     DataGridContextMenuPlugin,
+    DialogPlugin,
     AdvanceFilterPlugin,
     AutoSizeColumnPlugin,
-    RowAutoSizePlugin,
     RowSelectPlugin,
     ColumnCollapsePlugin,
     MultiRangeSelectionPlugin,
@@ -46,7 +46,7 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
   useEffect(() => observeCurrentTheme(setDarkTheme), []);
 
   return (
-    <section className="data-grid-context-menu-showcase" aria-label="Universal Data Grid Context Menu workspace">
+    <section className="data-grid-context-menu-showcase" aria-label="Data Grid Context Menu & Formatting workspace">
       <RevoGrid
         className="data-grid-context-menu-grid"
         theme={getDataGridContextMenuTheme(darkTheme)}
@@ -54,10 +54,9 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
         columns={columns}
         grouping={grouping}
         rowSize={DATA_GRID_CONTEXT_MENU_ROW_SIZE}
-        rowAutoSize={rowAutoSize}
         plugins={plugins}
         additionalData={additionalData}
-        rowHeaders
+        rowHeaders={rowHeaders}
         range
         resize
         hideAttribution

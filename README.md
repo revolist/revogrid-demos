@@ -55,7 +55,7 @@ initializes them and advances every checkout to the latest remote `main`.
 | Pro | Advanced Filtering: Order Explorer | [`pro-filtering`](./pro-filtering/) | [`/filtering/`](https://example.rv-grid.com/filtering/) |
 | Pro | Infinity Scroll: Remote Directory | [`pro-infinity-scroll`](./pro-infinity-scroll/) | [`/infinity-scroll/`](https://example.rv-grid.com/infinity-scroll/) |
 | Pro | Column Collapse: Contact Workspace | [`pro-column-collapse`](./pro-column-collapse/) | [`/column-collapse/`](https://example.rv-grid.com/column-collapse/) |
-| Pro | Universal Data Grid Context Menu | [`pro-data-grid-context-menu`](./pro-data-grid-context-menu/) | [`/data-grid-context-menu/`](https://example.rv-grid.com/data-grid-context-menu/) |
+| Pro | Data Grid Context Menu & Formatting | [`pro-data-grid-context-menu`](./pro-data-grid-context-menu/) | [`/data-grid-context-menu/`](https://example.rv-grid.com/data-grid-context-menu/) |
 | Pro | Row Master: Portfolio Explorer | [`pro-row-master`](./pro-row-master/) | [`/row-master/`](https://example.rv-grid.com/row-master/) |
 | Pro | Audit History: Invoice Ledger | [`pro-audit-history`](./pro-audit-history/) | [`/audit-history/`](https://example.rv-grid.com/audit-history/) |
 | Pro | Tree Data: Organization Explorer | [`pro-tree-data`](./pro-tree-data/) | [`/tree-data/`](https://example.rv-grid.com/tree-data/) |

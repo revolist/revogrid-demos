@@ -1,5 +1,5 @@
 <template>
-  <section class="data-grid-context-menu-showcase" aria-label="Universal Data Grid Context Menu workspace">
+  <section class="data-grid-context-menu-showcase" aria-label="Data Grid Context Menu & Formatting workspace">
     <RevoGrid
       class="data-grid-context-menu-grid"
       :theme="gridTheme"
@@ -7,10 +7,9 @@
       :columns="columns"
       :grouping="grouping"
       :row-size="DATA_GRID_CONTEXT_MENU_ROW_SIZE"
-      :row-auto-size.prop="rowAutoSize"
       :plugins="plugins"
       :additional-data="additionalData"
-      :row-headers="true"
+      :row-headers="rowHeaders"
       :range="true"
       :resize="true"
       hide-attribution
@@ -26,16 +25,16 @@ import {
   AutoSizeColumnPlugin,
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
+  DialogPlugin,
   ExportExcelPlugin,
   MultiRangeSelectionPlugin,
-  RowAutoSizePlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
-  createContextMenuRowAutoSize,
+  createContextMenuRowHeaders,
   createDataGridContextMenuConfig,
   createTeamGrouping,
   createTeamRows,
@@ -45,15 +44,15 @@ import {
 import './data-grid-context-menu.scss';
 
 const props = defineProps<{ rows?: TeamRow[] }>();
-const rows = ref(props.rows?.length ? props.rows : createTeamRows());
+const rows = computed(() => props.rows?.length ? props.rows : createTeamRows());
 const columns = createContextMenuColumns();
 const grouping = createTeamGrouping();
-const rowAutoSize = createContextMenuRowAutoSize();
+const rowHeaders = createContextMenuRowHeaders();
 const plugins = [
   DataGridContextMenuPlugin,
+  DialogPlugin,
   AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
-  RowAutoSizePlugin,
   RowSelectPlugin,
   ColumnCollapsePlugin,
   MultiRangeSelectionPlugin,

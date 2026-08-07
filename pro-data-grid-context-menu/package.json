@@ -1,7 +1,7 @@
 {
   "name": "revogrid-demo-pro-data-grid-context-menu",
   "version": "1.0.0",
-  "description": "RevoGrid Pro universal Data Grid Context Menu demo for TypeScript, React, Vue, and Angular.",
+  "description": "RevoGrid Pro Data Grid Context Menu & Formatting demo for TypeScript, React, Vue, and Angular.",
   "private": true,
   "type": "module",
   "engines": { "node": "^22.22.3 || ^24.15.0 || >=26.0.0" },

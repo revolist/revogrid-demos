@@ -15,4 +15,77 @@
   min-height: 0;
   flex: 1;
   --revo-grid-header-font-weight: 500;
+
+  .data-grid-context-menu-row-header-cell {
+    padding: 5px 10px !important;
+  }
+}
+
+.data-grid-context-menu-details-dialog {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 20px;
+
+  .data-grid-context-menu-details {
+    display: grid;
+    gap: 16px;
+  }
+
+  .data-grid-context-menu-details__summary {
+    display: grid;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px solid var(--rv-dialog-section-border, var(--rv-dialog-border));
+    border-radius: 10px;
+    background: var(--rv-dialog-section-bg, rgb(127 127 127 / 6%));
+
+    p {
+      margin: 0;
+      color: var(--rv-dialog-muted, #667085);
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .data-grid-context-menu-details__kicker {
+    color: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .data-grid-context-menu-details__list {
+    display: grid;
+    grid-template-columns: minmax(112px, auto) minmax(0, 1fr);
+    gap: 9px 18px;
+    margin: 0;
+
+    dt {
+      color: var(--rv-dialog-muted, #667085);
+      font-weight: 600;
+    }
+
+    dd {
+      min-width: 0;
+      margin: 0;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+  }
+}
+
+@media (max-width: 520px) {
+  .data-grid-context-menu-details-dialog {
+    width: 100%;
+    padding: 16px;
+
+    .data-grid-context-menu-details__list {
+      grid-template-columns: 1fr;
+      gap: 3px;
+
+      dd + dt {
+        margin-top: 7px;
+      }
+    }
+  }
 }
