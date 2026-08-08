@@ -22,6 +22,7 @@ export type PlanningView = 'grid' | 'kanban' | 'gantt' | 'scheduler' | 'calendar
 export type PlanningTask = GanttTaskSourceRow & {
   id: string;
   name: string;
+  color?: string;
   owner: string;
   ownerAvatar: string;
   owners: string[];
@@ -49,6 +50,7 @@ export const kanbanConfig: KanbanConfig<PlanningTask> = {
     endDateField: 'endDate',
     dateTimeZone: 'UTC',
     progressField: 'percentDone',
+    colorField: 'color',
     assigneeField: 'owners',
     assigneeAvatarField: 'ownerAvatars',
   },
@@ -278,9 +280,22 @@ export function updateFromGantt(
   detail: GanttBeforeTaskChangeDetail,
 ): PlanningTask[] {
   if (detail.taskId === null || !detail.sourcePatch) return tasks;
+  const sourcePatch = { ...detail.sourcePatch };
+  if (
+    detail.action === 'resize'
+    && typeof sourcePatch.startDate === 'string'
+    && typeof sourcePatch.endDate === 'string'
+  ) {
+    const durationHours = (
+      Date.parse(sourcePatch.endDate) - Date.parse(sourcePatch.startDate)
+    ) / 3_600_000;
+    if (Number.isFinite(durationHours) && durationHours > 0) {
+      sourcePatch.duration = `${durationHours}h`;
+    }
+  }
   return tasks.map((task) =>
     task.id === String(detail.taskId)
-      ? ({ ...task, ...detail.sourcePatch } as PlanningTask)
+      ? ({ ...task, ...sourcePatch } as PlanningTask)
       : task,
   );
 }
@@ -329,6 +344,7 @@ export function updateFromScheduler(
       startDate: event.startDateTime,
       endDate: event.endDateTime,
       workflowStatus: event.status ?? task.workflowStatus,
+      color: event.color,
       duration: `${(Date.parse(event.endDateTime) - Date.parse(event.startDateTime)) / 3_600_000}h`,
     } as PlanningTask;
   });
@@ -396,5 +412,6 @@ export function toSchedulerEvents(
     startDateTime: task.startDate,
     endDateTime: task.endDate,
     status: task.workflowStatus,
+    color: task.color,
   }));
 }
