@@ -148,11 +148,11 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-enterprise':
-        specifier: npm:@revolist/rv-enterprise-trial@2.5.6
-        version: '@revolist/rv-enterprise-trial@2.5.6'
+        specifier: npm:@revolist/rv-enterprise-trial@2.5.7
+        version: '@revolist/rv-enterprise-trial@2.5.7'
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.5.6
-        version: '@revolist/rv-pro-trial@2.5.6'
+        specifier: npm:@revolist/rv-pro-trial@2.5.7
+        version: '@revolist/rv-pro-trial@2.5.7'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -233,8 +233,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.5.6
-        version: '@revolist/rv-pro-trial@2.5.6'
+        specifier: npm:@revolist/rv-pro-trial@2.5.7
+        version: '@revolist/rv-pro-trial@2.5.7'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -303,8 +303,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.5.6
-        version: '@revolist/rv-pro-trial@2.5.6'
+        specifier: npm:@revolist/rv-pro-trial@2.5.7
+        version: '@revolist/rv-pro-trial@2.5.7'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -373,8 +373,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.5.6
-        version: '@revolist/rv-pro-trial@2.5.6'
+        specifier: npm:@revolist/rv-pro-trial@2.5.7
+        version: '@revolist/rv-pro-trial@2.5.7'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -449,8 +449,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.5.6
-        version: '@revolist/rv-pro-trial@2.5.6'
+        specifier: npm:@revolist/rv-pro-trial@2.5.7
+        version: '@revolist/rv-pro-trial@2.5.7'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -525,8 +525,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.5.6
-        version: '@revolist/rv-pro-trial@2.5.6'
+        specifier: npm:@revolist/rv-pro-trial@2.5.7
+        version: '@revolist/rv-pro-trial@2.5.7'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -613,8 +613,8 @@ importers:
         specifier: 2.0.11
         version: 2.0.11
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.5.6
-        version: '@revolist/rv-pro-trial@2.5.6'
+        specifier: npm:@revolist/rv-pro-trial@2.5.7
+        version: '@revolist/rv-pro-trial@2.5.7'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -689,8 +689,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.5.6
-        version: '@revolist/rv-pro-trial@2.5.6'
+        specifier: npm:@revolist/rv-pro-trial@2.5.7
+        version: '@revolist/rv-pro-trial@2.5.7'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -768,8 +768,8 @@ importers:
         specifier: 2.0.11
         version: 2.0.11
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.5.6
-        version: '@revolist/rv-pro-trial@2.5.6'
+        specifier: npm:@revolist/rv-pro-trial@2.5.7
+        version: '@revolist/rv-pro-trial@2.5.7'
       '@revolist/svelte-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -844,8 +844,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.5.6
-        version: '@revolist/rv-pro-trial@2.5.6'
+        specifier: npm:@revolist/rv-pro-trial@2.5.7
+        version: '@revolist/rv-pro-trial@2.5.7'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -914,8 +914,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.5.6
-        version: '@revolist/rv-pro-trial@2.5.6'
+        specifier: npm:@revolist/rv-pro-trial@2.5.7
+        version: '@revolist/rv-pro-trial@2.5.7'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -2391,14 +2391,11 @@ packages:
   '@revolist/revogrid@4.25.1':
     resolution: {integrity: sha512-5s5lhJExMRnKu1Z8cANFvfN/S+gvg5aIIQ54ihwuHEZkecbFSfpE1Dod6t6heNBFzSsO9N+LWgLTUpJf/sErYA==, tarball: https://npm.pkg.github.com/download/@revolist/revogrid/4.25.1/3b9991befed715358f6ade4878b43fd1ae4ebaf8}
 
-  '@revolist/rv-enterprise-trial@2.5.6':
-    resolution: {integrity: sha512-WPbpfXwboaB07F03LDpUl6FFLu5kABEz8eXE08OaNs42aOgQKBfF5UuCj3HrDjfGbVBt2IIksLo0TRzY3ZsxbA==, tarball: https://npm.pkg.github.com/download/@revolist/rv-enterprise-trial/2.5.6/2a4e39ef758c0136793f14fe8903e90b9a3c3e11}
+  '@revolist/rv-enterprise-trial@2.5.7':
+    resolution: {integrity: sha512-TvrdBtNTkUxK60f1yRJUJpP3YAWusComVcZLwq7T/U0V2j0BzMarLnsQDJJxnGfxoze3vzDNBGHjZKNdR9Kw2A==, tarball: https://npm.pkg.github.com/download/@revolist/rv-enterprise-trial/2.5.7/a751e24afd33362bc8b929e1f287f68e857dd1a3}
 
-  '@revolist/rv-pro-trial@2.5.4':
-    resolution: {integrity: sha512-xhF1A5+yJ7IcW9w/ZJxF3K/bZy7hCDCuNcMnKBXcP9WJ+JCUDI/bei6mKIMBJ9c9+f/YMB5fovN5Lr/fyESoMQ==, tarball: https://npm.pkg.github.com/download/@revolist/rv-pro-trial/2.5.4/994fed58b684118b15c2f3e638a86e1701e3e5fa}
-
-  '@revolist/rv-pro-trial@2.5.6':
-    resolution: {integrity: sha512-Du7SLCuJCT1Jt2tbMcm2R+iHLxZr4BF98E9/JAu7kl/gHHJVzQXCgQciv/KOMXUrakRodeQaEvg/uJBaJe9MBQ==, tarball: https://npm.pkg.github.com/download/@revolist/rv-pro-trial/2.5.6/0ad9d3a7b56106790ef91a5fa1779d86d87e01ff}
+  '@revolist/rv-pro-trial@2.5.7':
+    resolution: {integrity: sha512-0mwfvMmCsOxnBD5BS/zPN8mWc8TtH8G0Bg5Zx5oVpxD9oeRVN3jOeBlSQsCmSbnmSKCJMSrB6mkkyiNFIvbEGw==, tarball: https://npm.pkg.github.com/download/@revolist/rv-pro-trial/2.5.7/bb6993fc3c36c733bfd2453e22172cd7b1c64314}
 
   '@revolist/svelte-datagrid@4.25.1':
     resolution: {integrity: sha512-AMCCASSplUjrN4E7u6lE379VcN0jE5LB3vb5jqOdBnNiUJf0r4fP5L+PsHMf64FwFc4nqq+z8tBvx9kTHoH7rA==, tarball: https://npm.pkg.github.com/download/@revolist/svelte-datagrid/4.25.1/db9b4f2285a7aeef93c6a08c2d7e4c462c94cdee}
@@ -5441,23 +5438,17 @@ snapshots:
 
   '@revolist/revogrid@4.25.1': {}
 
-  '@revolist/rv-enterprise-trial@2.5.6':
+  '@revolist/rv-enterprise-trial@2.5.7':
     dependencies:
       '@fortawesome/fontawesome-free': 7.3.1
       '@revolist/revogrid-column-date': 2.0.25
       '@revolist/revogrid-column-select': 3.2.0
-      '@revolist/rv-pro-trial': 2.5.6
+      '@revolist/rv-pro-trial': 2.5.7
       preact: 10.29.7
     transitivePeerDependencies:
       - preact-render-to-string
 
-  '@revolist/rv-pro-trial@2.5.4':
-    dependencies:
-      '@formulajs/formulajs': 4.6.0
-      '@revolist/revogrid': 4.25.1
-      write-excel-file: 4.1.1
-
-  '@revolist/rv-pro-trial@2.5.6':
+  '@revolist/rv-pro-trial@2.5.7':
     dependencies:
       '@formulajs/formulajs': 4.6.0
       '@revolist/revogrid': 4.25.1
