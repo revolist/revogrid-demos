@@ -6,7 +6,10 @@ import {
   type EventSchedulerEventChangedDetail,
   type GanttBeforeAssignmentChangeDetail,
   type GanttBeforeTaskChangeDetail,
+  type KanbanCardCreateDetail,
+  type KanbanCardDeleteDetail,
   type KanbanCardMoveDetail,
+  type KanbanCardUpdateDetail,
 } from '@revolist/revogrid-enterprise';
 import {
   currentTheme,
@@ -28,6 +31,9 @@ import {
   updateFromGanttAssignment,
   updateFromGrid,
   updateFromKanban,
+  updateFromKanbanCreate,
+  updateFromKanbanDelete,
+  updateFromKanbanUpdate,
   updateFromScheduler,
   views,
   type PlanningTask,
@@ -92,6 +98,24 @@ export function load(parentSelector: string): (() => void) | undefined {
         tasks = updateFromKanban(
           tasks,
           (event as CustomEvent<KanbanCardMoveDetail<PlanningTask>>).detail,
+        );
+      });
+      grid.addEventListener('kanbancardcreate', (event) => {
+        tasks = updateFromKanbanCreate(
+          tasks,
+          (event as CustomEvent<KanbanCardCreateDetail<PlanningTask>>).detail,
+        );
+      });
+      grid.addEventListener('kanbancardupdate', (event) => {
+        tasks = updateFromKanbanUpdate(
+          tasks,
+          (event as CustomEvent<KanbanCardUpdateDetail<PlanningTask>>).detail,
+        );
+      });
+      grid.addEventListener('kanbancarddelete', (event) => {
+        tasks = updateFromKanbanDelete(
+          tasks,
+          (event as CustomEvent<KanbanCardDeleteDetail<PlanningTask>>).detail,
         );
       });
     } else if (view === 'gantt') {

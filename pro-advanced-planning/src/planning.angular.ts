@@ -7,7 +7,10 @@ import {
   type EventSchedulerEventChangedDetail,
   type GanttBeforeAssignmentChangeDetail,
   type GanttBeforeTaskChangeDetail,
+  type KanbanCardCreateDetail,
+  type KanbanCardDeleteDetail,
   type KanbanCardMoveDetail,
+  type KanbanCardUpdateDetail,
 } from '@revolist/revogrid-enterprise';
 import { currentTheme } from '../../composables/useRandomData';
 import {
@@ -26,6 +29,9 @@ import {
   updateFromGanttAssignment,
   updateFromGrid,
   updateFromKanban,
+  updateFromKanbanCreate,
+  updateFromKanbanDelete,
+  updateFromKanbanUpdate,
   updateFromScheduler,
   type PlanningTask,
   type PlanningView,
@@ -134,6 +140,9 @@ import {
             [columns]="gridColumns"
             [kanban]="kanbanConfig"
             (kanbancardmove)="handleKanbanMove($event)"
+            (kanbancardcreate)="handleKanbanCreate($event)"
+            (kanbancardupdate)="handleKanbanUpdate($event)"
+            (kanbancarddelete)="handleKanbanDelete($event)"
           ></revo-grid>
         }
         @case ('scheduler') {
@@ -197,6 +206,18 @@ export class PlanningViewsGridComponent {
 
   handleKanbanMove(event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>) {
     this.setTasks(updateFromKanban(this.tasks, event.detail));
+  }
+
+  handleKanbanCreate(event: CustomEvent<KanbanCardCreateDetail<PlanningTask>>) {
+    this.setTasks(updateFromKanbanCreate(this.tasks, event.detail));
+  }
+
+  handleKanbanUpdate(event: CustomEvent<KanbanCardUpdateDetail<PlanningTask>>) {
+    this.setTasks(updateFromKanbanUpdate(this.tasks, event.detail));
+  }
+
+  handleKanbanDelete(event: CustomEvent<KanbanCardDeleteDetail<PlanningTask>>) {
+    this.setTasks(updateFromKanbanDelete(this.tasks, event.detail));
   }
 
   handleGanttEdit(event: CustomEvent<GanttBeforeTaskChangeDetail>) {

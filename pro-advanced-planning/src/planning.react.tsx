@@ -7,7 +7,10 @@ import {
   type EventSchedulerEventChangedDetail,
   type GanttBeforeAssignmentChangeDetail,
   type GanttBeforeTaskChangeDetail,
+  type KanbanCardCreateDetail,
+  type KanbanCardDeleteDetail,
   type KanbanCardMoveDetail,
+  type KanbanCardUpdateDetail,
 } from '@revolist/revogrid-enterprise';
 import {
   currentTheme,
@@ -29,6 +32,9 @@ import {
   updateFromGanttAssignment,
   updateFromGrid,
   updateFromKanban,
+  updateFromKanbanCreate,
+  updateFromKanbanDelete,
+  updateFromKanbanUpdate,
   updateFromScheduler,
   views,
   type PlanningView,
@@ -55,6 +61,15 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
   ) => void;
   onKanbancardmove?: (
     event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>,
+  ) => void;
+  onKanbancardcreate?: (
+    event: CustomEvent<KanbanCardCreateDetail<PlanningTask>>,
+  ) => void;
+  onKanbancardupdate?: (
+    event: CustomEvent<KanbanCardUpdateDetail<PlanningTask>>,
+  ) => void;
+  onKanbancarddelete?: (
+    event: CustomEvent<KanbanCardDeleteDetail<PlanningTask>>,
   ) => void;
 };
 
@@ -148,6 +163,15 @@ export default function PlanningViews() {
           kanban={kanbanConfig}
           onKanbancardmove={(event) =>
             setTasks((current) => updateFromKanban(current, event.detail))
+          }
+          onKanbancardcreate={(event) =>
+            setTasks((current) => updateFromKanbanCreate(current, event.detail))
+          }
+          onKanbancardupdate={(event) =>
+            setTasks((current) => updateFromKanbanUpdate(current, event.detail))
+          }
+          onKanbancarddelete={(event) =>
+            setTasks((current) => updateFromKanbanDelete(current, event.detail))
           }
         />
       )}

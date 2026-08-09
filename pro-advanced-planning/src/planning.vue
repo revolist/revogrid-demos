@@ -41,6 +41,9 @@
       :columns="gridColumns"
       :kanban.prop="kanbanConfig"
       @kanbancardmove="handleKanbanMove"
+      @kanbancardcreate="handleKanbanCreate"
+      @kanbancardupdate="handleKanbanUpdate"
+      @kanbancarddelete="handleKanbanDelete"
     />
     <RevoGrid
       v-else-if="activeView === 'gantt'"
@@ -86,7 +89,10 @@ import {
   type EventSchedulerEventChangedDetail,
   type GanttBeforeAssignmentChangeDetail,
   type GanttBeforeTaskChangeDetail,
+  type KanbanCardCreateDetail,
+  type KanbanCardDeleteDetail,
   type KanbanCardMoveDetail,
+  type KanbanCardUpdateDetail,
 } from '@revolist/revogrid-enterprise';
 import {
   currentTheme,
@@ -108,6 +114,9 @@ import {
   updateFromGanttAssignment,
   updateFromGrid,
   updateFromKanban,
+  updateFromKanbanCreate,
+  updateFromKanbanDelete,
+  updateFromKanbanUpdate,
   updateFromScheduler,
   views,
   type PlanningView,
@@ -136,6 +145,18 @@ function handleGridEdit(event: CustomEvent) {
 
 function handleKanbanMove(event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>) {
   tasks.value = updateFromKanban(tasks.value, event.detail);
+}
+
+function handleKanbanCreate(event: CustomEvent<KanbanCardCreateDetail<PlanningTask>>) {
+  tasks.value = updateFromKanbanCreate(tasks.value, event.detail);
+}
+
+function handleKanbanUpdate(event: CustomEvent<KanbanCardUpdateDetail<PlanningTask>>) {
+  tasks.value = updateFromKanbanUpdate(tasks.value, event.detail);
+}
+
+function handleKanbanDelete(event: CustomEvent<KanbanCardDeleteDetail<PlanningTask>>) {
+  tasks.value = updateFromKanbanDelete(tasks.value, event.detail);
 }
 
 function handleGanttEdit(event: CustomEvent<GanttBeforeTaskChangeDetail>) {
