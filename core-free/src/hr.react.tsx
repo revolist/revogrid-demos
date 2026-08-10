@@ -2,7 +2,7 @@ import './hr.css';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { RevoGrid, BasePlugin, type PluginProviders } from '@revolist/react-datagrid';
-import { getHRColumnsCount, getHRData, HR_OPTIONS } from './sys-data/hr.data';
+import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_OPTIONS } from './sys-data/hr.data';
 import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE, withHRShortDate } from './sys-data/hr.columns';
 import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
@@ -11,19 +11,68 @@ import { getInitialHRTheme, HR_THEME_DEFINITIONS, HR_THEME_OPTIONS } from './hr-
 import DateCol from '@revolist/revogrid-column-date';
 import NumeralCol from '@revolist/revogrid-column-numeral';
 import SelectCol from '@revolist/revogrid-column-select';
+import {
+  createHRPerformanceMonitor,
+  createInitialHRPerformanceState,
+  formatDuration,
+  formatFrameRate,
+  formatMemory,
+  getHRMetricTooltipId,
+  HR_PERFORMANCE_METRICS,
+  type HRPerformanceMetricKey,
+  type HRPerformanceMonitor,
+} from './hr-performance';
+import {
+  applyHRWorkspaceToColumns,
+  createHRWorkspaceController,
+  getHRWorkspaceRowCount,
+  HR_DEFAULT_ROW_COUNT,
+  loadHRWorkspace,
+  type HRWorkspaceController,
+  type HRWorkspaceState,
+} from './hr-workspace';
 
 interface HRDemoProps {
   isDark?: boolean;
 }
 
+function HRMetricLabel({ metric }: { metric: HRPerformanceMetricKey }) {
+  const definition = HR_PERFORMANCE_METRICS[metric];
+  const tooltipId = getHRMetricTooltipId(metric);
+  return (
+    <div className="hr-performance-label">
+      <span>{definition.label}</span>
+      <span className="hr-metric-help">
+        <button
+          type="button"
+          className="hr-metric-help-trigger"
+          aria-label={`About ${definition.label}`}
+          aria-describedby={tooltipId}
+        >?</button>
+        <span className="hr-metric-tooltip" id={tooltipId} role="tooltip">{definition.description}</span>
+      </span>
+    </div>
+  );
+}
+
 export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
+  const [workspaceState, setWorkspaceState] = useState<HRWorkspaceState>(() => loadHRWorkspace());
+  const [workspaceStatus, setWorkspaceStatus] = useState(() => Object.keys(loadHRWorkspace()).length ? 'Saved locally' : 'View not saved');
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [currentSize, setCurrentSize] = useState(100);
-  const [selectedTheme, setSelectedTheme] = useState(() => getInitialHRTheme(isDark));
+  const [loadingLabel, setLoadingLabel] = useState('Preparing rows…');
+  const [currentSize, setCurrentSize] = useState(() => getHRWorkspaceRowCount(loadHRWorkspace(), HR_OPTIONS.map(option => option.value)));
+  const [selectedTheme, setSelectedTheme] = useState(() => {
+    const saved = loadHRWorkspace().theme;
+    return HR_THEME_OPTIONS.some(option => option.value === saved) ? saved! : getInitialHRTheme(isDark);
+  });
   const [columnTypes, setColumnTypes] = useState<any>({});
   const [progress, setProgress] = useState<HRGenerationProgress>({ loaded: 0, total: 100 });
+  const [performanceState, setPerformanceState] = useState(createInitialHRPerformanceState);
   const activeController = useRef<AbortController | null>(null);
+  const gridRef = useRef<HTMLRevoGridElement>(null);
+  const performanceMonitor = useRef<HRPerformanceMonitor | null>(null);
+  const workspaceController = useRef<HRWorkspaceController | null>(null);
 
   const plugins = useMemo(() => [
     class HRPlugin extends BasePlugin {
@@ -43,13 +92,25 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
     const controller = new AbortController();
     activeController.current = controller;
     setLoading(true);
+    setLoadingLabel(`Preparing ${size.toLocaleString()} rows…`);
     setProgress({ loaded: 0, total: size });
+    const preparationStartedAt = performance.now();
     try {
-      const data = await getHRData(size, getHRColumnsCount(size), {
+      const data = await getHRData(size, {
         signal: controller.signal,
         onProgress: setProgress,
       });
-      setRows(data);
+      performanceMonitor.current?.setPreparationResult(
+        performance.now() - preparationStartedAt,
+        size,
+        getHRVisibleColumnsCount(size),
+      );
+      setLoadingLabel('Rendering RevoGrid…');
+      if (performanceMonitor.current) {
+        await performanceMonitor.current.measureGridUpdate(() => setRows(data));
+      } else {
+        setRows(data);
+      }
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
         throw error;
@@ -63,6 +124,14 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
   };
 
   useEffect(() => {
+    if (gridRef.current) {
+      performanceMonitor.current = createHRPerformanceMonitor(gridRef.current, setPerformanceState);
+      workspaceController.current = createHRWorkspaceController(
+        gridRef.current,
+        workspaceState,
+        () => setWorkspaceStatus('Unsaved changes'),
+      );
+    }
     const init = () => {
       setColumnTypes({
         date: withHRShortDate(new DateCol()),
@@ -76,12 +145,18 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
     init();
     return () => {
       activeController.current?.abort();
+      performanceMonitor.current?.destroy();
+      performanceMonitor.current = null;
+      workspaceController.current?.destroy();
+      workspaceController.current = null;
     };
   }, []);
 
   useEffect(() => {
-    setSelectedTheme(getInitialHRTheme(isDark));
-  }, [isDark]);
+    if (!workspaceState.theme) {
+      setSelectedTheme(getInitialHRTheme(isDark));
+    }
+  }, [isDark, workspaceState.theme]);
 
   const columns = useMemo(() => {
     const dropdownSource = Array.from(new Set(rows.map(r => r.company))).filter(Boolean) as string[];
@@ -115,13 +190,37 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
     eyesCol.cellTemplate = (h: any, props: any) =>
       renderHrColorPill(h, props.value);
 
-    return [...baseCols, ...getExtraHRColumns(getHRColumnsCount(currentSize))];
-  }, [rows, currentSize]);
+    return applyHRWorkspaceToColumns(
+      [...baseCols, ...getExtraHRColumns(getHRColumnsCount(currentSize))],
+      workspaceState,
+    );
+  }, [rows, currentSize, workspaceState]);
 
   const onSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const nextSize = parseInt(e.target.value, 10);
     setCurrentSize(nextSize);
+    setWorkspaceStatus('Unsaved changes');
     loadData(nextSize);
+  };
+
+  const saveView = async () => {
+    if (!workspaceController.current) return;
+    const saved = await workspaceController.current.save({ rowCount: currentSize, theme: selectedTheme });
+    setWorkspaceState(saved);
+    setWorkspaceStatus('Saved locally');
+  };
+
+  const resetView = () => {
+    workspaceController.current?.clear();
+    setWorkspaceState({});
+    setCurrentSize(HR_DEFAULT_ROW_COUNT);
+    setSelectedTheme(getInitialHRTheme(isDark));
+    setWorkspaceStatus('View reset');
+    if (gridRef.current) {
+      gridRef.current.filter = { collection: {} };
+      gridRef.current.sorting = undefined;
+    }
+    loadData(HR_DEFAULT_ROW_COUNT);
   };
 
   const progressPercent = getHRProgressPercent(progress);
@@ -147,7 +246,10 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
         <select
           className="hr-select"
           value={selectedTheme}
-          onChange={event => setSelectedTheme(event.target.value)}
+          onChange={event => {
+            setSelectedTheme(event.target.value);
+            setWorkspaceStatus('Unsaved changes');
+          }}
         >
           {HR_THEME_OPTIONS.map(option => (
             <option key={option.value} value={option.value}>
@@ -155,11 +257,15 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
             </option>
           ))}
         </select>
-        {loading && <div className="text-sm opacity-50 animate-pulse ml-2">Loading data...</div>}
+        <button type="button" className="hr-button" onClick={saveView}>Save view</button>
+        <button type="button" className="hr-button hr-button-secondary" onClick={resetView}>Reset view</button>
+        <span className="hr-workspace-status">{workspaceStatus}</span>
+        {loading && <div className="text-sm opacity-50 animate-pulse ml-2">{loadingLabel}</div>}
       </div>
 
       <div className="hr-grid-wrapper flex-1 min-h-0">
         <RevoGrid
+          ref={gridRef}
           className="hr-scale-grid grow h-full w-full"
           style={{ height: '100%', width: '100%' }}
           theme={selectedTheme}
@@ -168,7 +274,8 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
           columns={columns}
           columnTypes={columnTypes}
           plugins={plugins}
-          filter={true}
+          filter={workspaceState.filter ?? true}
+          sorting={workspaceState.sorting}
           range={true}
           resize={true}
           rowHeaders={true}
@@ -191,9 +298,37 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
                 <span className="hr-loading-counter-symbol">%</span>
               </div>
             </div>
+            <div className="hr-loading-label">{loadingLabel}</div>
           </div>
         )}
       </div>
+
+      <section className="hr-performance" aria-label="Browser performance metrics">
+        <div className="hr-performance-heading">
+          <strong>Performance</strong>
+          <span>Measured live in this browser</span>
+        </div>
+        <div className="hr-performance-metric">
+          <HRMetricLabel metric="preparation" />
+          <strong>{formatDuration(performanceState.preparationTime)}</strong>
+        </div>
+        <div className="hr-performance-metric">
+          <HRMetricLabel metric="grid" />
+          <strong>{formatDuration(performanceState.gridRenderTime)}</strong>
+        </div>
+        <div className="hr-performance-metric">
+          <HRMetricLabel metric="scroll" />
+          <strong>{formatFrameRate(performanceState.scrollFps)}</strong>
+        </div>
+        <div className="hr-performance-metric">
+          <HRMetricLabel metric="memory" />
+          <strong>{formatMemory(performanceState.memoryUsage?.usedJSHeapSize)}</strong>
+        </div>
+        <div className="hr-performance-metric">
+          <HRMetricLabel metric="dataset" />
+          <strong>{performanceState.rowCount.toLocaleString()} × {performanceState.columnCount}</strong>
+        </div>
+      </section>
     </div>
   );
 };

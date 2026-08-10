@@ -1,4 +1,4 @@
-import type { ColumnDataSchemaModel, ColumnRegular, ColumnProp, HyperFunc, VNode } from '@revolist/revogrid';
+import type { ColumnDataSchemaModel, ColumnGrouping, ColumnRegular, HyperFunc, VNode } from '@revolist/revogrid';
 
 const SHORT_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
@@ -42,7 +42,7 @@ export const HR_COLOR_BY_AGE = (age: number) => {
   return '#ef4444';
 };
 
-export function getBaseHRColumns(companies: string[]): ColumnProp[] {
+export function getBaseHRColumns(companies: string[]): (ColumnGrouping | ColumnRegular)[] {
   return [
     {
       name: 'Employee',
@@ -68,7 +68,7 @@ export function getBaseHRColumns(companies: string[]): ColumnProp[] {
     },
     { name: 'Joined', prop: 'joined', columnType: 'date', size: 130, sortable: true },
     { name: 'Salary', prop: 'salary', columnType: 'number', size: 130, sortable: true },
-  ] as ColumnProp[];
+  ];
 }
 
 export function getExtraHRColumns(count: number): ColumnRegular[] {

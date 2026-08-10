@@ -1,8 +1,7 @@
-import type { ColumnRegular, HyperFunc, VNode } from '@revolist/revogrid';
+import type { ColumnRegular, ColumnType, HyperFunc, VNode } from '@revolist/revogrid';
 
-type SelectColumnTypeConstructor = new () => {
-  beforeSetup?: (column: ColumnRegular) => void;
-};
+type SelectColumnTypeConstructor = new () => object;
+type HRColorColumnType = ColumnType & Pick<ColumnRegular, 'beforeSetup'>;
 
 type SelectChangeEvent = CustomEvent<{
   val: string | { value: unknown };
@@ -41,7 +40,7 @@ export function renderHrColorPill(
 
 class HRColorSelectEditor {
   private opened = false;
-  private element?: RevoDropdownElement | null;
+  element?: RevoDropdownElement | null;
   editCell?: { model?: Record<string, unknown>; prop?: string };
 
   constructor(
@@ -93,13 +92,15 @@ class HRColorSelectEditor {
   }
 }
 
-export function createHRColorSelectColumnType(SelectColumnType: SelectColumnTypeConstructor) {
-  const baseColumnType = new SelectColumnType();
+export function createHRColorSelectColumnType(SelectColumnType: SelectColumnTypeConstructor): HRColorColumnType {
+  const baseColumnType = new SelectColumnType() as {
+    beforeSetup?: (column: ColumnRegular) => void;
+  };
 
   return {
     beforeSetup: baseColumnType.beforeSetup,
-    editor: HRColorSelectEditor,
-    cellTemplate: (h: HyperFunc<VNode>, { model, prop }: { model: Record<string, unknown>; prop: string }) =>
+    editor: HRColorSelectEditor as unknown as ColumnType['editor'],
+    cellTemplate: (h, { model, prop }) =>
       [renderHrColorPill(h, model[prop])],
   };
 }

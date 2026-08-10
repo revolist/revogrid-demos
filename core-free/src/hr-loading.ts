@@ -11,7 +11,7 @@ export function getHRLoadingDigits(progress: HRGenerationProgress) {
   return String(getHRProgressPercent(progress)).padStart(3, '0').split('');
 }
 
-export function getHRLoadingOverlayHtml(progress: HRGenerationProgress) {
+export function getHRLoadingOverlayHtml(progress: HRGenerationProgress, label = 'Preparing rows…') {
   const digits = getHRLoadingDigits(progress)
     .map((digit) => `<span class="hr-loading-counter-digit">${digit}</span>`)
     .join('');
@@ -24,6 +24,7 @@ export function getHRLoadingOverlayHtml(progress: HRGenerationProgress) {
           <span class="hr-loading-counter-symbol">%</span>
         </div>
       </div>
+      <div class="hr-loading-label">${label}</div>
     </div>
   `;
 }

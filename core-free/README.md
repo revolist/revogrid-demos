@@ -10,7 +10,9 @@ _Click the animated preview to open the full-quality MP4._
 
 ## What it features
 
-- Asynchronous generation of large HR datasets with loading progress
+- Time-budgeted, cache-backed preparation of large HR datasets with loading progress
+- Live browser performance metrics separating data preparation from grid apply-to-paint time, plus scroll smoothness normalized to a 60 FPS ceiling and page heap sampling every second while visible
+- Browser-local Save view and Reset view controls for dataset, theme, column order and widths, sorting, and filters
 - Filtering, single-column sorting, Shift-click multi-column sorting, range selection, row headers, resizing, and grouped columns
 - Custom cell rendering and a reusable color-select column type
 - Date, numeral, and select column packages
