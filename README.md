@@ -60,7 +60,7 @@ initializes them and advances every checkout to the latest remote `main`.
 | Pro | Audit History: Invoice Ledger | [`pro-audit-history`](./pro-audit-history/) | [`/audit-history/`](https://example.rv-grid.com/audit-history/) |
 | Pro | Tree Data: Organization Explorer | [`pro-tree-data`](./pro-tree-data/) | [`/tree-data/`](https://example.rv-grid.com/tree-data/) |
 | Pro Advanced | Pivot | [`revolist/pivot`](https://github.com/revolist/pivot) | [`pivot.rv-grid.com`](https://pivot.rv-grid.com/demo/) |
-| Pro Advanced | Gantt | [`revolist/gantt`](https://github.com/revolist/gantt) | [`gantt.rv-grid.com`](https://gantt.rv-grid.com/demo/) |
+| Pro Advanced | Gantt | [`revolist/gantt`](https://github.com/revolist/gantt) | [`gantt.rv-grid.com`](https://gantt.rv-grid.com/) |
 | Pro Advanced | Kanban | [`revolist/kanban`](https://github.com/revolist/kanban) | [`kanban.rv-grid.com`](https://kanban.rv-grid.com/demo/) |
 | Pro Advanced | Scheduler | [`revolist/scheduler`](https://github.com/revolist/scheduler) | [`scheduler.rv-grid.com`](https://scheduler.rv-grid.com/demo/) |
 | Pro Advanced | Unified Planning Suite | [`pro-advanced-planning`](./pro-advanced-planning/) | [`/planning/`](https://example.rv-grid.com/planning/) |

@@ -5,6 +5,12 @@ import test from 'node:test';
 import { featureSlugs, loadCatalog, root } from '../scripts/catalog.mjs';
 
 const output = join(root, 'dist');
+const featureLiveDemoUrls = {
+  pivot: 'https://pivot.rv-grid.com/demo/',
+  gantt: 'https://gantt.rv-grid.com/',
+  kanban: 'https://kanban.rv-grid.com/demo/',
+  scheduler: 'https://scheduler.rv-grid.com/demo/',
+};
 
 test('feature repositories track their public main branches', async () => {
   const modules = await readFile(join(root, '.gitmodules'), 'utf8');
@@ -22,7 +28,7 @@ test('child metadata is complete and remains the source for feature copy', async
   for (const slug of featureSlugs) {
     const showcase = catalog.find((entry) => entry.slug === slug);
     assert.ok(showcase);
-    assert.equal(showcase.liveDemoUrl, `https://${slug}.rv-grid.com/demo/`);
+    assert.equal(showcase.liveDemoUrl, featureLiveDemoUrls[slug]);
     assert.deepEqual(showcase.frameworks, ['ts', 'react', 'vue', 'angular']);
     assert.ok(showcase.recipes.length >= 2);
   }
