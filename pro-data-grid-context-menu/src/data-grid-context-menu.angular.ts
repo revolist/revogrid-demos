@@ -1,4 +1,4 @@
-import { Component, Input, NO_ERRORS_SCHEMA, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, Input, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import {
   AdvanceFilterPlugin,
@@ -15,6 +15,7 @@ import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
   createContextMenuRowHeaders,
+  createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
   createTeamGrouping,
   createTeamRows,
@@ -27,7 +28,6 @@ import {
   standalone: true,
   imports: [RevoGrid],
   encapsulation: ViewEncapsulation.None,
-  schemas: [NO_ERRORS_SCHEMA],
   styleUrls: ['./data-grid-context-menu.scss'],
   template: `
     <section class="data-grid-context-menu-showcase" aria-label="Data Grid Context Menu & Formatting workspace">
@@ -81,6 +81,7 @@ export class DataGridContextMenuGridComponent implements OnDestroy {
   ];
   readonly additionalData = {
     dataGridContextMenu: createDataGridContextMenuConfig(),
+    dataGridFormatting: createDataGridFormattingPresets(),
   };
   source = createTeamRows();
 

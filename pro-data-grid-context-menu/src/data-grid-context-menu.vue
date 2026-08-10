@@ -8,6 +8,7 @@
       :grouping="grouping"
       :row-size="DATA_GRID_CONTEXT_MENU_ROW_SIZE"
       :plugins="plugins"
+      :data-grid-formatting="dataGridFormatting"
       :additional-data="additionalData"
       :row-headers="rowHeaders"
       :range="true"
@@ -35,6 +36,7 @@ import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
   createContextMenuRowHeaders,
+  createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
   createTeamGrouping,
   createTeamRows,
@@ -48,6 +50,7 @@ const rows = computed(() => props.rows?.length ? props.rows : createTeamRows());
 const columns = createContextMenuColumns();
 const grouping = createTeamGrouping();
 const rowHeaders = createContextMenuRowHeaders();
+const dataGridFormatting = createDataGridFormattingPresets();
 const plugins = [
   DataGridContextMenuPlugin,
   DialogPlugin,
