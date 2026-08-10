@@ -1,5 +1,7 @@
 packages:
   - "core-free"
+  - "core-ai-prompts"
+  - "core-project-portfolio"
   - "pro-excel"
   - "pro-e-commerce"
   - "pro-project-table"

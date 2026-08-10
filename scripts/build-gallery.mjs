@@ -112,11 +112,11 @@ for (const showcase of catalog) {
 }
 
 const home = page({
-  title: 'RevoGrid Examples · Sixteen production-style showcases',
-  description: 'Explore RevoGrid Core, Pro filtering, infinity scroll, column collapse, context menus and formatting, master detail, audit history, and tree data, plus Pivot, Gantt, Kanban, Scheduler, and planning examples in TypeScript, React, Vue, and Angular.',
+  title: `RevoGrid Examples · ${catalog.length} production-style showcases`,
+  description: 'Explore RevoGrid Core prompt, portfolio, and large-data workflows, plus Pro filtering, infinity scroll, context menus, Pivot, Gantt, Kanban, Scheduler, and planning examples in TypeScript, React, Vue, and Angular.',
   content: `<section class="hero shell">
     <span class="eyebrow">RevoGrid in production</span>
-    <h1>Sixteen complete ways to build beyond the data grid.</h1>
+    <h1>${catalog.length} complete ways to build beyond the data grid.</h1>
     <p>Run polished, framework-ready examples for filtering, remote loading, grouped columns, context menus and formatting, master detail, audit history, hierarchy, analytics, planning, scheduling, workflow, spreadsheets, and high-performance data experiences.</p>
     <div class="hero-actions"><a class="button primary" href="#showcases">Explore all showcases</a><a class="button" href="https://pro.rv-grid.com/guides/installation-npm-trial/">Request trial</a><a class="button" href="https://rv-grid.com/pricing/">Get Pro Advanced</a></div>
   </section>

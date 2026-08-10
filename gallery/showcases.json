@@ -1,5 +1,29 @@
 [
   {
+    "slug": "core-ai-prompts",
+    "title": "AI Prompt Library",
+    "summary": "A searchable, editable prompt catalog with multiline content, category workflows, and instant local data loading.",
+    "edition": "Core",
+    "sourceDir": "core-ai-prompts",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/core-ai-prompts",
+    "productUrl": "https://rv-grid.com/",
+    "frameworks": ["ts", "react", "vue", "angular"],
+    "highlights": ["Local bundled data", "Multiline prompt editing", "Search and category filtering"],
+    "media": { "poster": "assets/core-ai-prompts-poster.svg" }
+  },
+  {
+    "slug": "core-project-portfolio",
+    "title": "Project Portfolio — Core Row Grouping",
+    "summary": "A practical delivery portfolio with two-level Core row grouping, progress indicators, status views, and expand or collapse controls.",
+    "edition": "Core",
+    "sourceDir": "core-project-portfolio",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/core-project-portfolio",
+    "productUrl": "https://rv-grid.com/",
+    "frameworks": ["ts", "react", "vue", "angular"],
+    "highlights": ["Two-level row grouping", "Custom progress cells", "Expand and collapse groups"],
+    "media": { "poster": "assets/core-project-portfolio-poster.svg" }
+  },
+  {
     "slug": "core",
     "title": "RevoGrid Core",
     "summary": "A high-performance HR data grid with grouped columns, custom renderers, row movement, and adaptive light and dark themes.",

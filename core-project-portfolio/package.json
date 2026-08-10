@@ -1,0 +1,50 @@
+{
+  "name": "revogrid-demo-core-project-portfolio",
+  "version": "1.0.0",
+  "description": "RevoGrid Core project portfolio row-grouping demo for TypeScript, React, Vue, and Angular.",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "^22.22.3 || ^24.15.0 || >=26.0.0" },
+  "scripts": {
+    "dev": "pnpm dev:ts",
+    "dev:ts": "vite --mode ts",
+    "dev:react": "vite --mode react",
+    "dev:vue": "vite --mode vue",
+    "dev:angular": "vite --mode angular",
+    "build": "pnpm build:ts",
+    "build:ts": "vite build --mode ts",
+    "build:react": "vite build --mode react",
+    "build:vue": "vite build --mode vue",
+    "build:angular": "vite build --mode angular",
+    "test": "node --test src/*.test.mjs"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.3.1",
+    "@angular/common": "^22.1.0",
+    "@angular/compiler": "^22.1.0",
+    "@angular/core": "^22.1.0",
+    "@angular/platform-browser": "^22.1.0",
+    "@revolist/angular-datagrid": "4.25.1",
+    "@revolist/react-datagrid": "4.25.1",
+    "@revolist/revogrid": "4.25.1",
+    "@revolist/vue3-datagrid": "4.25.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.4.0",
+    "vue": "^3.5.21",
+    "zone.js": "~0.15.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.1.0",
+    "@angular/cli": "^22.1.0",
+    "@angular/compiler-cli": "^22.1.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "~6.0.3",
+    "vite": "^6.3.5",
+    "vue-tsc": "^2.2.10"
+  }
+}
