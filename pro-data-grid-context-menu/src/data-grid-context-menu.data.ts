@@ -36,6 +36,63 @@ export function createTeamRows(): TeamRow[] {
   return TEAM_ROWS.map(row => ({ ...row }));
 }
 
+export function createDataGridFormattingPresets() {
+  return {
+    rowKeyProp: 'id',
+    cells: [
+      {
+        rowKey: 101,
+        prop: 'score',
+        format: {
+          value: { preset: 'number', decimalPlaces: 1 },
+          appearance: {
+            bold: true,
+            textColor: '#166534',
+            fillColor: '#dcfce7',
+            horizontal: 'right',
+          },
+        },
+      },
+      {
+        rowKey: 103,
+        prop: 'status',
+        format: {
+          appearance: {
+            bold: true,
+            textColor: '#92400e',
+            fillColor: '#fef3c7',
+            horizontal: 'center',
+          },
+        },
+      },
+      {
+        rowKey: 105,
+        prop: 'score',
+        format: {
+          value: { preset: 'number', decimalPlaces: 1 },
+          appearance: {
+            strike: true,
+            textColor: '#991b1b',
+            fillColor: '#fee2e2',
+            horizontal: 'right',
+          },
+        },
+      },
+      {
+        rowKey: 108,
+        prop: 'owner',
+        format: {
+          appearance: {
+            italic: true,
+            textColor: '#1e40af',
+            fillColor: '#dbeafe',
+          },
+        },
+      },
+    ],
+  } as const;
+}
+
 export function createContextMenuColumns(): ColumnData {
   return [
     {

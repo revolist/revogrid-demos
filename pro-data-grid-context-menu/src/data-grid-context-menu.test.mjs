@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   createContextMenuColumns,
   createContextMenuRowHeaders,
+  createDataGridFormattingPresets,
   createTeamGrouping,
   createTeamRows,
 } from './data-grid-context-menu.data.ts';
@@ -28,6 +29,21 @@ test('showcase data covers grouped, editable, and readonly targets', () => {
   assert.ok(leafColumns.every(column => column.sortable === true));
   assert.equal(typeof score?.readonly, 'function');
   assert.notStrictEqual(createTeamRows()[0], rows[0]);
+});
+
+test('showcase starts with several declaratively formatted cells', () => {
+  const formatting = createDataGridFormattingPresets();
+
+  assert.equal(formatting.rowKeyProp, 'id');
+  assert.equal(formatting.cells.length, 4);
+  assert.equal(
+    new Set(formatting.cells.map(cell => `${cell.rowKey}:${cell.prop}`)).size,
+    formatting.cells.length,
+  );
+  assert.deepEqual(
+    formatting.cells.map(cell => [cell.rowKey, cell.prop]),
+    [[101, 'score'], [103, 'status'], [105, 'score'], [108, 'owner']],
+  );
 });
 
 test('menu configuration keeps row deletion while extending, replacing, and creating schema', async () => {
@@ -115,6 +131,8 @@ test('all framework variants install the same universal menu capabilities', asyn
     assert.match(source, /MultiRangeSelectionPlugin/);
     assert.match(source, /ExportExcelPlugin/);
     assert.match(source, /createDataGridContextMenuConfig/);
+    assert.match(source, /dataGridFormatting/);
+    assert.match(source, /createDataGridFormattingPresets/);
     assert.match(source, /createTeamGrouping/);
   }
 });

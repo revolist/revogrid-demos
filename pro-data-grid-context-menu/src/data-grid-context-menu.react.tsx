@@ -15,6 +15,7 @@ import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
   createContextMenuRowHeaders,
+  createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
   createTeamGrouping,
   createTeamRows,
@@ -28,6 +29,7 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
   const columns = useMemo(() => createContextMenuColumns(), []);
   const grouping = useMemo(() => createTeamGrouping(), []);
   const rowHeaders = useMemo(() => createContextMenuRowHeaders(), []);
+  const dataGridFormatting = useMemo(() => createDataGridFormattingPresets(), []);
   const plugins = useMemo(() => [
     DataGridContextMenuPlugin,
     DialogPlugin,
@@ -55,6 +57,7 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
         grouping={grouping}
         rowSize={DATA_GRID_CONTEXT_MENU_ROW_SIZE}
         plugins={plugins}
+        dataGridFormatting={dataGridFormatting}
         additionalData={additionalData}
         rowHeaders={rowHeaders}
         range

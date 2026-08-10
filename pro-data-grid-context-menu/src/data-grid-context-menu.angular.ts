@@ -15,6 +15,7 @@ import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
   createContextMenuRowHeaders,
+  createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
   createTeamGrouping,
   createTeamRows,
@@ -39,6 +40,7 @@ import {
         [grouping]="grouping"
         [rowSize]="rowSize"
         [plugins]="plugins"
+        [dataGridFormatting]="dataGridFormatting"
         [additionalData]="additionalData"
         [rowHeaders]="rowHeaders"
         [range]="true"
@@ -69,6 +71,7 @@ export class DataGridContextMenuGridComponent implements OnDestroy {
   readonly grouping = createTeamGrouping();
   readonly rowSize = DATA_GRID_CONTEXT_MENU_ROW_SIZE;
   readonly rowHeaders = createContextMenuRowHeaders();
+  readonly dataGridFormatting = createDataGridFormattingPresets();
   readonly plugins = [
     DataGridContextMenuPlugin,
     DialogPlugin,

@@ -24,6 +24,8 @@ The example demonstrates the configuration paths applications commonly need:
 - replacement of the grouped-column-header surface with `getItems`;
 - selection-aware clipboard commands, including multi-range formats;
 - readonly ID cells and conditionally readonly archived scores;
+- several predefined cell formats bound through the direct
+  `dataGridFormatting` grid property;
 - optional row pinning and application-owned column schema creation;
 - filtering, column auto-size, grouped columns, row groups, and CSV/XLSX export capabilities.
 

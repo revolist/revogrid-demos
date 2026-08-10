@@ -14,6 +14,7 @@ import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
   createContextMenuRowHeaders,
+  createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
   createTeamGrouping,
   createTeamRows,
@@ -50,6 +51,7 @@ export function load(parentSelector: string, rows?: TeamRow[]) {
   grid.columns = createContextMenuColumns();
   grid.plugins = plugins;
   grid.grouping = createTeamGrouping();
+  grid.dataGridFormatting = createDataGridFormattingPresets();
   grid.dataGridContextMenu = createDataGridContextMenuConfig();
   grid.rowHeaders = createContextMenuRowHeaders();
   grid.range = true;
