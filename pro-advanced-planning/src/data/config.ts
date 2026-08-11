@@ -1,8 +1,6 @@
-import {
-  type EventSchedulerConfig,
-  type GanttPluginConfig,
-  type KanbanConfig,
-} from '@revolist/revogrid-enterprise';
+import type { GanttPluginConfig } from '@revolist/gantt';
+import type { KanbanConfig } from '@revolist/kanban';
+import type { EventSchedulerConfig } from '@revolist/scheduler';
 import { planningCalendarId } from './source';
 import type { PlanningTask } from './types';
 

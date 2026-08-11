@@ -1,16 +1,20 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import {
-  EventSchedulerPlugin,
   GanttPlugin,
-  KanbanPlugin,
-  type EventSchedulerEventChangedDetail,
   type GanttBeforeAssignmentChangeDetail,
   type GanttBeforeTaskChangeDetail,
+} from '@revolist/gantt';
+import {
+  KanbanPlugin,
   type KanbanCardCreateDetail,
   type KanbanCardDeleteDetail,
   type KanbanCardMoveDetail,
   type KanbanCardUpdateDetail,
-} from '@revolist/revogrid-enterprise';
+} from '@revolist/kanban';
+import {
+  EventSchedulerPlugin,
+  type EventSchedulerEventChangedDetail,
+} from '@revolist/scheduler';
 import {
   currentTheme,
   observeCurrentTheme,
@@ -153,7 +157,7 @@ export function load(parentSelector: string): (() => void) | undefined {
     }
 
     panel.replaceChildren(grid);
-    grid.source = view === 'scheduler' || view === 'calendar' ? [] : (tasks as PlanningTask[]);
+    grid.source = view === 'scheduler' || view === 'calendar' ? [] : tasks;
     switcher.querySelectorAll('button').forEach((button) => {
       const selected = button.dataset.view === activeView;
       button.classList.toggle('on', selected);

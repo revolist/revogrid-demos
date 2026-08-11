@@ -1,6 +1,7 @@
 import '../../demo-host.css';
-import '@revolist/revogrid-pro/dist/revogrid-pro.css';
-import '@revolist/revogrid-enterprise/dist/revogrid-enterprise.css';
+import '@revolist/gantt/styles.css';
+import '@revolist/kanban/styles.css';
+import '@revolist/scheduler/styles.css';
 
 const framework =
   import.meta.env.MODE === 'development' ? 'ts' : import.meta.env.MODE;

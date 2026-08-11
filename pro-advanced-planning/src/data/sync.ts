@@ -1,12 +1,14 @@
 import {
-  type EventSchedulerEventChangedDetail,
   type GanttBeforeAssignmentChangeDetail,
   type GanttBeforeTaskChangeDetail,
+} from '@revolist/gantt';
+import {
   type KanbanCardCreateDetail,
   type KanbanCardDeleteDetail,
   type KanbanCardMoveDetail,
   type KanbanCardUpdateDetail,
-} from '@revolist/revogrid-enterprise';
+} from '@revolist/kanban';
+import type { EventSchedulerEventChangedDetail } from '@revolist/scheduler';
 import { getOwnerAvatar } from './source';
 import type { PlanningTask } from './types';
 

@@ -1,4 +1,4 @@
-import type { GanttTaskSourceRow } from '@revolist/revogrid-enterprise';
+import type { GanttTaskSourceRow } from '@revolist/gantt';
 
 export type PlanningView = 'grid' | 'kanban' | 'gantt' | 'scheduler' | 'calendar';
 

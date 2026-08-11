@@ -1,9 +1,11 @@
 import {
   type AssignmentEntity,
+  type ResourceEntity,
+} from '@revolist/gantt';
+import {
   type EventSchedulerEventEntity,
   type EventSchedulerResourceEntity,
-  type ResourceEntity,
-} from '@revolist/revogrid-enterprise';
+} from '@revolist/scheduler';
 import type { PlanningTask } from './types';
 
 type Person = EventSchedulerResourceEntity & {

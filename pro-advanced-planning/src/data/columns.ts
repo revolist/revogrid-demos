@@ -3,7 +3,7 @@ import { avatarWithTextRenderer } from '@revolist/revogrid-pro';
 import {
   createDefaultTaskTableColumn,
   formatGanttTableDate,
-} from '@revolist/revogrid-enterprise';
+} from '@revolist/gantt';
 import { ganttConfig } from './config';
 
 const dateCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (

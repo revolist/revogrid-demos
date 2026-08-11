@@ -83,17 +83,21 @@
 import { computed, onBeforeUnmount, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import {
-  EventSchedulerPlugin,
   GanttPlugin,
-  KanbanPlugin,
-  type EventSchedulerEventChangedDetail,
   type GanttBeforeAssignmentChangeDetail,
   type GanttBeforeTaskChangeDetail,
+} from '@revolist/gantt';
+import {
+  KanbanPlugin,
   type KanbanCardCreateDetail,
   type KanbanCardDeleteDetail,
   type KanbanCardMoveDetail,
   type KanbanCardUpdateDetail,
-} from '@revolist/revogrid-enterprise';
+} from '@revolist/kanban';
+import {
+  EventSchedulerPlugin,
+  type EventSchedulerEventChangedDetail,
+} from '@revolist/scheduler';
 import {
   currentTheme,
   observeCurrentTheme,

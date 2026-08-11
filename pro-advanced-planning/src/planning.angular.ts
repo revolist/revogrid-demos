@@ -1,17 +1,21 @@
 import { Component, NO_ERRORS_SCHEMA, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import {
-  EventSchedulerPlugin,
   GanttPlugin,
-  KanbanPlugin,
-  type EventSchedulerEventChangedDetail,
   type GanttBeforeAssignmentChangeDetail,
   type GanttBeforeTaskChangeDetail,
+} from '@revolist/gantt';
+import {
+  KanbanPlugin,
   type KanbanCardCreateDetail,
   type KanbanCardDeleteDetail,
   type KanbanCardMoveDetail,
   type KanbanCardUpdateDetail,
-} from '@revolist/revogrid-enterprise';
+} from '@revolist/kanban';
+import {
+  EventSchedulerPlugin,
+  type EventSchedulerEventChangedDetail,
+} from '@revolist/scheduler';
 import { currentTheme } from '../../composables/useRandomData';
 import {
   calendarConfig,

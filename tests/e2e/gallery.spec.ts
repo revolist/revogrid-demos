@@ -1,7 +1,22 @@
 import { expect, test } from '@playwright/test';
 
 const featureSlugs = ['pivot', 'gantt', 'kanban', 'scheduler'];
-const retainedSlugs = ['core', 'excel', 'ecommerce', 'project-table', 'filtering', 'infinity-scroll', 'column-collapse', 'row-master', 'audit-history', 'tree-data', 'planning'];
+const retainedSlugs = [
+  'core-ai-prompts',
+  'core-project-portfolio',
+  'core',
+  'excel',
+  'ecommerce',
+  'project-table',
+  'filtering',
+  'infinity-scroll',
+  'column-collapse',
+  'data-grid-context-menu',
+  'row-master',
+  'audit-history',
+  'tree-data',
+  'planning',
+];
 
 test('gallery is complete, keyboard navigable, and responsive', async ({ page }) => {
   const errors: string[] = [];
@@ -9,8 +24,8 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Fifteen complete ways');
-  await expect(page.locator('.showcase-card')).toHaveCount(15);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('18 complete ways');
+  await expect(page.locator('.showcase-card')).toHaveCount(18);
   await page.keyboard.press('Tab');
   await expect(page.locator(':focus')).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
