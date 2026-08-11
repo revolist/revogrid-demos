@@ -4,6 +4,7 @@ import {
   ExportExcelPlugin,
   TREE_COLLAPSE_ALL_EVENT,
   TREE_EXPAND_ALL_EVENT,
+  TREE_STATE_CHANGED_EVENT,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -25,6 +26,9 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
   const source = useMemo(() => rows?.length ? rows : createTreeRows(), [rows]);
   const [stickyParents, setStickyParents] = useState(true);
+  const [expandedRowIds, setExpandedRowIds] = useState(
+    () => createTreeConfig(source).expandedRowIds,
+  );
   const columns = useMemo(() => createTreeColumns(source, stickyParents), [source, stickyParents]);
   const plugins = useMemo(() => [...TREE_PLUGINS], []);
   const columnTypes = useMemo(() => ({ ...TREE_COLUMN_TYPES }), []);
@@ -32,7 +36,12 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
   const rowSelect = useMemo(() => TREE_ROW_SELECT_CONFIG, []);
   const [exporting, setExporting] = useState(false);
   const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
-  const tree = useMemo(() => createTreeConfig(source, stickyParents), [source, stickyParents]);
+  const tree = useMemo(() => createTreeConfig(source, {
+    expandedRowIds,
+    stickyParents,
+  }), [expandedRowIds, source, stickyParents]);
+  const treeRef = useRef(tree);
+  treeRef.current = tree;
   const pluginProps = useMemo(() => ({
     rowOrder,
     rowSelect,
@@ -43,9 +52,16 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
   useEffect(() => {
     const disconnectTheme = observeCurrentTheme(setDarkTheme);
     const grid = gridRef.current;
-    if (grid) void initializeTreeStickyColumns(grid, source, tree);
-    return disconnectTheme;
-  }, []);
+    const syncTreeState = ({ detail }: CustomEvent<HTMLRevoGridElementEventMap[typeof TREE_STATE_CHANGED_EVENT]>) => {
+      setExpandedRowIds(new Set(detail.expandedRowIds));
+    };
+    grid?.addEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
+    if (grid) void initializeTreeStickyColumns(grid, source, () => treeRef.current);
+    return () => {
+      grid?.removeEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
+      disconnectTheme();
+    };
+  }, [source]);
 
   const expandAll = () => gridRef.current?.dispatchEvent(new CustomEvent(TREE_EXPAND_ALL_EVENT));
   const collapseAll = () => gridRef.current?.dispatchEvent(new CustomEvent(TREE_COLLAPSE_ALL_EVENT));

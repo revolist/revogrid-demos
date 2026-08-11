@@ -172,18 +172,32 @@ export function createTreeColumns(
 export async function initializeTreeStickyColumns(
   grid: HTMLRevoGridElement,
   rows: TreeDataRow[],
-  tree: ReturnType<typeof createTreeConfig>,
+  getTree: () => ReturnType<typeof createTreeConfig>,
 ) {
   await grid.componentOnReady();
   if (!grid.isConnected) return;
+  const tree = getTree();
   grid.tree = tree;
   grid.stickyCells = TREE_STICKY_CELLS_CONFIG;
   grid.columns = createTreeColumns(rows, tree.stickyParents);
 }
 
-export function createTreeConfig(rows: TreeDataRow[], stickyParents = true) {
+type TreeConfigOptions = {
+  stickyParents?: boolean;
+  expandedRowIds?: Iterable<string>;
+};
+
+export function createTreeConfig(
+  rows: TreeDataRow[],
+  options: TreeConfigOptions = {},
+) {
+  const stickyParents = options.stickyParents ?? true;
   return {
-    expandedRowIds: new Set(rows.filter((row) => row.parentId === null).map((row) => row.id)),
+    expandedRowIds: new Set(
+      options.expandedRowIds ?? rows
+        .filter((row) => row.parentId === null)
+        .map((row) => row.id),
+    ),
     stickyParents,
     animation: true,
   };

@@ -42,6 +42,7 @@ import {
   ExportExcelPlugin,
   TREE_COLLAPSE_ALL_EVENT,
   TREE_EXPAND_ALL_EVENT,
+  TREE_STATE_CHANGED_EVENT,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -66,18 +67,30 @@ const plugins = [...TREE_PLUGINS];
 const columnTypes = TREE_COLUMN_TYPES;
 const exporting = ref(false);
 const darkTheme = ref(typeof window !== 'undefined' && currentTheme().isDark());
-const treeConfig = computed(() => createTreeConfig(rows.value, stickyParents.value));
+const expandedRowIds = ref(createTreeConfig(rows.value).expandedRowIds);
+const treeConfig = computed(() => createTreeConfig(rows.value, {
+  expandedRowIds: expandedRowIds.value,
+  stickyParents: stickyParents.value,
+}));
 let disconnectTheme: (() => void) | undefined;
+
+const syncTreeState = ({ detail }: CustomEvent<HTMLRevoGridElementEventMap[typeof TREE_STATE_CHANGED_EVENT]>) => {
+  expandedRowIds.value = new Set(detail.expandedRowIds);
+};
 
 onMounted(() => {
   disconnectTheme = observeCurrentTheme((isDark) => {
     darkTheme.value = isDark;
   });
   const grid = getGrid();
-  if (grid) void initializeTreeStickyColumns(grid, rows.value, treeConfig.value);
+  grid?.addEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
+  if (grid) void initializeTreeStickyColumns(grid, rows.value, () => treeConfig.value);
 });
 
-onUnmounted(() => disconnectTheme?.());
+onUnmounted(() => {
+  getGrid()?.removeEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
+  disconnectTheme?.();
+});
 
 function getGrid() {
   const current = gridRef.value;

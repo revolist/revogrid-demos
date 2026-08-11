@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { createTreeRows } from './tree.shared.ts';
+import { createTreeConfig, createTreeRows } from './tree.shared.ts';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const readSource = file => readFile(join(root, file), 'utf8');
@@ -83,6 +83,19 @@ test('expanded tree has enough rows to exercise internal sticky scrolling', () =
   assert.ok(rows.filter(row => row.parentId !== null).length >= 20);
 });
 
+test('tree config preserves live expansion state across framework refreshes', () => {
+  const rows = createTreeRows();
+  const expandedRowIds = new Set(['product', 'platform', 'experience']);
+  const config = createTreeConfig(rows, {
+    expandedRowIds,
+    stickyParents: false,
+  });
+
+  assert.deepEqual(config.expandedRowIds, expandedRowIds);
+  assert.notEqual(config.expandedRowIds, expandedRowIds);
+  assert.equal(config.stickyParents, false);
+});
+
 test('plugins are applied before columns so tree sticky decorators see the initial column set', async () => {
   const [typescript, react, vue, angular] = await Promise.all([
     readSource('tree.ts'),
@@ -97,7 +110,7 @@ test('plugins are applied before columns so tree sticky decorators see the initi
   assert.ok(angular.indexOf('[plugins]="plugins"') < angular.indexOf('[columns]="columns"'));
 });
 
-test('frameworks refresh tree columns once plugins are ready', async () => {
+test('frameworks refresh tree columns once plugins are ready without capturing stale tree state', async () => {
   const [shared, typescript, react, vue, angular] = await Promise.all([
     readSource('tree.shared.ts'),
     readSource('tree.ts'),
@@ -106,11 +119,22 @@ test('frameworks refresh tree columns once plugins are ready', async () => {
     readSource('tree.angular.ts'),
   ]);
 
-  assert.match(shared, /initializeTreeStickyColumns[\s\S]*?componentOnReady[\s\S]*?grid\.tree = tree[\s\S]*?grid\.stickyCells = TREE_STICKY_CELLS_CONFIG[\s\S]*?grid\.columns = createTreeColumns\(rows,/);
-  assert.match(typescript, /initializeTreeStickyColumns\(grid,/);
-  assert.match(react, /useEffect[\s\S]*?initializeTreeStickyColumns\(grid,/);
-  assert.match(vue, /onMounted[\s\S]*?initializeTreeStickyColumns\(grid,/);
-  assert.match(angular, /ngAfterViewInit[\s\S]*?initializeTreeStickyColumns/);
+  assert.match(shared, /initializeTreeStickyColumns[\s\S]*?componentOnReady[\s\S]*?const tree = getTree\(\)[\s\S]*?grid\.tree = tree[\s\S]*?grid\.stickyCells = TREE_STICKY_CELLS_CONFIG[\s\S]*?grid\.columns = createTreeColumns\(rows,/);
+  assert.match(typescript, /initializeTreeStickyColumns\(grid,[\s\S]*?\(\) => treeConfig\)/);
+  assert.match(react, /useEffect[\s\S]*?initializeTreeStickyColumns\(grid,[\s\S]*?\(\) => treeRef\.current\)/);
+  assert.match(vue, /onMounted[\s\S]*?initializeTreeStickyColumns\(grid,[\s\S]*?\(\) => treeConfig\.value\)/);
+  assert.match(angular, /ngAfterViewInit[\s\S]*?initializeTreeStickyColumns\(grid,[\s\S]*?\(\) => this\.treeConfig\)/);
+});
+
+test('all framework variants mirror live tree expansion state', async () => {
+  const files = ['tree.ts', 'tree.react.tsx', 'tree.vue', 'tree.angular.ts'];
+  const sources = await Promise.all(files.map(readSource));
+
+  for (const source of sources) {
+    assert.match(source, /TREE_STATE_CHANGED_EVENT/);
+    assert.match(source, /detail\.expandedRowIds/);
+    assert.match(source, /createTreeConfig\([\s\S]*?expandedRowIds/);
+  }
 });
 
 test('tree columns explicitly track sticky parent IDs and checkbox changes', async () => {

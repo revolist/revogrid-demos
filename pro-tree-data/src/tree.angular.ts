@@ -4,6 +4,7 @@ import {
   ExportExcelPlugin,
   TREE_COLLAPSE_ALL_EVENT,
   TREE_EXPAND_ALL_EVENT,
+  TREE_STATE_CHANGED_EVENT,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -82,10 +83,12 @@ export class TreeDataGridComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     const grid = this.gridElement?.nativeElement;
-    if (grid) void initializeTreeStickyColumns(grid, this.rows, this.treeConfig);
+    grid?.addEventListener(TREE_STATE_CHANGED_EVENT, this.syncTreeState);
+    if (grid) void initializeTreeStickyColumns(grid, this.rows, () => this.treeConfig);
   }
 
   ngOnDestroy() {
+    this.gridElement?.nativeElement.removeEventListener(TREE_STATE_CHANGED_EVENT, this.syncTreeState);
     this.disconnectTheme();
   }
 
@@ -99,9 +102,19 @@ export class TreeDataGridComponent implements AfterViewInit, OnDestroy {
 
   setStickyParents(event: Event) {
     this.stickyParents = (event.target as HTMLInputElement).checked;
-    this.treeConfig = createTreeConfig(this.rows, this.stickyParents);
+    this.treeConfig = createTreeConfig(this.rows, {
+      expandedRowIds: this.treeConfig.expandedRowIds,
+      stickyParents: this.stickyParents,
+    });
     this.columns = createTreeColumns(this.rows, this.stickyParents);
   }
+
+  private readonly syncTreeState = ({ detail }: CustomEvent<HTMLRevoGridElementEventMap[typeof TREE_STATE_CHANGED_EVENT]>) => {
+    this.treeConfig = createTreeConfig(this.rows, {
+      expandedRowIds: detail.expandedRowIds,
+      stickyParents: this.stickyParents,
+    });
+  };
 
   async exportToExcel() {
     const grid = this.gridElement?.nativeElement;
