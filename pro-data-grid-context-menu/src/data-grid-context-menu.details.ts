@@ -78,7 +78,7 @@ function createEmployeeProfileSpec(
     description: `${row.name} · ${row.team}`,
     entries: [
       detail('Status', row.status),
-      detail('Score', `${row.score} / 100`),
+      detail('Score', formatScore(row.score)),
       detail('Owner', row.owner),
       detail('Selected field', selectedColumn ?? '—'),
       detail('Current value', context.menu.target === 'row'
@@ -104,7 +104,7 @@ function createRowDetailsSpec(
         detail('Employee ID', row.id),
         detail('Team', row.team),
         detail('Status', row.status),
-        detail('Score', `${row.score} / 100`),
+        detail('Score', formatScore(row.score)),
         detail('Owner', row.owner),
       ],
     };
@@ -341,8 +341,13 @@ function countStatus(rows: readonly TeamRow[], status: TeamRow['status']): numbe
   return rows.filter(row => row.status === status).length;
 }
 
-function average(values: readonly number[]): string {
-  if (!values.length) return '—';
-  return (values.reduce((sum, value) => sum + value, 0) / values.length)
+function formatScore(value: TeamRow['score']): string {
+  return value === null ? '—' : `${value} / 100`;
+}
+
+function average(values: readonly TeamRow['score'][]): string {
+  const populated = values.filter((value): value is number => value !== null);
+  if (!populated.length) return '—';
+  return (populated.reduce((sum, value) => sum + value, 0) / populated.length)
     .toFixed(1);
 }

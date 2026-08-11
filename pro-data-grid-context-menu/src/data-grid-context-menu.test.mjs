@@ -7,6 +7,7 @@ import {
   createContextMenuColumns,
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
+  createTeamRowForAction,
   createTeamGrouping,
   createTeamRows,
 } from './data-grid-context-menu.data.ts';
@@ -19,6 +20,8 @@ test('showcase data covers grouped, editable, and readonly targets', () => {
   const rows = createTeamRows();
   const columns = createContextMenuColumns();
   const score = columns.find(column => column.prop === 'score');
+  const status = columns.find(column => column.prop === 'status');
+  const approved = columns.find(column => column.prop === 'approved');
 
   assert.equal(rows.length, 9);
   assert.equal(new Set(rows.map(row => row.id)).size, rows.length);
@@ -28,22 +31,76 @@ test('showcase data covers grouped, editable, and readonly targets', () => {
   const leafColumns = columns.flatMap(column => column.children ?? [column]);
   assert.ok(leafColumns.every(column => column.sortable === true));
   assert.equal(typeof score?.readonly, 'function');
+  assert.deepEqual(status?.dropdown?.source, [
+    { value: 'Active', label: 'Active' },
+    { value: 'Review', label: 'Review' },
+    { value: 'Archived', label: 'Archived' },
+    { value: null, label: 'Not set' },
+  ]);
+  assert.equal(status?.dropdown?.syncCellTemplate, true);
+  assert.equal(typeof status?.cellTemplate, 'function');
+  assert.equal(approved?.columnType, 'boolean');
+  assert.ok(rows.some(row => row.approved === null));
   assert.notStrictEqual(createTeamRows()[0], rows[0]);
 });
 
-test('showcase starts with several declaratively formatted cells', () => {
+test('showcase assigns date formatting and its editor to the Joined column', async () => {
   const formatting = createDataGridFormattingPresets();
 
   assert.equal(formatting.rowKeyProp, 'id');
-  assert.equal(formatting.cells.length, 4);
+  assert.equal(formatting.columns.length, 5);
+  assert.deepEqual(
+    formatting.columns.map(column => column.prop),
+    ['score', 'status', 'approved', 'schedule', 'joinedAt'],
+  );
+  assert.equal(formatting.cells.length, 5);
   assert.equal(
     new Set(formatting.cells.map(cell => `${cell.rowKey}:${cell.prop}`)).size,
     formatting.cells.length,
   );
   assert.deepEqual(
     formatting.cells.map(cell => [cell.rowKey, cell.prop]),
-    [[101, 'score'], [103, 'status'], [105, 'score'], [108, 'owner']],
+    [
+      [101, 'score'],
+      [102, 'name'],
+      [103, 'score'],
+      [105, 'score'],
+      [108, 'owner'],
+    ],
   );
+  const joined = formatting.columns.find(column => column.prop === 'joinedAt');
+  assert.equal(joined?.format.value?.preset, 'date');
+  const avatar = formatting.cells.find(cell => cell.rowKey === 102 && cell.prop === 'name');
+  assert.equal(avatar?.format.presentation?.id, 'avatar-with-text');
+  const rating = formatting.cells.find(cell => cell.rowKey === 105 && cell.prop === 'score');
+  assert.equal(rating?.format.presentation?.id, 'rating');
+  assert.equal(rating?.format.appearance?.horizontal, 'center');
+
+  const shared = await readSource('data-grid-context-menu.shared.ts');
+  assert.match(shared, /import DateColumnType from '@revolist\/revogrid-column-date'/);
+  assert.match(shared, /presetEditors:\s*\{\s*date:\s*dateColumnType\.editor\s*\}/);
+});
+
+test('insert actions create blank rows while duplicate explicitly clones data', () => {
+  const source = createTeamRows()[0];
+  for (const [id, action] of [[110, 'insertAbove'], [111, 'insertBelow']]) {
+    assert.deepEqual(createTeamRowForAction(id, action, source), {
+      id,
+      name: '',
+      team: '',
+      status: null,
+      score: null,
+      owner: '',
+      approved: null,
+      schedule: [],
+      joinedAt: '',
+    });
+  }
+
+  const duplicate = createTeamRowForAction(112, 'duplicate', source);
+  assert.deepEqual(duplicate, { ...source, id: 112 });
+  assert.notStrictEqual(duplicate.schedule, source.schedule);
+  assert.notStrictEqual(duplicate.schedule[0], source.schedule[0]);
 });
 
 test('menu configuration keeps row deletion while extending, replacing, and creating schema', async () => {
@@ -88,6 +145,22 @@ test('custom menu extensions use business summaries distinct from technical insp
     columns: [{ prop: 'id', name: 'ID' }, { prop: 'name', name: 'Name' }],
   }).actionLabel, 'View column-group summary');
 
+  const blank = createTeamRowForAction(110, 'insertBelow', employee);
+  const selectedSummary = createContextMenuDetailsSpec({
+    ...base,
+    surface: 'rowHeader',
+    rows: [row, {
+      model: blank,
+      type: 'rgRow',
+      physicalIndex: 1,
+      sourceIndex: 1,
+    }],
+  });
+  assert.equal(
+    selectedSummary.entries.find(entry => entry.label === 'Average score').value,
+    '98.0',
+  );
+
   const [pinnedTop, regular, pinnedBottom] = createTeamRows();
   const rowStore = source => ({
     get: key => key === 'source' ? source : key === 'items' ? source.map((_, index) => index) : undefined,
@@ -111,7 +184,7 @@ test('custom menu extensions use business summaries distinct from technical insp
     },
   });
   assert.equal(pinnedSummary.entries.find(entry => entry.label === 'Visible rows').value, '3');
-  assert.equal(pinnedSummary.entries.find(entry => entry.label === 'Average').value, '96.7');
+  assert.equal(pinnedSummary.entries.find(entry => entry.label === 'Average').value, '86.7');
 });
 
 test('all framework variants install the same universal menu capabilities', async () => {
@@ -124,7 +197,13 @@ test('all framework variants install the same universal menu capabilities', asyn
   const sources = await Promise.all(files.map(readSource));
 
   for (const source of sources) {
+    assert.match(source, /EventManagerPlugin/);
+    assert.match(source, /HistoryPlugin/);
     assert.match(source, /DataGridContextMenuPlugin/);
+    assert.match(
+      source,
+      /\[\s*EventManagerPlugin,\s*HistoryPlugin,\s*DataGridContextMenuPlugin,/,
+    );
     assert.match(source, /DialogPlugin/);
     assert.match(source, /AdvanceFilterPlugin/);
     assert.match(source, /ColumnCollapsePlugin/);
@@ -133,6 +212,7 @@ test('all framework variants install the same universal menu capabilities', asyn
     assert.match(source, /createDataGridContextMenuConfig/);
     assert.match(source, /dataGridFormatting/);
     assert.match(source, /createDataGridFormattingPresets/);
+    assert.match(source, /createDataGridColumnTypes/);
     assert.match(source, /createTeamGrouping/);
   }
 });
@@ -148,11 +228,18 @@ test('framework variants follow standalone demo lifecycle conventions', async ()
   assert.ok(typescript.indexOf('parent.appendChild(showcase)') < typescript.indexOf('grid.source ='));
   assert.match(typescript, /return \(\) =>/);
   assert.match(react, /const plugins = useMemo/);
-  assert.match(react, /const additionalData = useMemo/);
+  assert.match(react, /dataGridFormatting=\{dataGridFormatting\}/);
+  assert.match(react, /dataGridContextMenu=\{dataGridContextMenu\}/);
+  assert.doesNotMatch(react, /additionalData/);
   assert.match(vue, /const rows = computed/);
-  assert.match(vue, /const additionalData = computed/);
+  assert.match(vue, /:data-grid-formatting\.prop="dataGridFormatting"/);
+  assert.match(vue, /:data-grid-context-menu\.prop="dataGridContextMenu"/);
+  assert.doesNotMatch(vue, /additional-data|additionalData/);
   assert.match(angular, /standalone: true/);
   assert.match(angular, /encapsulation: ViewEncapsulation.None/);
+  assert.match(angular, /\[dataGridFormatting\]="dataGridFormatting"/);
+  assert.match(angular, /\[dataGridContextMenu\]="dataGridContextMenu"/);
+  assert.doesNotMatch(angular, /additionalData/);
 });
 
 test('all framework variants reactively apply the compact RevoGrid theme', async () => {
@@ -202,7 +289,7 @@ test('all framework variants keep fixed rows readable and leave the ID column un
   }
 });
 
-test('row headers use readable text metrics with fixed-height body cells', async () => {
+test('row headers center readable text within fixed-height body cells', async () => {
   const rowHeaders = createContextMenuRowHeaders();
   const rowHeaderProperties = rowHeaders.cellProperties?.({});
 
@@ -217,7 +304,7 @@ test('row headers use readable text metrics with fixed-height body cells', async
   const styles = await readSource('data-grid-context-menu.scss');
   assert.match(
     styles,
-    /\.data-grid-context-menu-row-header-cell\s*\{[^}]*padding:\s*5px 10px !important;/s,
+    /\.data-grid-context-menu-row-header-cell\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;[^}]*padding:\s*0 10px !important;/s,
   );
 
   const files = [

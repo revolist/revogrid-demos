@@ -5,11 +5,12 @@
       :theme="gridTheme"
       :source="rows"
       :columns="columns"
+      :column-types="columnTypes"
       :grouping="grouping"
       :row-size="DATA_GRID_CONTEXT_MENU_ROW_SIZE"
       :plugins="plugins"
-      :data-grid-formatting="dataGridFormatting"
-      :additional-data="additionalData"
+      :data-grid-formatting.prop="dataGridFormatting"
+      :data-grid-context-menu.prop="dataGridContextMenu"
       :row-headers="rowHeaders"
       :range="true"
       :resize="true"
@@ -27,7 +28,9 @@ import {
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
   DialogPlugin,
+  EventManagerPlugin,
   ExportExcelPlugin,
+  HistoryPlugin,
   MultiRangeSelectionPlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
@@ -35,6 +38,7 @@ import { currentTheme, observeCurrentTheme } from '../../composables/useRandomDa
 import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
+  createDataGridColumnTypes,
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
@@ -48,10 +52,14 @@ import './data-grid-context-menu.scss';
 const props = defineProps<{ rows?: TeamRow[] }>();
 const rows = computed(() => props.rows?.length ? props.rows : createTeamRows());
 const columns = createContextMenuColumns();
+const columnTypes = createDataGridColumnTypes();
 const grouping = createTeamGrouping();
 const rowHeaders = createContextMenuRowHeaders();
 const dataGridFormatting = createDataGridFormattingPresets();
+const dataGridContextMenu = createDataGridContextMenuConfig();
 const plugins = [
+  EventManagerPlugin,
+  HistoryPlugin,
   DataGridContextMenuPlugin,
   DialogPlugin,
   AdvanceFilterPlugin,
@@ -61,9 +69,6 @@ const plugins = [
   MultiRangeSelectionPlugin,
   ExportExcelPlugin,
 ];
-const additionalData = computed(() => ({
-  dataGridContextMenu: createDataGridContextMenuConfig(),
-}));
 const darkTheme = ref(currentTheme().isDark());
 const gridTheme = computed(() => getDataGridContextMenuTheme(darkTheme.value));
 let disconnectTheme: (() => void) | undefined;

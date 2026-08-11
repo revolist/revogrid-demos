@@ -6,7 +6,9 @@ import {
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
   DialogPlugin,
+  EventManagerPlugin,
   ExportExcelPlugin,
+  HistoryPlugin,
   MultiRangeSelectionPlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
@@ -14,6 +16,7 @@ import { currentTheme, observeCurrentTheme } from '../../composables/useRandomDa
 import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
+  createDataGridColumnTypes,
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
@@ -27,10 +30,13 @@ import './data-grid-context-menu.scss';
 export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
   const source = useMemo(() => rows?.length ? rows : createTeamRows(), [rows]);
   const columns = useMemo(() => createContextMenuColumns(), []);
+  const columnTypes = useMemo(() => createDataGridColumnTypes(), []);
   const grouping = useMemo(() => createTeamGrouping(), []);
   const rowHeaders = useMemo(() => createContextMenuRowHeaders(), []);
   const dataGridFormatting = useMemo(() => createDataGridFormattingPresets(), []);
   const plugins = useMemo(() => [
+    EventManagerPlugin,
+    HistoryPlugin,
     DataGridContextMenuPlugin,
     DialogPlugin,
     AdvanceFilterPlugin,
@@ -40,9 +46,7 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
     MultiRangeSelectionPlugin,
     ExportExcelPlugin,
   ], []);
-  const additionalData = useMemo(() => ({
-    dataGridContextMenu: createDataGridContextMenuConfig(),
-  }), []);
+  const dataGridContextMenu = useMemo(() => createDataGridContextMenuConfig(), []);
   const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
 
   useEffect(() => observeCurrentTheme(setDarkTheme), []);
@@ -54,11 +58,12 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
         theme={getDataGridContextMenuTheme(darkTheme)}
         source={source}
         columns={columns}
+        columnTypes={columnTypes}
         grouping={grouping}
         rowSize={DATA_GRID_CONTEXT_MENU_ROW_SIZE}
         plugins={plugins}
         dataGridFormatting={dataGridFormatting}
-        additionalData={additionalData}
+        dataGridContextMenu={dataGridContextMenu}
         rowHeaders={rowHeaders}
         range
         resize
