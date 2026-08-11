@@ -23,10 +23,15 @@ The example demonstrates the configuration paths applications commonly need:
   shared Pro dialog for employee, row, team, and column details;
 - replacement of the grouped-column-header surface with `getItems`;
 - selection-aware clipboard commands, including multi-range formats;
+- edit and formatting undo/redo through `EventManagerPlugin` and
+  `HistoryPlugin`, including the standard Ctrl/Cmd+Z keyboard shortcuts;
 - readonly ID cells and conditionally readonly archived scores;
-- several predefined cell formats bound through the direct
-  `dataGridFormatting` grid property in React and Vue, and through
-  `additionalData.dataGridFormatting` for Angular wrapper compatibility;
+- predefined progress, heatmap, rating, badge, thumbs, and timeline,
+  and date formats bound through the direct `dataGridFormatting` grid
+  property in every framework;
+- application-supplied dropdown and date editor references, with the calendar
+  editor resolved only for cells whose effective format is `date`, plus one
+  built-in format disabled and another configured through the advanced registry;
 - optional row pinning and application-owned column schema creation;
 - filtering, column auto-size, grouped columns, row groups, and CSV/XLSX export capabilities.
 
@@ -46,6 +51,7 @@ The editor includes:
 - locale-aware value formats for numbers, currency, accounting, percentages,
   scientific notation, dates, times, date-time values, and plain text;
 - decimal, thousands-separator, currency, and negative-number controls;
+- compatible advanced visual formats with format-specific controls;
 - font family, size, bold, italic, underline, and strikethrough controls;
 - text and fill colors, including custom colors;
 - horizontal and vertical alignment, text wrapping, and borders;

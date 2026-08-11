@@ -5,7 +5,9 @@ import {
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
   DialogPlugin,
+  EventManagerPlugin,
   ExportExcelPlugin,
+  HistoryPlugin,
   MultiRangeSelectionPlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
@@ -13,6 +15,7 @@ import { currentTheme, observeCurrentTheme } from '../../composables/useRandomDa
 import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
+  createDataGridColumnTypes,
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
@@ -26,6 +29,8 @@ import './data-grid-context-menu.scss';
 defineCustomElements();
 
 const plugins = [
+  EventManagerPlugin,
+  HistoryPlugin,
   DataGridContextMenuPlugin,
   DialogPlugin,
   AdvanceFilterPlugin,
@@ -49,6 +54,7 @@ export function load(parentSelector: string, rows?: TeamRow[]) {
   grid.theme = getDataGridContextMenuTheme(currentTheme().isDark());
   grid.rowSize = DATA_GRID_CONTEXT_MENU_ROW_SIZE;
   grid.columns = createContextMenuColumns();
+  grid.columnTypes = createDataGridColumnTypes();
   grid.plugins = plugins;
   grid.grouping = createTeamGrouping();
   grid.dataGridFormatting = createDataGridFormattingPresets();

@@ -533,6 +533,9 @@ importers:
       '@revolist/revogrid':
         specifier: 4.25.1
         version: 4.25.1
+      '@revolist/revogrid-column-date':
+        specifier: ^2.0.25
+        version: 2.0.25
       '@revolist/revogrid-pro':
         specifier: npm:@revolist/rv-pro-trial@2.6.1
         version: '@revolist/rv-pro-trial@2.6.1'

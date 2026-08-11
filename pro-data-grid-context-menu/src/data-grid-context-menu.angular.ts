@@ -1,12 +1,14 @@
-import { Component, Input, OnDestroy, ViewEncapsulation } from '@angular/core';
-import { RevoGrid } from '@revolist/angular-datagrid';
+import { Component, Input, NO_ERRORS_SCHEMA, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { defineCustomElements } from '@revolist/revogrid/loader';
 import {
   AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
   DialogPlugin,
+  EventManagerPlugin,
   ExportExcelPlugin,
+  HistoryPlugin,
   MultiRangeSelectionPlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
@@ -14,6 +16,7 @@ import { currentTheme, observeCurrentTheme } from '../../composables/useRandomDa
 import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
+  createDataGridColumnTypes,
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
@@ -23,10 +26,13 @@ import {
   type TeamRow,
 } from './data-grid-context-menu.shared';
 
+defineCustomElements();
+
 @Component({
   selector: 'data-grid-context-menu-grid',
   standalone: true,
-  imports: [RevoGrid],
+  imports: [],
+  schemas: [NO_ERRORS_SCHEMA],
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./data-grid-context-menu.scss'],
   template: `
@@ -36,10 +42,12 @@ import {
         [theme]="theme"
         [source]="source"
         [columns]="columns"
+        [columnTypes]="columnTypes"
         [grouping]="grouping"
         [rowSize]="rowSize"
         [plugins]="plugins"
-        [additionalData]="additionalData"
+        [dataGridFormatting]="dataGridFormatting"
+        [dataGridContextMenu]="dataGridContextMenu"
         [rowHeaders]="rowHeaders"
         [range]="true"
         [resize]="true"
@@ -66,10 +74,13 @@ export class DataGridContextMenuGridComponent implements OnDestroy {
     this.theme = getDataGridContextMenuTheme(isDark);
   });
   readonly columns = createContextMenuColumns();
+  readonly columnTypes = createDataGridColumnTypes();
   readonly grouping = createTeamGrouping();
   readonly rowSize = DATA_GRID_CONTEXT_MENU_ROW_SIZE;
   readonly rowHeaders = createContextMenuRowHeaders();
   readonly plugins = [
+    EventManagerPlugin,
+    HistoryPlugin,
     DataGridContextMenuPlugin,
     DialogPlugin,
     AdvanceFilterPlugin,
@@ -79,10 +90,8 @@ export class DataGridContextMenuGridComponent implements OnDestroy {
     MultiRangeSelectionPlugin,
     ExportExcelPlugin,
   ];
-  readonly additionalData = {
-    dataGridContextMenu: createDataGridContextMenuConfig(),
-    dataGridFormatting: createDataGridFormattingPresets(),
-  };
+  readonly dataGridFormatting = createDataGridFormattingPresets();
+  readonly dataGridContextMenu = createDataGridContextMenuConfig();
   source = createTeamRows();
 
   ngOnDestroy() {
