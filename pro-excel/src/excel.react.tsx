@@ -256,7 +256,7 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
       result.workbook,
       { rowType: 'rgRow' },
     );
-    setWorkbook(syncedWorkbook);
+    workbookRef.current = syncedWorkbook;
     const plugin = await getPlugin(CellFlashPlugin);
     flashSpreadsheetPresenceEdit(plugin as SpreadsheetFlashPlugin | undefined, result);
   }, [getPlugin]);
@@ -326,7 +326,7 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
       result.workbook,
       { rowType: 'rgRow' },
     );
-    setWorkbook(syncedWorkbook);
+    workbookRef.current = syncedWorkbook;
     setClipboardStatus(result.message);
     const plugin = await getPlugin(CellFlashPlugin);
     flashSpreadsheetFeedEdit(plugin as SpreadsheetFlashPlugin | undefined, result);

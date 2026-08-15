@@ -1,7 +1,7 @@
 import {
   createSpreadsheetWorkbookFromGridSource,
-  type SpreadsheetWorkbook,
-} from './spreadsheet.shared';
+} from './spreadsheet/workbook';
+import type { SpreadsheetWorkbook } from './spreadsheet/models';
 import type { DimensionRows, DataType } from '@revolist/revogrid';
 
 type SpreadsheetGridDiff = {
@@ -60,22 +60,21 @@ function applySpreadsheetGridRowUpdates(
     };
   } | undefined,
   rowType: DimensionRows,
-) {
+): boolean {
   const dataStore = providers?.data?.stores?.[rowType];
   if (!dataStore) {
-    return;
+    return false;
   }
   const source = dataStore.store.get('source');
   const currentRow = source[rowIndex] as Record<string, unknown> | undefined;
   if (currentRow == null) {
-    return;
+    return false;
   }
-  const nextRow = {
+  source[rowIndex] = {
     ...currentRow,
     ...rowDiff,
   };
-
-  dataStore.setSourceData({ [rowIndex]: nextRow }, false);
+  return true;
 }
 
 export async function syncSpreadsheetSimulationResultToGrid(
@@ -92,10 +91,14 @@ export async function syncSpreadsheetSimulationResultToGrid(
   }
 
   const providers = await grid.getProviders?.();
-  const sourceRows = buildWorkbookRowsFromGrid(grid, sourceWorkbook.rows);
-  const targetRows = targetWorkbook.rows;
   const dataStore = providers?.data?.stores?.[rowType];
-  const canWriteRowStore = Boolean(dataStore?.setSourceData);
+  const providerSource = dataStore?.store?.get?.('source');
+  const sourceRows = Array.isArray(providerSource)
+    ? [...providerSource]
+    : buildWorkbookRowsFromGrid(grid, sourceWorkbook.rows);
+  const targetRows = targetWorkbook.rows;
+  const canWriteRowStore = Array.isArray(providerSource);
+  let didUpdate = false;
 
   const maxRows = Math.max(sourceRows.length, targetRows.length);
 
@@ -111,21 +114,23 @@ export async function syncSpreadsheetSimulationResultToGrid(
     if (!canWriteRowStore) {
       continue;
     }
-    applySpreadsheetGridRowUpdates(
+    didUpdate = applySpreadsheetGridRowUpdates(
       rowIndex,
       rowDiff,
       providers,
       rowType,
-    );
+    ) || didUpdate;
   }
 
   if (!canWriteRowStore || !dataStore) {
     return createSpreadsheetWorkbookFromGridSource(targetWorkbook, targetWorkbook.rows);
   }
 
-  dataStore.store.set('source', [...dataStore.store.get('source')]);
+  if (didUpdate) {
+    providers?.data?.refresh?.(rowType);
+  }
 
-  const nextGridRows = buildWorkbookRowsFromGrid(grid, targetRows);
+  const nextGridRows = dataStore.store.get('source');
   return createSpreadsheetWorkbookFromGridSource(targetWorkbook, nextGridRows);
 }
 
