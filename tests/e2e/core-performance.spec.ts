@@ -39,3 +39,20 @@ test('core demo separates preparation, grid paint, and scroll measurements', asy
   await expect(page.getByText('View reset')).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('core demo keeps the grid usable on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 620 });
+  await page.goto(process.env.CORE_DEMO_PATH ?? '/core/demo/');
+
+  const grid = page.locator('revo-grid').first();
+  const gridWrapper = page.locator('.hr-grid-wrapper').first();
+  const performance = page.getByRole('region', { name: 'Browser performance metrics' });
+  await expect(grid).toBeVisible({ timeout: 15_000 });
+  await expect(performance).toBeAttached();
+
+  const gridBox = await gridWrapper.boundingBox();
+  const performanceBox = await performance.boundingBox();
+
+  expect(gridBox?.height).toBeGreaterThanOrEqual(300);
+  expect(performanceBox?.y).toBeGreaterThanOrEqual((gridBox?.y ?? 0) + (gridBox?.height ?? 0));
+});

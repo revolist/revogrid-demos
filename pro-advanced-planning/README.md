@@ -11,7 +11,7 @@ carried into the next view.
 _Click the animated preview to open the full-quality MP4._
 
 Kanban maps the existing `workflowStatus`, `order`, `id`, and `name` task fields
-directly. Gantt and Scheduler use their built-in context menus. The plain data
+directly. Gantt Charts and Event Scheduler use their built-in context menus. The plain data
 grid keeps standard editing, range selection, resizing, filtering, sorting,
 and column-moving behavior.
 
