@@ -130,6 +130,18 @@ test('project tags and synced owner options keep one aligned visual surface', ()
   );
 });
 
+test('dark project skill tags retain the shared dark label foreground', () => {
+  assert.match(darkStyles, /@use\s+"sass:list"/);
+  assert.match(
+    darkStyles,
+    /@each\s+\$name,\s*\$pair\s+in\s+\$label-colors[\s\S]*?\.project-skill--#\{"" \+ \$name\}[\s\S]*?background:\s*list\.nth\(\$pair,\s*1\)[\s\S]*?color:\s*list\.nth\(\$pair,\s*2\)/,
+  );
+  assert.match(
+    darkStyles,
+    /\.selected-tag:has\(\.project-skill--#\{"" \+ \$name\}\)[\s\S]*?button\s*\{[\s\S]*?color:\s*list\.nth\(\$pair,\s*2\)/,
+  );
+});
+
 test('project rows expose the shared Pro row-order configuration', () => {
   const columns = readFileSync(
     new URL('./project-tracker/columns.ts', import.meta.url),

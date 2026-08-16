@@ -29,6 +29,7 @@ import './spreadsheet.scss';
 import type { DataType } from '@revolist/revogrid';
 import {
   SPREADSHEET_ACTION_ICONS,
+  SPREADSHEET_CLIPBOARD_CONFIG,
   SPREADSHEET_DATA_GRID_CONTEXT_MENU,
   SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_EXPORT_CONFIG,
@@ -113,6 +114,7 @@ export function load(parentSelector: string) {
   grid.theme = getSpreadsheetGridTheme();
   grid.stretch = 'all';
   grid.range = true;
+  grid.useClipboard = SPREADSHEET_CLIPBOARD_CONFIG;
   grid.rowHeaders = createSpreadsheetRowHeaders();
   grid.rowOrder = SPREADSHEET_ROW_ORDER_CONFIG;
   grid.rowSelect = SPREADSHEET_ROW_SELECT_CONFIG;

@@ -27,6 +27,7 @@ import {
 import './spreadsheet.scss';
 import {
   SPREADSHEET_ACTION_ICONS,
+  SPREADSHEET_CLIPBOARD_CONFIG,
   SPREADSHEET_DATA_GRID_CONTEXT_MENU,
   SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_EXPORT_CONFIG,
@@ -358,6 +359,7 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
       source={workbook.rows}
       stretch="all"
       range
+      useClipboard={SPREADSHEET_CLIPBOARD_CONFIG}
       rowHeaders={rowHeaderConfig}
       resize
       hideAttribution

@@ -22,6 +22,11 @@ export const SPREADSHEET_DATA_GRID_CONTEXT_MENU = {
   },
 } as const;
 
+/** Apply valid clipboard destinations while preserving strict-validation failures. */
+export const SPREADSHEET_CLIPBOARD_CONFIG = {
+  validationResolution: 'valid-cells' as const,
+};
+
 const SPREADSHEET_PERCENT_FILTER_FORMATTER = new Intl.NumberFormat('en-US', {
   style: 'percent',
   maximumFractionDigits: 1,

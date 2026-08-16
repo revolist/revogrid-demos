@@ -37,6 +37,7 @@ import {
 } from '@revolist/revogrid-pro';
 import {
   SPREADSHEET_ACTION_ICONS,
+  SPREADSHEET_CLIPBOARD_CONFIG,
   SPREADSHEET_DATA_GRID_CONTEXT_MENU,
   SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_EXPORT_CONFIG,
@@ -164,6 +165,7 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
             [rowOrder]="rowOrder"
             [rowSelect]="rowSelect"
             [source]="workbook.rows"
+            [useClipboard]="clipboardConfig"
             stretch="all"
             [range]="true"
             [rowHeaders]="rowHeaders"
@@ -229,6 +231,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   rowHeaders = createSpreadsheetRowHeaders();
   rowOrder = SPREADSHEET_ROW_ORDER_CONFIG;
   rowSelect = SPREADSHEET_ROW_SELECT_CONFIG;
+  clipboardConfig = SPREADSHEET_CLIPBOARD_CONFIG;
   formulaBar: FormulaBarConfig = {
     showCellBadge: true,
   };
