@@ -14,20 +14,6 @@
         </button>
       </span>
       <span class="spreadsheet-ribbon-group">
-        <button
-          class="spreadsheet-btn"
-          type="button"
-          data-testid="spreadsheet-format-cell"
-          title="Toggle emphasis formatting on the selected cell"
-          @pointerdown.prevent="formatFocusedCell"
-          @mouseup.prevent
-          @click="handleFormatClick"
-        >
-          <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.format"></span>
-          Format cell
-        </button>
-      </span>
-      <span class="spreadsheet-ribbon-group">
         <button class="spreadsheet-btn" type="button" :disabled="!historyState.canUndo" @click="runHistory('undo')">
           <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.undo"></span>
           Undo {{ historyState.undoStackSize }}
@@ -64,20 +50,7 @@
 
     <div class="spreadsheet-formula-row">
       <span ref="formulaBadgeRef" class="spreadsheet-cell-badge">A1</span>
-      <span class="spreadsheet-formula-editor">
-        <span
-          ref="formulaHighlightRef"
-          class="spreadsheet-formula-highlight"
-          data-testid="spreadsheet-formula-highlight"
-        ></span>
-        <input
-          ref="formulaInputRef"
-          class="spreadsheet-formula-input"
-          data-testid="spreadsheet-formula-input"
-          aria-label="Formula bar"
-          placeholder="Select a cell to inspect or edit its raw value"
-        />
-      </span>
+      <span ref="formulaHostRef" class="spreadsheet-formula-editor" data-testid="spreadsheet-formula-host"></span>
     </div>
 
     <div class="spreadsheet-main">
@@ -99,11 +72,11 @@
           :formula-names.prop="workbook.formulaNames"
           :formula-bar.prop="formulaBar"
           :formula-dependency-highlight.prop="formulaDependencyHighlight"
+          :data-grid-context-menu.prop="dataGridContextMenu"
+          :data-grid-formatting.prop="dataGridFormatting"
           :export-excel.prop="exportExcel"
           :row-order.prop="rowOrder"
           :row-select.prop="rowSelect"
-          :row-context-menu.prop="contextMenus.rowContextMenu"
-          :column-context-menu.prop="contextMenus.columnContextMenu"
           :source="workbook.rows"
           stretch="all"
           range
@@ -142,11 +115,10 @@ import {
   CellValidatePlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
-  ColumnHidePlugin,
   ColumnDropdown,
   ColumnMoveAdvancedPlugin,
   ColumnStretchPlugin,
-  ContextMenuPlugin,
+  DataGridFormattingPlugin,
   EventManagerPlugin,
   ExportExcelPlugin,
   FilterHeaderPlugin,
@@ -154,22 +126,20 @@ import {
   FormulaDependencyHighlightPlugin,
   FormulaPlugin,
   HistoryPlugin,
-  MultiRangeSelectionPlugin,
   NamedRangesPlugin,
-  RowHeaderPlugin,
-  RowSelectPlugin,
   RowOrderPlugin,
-  TooltipPlugin,
+  SelectionPlugin,
   type HistoryState,
 } from '@revolist/revogrid-pro';
 import './spreadsheet.scss';
 import {
   SPREADSHEET_ACTION_ICONS,
+  SPREADSHEET_DATA_GRID_CONTEXT_MENU,
+  SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_EXPORT_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
   SPREADSHEET_ROW_SELECT_CONFIG,
   createSpreadsheetCellFlashConfig,
-  createSpreadsheetContextMenus,
   createSpreadsheetDisplayColumns,
   createSpreadsheetEventManagerConfig,
   createSpreadsheetExportExcelConfig,
@@ -180,8 +150,6 @@ import {
   formatWorkbookStatus,
   getSpreadsheetGridTheme,
   getSpreadsheetPluginLabels,
-  installSpreadsheetContextSelectionGuard,
-  installSpreadsheetFormulaEditorHighlight,
   installSpreadsheetReadonlyEditGuard,
   installSpreadsheetAutofillStrategy,
   observeSpreadsheetTheme,
@@ -190,7 +158,6 @@ import {
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
   summarizeSelection,
-  toggleSpreadsheetFocusedCellFormat,
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
@@ -224,9 +191,8 @@ const feedFlashActive = ref(true);
 const presenceUsers = ref(createSpreadsheetPresenceUsers(0));
 const gridRef = ref<{ $el?: HTMLRevoGridElement } | HTMLRevoGridElement | null>(null);
 const shellRef = ref<HTMLElement | null>(null);
-const formulaInputRef = ref<HTMLInputElement | null>(null);
+const formulaHostRef = ref<HTMLElement | null>(null);
 const formulaBadgeRef = ref<HTMLSpanElement | null>(null);
-const formulaHighlightRef = ref<HTMLSpanElement | null>(null);
 const selectionStatus = ref('No ranges selected');
 const clipboardStatus = ref('Copy ranges or paste structured data.');
 const historyState = ref<HistoryState>({
@@ -243,12 +209,14 @@ const eventManager = createSpreadsheetEventManagerConfig();
 const history = createSpreadsheetHistoryConfig();
 const cellFlash = createSpreadsheetCellFlashConfig();
 const formulaDependencyHighlight = createSpreadsheetFormulaDependencyHighlightConfig();
+const dataGridContextMenu = SPREADSHEET_DATA_GRID_CONTEXT_MENU;
+const dataGridFormatting = SPREADSHEET_DATA_GRID_FORMATTING;
 const exportExcel = createSpreadsheetExportExcelConfig();
 const isDark = computed(() => props.isDark ?? detectedIsDark.value);
 const gridTheme = computed(() => getSpreadsheetGridTheme(isDark.value));
 const displayColumns = computed(() => createSpreadsheetDisplayColumns(workbook.value));
 const formulaBar = computed(() => ({
-  el: formulaInputRef.value ?? undefined,
+  host: formulaHostRef.value ?? undefined,
   badgeEl: formulaBadgeRef.value ?? undefined,
   showCellBadge: true,
 }));
@@ -258,7 +226,7 @@ const pluginStack = computed(() => getSpreadsheetPluginLabels().join(','));
 const rowHeaderConfig = createSpreadsheetRowHeaders();
 const rowOrder = SPREADSHEET_ROW_ORDER_CONFIG;
 const rowSelect = SPREADSHEET_ROW_SELECT_CONFIG;
-const plugins = computed(() => [
+const plugins = [
   EventManagerPlugin,
   HistoryPlugin,
   CellFlashPlugin,
@@ -267,40 +235,23 @@ const plugins = computed(() => [
   FormulaDependencyHighlightPlugin,
   NamedRangesPlugin,
   FormulaPlugin,
+  DataGridFormattingPlugin,
   AutoFillPlugin,
   AutoFillPreviewPlugin,
-  MultiRangeSelectionPlugin,
-  RowHeaderPlugin,
-  RowSelectPlugin,
+  SelectionPlugin,
   RowOrderPlugin,
   ColumnMoveAdvancedPlugin,
   ColumnCollapsePlugin,
-  ContextMenuPlugin,
   ExportExcelPlugin,
   AdvanceFilterPlugin,
   FilterHeaderPlugin,
   CellValidatePlugin,
   CellMergePlugin,
-  TooltipPlugin,
-  ColumnHidePlugin,
   ColumnStretchPlugin,
-]);
-const contextMenus = computed(() => createSpreadsheetContextMenus({
-  getGrid,
-  getWorkbook: () => workbook.value,
-  setWorkbook: (nextWorkbook) => {
-    workbook.value = nextWorkbook;
-  },
-  setClipboardStatus: (message) => {
-    clipboardStatus.value = message;
-  },
-  exportWorkbook,
-}));
+];
 
-let disconnectContextSelectionGuard: (() => void) | undefined;
 let disconnectCellMergeSync: (() => void) | undefined;
 let disconnectReadonlyEditGuard: (() => void) | undefined;
-let disconnectFormulaHighlight: (() => void) | undefined;
 let disconnectThemeObserver: (() => void) | undefined;
 let presenceTimer: ReturnType<typeof window.setInterval> | undefined;
 let feedTimer: ReturnType<typeof window.setInterval> | undefined;
@@ -310,9 +261,6 @@ onMounted(() => {
   disconnectThemeObserver = observeSpreadsheetTheme((nextIsDark) => {
     detectedIsDark.value = nextIsDark;
   });
-  if (shellRef.value) {
-    disconnectContextSelectionGuard = installSpreadsheetContextSelectionGuard(shellRef.value, getGrid);
-  }
   const grid = getGrid();
   if (grid) {
     void installSpreadsheetAutofillStrategy(grid);
@@ -324,13 +272,6 @@ onMounted(() => {
         clipboardStatus.value = message;
       },
     );
-    if (formulaInputRef.value && formulaHighlightRef.value) {
-      disconnectFormulaHighlight = installSpreadsheetFormulaEditorHighlight(
-        formulaInputRef.value,
-        formulaHighlightRef.value,
-        grid,
-      );
-    }
   }
   presenceTimer = window.setInterval(() => {
     void runPresenceSimulation();
@@ -344,10 +285,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   disconnectThemeObserver?.();
-  disconnectContextSelectionGuard?.();
   disconnectCellMergeSync?.();
   disconnectReadonlyEditGuard?.();
-  disconnectFormulaHighlight?.();
   if (presenceTimer) {
     window.clearInterval(presenceTimer);
   }
@@ -384,25 +323,6 @@ function getRowsForSimulation(grid: HTMLRevoGridElement | null, fallbackRows: un
 async function exportWorkbook() {
   const plugin = await getPlugin(ExportExcelPlugin);
   await plugin?.export(SPREADSHEET_EXPORT_CONFIG);
-}
-
-async function formatFocusedCell() {
-  const grid = getGrid();
-  const selectionPlugin = await getPlugin(MultiRangeSelectionPlugin);
-  const result = toggleSpreadsheetFocusedCellFormat(
-    workbook.value,
-    await grid?.getFocused?.(),
-    selectionPlugin,
-  );
-  workbook.value = result.workbook;
-  simulationWorkbook = result.workbook;
-  clipboardStatus.value = result.message;
-}
-
-function handleFormatClick(event: MouseEvent) {
-  if (event.detail === 0) {
-    void formatFocusedCell();
-  }
 }
 
 function stopFeedFlash(message?: string) {

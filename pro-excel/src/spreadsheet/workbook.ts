@@ -10,16 +10,18 @@ import type {
   DataType,
 } from '@revolist/revogrid';
 import {
+  badgeRenderer,
   cellFlashArrowTemplate,
   columnTypeRenderer,
   createFormulaConditionalCellProperties,
   createNamedRangeDropdown,
   editorDropdown,
-  evaluateRawValuesFormula,
+  markDataGridFormatRenderer,
   progressLineWithValueRenderer,
   sparklineRenderer,
   validationRenderer,
   type ColumnCollapsePlaceholder,
+  type DataGridAdvancedFormatDefinition,
 } from '@revolist/revogrid-pro';
 import { appendSpreadsheetCellClass, getSpreadsheetLeafColumns } from './columns';
 import {
@@ -87,6 +89,41 @@ const PERCENT_FORMATTER = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 1,
 });
 
+const SPREADSHEET_CURRENCY_FORMAT = {
+  value: {
+    preset: 'currency',
+    locale: 'en-US',
+    currency: 'USD',
+    decimalPlaces: 0,
+    useGrouping: true,
+    negativeStyle: 'minus',
+  },
+} as const;
+
+const SPREADSHEET_SIGNED_CURRENCY_FORMAT = {
+  value: {
+    ...SPREADSHEET_CURRENCY_FORMAT.value,
+    negativeStyle: 'red',
+  },
+} as const;
+
+const SPREADSHEET_ADVANCED_FORMAT_IDS = {
+  range: 'spreadsheet-range',
+  trend: 'spreadsheet-trend',
+} as const;
+
+const SPREADSHEET_STATUS_BADGE_STYLES = {
+  Committed: { backgroundColor: '#eaf6ee', color: '#137333' },
+  Forecast: { backgroundColor: '#eef2ff', color: '#1d4ed8' },
+  Watch: { backgroundColor: '#fff7ed', color: '#a15c00' },
+  Blocked: { backgroundColor: '#fef2f2', color: '#c5221f' },
+} as const;
+
+const SPREADSHEET_RANGE_CONTROLS = [
+  { type: 'number', key: 'minValue', label: 'Minimum', step: 1 },
+  { type: 'number', key: 'maxValue', label: 'Maximum', step: 1 },
+] as const;
+
 /** Builds the grouped, formatted, and editable column schema for workbook rows. */
 export function createSpreadsheetColumns(rows: DataType[], formulaNames = createSpreadsheetFormulaNames(rows)): ColumnData {
   const columns: ColumnRegular[] = [
@@ -116,44 +153,38 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
       name: 'Q1',
       prop: 'total',
       size: 130,
-      readonly: true,
       sealed: true,
       flash: true,
       spreadsheetHeaderIconType: 'currency',
-      cellParser: model => spreadsheetFormulaValue(model.total, rows, columns, formulaNames.names),
-      cellTemplate: currencyTemplate,
-      cellProperties: createReadonlySpreadsheetNumberCellProperties(),
+      dataGridFormat: SPREADSHEET_CURRENCY_FORMAT,
+      cellProperties: createSpreadsheetFormulaNumberCellProperties(),
     },
     currencyColumn('Target', 'target', 125),
     {
       name: 'Variance',
       prop: 'variance',
       size: 130,
-      readonly: true,
       flash: true,
       spreadsheetHeaderIconType: 'currency',
-      cellParser: model => spreadsheetFormulaValue(model.variance, rows, columns, formulaNames.names),
-      cellTemplate: signedCurrencyTemplate,
+      dataGridFormat: SPREADSHEET_SIGNED_CURRENCY_FORMAT,
     },
     {
       name: 'Margin',
       prop: 'margin',
       size: 110,
-      readonly: true,
       flash: true,
       spreadsheetHeaderIconType: 'decimal',
       minValue: 90,
       maxValue: 110,
       filter: ['slider'],
       filterPlaceholder: 'Range',
-      cellParser: model => spreadsheetFormulaValue(model.margin, rows, columns, formulaNames.names),
       thresholds: [
         { value: 102, className: 'high' },
         { value: 98, className: 'medium' },
         { value: 0, className: 'low' },
       ],
       cellTemplate: marginTemplate,
-      cellProperties: createReadonlySpreadsheetNumberCellProperties(),
+      cellProperties: createSpreadsheetFormulaNumberCellProperties(),
     },
     {
       name: 'Q1',
@@ -180,6 +211,7 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
       spreadsheetHeaderIconType: 'string',
       filter: ['selection'],
       flash: true,
+      badgeStyles: SPREADSHEET_STATUS_BADGE_STYLES,
       cellTemplate: spreadsheetStatusTemplate,
     },
   ];
@@ -191,7 +223,7 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
     column.columnProperties = createSpreadsheetHeaderProperties('spreadsheet-header-leaf-q1', column.columnProperties);
   });
 
-  columns[7].cellProperties = createReadonlySpreadsheetNumberCellProperties(createFormulaConditionalCellProperties(
+  columns[7].cellProperties = createSpreadsheetFormulaNumberCellProperties(createFormulaConditionalCellProperties(
     '=cellvalue<0',
     { class: 'spreadsheet-cell-negative' },
     { allSources: rows, columns, names: formulaNames.names },
@@ -204,34 +236,26 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
     label: value => String(value),
   }, {
     config: { popupClassName: 'spreadsheet-department-dropdown' },
-    renderOption: (h, option) => departmentTemplate(h, { value: option.value }),
-    renderSelectedValue: (h, selectedOptions, children) => (
-      selectedOptions.length
-        ? departmentTemplate(h, { value: selectedOptions[0]?.value })
-        : children
-    ),
+    syncCellTemplate: true,
   });
   const statusDropdown = createNamedRangeDropdown('StatusList', {
     allSources: rows,
     columns,
     names: formulaNames.names,
     label: value => String(value),
-  }, {
-    config: { popupClassName: 'spreadsheet-status-dropdown' },
-    renderOption: (h, option) => statusTemplate(h, { value: option.value }),
-    renderSelectedValue: (h, selectedOptions, children) => (
-      selectedOptions.length
-        ? statusTemplate(h, { value: selectedOptions[0]?.value })
-        : children
-    ),
   });
+  const statusBadgeDropdown = {
+    ...statusDropdown,
+    syncCellTemplate: true,
+    cellTemplate: badgeRenderer,
+  };
 
   (columns[0] as ColumnRegular & { dropdown?: unknown }).dropdown = mergeDropdownOptions(
     departmentDropdown,
     DEPARTMENT_VALUES,
   );
   (columns[10] as ColumnRegular & { dropdown?: unknown }).dropdown = mergeDropdownOptions(
-    statusDropdown,
+    statusBadgeDropdown,
     STATUS_VALUES,
   );
   return createSpreadsheetColumnGroups(columns.map(column => ({
@@ -339,13 +363,18 @@ function createSpreadsheetHeaderTypeTemplate(type: SpreadsheetHeaderIconType): C
   });
 }
 
-function createReadonlySpreadsheetCellProperties(
+function createSpreadsheetFormulaCellProperties(
   original?: ColumnRegular['cellProperties'],
 ): ColumnRegular['cellProperties'] {
-  return (model) => appendSpreadsheetCellClass(
-    appendSpreadsheetCellClass((original?.(model) ?? {}) as CellProps, 'spreadsheet-formula-cell'),
-    'spreadsheet-cell-readonly',
-  );
+  return (model) => {
+    const props = appendSpreadsheetCellClass(
+      (original?.(model) ?? {}) as CellProps,
+      'spreadsheet-formula-cell',
+    );
+    return model.type === 'rowPinEnd'
+      ? appendSpreadsheetCellClass(props, 'spreadsheet-cell-readonly')
+      : props;
+  };
 }
 
 function createSpreadsheetNumberCellProperties(
@@ -360,7 +389,17 @@ function createSpreadsheetNumberCellProperties(
 function createReadonlySpreadsheetNumberCellProperties(
   original?: ColumnRegular['cellProperties'],
 ): ColumnRegular['cellProperties'] {
-  return createReadonlySpreadsheetCellProperties(createSpreadsheetNumberCellProperties(original));
+  const numberProperties = createSpreadsheetNumberCellProperties(original);
+  return (model) => appendSpreadsheetCellClass(
+    (numberProperties?.(model) ?? {}) as CellProps,
+    'spreadsheet-cell-readonly',
+  );
+}
+
+function createSpreadsheetFormulaNumberCellProperties(
+  original?: ColumnRegular['cellProperties'],
+): ColumnRegular['cellProperties'] {
+  return createSpreadsheetFormulaCellProperties(createSpreadsheetNumberCellProperties(original));
 }
 
 function createSpreadsheetColumnGroups(columns: ColumnRegular[]): ColumnData {
@@ -476,15 +515,6 @@ function departmentTemplate(h: any, { value }: { value?: unknown }) {
   return h('span', { class: 'spreadsheet-department-tag' }, String(value));
 }
 
-function signedCurrencyTemplate(h: any, { value }: { value?: unknown }) {
-  const numeric = Number(value);
-  return h(
-    'span',
-    { class: numeric < 0 ? 'spreadsheet-money spreadsheet-money-negative' : 'spreadsheet-money spreadsheet-money-positive' },
-    formatCurrencyValue(value),
-  );
-}
-
 function spreadsheetActualsCollapsedCellTemplate(_h: any, schema: CellTemplateProp) {
   return _h('span', { class: 'spreadsheet-money' }, formatCurrencyValue(spreadsheetActualsCollapsedValue(schema)));
 }
@@ -495,17 +525,6 @@ function spreadsheetActualsCollapsedValue(schema: CellTemplateProp) {
     const numeric = Number(row?.[prop as keyof SpreadsheetRow]);
     return Number.isFinite(numeric) ? total + numeric : total;
   }, 0);
-}
-
-function spreadsheetFormulaValue(
-  value: unknown,
-  rows: DataType[],
-  columns: ColumnRegular[],
-  names: ReturnType<typeof createSpreadsheetFormulaNames>['names'],
-) {
-  return typeof value === 'string' && value.startsWith('=')
-    ? evaluateRawValuesFormula(value, rows, columns, { names })
-    : value;
 }
 
 function marginTemplate(h: Parameters<CellTemplate>[0], schema: CellTemplateProp) {
@@ -557,9 +576,60 @@ const spreadsheetStatusTemplate: ColumnRegular['cellTemplate'] = (h, schema, add
     : editorDropdown(h, schema, additionalData)
 );
 
-function statusTemplate(h: any, { value }: { value?: unknown }) {
-  const status = String(value ?? '');
-  return h('span', { class: `spreadsheet-status spreadsheet-status-${toColumnProp(status)}` }, status);
+markDataGridFormatRenderer(marginTemplate, SPREADSHEET_ADVANCED_FORMAT_IDS.range);
+markDataGridFormatRenderer(trendTemplate, SPREADSHEET_ADVANCED_FORMAT_IDS.trend);
+markDataGridFormatRenderer(spreadsheetStatusTemplate, 'badge');
+
+/** Workbook-specific composite renderers exposed to Format Cells by stable id. */
+export const SPREADSHEET_ADVANCED_FORMATS = [
+  {
+    id: SPREADSHEET_ADVANCED_FORMAT_IDS.range,
+    label: 'Range',
+    description: 'Show the formula result within its expected operating range.',
+    group: 'Workbook',
+    order: 10,
+    valueKind: 'number',
+    cellTemplate: marginTemplate,
+    previewTemplate: marginTemplate,
+    defaults: { minValue: 90, maxValue: 110 },
+    controls: SPREADSHEET_RANGE_CONTROLS,
+    replaceAuthoredTemplate: true,
+  },
+  {
+    id: SPREADSHEET_ADVANCED_FORMAT_IDS.trend,
+    label: 'Trend',
+    description: 'Combine the row trend sparkline with its percentage result.',
+    group: 'Workbook',
+    order: 20,
+    valueKind: 'number',
+    cellTemplate: trendTemplate,
+    previewTemplate: spreadsheetTrendPreviewTemplate,
+    defaults: { minValue: 0, maxValue: 650000 },
+    controls: SPREADSHEET_RANGE_CONTROLS,
+    replaceAuthoredTemplate: true,
+  },
+] as const satisfies readonly DataGridAdvancedFormatDefinition[];
+
+function spreadsheetTrendPreviewTemplate(
+  h: Parameters<CellTemplate>[0],
+  schema: CellTemplateProp,
+) {
+  const change = Number(schema.value);
+  const lastValue = Number.isFinite(change) ? 100 * (1 + change) : 100;
+  return trendTemplate(h, {
+    ...schema,
+    model: {
+      jan: 82,
+      feb: 91,
+      mar: lastValue,
+      target: 100,
+    },
+    column: {
+      ...schema.column,
+      minValue: 75,
+      maxValue: 110,
+    },
+  });
 }
 
 export function formatCurrencyValue(value: unknown) {

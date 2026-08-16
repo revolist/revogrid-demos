@@ -38,6 +38,18 @@ export const PLUGINS_COLOR = [
 
 const currencyFormat = '$0,0.[00]';
 
+const colorDropdownTemplate: ColumnRegular['cellTemplate'] = (h, { model, value }) => {
+  const option = [...PRIORITY, ...STATUS].find(item => item.value === value);
+  return h(
+    'div',
+    {
+      class: 'px-2 grow',
+      style: { backgroundColor: model.color ?? option?.color },
+    },
+    String(model.label ?? option?.label ?? value ?? ''),
+  );
+};
+
 export const COLUMNS_COLOR: ColumnRegular[] = [
   {
     name: 'Task',
@@ -114,37 +126,12 @@ export const COLUMNS_COLOR: ColumnRegular[] = [
     filter: ['selection'],
     // set column type for priority column with dropdown
     columnType: 'dropdown',
+    cellTemplate: colorDropdownTemplate,
     // set dropdown config for priority column
     dropdown: {
-      // set render selected value for priority column
-      renderSelectedValue: (h, selectedOptions, children) => {
-        return h(
-          'div',
-          {
-            class: 'px-2 grow flex justify-between',
-            style: {
-              backgroundColor: selectedOptions[0].color,
-            },
-          },
-          selectedOptions[0].label,
-          children,
-        );
-      },
-      // set render option for priority column
-      renderOption: (h, option) => {
-        return h(
-          'div',
-          {
-            class: 'px-2 py-1',
-            style: {
-              backgroundColor: option.color,
-            },
-          },
-          option.label,
-        );
-      },
       // set dropdown source for priority column
       source: PRIORITY,
+      syncCellTemplate: true,
     },
   },
   {
@@ -154,37 +141,12 @@ export const COLUMNS_COLOR: ColumnRegular[] = [
     filterPlaceholder: 'Status',
     filter: ['selection'],
     columnType: 'dropdown',
+    cellTemplate: colorDropdownTemplate,
     // set dropdown config for status column
     dropdown: {
       // set dropdown source for status column
       source: STATUS,
-      // set render selected value for status column
-      renderSelectedValue: (h, selectedOptions, children) => {
-        return h(
-          'div',
-          {
-            class: 'px-2 grow flex justify-between',
-            style: {
-              backgroundColor: selectedOptions[0].color,
-            },
-          },
-          selectedOptions[0].label,
-          children,
-        );
-      },
-      // set render option for status column
-      renderOption: (h, option) => {
-        return h(
-          'div',
-          {
-            class: 'px-2 py-1',
-            style: {
-              backgroundColor: option.color,
-            },
-          },
-          option.label,
-        );
-      },
+      syncCellTemplate: true,
     },
   },
   {
@@ -259,6 +221,7 @@ export const COLUMNS_COLOR: ColumnRegular[] = [
     filterPlaceholder: 'Tags',
     columnType: 'dropdown',
     dropdown: {
+      syncCellTemplate: true,
       config: {
         multiSelect: true,
       },

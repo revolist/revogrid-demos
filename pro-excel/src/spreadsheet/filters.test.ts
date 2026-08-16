@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getCellDataParsed } from '@revolist/revogrid';
 import { getSpreadsheetLeafColumns } from './columns';
 import { createSpreadsheetColumns } from './workbook';
 
@@ -22,7 +21,7 @@ test('enables sorting for every spreadsheet leaf column', () => {
   );
 });
 
-test('parses formula-backed sortable columns as their displayed numeric values', () => {
+test('leaves formula-backed sorting to FormulaPlugin without a stale demo parser', () => {
   const rows = [{
     jan: 10,
     feb: 20,
@@ -44,23 +43,27 @@ test('parses formula-backed sortable columns as their displayed numeric values',
 
   assert.ok(total);
   assert.ok(variance);
-  assert.deepEqual(rows.map(row => getCellDataParsed(row, total)), [60, 600]);
-  assert.deepEqual(rows.map(row => getCellDataParsed(row, variance)), [10, -50]);
+  assert.equal(total.cellParser, undefined);
+  assert.equal(variance.cellParser, undefined);
 });
 
-test('provides status templates to the dropdown popup and editor value', () => {
+test('provides built-in badge renderers without a custom status popup class', () => {
   const status = getSpreadsheetLeafColumns(createSpreadsheetColumns([]))
     .find(column => column.prop === 'status') as {
       dropdown?: {
         config?: { popupClassName?: string };
+        syncCellTemplate?: boolean;
+        cellTemplate?: unknown;
         renderOption?: unknown;
         renderSelectedValue?: unknown;
       };
     } | undefined;
 
-  assert.equal(status?.dropdown?.config?.popupClassName, 'spreadsheet-status-dropdown');
-  assert.equal(typeof status?.dropdown?.renderOption, 'function');
-  assert.equal(typeof status?.dropdown?.renderSelectedValue, 'function');
+  assert.equal(status?.dropdown?.config?.popupClassName, undefined);
+  assert.equal(status?.dropdown?.syncCellTemplate, true);
+  assert.equal(typeof status?.dropdown?.cellTemplate, 'function');
+  assert.equal(status?.dropdown?.renderOption, undefined);
+  assert.equal(status?.dropdown?.renderSelectedValue, undefined);
 });
 
 test('provides department templates to the dropdown popup and editor value', () => {
@@ -68,17 +71,19 @@ test('provides department templates to the dropdown popup and editor value', () 
     .find(column => column.prop === 'department') as {
       dropdown?: {
         config?: { popupClassName?: string };
+        syncCellTemplate?: boolean;
         renderOption?: unknown;
         renderSelectedValue?: unknown;
       };
     } | undefined;
 
   assert.equal(department?.dropdown?.config?.popupClassName, 'spreadsheet-department-dropdown');
-  assert.equal(typeof department?.dropdown?.renderOption, 'function');
-  assert.equal(typeof department?.dropdown?.renderSelectedValue, 'function');
+  assert.equal(department?.dropdown?.syncCellTemplate, true);
+  assert.equal(department?.dropdown?.renderOption, undefined);
+  assert.equal(department?.dropdown?.renderSelectedValue, undefined);
 });
 
-test('provides evaluated numeric Margin values to the slider filter', () => {
+test('leaves formula-backed slider values to FormulaPlugin filtering', () => {
   const rows = [{
     jan: 100,
     feb: 120,
@@ -98,6 +103,5 @@ test('provides evaluated numeric Margin values to the slider filter', () => {
     .find(column => column.prop === 'margin');
 
   assert.ok(margin);
-  assert.equal(getCellDataParsed(rows[0], margin), 1.2);
-  assert.equal(getCellDataParsed(rows[1], margin), 0);
+  assert.equal(margin.cellParser, undefined);
 });

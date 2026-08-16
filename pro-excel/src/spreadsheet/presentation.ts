@@ -12,7 +12,6 @@ import type {
 } from '@revolist/revogrid';
 import { rowHeaders, type AutoFillStrategy } from '@revolist/revogrid-pro';
 import { appendSpreadsheetCellClass, getSpreadsheetLeafColumns } from './columns';
-import { applySpreadsheetCellFormatting } from './formatting';
 import type { SpreadsheetInsight, SpreadsheetWorkbook } from './models';
 import { summarizeSelection } from './status';
 import { formatCurrencyValue } from './workbook';
@@ -36,7 +35,7 @@ export function createSpreadsheetDisplayColumns(
     ? setSpreadsheetFreezePane(workbook.columns, true)
     : workbook.columns;
   return applySpreadsheetSearchHighlight(
-    applySpreadsheetCellFormatting(frozenColumns),
+    frozenColumns,
     options.searchQuery ?? '',
   );
 }

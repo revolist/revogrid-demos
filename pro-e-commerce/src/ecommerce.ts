@@ -13,6 +13,7 @@ import {
   createEcommerceExcelExportConfig,
   clearEcommerceSelection,
   ecommerceColumnTypes,
+  ecommerceFilterConfig,
   ecommercePlugins,
   filterEcommerceRows,
   formatEcommerceTotalSpend,
@@ -151,7 +152,7 @@ export function load(parentSelector: string, data: any[] = []) {
 
     grid.columnTypes = ecommerceColumnTypes;
     grid.plugins = ecommercePlugins;
-    grid.filter = true;
+    grid.filter = ecommerceFilterConfig;
     grid.stretch = 'last';
     grid.rowContextMenu = rowContextMenu;
     grid.columnContextMenu = columnContextMenu;

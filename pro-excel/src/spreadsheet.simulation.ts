@@ -18,33 +18,26 @@ function getSpreadsheetSourceRows(
     : [...fallbackRows];
 }
 
-function buildWorkbookRowsFromGrid(
-  grid: HTMLRevoGridElement | null | undefined,
-  fallbackRows: DataType[] = [],
-): DataType[] {
-  return getSpreadsheetSourceRows(grid, fallbackRows);
-}
-
 function getRowDiff(
-  currentRow: Record<string, unknown> | undefined,
-  nextRow: Record<string, unknown> | undefined,
+  baselineRow: Record<string, unknown> | undefined,
+  targetRow: Record<string, unknown> | undefined,
 ): SpreadsheetGridDiff {
-  if (!nextRow) {
+  if (!targetRow) {
     return {};
   }
-  if (!currentRow) {
-    return { ...nextRow };
+  if (!baselineRow) {
+    return { ...targetRow };
   }
 
   const keys = new Set<string>([
-    ...Object.keys(currentRow),
-    ...Object.keys(nextRow),
+    ...Object.keys(baselineRow),
+    ...Object.keys(targetRow),
   ]);
   const diff: SpreadsheetGridDiff = {};
 
   keys.forEach((key) => {
-    if (currentRow[key] !== nextRow[key]) {
-      diff[key] = nextRow[key];
+    if (baselineRow[key] !== targetRow[key]) {
+      diff[key] = targetRow[key];
     }
   });
 
@@ -93,19 +86,19 @@ export async function syncSpreadsheetSimulationResultToGrid(
   const providers = await grid.getProviders?.();
   const dataStore = providers?.data?.stores?.[rowType];
   const providerSource = dataStore?.store?.get?.('source');
-  const sourceRows = Array.isArray(providerSource)
-    ? [...providerSource]
-    : buildWorkbookRowsFromGrid(grid, sourceWorkbook.rows);
   const targetRows = targetWorkbook.rows;
   const canWriteRowStore = Array.isArray(providerSource);
   let didUpdate = false;
 
-  const maxRows = Math.max(sourceRows.length, targetRows.length);
+  const simulationSourceRows = sourceWorkbook.rows;
+  const maxRows = Math.max(simulationSourceRows.length, targetRows.length);
 
   for (let rowIndex = 0; rowIndex < maxRows; rowIndex += 1) {
-    const currentRow = sourceRows[rowIndex] as Record<string, unknown> | undefined;
+    const simulationSourceRow = simulationSourceRows[rowIndex] as Record<string, unknown> | undefined;
     const nextRow = targetRows[rowIndex] as Record<string, unknown> | undefined;
-    const rowDiff = getRowDiff(currentRow, nextRow);
+    // Derive only the simulation's change. Comparing against the live provider
+    // row would misclassify newer local values as stale fields to overwrite.
+    const rowDiff = getRowDiff(simulationSourceRow, nextRow);
 
     if (Object.keys(rowDiff).length === 0) {
       continue;

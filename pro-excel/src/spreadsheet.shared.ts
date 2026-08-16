@@ -10,10 +10,7 @@ export {
 } from './spreadsheet/models';
 export type {
   SpreadsheetBaseRow,
-  SpreadsheetContextMenuController,
   SpreadsheetFlashPlugin,
-  SpreadsheetFormulaToken,
-  SpreadsheetFormulaTokenType,
   SpreadsheetInsight,
   SpreadsheetPreviewMode,
   SpreadsheetRow,
@@ -24,6 +21,8 @@ export type {
 
 export {
   SPREADSHEET_BASE_PLUGIN_LABELS,
+  SPREADSHEET_DATA_GRID_CONTEXT_MENU,
+  SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_DEMO_ID,
   SPREADSHEET_EXPORT_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
@@ -46,11 +45,6 @@ export {
 } from './spreadsheet/columns';
 
 export {
-  installSpreadsheetFormulaEditorHighlight,
-  tokenizeSpreadsheetFormula,
-} from './spreadsheet/formula';
-
-export {
   countSpreadsheetSearchMatches,
   createSpreadsheetDisplayColumns,
   createSpreadsheetInsights,
@@ -60,15 +54,6 @@ export {
   setSpreadsheetFreezePane,
   summarizeSpreadsheetRowHeaderFocus,
 } from './spreadsheet/presentation';
-
-export {
-  applySpreadsheetCellFormatting,
-  toggleSpreadsheetFocusedCellFormat,
-} from './spreadsheet/formatting';
-export type {
-  SpreadsheetCellFormatResult,
-  SpreadsheetFocusedCell,
-} from './spreadsheet/formatting';
 
 export {
   formatWorkbookStatus,
@@ -93,15 +78,12 @@ export {
 export {
   SPREADSHEET_ACTION_ICONS,
   createSpreadsheetCellFlashConfig,
-  createSpreadsheetContextMenus,
   createSpreadsheetEventManagerConfig,
   createSpreadsheetExportExcelConfig,
   createSpreadsheetFormulaDependencyHighlightConfig,
   createSpreadsheetHistoryConfig,
   flashSpreadsheetSampleCells,
-  insertSpreadsheetRowFromPinnedDropdown,
   installSpreadsheetCellMergeSync,
-  installSpreadsheetContextSelectionGuard,
   installSpreadsheetReadonlyEditGuard,
   preventReadonlySpreadsheetEdit,
 } from './spreadsheet/interactions';

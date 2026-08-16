@@ -19,11 +19,10 @@ import {
   CellValidatePlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
-  ColumnHidePlugin,
   ColumnDropdown,
   ColumnMoveAdvancedPlugin,
   ColumnStretchPlugin,
-  ContextMenuPlugin,
+  DataGridFormattingPlugin,
   EventManagerPlugin,
   ExportExcelPlugin,
   FilterHeaderPlugin,
@@ -31,21 +30,20 @@ import {
   FormulaDependencyHighlightPlugin,
   FormulaPlugin,
   HistoryPlugin,
-  MultiRangeSelectionPlugin,
   NamedRangesPlugin,
-  RowHeaderPlugin,
-  RowSelectPlugin,
   RowOrderPlugin,
-  TooltipPlugin,
+  SelectionPlugin,
+  type FormulaBarConfig,
   type HistoryState,
 } from '@revolist/revogrid-pro';
 import {
   SPREADSHEET_ACTION_ICONS,
+  SPREADSHEET_DATA_GRID_CONTEXT_MENU,
+  SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_EXPORT_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
   SPREADSHEET_ROW_SELECT_CONFIG,
   createSpreadsheetCellFlashConfig,
-  createSpreadsheetContextMenus,
   createSpreadsheetDisplayColumns,
   createSpreadsheetEventManagerConfig,
   createSpreadsheetExportExcelConfig,
@@ -57,8 +55,6 @@ import {
   formatWorkbookStatus,
   getSpreadsheetGridTheme,
   getSpreadsheetPluginLabels,
-  installSpreadsheetContextSelectionGuard,
-  installSpreadsheetFormulaEditorHighlight,
   installSpreadsheetReadonlyEditGuard,
   installSpreadsheetAutofillStrategy,
   isSpreadsheetDarkTheme,
@@ -66,8 +62,6 @@ import {
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
   summarizeSelection,
-  toggleSpreadsheetFocusedCellFormat,
-  type SpreadsheetContextMenuController,
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
@@ -90,7 +84,7 @@ import {
 } from './spreadsheet.feed';
 
 type SpreadsheetGridElement = HTMLRevoGridElement & {
-  formulaBar?: { el?: HTMLInputElement; badgeEl?: HTMLSpanElement; showCellBadge: boolean } | null;
+  formulaBar?: FormulaBarConfig | null;
 };
 
 @Component({
@@ -110,20 +104,6 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
           <button class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" (click)="exportWorkbook()">
             <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.export"></span>
             Export XLSX
-          </button>
-        </span>
-        <span class="spreadsheet-ribbon-group">
-          <button
-            class="spreadsheet-btn"
-            type="button"
-            data-testid="spreadsheet-format-cell"
-            title="Toggle emphasis formatting on the selected cell"
-            (pointerdown)="formatFocusedCellFromPointer($event)"
-            (mouseup)="$event.preventDefault()"
-            (click)="formatFocusedCellFromKeyboard($event)"
-          >
-            <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.format"></span>
-            Format cell
           </button>
         </span>
         <span class="spreadsheet-ribbon-group">
@@ -158,20 +138,7 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
 
       <div class="spreadsheet-formula-row">
         <span #formulaBadge class="spreadsheet-cell-badge">A1</span>
-        <span class="spreadsheet-formula-editor">
-          <span
-            #formulaHighlight
-            class="spreadsheet-formula-highlight"
-            data-testid="spreadsheet-formula-highlight"
-          ></span>
-          <input
-            #formulaInput
-            class="spreadsheet-formula-input"
-            data-testid="spreadsheet-formula-input"
-            aria-label="Formula bar"
-            placeholder="Select a cell to inspect or edit its raw value"
-          />
-        </span>
+        <span #formulaHost class="spreadsheet-formula-editor" data-testid="spreadsheet-formula-host"></span>
       </div>
 
       <div class="spreadsheet-main">
@@ -193,12 +160,11 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
             [formulaNames]="workbook.formulaNames"
             [formulaBar]="formulaBar"
             [formulaDependencyHighlight]="formulaDependencyHighlight"
+            [dataGridContextMenu]="dataGridContextMenu"
+            [dataGridFormatting]="dataGridFormatting"
             [exportExcel]="exportExcel"
             [rowOrder]="rowOrder"
             [rowSelect]="rowSelect"
-            [additionalData]="additionalData"
-            [rowContextMenu]="rowContextMenu"
-            [columnContextMenu]="columnContextMenu"
             [source]="workbook.rows"
             stretch="all"
             [range]="true"
@@ -234,9 +200,8 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
 
   @ViewChild('grid', { read: ElementRef }) gridElement!: ElementRef<SpreadsheetGridElement>;
   @ViewChild('workbenchShell', { read: ElementRef }) shellElement!: ElementRef<HTMLElement>;
-  @ViewChild('formulaInput', { read: ElementRef }) formulaInputElement!: ElementRef<HTMLInputElement>;
+  @ViewChild('formulaHost', { read: ElementRef }) formulaHostElement!: ElementRef<HTMLElement>;
   @ViewChild('formulaBadge', { read: ElementRef }) formulaBadgeElement!: ElementRef<HTMLSpanElement>;
-  @ViewChild('formulaHighlight', { read: ElementRef }) formulaHighlightElement!: ElementRef<HTMLSpanElement>;
   workbook: SpreadsheetWorkbook = createSpreadsheetWorkbook();
   private _simulationWorkbook: SpreadsheetWorkbook = this.workbook;
   presenceStep = 0;
@@ -260,41 +225,21 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   history = createSpreadsheetHistoryConfig();
   cellFlash = createSpreadsheetCellFlashConfig();
   formulaDependencyHighlight = createSpreadsheetFormulaDependencyHighlightConfig();
+  dataGridContextMenu = SPREADSHEET_DATA_GRID_CONTEXT_MENU;
+  dataGridFormatting = SPREADSHEET_DATA_GRID_FORMATTING;
   exportExcel = createSpreadsheetExportExcelConfig();
   rowHeaders = createSpreadsheetRowHeaders();
   rowOrder = SPREADSHEET_ROW_ORDER_CONFIG;
   rowSelect = SPREADSHEET_ROW_SELECT_CONFIG;
-  private workbookController: SpreadsheetContextMenuController = {
-    getGrid: () => this.gridElement?.nativeElement,
-    getWorkbook: () => this.workbook,
-    setWorkbook: (workbook) => {
-      this.workbook = workbook;
-      this._simulationWorkbook = workbook;
-      this.syncWorkbookUi();
-    },
-    setClipboardStatus: (message) => {
-      this.clipboardStatus = message;
-    },
-    exportWorkbook: () => this.exportWorkbook(),
-  };
-  private contextMenus = createSpreadsheetContextMenus(this.workbookController);
-  rowContextMenu = this.contextMenus.rowContextMenu;
-  columnContextMenu = this.contextMenus.columnContextMenu;
-  formulaBar: { el?: HTMLInputElement; badgeEl?: HTMLSpanElement; showCellBadge: boolean } = {
+  formulaBar: FormulaBarConfig = {
     showCellBadge: true,
   };
   plugins = this.buildPlugins();
-  private disconnectContextSelectionGuard?: () => void;
   private disconnectCellMergeSync?: () => void;
   private disconnectReadonlyEditGuard?: () => void;
-  private disconnectFormulaHighlight?: () => void;
   private presenceTimer?: number;
   private feedTimer?: number;
   private feedStep = 0;
-
-  get additionalData() {
-    return { formulaNames: this.workbook.formulaNames };
-  }
 
   get workbookStatus() {
     return formatWorkbookStatus(this.workbook);
@@ -314,7 +259,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
 
   ngAfterViewInit() {
     this.formulaBar = {
-      el: this.formulaInputElement.nativeElement,
+      host: this.formulaHostElement.nativeElement,
       badgeEl: this.formulaBadgeElement.nativeElement,
       showCellBadge: true,
     };
@@ -322,21 +267,12 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     grid.formulaBar = this.formulaBar;
     void installSpreadsheetAutofillStrategy(grid);
     this.disconnectCellMergeSync = installSpreadsheetCellMergeSync(grid);
-    this.disconnectContextSelectionGuard = installSpreadsheetContextSelectionGuard(
-      this.shellElement.nativeElement,
-      () => this.gridElement?.nativeElement,
-    );
     this.disconnectReadonlyEditGuard = installSpreadsheetReadonlyEditGuard(
       grid,
       () => this.workbook.columns,
       (message) => {
         this.clipboardStatus = message;
       },
-    );
-    this.disconnectFormulaHighlight = installSpreadsheetFormulaEditorHighlight(
-      this.formulaInputElement.nativeElement,
-      this.formulaHighlightElement.nativeElement,
-      grid,
     );
     this.presenceTimer = window.setInterval(() => {
       void this.runPresenceSimulation();
@@ -349,10 +285,8 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   }
 
   ngOnDestroy() {
-    this.disconnectContextSelectionGuard?.();
     this.disconnectCellMergeSync?.();
     this.disconnectReadonlyEditGuard?.();
-    this.disconnectFormulaHighlight?.();
     if (this.presenceTimer) {
       window.clearInterval(this.presenceTimer);
     }
@@ -379,30 +313,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   async exportWorkbook() {
     const plugin = await this.getPlugin(ExportExcelPlugin);
     await plugin?.export(SPREADSHEET_EXPORT_CONFIG);
-  }
-
-  async formatFocusedCell() {
-    const selectionPlugin = await this.getPlugin(MultiRangeSelectionPlugin);
-    const result = toggleSpreadsheetFocusedCellFormat(
-      this.workbook,
-      await this.gridElement?.nativeElement?.getFocused?.(),
-      selectionPlugin,
-    );
-    this.workbook = result.workbook;
-    this._simulationWorkbook = result.workbook;
-    this.clipboardStatus = result.message;
-    this.syncWorkbookUi();
-  }
-
-  formatFocusedCellFromPointer(event: PointerEvent) {
-    event.preventDefault();
-    void this.formatFocusedCell();
-  }
-
-  formatFocusedCellFromKeyboard(event: MouseEvent) {
-    if (event.detail === 0) {
-      void this.formatFocusedCell();
-    }
   }
 
   toggleFeedFlash() {
@@ -515,10 +425,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     flashSpreadsheetFeedEdit(plugin as SpreadsheetFlashPlugin | undefined, result);
   }
 
-  private syncWorkbookUi() {
-    this.displayColumns = createSpreadsheetDisplayColumns(this.workbook);
-  }
-
   private async getPlugin<T>(pluginClass: new (...args: any[]) => T): Promise<T | undefined> {
     const plugins = await this.gridElement?.nativeElement?.getPlugins?.();
     return plugins?.find(plugin => plugin instanceof pluginClass) as T | undefined;
@@ -534,22 +440,18 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
       FormulaDependencyHighlightPlugin,
       NamedRangesPlugin,
       FormulaPlugin,
+      DataGridFormattingPlugin,
       AutoFillPlugin,
       AutoFillPreviewPlugin,
-      MultiRangeSelectionPlugin,
-      RowHeaderPlugin,
-      RowSelectPlugin,
+      SelectionPlugin,
       RowOrderPlugin,
       ColumnMoveAdvancedPlugin,
       ColumnCollapsePlugin,
-      ContextMenuPlugin,
       ExportExcelPlugin,
       AdvanceFilterPlugin,
       FilterHeaderPlugin,
       CellValidatePlugin,
       CellMergePlugin,
-      TooltipPlugin,
-      ColumnHidePlugin,
       ColumnStretchPlugin,
     ];
   }

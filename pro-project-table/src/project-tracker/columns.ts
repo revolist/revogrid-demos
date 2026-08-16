@@ -5,12 +5,45 @@ import plusIcon from '@fortawesome/fontawesome-free/svgs/solid/plus.svg?raw';
 import type { ProjectContextMenuController, ProjectRow } from './types';
 import { formatProjectBudget } from './summary';
 import { createProjectColumnAddPopupSections, projectColumnTypeVisual, projectDepartmentOptions, projectHideableColumns, projectOwnerProfiles, projectPriorityOptions, projectRiskOptions, projectSkillOptions, projectStatusOptions, type ProjectHideableColumnOption } from './options';
-import { createBlockColumn, departmentTone, getTaskProgress, normalizeVNodeChildren, projectProgressThresholds, renderProjectAvatar, renderProjectRating, renderProjectSkillBadge, sectionTone, tone } from './renderers';
+import { createBlockColumn, departmentTone, getTaskProgress, projectProgressThresholds, renderProjectAvatar, renderProjectRating, renderProjectSkillBadge, sectionTone, tone } from './renderers';
 import { renderBlockFilterHeader, renderDepartmentFilterHeader, renderOwnerFilterHeader, renderSkillFilterHeader } from './filters';
 import { ProjectLeftTextEditor } from './editors';
 
 export const PROJECT_COLUMN_ADD_PROP = '__rv_project_column_add__';
 const PROJECT_COLUMN_ADD_TRIGGER_CLASS = 'rv-column-add-trigger';
+
+const projectOwnerCellTemplate: ColumnRegular['cellTemplate'] = (h, { model, value }) => {
+  const ownerValue = String(value ?? '');
+  const profileIndex = projectOwnerProfiles.findIndex(owner => owner.value === ownerValue);
+  const profile = projectOwnerProfiles[profileIndex];
+  return h('span', { class: 'project-owner-select' }, [
+    renderProjectAvatar(h, {
+      index: profileIndex,
+      label: String(model.label ?? profile?.label ?? ownerValue),
+      value: ownerValue,
+    }),
+    h(
+      'span',
+      { class: 'project-owner-filter-name' },
+      String(model.label ?? profile?.label ?? ownerValue),
+    ),
+  ]);
+};
+
+const projectDepartmentCellTemplate: ColumnRegular['cellTemplate'] = (h, { value }) => h(
+  'span',
+  { class: `project-department project-department--${departmentTone(value)}` },
+  [h('span', { class: 'project-department__label' }, String(value ?? ''))],
+);
+
+const projectSkillsCellTemplate: ColumnRegular['cellTemplate'] = (h, { value }) => {
+  const skills = Array.isArray(value) ? value : [value];
+  return h('span', { class: 'project-skills' }, skills.filter(Boolean).map(skill => h(
+    'span',
+    { class: `project-skill project-skill--${departmentTone(skill)}` },
+    String(skill),
+  )));
+};
 
 export function createProjectColumns(): ColumnRegular[] {
   return [
@@ -70,32 +103,10 @@ export function createProjectColumns(): ColumnRegular[] {
       filterHeaderTemplate: renderOwnerFilterHeader,
       columnType: 'dropdown',
       sortable: true,
-      readonly: true,
+      cellTemplate: projectOwnerCellTemplate,
       dropdown: {
         source: projectOwnerProfiles,
-        renderSelectedValue: (h, selectedOptions, children) => {
-          const value = String(selectedOptions[0]?.value || '');
-          const index = projectOwnerProfiles.findIndex((owner) => owner.value === value);
-          return h('span', { class: 'project-owner-select' }, [
-            renderProjectAvatar(h, {
-              index,
-              label: selectedOptions[0]?.label,
-              value,
-            }),
-            ...normalizeVNodeChildren(children),
-          ]);
-        },
-        renderOption: (h, option) => {
-          const index = projectOwnerProfiles.findIndex((owner) => owner.value === option.value);
-          return h('span', { class: 'project-owner-option' }, [
-            renderProjectAvatar(h, {
-              index,
-              label: option.label,
-              value: option.value,
-            }),
-            h('span', {}, option.label),
-          ]);
-        },
+        syncCellTemplate: true,
       },
     },
     {
@@ -127,17 +138,10 @@ export function createProjectColumns(): ColumnRegular[] {
       filterHeaderTemplate: renderDepartmentFilterHeader,
       columnType: 'dropdown',
       sortable: true,
+      cellTemplate: projectDepartmentCellTemplate,
       dropdown: {
         source: projectDepartmentOptions,
-        renderSelectedValue: (h, selectedOptions, children) =>
-          h('span', { class: `project-department project-department--${departmentTone(selectedOptions[0]?.label)}` }, [
-            h('span', { class: 'project-department__label' }, selectedOptions[0]?.label),
-            ...normalizeVNodeChildren(children),
-          ]),
-        renderOption: (h, option) =>
-          h('span', { class: `project-dropdown-option project-department project-department--${departmentTone(option.label)}` }, [
-            h('span', { class: 'project-department__label' }, option.label),
-          ]),
+        syncCellTemplate: true,
       },
     },
     {
@@ -148,30 +152,14 @@ export function createProjectColumns(): ColumnRegular[] {
       filterPlaceholder: 'All',
       filterHeaderTemplate: renderSkillFilterHeader,
       columnType: 'dropdown',
+      cellTemplate: projectSkillsCellTemplate,
       dropdown: {
         config: {
           multiSelect: true,
           popupClassName: 'dropdown-menu-color',
         },
         source: projectSkillOptions,
-        renderSelectedValue: (h, selectedOptions, children) => {
-          const visibleSkills = selectedOptions.slice(0, 3);
-          const hiddenCount = selectedOptions.length - visibleSkills.length;
-          return h('span', { class: 'project-skills' }, [
-            ...visibleSkills.map((option) =>
-              h('span', { class: `project-skill project-skill--${departmentTone(option.label)}` }, option.label),
-            ),
-            hiddenCount > 0
-              ? h('span', { class: 'project-skill project-skill--gray' }, `+${hiddenCount}`)
-              : undefined,
-            ...normalizeVNodeChildren(children),
-          ]);
-        },
-        renderOption: (h, option, isSelected) =>
-          h('span', { class: `project-dropdown-option project-skill-option project-skill project-skill--${departmentTone(option.label)}` }, [
-            h('input', { type: 'checkbox', checked: isSelected }),
-            h('span', null, option.label),
-          ]),
+        syncCellTemplate: true,
       },
     },
     {
@@ -325,7 +313,7 @@ function createProjectDynamicColumn(item: ColumnAddPopupItem): ProjectDynamicCol
         columnType: 'dropdown',
         filter: ['selection'],
         filterPlaceholder: 'All',
-        dropdown: { source: projectStatusOptions },
+        dropdown: { source: projectStatusOptions, syncCellTemplate: true },
         cellTemplate: (h, props) =>
           h('span', { class: `project-block project-block--${tone(props.value)}` }, props.value),
       },
@@ -380,11 +368,8 @@ function createProjectDynamicColumn(item: ColumnAddPopupItem): ProjectDynamicCol
         columnType: 'dropdown',
         filter: ['selection'],
         filterPlaceholder: 'All',
-        dropdown: { source: projectDepartmentOptions },
-        cellTemplate: (h, props) =>
-          h('span', { class: `project-department project-department--${departmentTone(props.value)}` }, [
-            h('span', { class: 'project-department__label' }, props.value),
-          ]),
+        dropdown: { source: projectDepartmentOptions, syncCellTemplate: true },
+        cellTemplate: projectDepartmentCellTemplate,
       },
       defaultValue: row => row.department,
     };
@@ -414,27 +399,10 @@ function createProjectDynamicColumn(item: ColumnAddPopupItem): ProjectDynamicCol
         filter: ['selection'],
         filterPlaceholder: 'All',
         filterHeaderTemplate: renderOwnerFilterHeader,
+        cellTemplate: projectOwnerCellTemplate,
         dropdown: {
           source: projectOwnerProfiles,
-          renderSelectedValue: (h, selectedOptions, children) => {
-            const value = String(selectedOptions[0]?.value || '');
-            const index = projectOwnerProfiles.findIndex((owner) => owner.value === value);
-            return h('span', { class: 'project-owner-select' }, [
-              renderProjectAvatar(h, { index, label: selectedOptions[0]?.label, value }),
-              ...normalizeVNodeChildren(children),
-            ]);
-          },
-          renderOption: (h, option) => {
-            const index = projectOwnerProfiles.findIndex((owner) => owner.value === option.value);
-            return h('span', { class: 'project-owner-option' }, [
-              renderProjectAvatar(h, {
-                index,
-                label: option.label,
-                value: option.value,
-              }),
-              h('span', {}, option.label),
-            ]);
-          },
+          syncCellTemplate: true,
         },
       },
       defaultValue: row => row.owner,

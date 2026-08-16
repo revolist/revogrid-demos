@@ -10,11 +10,10 @@ import {
   CellValidatePlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
-  ColumnHidePlugin,
   ColumnDropdown,
   ColumnMoveAdvancedPlugin,
   ColumnStretchPlugin,
-  ContextMenuPlugin,
+  DataGridFormattingPlugin,
   EventManagerPlugin,
   ExportExcelPlugin,
   FilterHeaderPlugin,
@@ -22,23 +21,21 @@ import {
   FormulaDependencyHighlightPlugin,
   FormulaPlugin,
   HistoryPlugin,
-  MultiRangeSelectionPlugin,
   NamedRangesPlugin,
-  RowHeaderPlugin,
-  RowSelectPlugin,
   RowOrderPlugin,
-  TooltipPlugin,
+  SelectionPlugin,
   type HistoryState,
 } from '@revolist/revogrid-pro';
 import './spreadsheet.scss';
 import type { DataType } from '@revolist/revogrid';
 import {
   SPREADSHEET_ACTION_ICONS,
+  SPREADSHEET_DATA_GRID_CONTEXT_MENU,
+  SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_EXPORT_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
   SPREADSHEET_ROW_SELECT_CONFIG,
   createSpreadsheetCellFlashConfig,
-  createSpreadsheetContextMenus,
   createSpreadsheetDisplayColumns,
   createSpreadsheetEventManagerConfig,
   createSpreadsheetExportExcelConfig,
@@ -49,8 +46,6 @@ import {
   formatWorkbookStatus,
   getSpreadsheetGridTheme,
   getSpreadsheetPluginLabels,
-  installSpreadsheetContextSelectionGuard,
-  installSpreadsheetFormulaEditorHighlight,
   installSpreadsheetReadonlyEditGuard,
   installSpreadsheetAutofillStrategy,
   observeSpreadsheetTheme,
@@ -58,8 +53,6 @@ import {
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
   summarizeSelection,
-  toggleSpreadsheetFocusedCellFormat,
-  type SpreadsheetContextMenuController,
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
@@ -131,23 +124,10 @@ export function load(parentSelector: string) {
 
   const exportButton = button('Export XLSX', exportWorkbook, SPREADSHEET_ACTION_ICONS.export);
   exportButton.dataset.testid = 'spreadsheet-export';
-  const formatButton = button('Format cell', (event) => {
-    if (event.detail === 0) {
-      void formatFocusedCell();
-    }
-  }, SPREADSHEET_ACTION_ICONS.format);
-  formatButton.dataset.testid = 'spreadsheet-format-cell';
-  formatButton.title = 'Toggle emphasis formatting on the selected cell';
-  formatButton.addEventListener('pointerdown', (event) => {
-    event.preventDefault();
-    void formatFocusedCell();
-  });
-  formatButton.addEventListener('mouseup', event => event.preventDefault());
   const undoButton = button('Undo 0', () => runHistory('undo'), SPREADSHEET_ACTION_ICONS.undo);
   const redoButton = button('Redo 0', () => runHistory('redo'), SPREADSHEET_ACTION_ICONS.redo);
   ribbon.append(
     group(exportButton),
-    group(formatButton),
     group(undoButton, redoButton),
   );
 
@@ -172,15 +152,7 @@ export function load(parentSelector: string) {
   formulaBadge.textContent = 'A1';
   const formulaEditor = document.createElement('span');
   formulaEditor.className = 'spreadsheet-formula-editor';
-  const formulaHighlight = document.createElement('span');
-  formulaHighlight.className = 'spreadsheet-formula-highlight';
-  formulaHighlight.dataset.testid = 'spreadsheet-formula-highlight';
-  const formulaInput = document.createElement('input');
-  formulaInput.className = 'spreadsheet-formula-input';
-  formulaInput.dataset.testid = 'spreadsheet-formula-input';
-  formulaInput.placeholder = 'Select a cell to inspect or edit its raw value';
-  formulaInput.setAttribute('aria-label', 'Formula bar');
-  formulaEditor.append(formulaHighlight, formulaInput);
+  formulaEditor.dataset.testid = 'spreadsheet-formula-host';
   formulaRow.append(formulaBadge, formulaEditor);
 
   const workbookStatus = document.createElement('span');
@@ -190,20 +162,6 @@ export function load(parentSelector: string) {
   const clipboardStatus = document.createElement('span');
   const previewStatus = document.createElement('span');
   statusRow.append(workbookStatus, selectionStatus, clipboardStatus, previewStatus);
-
-  const workbookController: SpreadsheetContextMenuController = {
-    getGrid: () => grid,
-    getWorkbook: () => workbook,
-    setWorkbook: (nextWorkbook) => {
-      workbook = nextWorkbook;
-      void syncWorkbookSource(nextWorkbook);
-    },
-    setClipboardStatus: (message) => {
-      clipboardStatus.textContent = message;
-    },
-    exportWorkbook,
-  };
-  const contextMenus = createSpreadsheetContextMenus(workbookController);
 
   gridWrap.append(grid);
   main.append(gridWrap);
@@ -219,7 +177,6 @@ export function load(parentSelector: string) {
     shell.classList.toggle('is-dark', isDark);
     grid.theme = getSpreadsheetGridTheme(isDark);
   });
-  const disconnectContextSelectionGuard = installSpreadsheetContextSelectionGuard(shell, () => grid);
   const disconnectCellMergeSync = installSpreadsheetCellMergeSync(grid);
   const disconnectReadonlyEditGuard = installSpreadsheetReadonlyEditGuard(
     grid,
@@ -227,11 +184,6 @@ export function load(parentSelector: string) {
     (message) => {
       clipboardStatus.textContent = message;
     },
-  );
-  const disconnectFormulaHighlight = installSpreadsheetFormulaEditorHighlight(
-    formulaInput,
-    formulaHighlight,
-    grid,
   );
   const presenceTimer = window.setInterval(() => {
     void runPresenceSimulation();
@@ -243,10 +195,8 @@ export function load(parentSelector: string) {
 
   return () => {
     disconnectThemeObserver();
-    disconnectContextSelectionGuard();
     disconnectCellMergeSync();
     disconnectReadonlyEditGuard();
-    disconnectFormulaHighlight();
     window.clearInterval(presenceTimer);
     stopFeedFlash();
     grid.removeEventListener('rowfocus', onRowHeaderFocus as EventListener);
@@ -325,6 +275,11 @@ export function load(parentSelector: string) {
   }
 
   function applyWorkbook() {
+    // Configuration must be present before plugin construction so the classic
+    // context menu and Format Cells share the workbook format registry from
+    // their first render.
+    grid.dataGridFormatting = SPREADSHEET_DATA_GRID_FORMATTING;
+    grid.dataGridContextMenu = SPREADSHEET_DATA_GRID_CONTEXT_MENU;
     grid.plugins = [
       EventManagerPlugin,
       HistoryPlugin,
@@ -334,22 +289,18 @@ export function load(parentSelector: string) {
       FormulaDependencyHighlightPlugin,
       NamedRangesPlugin,
       FormulaPlugin,
+      DataGridFormattingPlugin,
       AutoFillPlugin,
       AutoFillPreviewPlugin,
-      MultiRangeSelectionPlugin,
-      RowHeaderPlugin,
-      RowSelectPlugin,
+      SelectionPlugin,
       RowOrderPlugin,
       ColumnMoveAdvancedPlugin,
       ColumnCollapsePlugin,
-      ContextMenuPlugin,
       ExportExcelPlugin,
       AdvanceFilterPlugin,
       FilterHeaderPlugin,
       CellValidatePlugin,
       CellMergePlugin,
-      TooltipPlugin,
-      ColumnHidePlugin,
       ColumnStretchPlugin,
     ];
     grid.formulaNames = workbook.formulaNames;
@@ -361,11 +312,9 @@ export function load(parentSelector: string) {
     grid.history = createSpreadsheetHistoryConfig();
     grid.cellFlash = createSpreadsheetCellFlashConfig();
     grid.collaborativePresence = createSpreadsheetCollaborativePresence(presenceUsers);
-    grid.formulaBar = { el: formulaInput, badgeEl: formulaBadge, showCellBadge: true };
+    grid.formulaBar = { host: formulaEditor, badgeEl: formulaBadge, showCellBadge: true };
     grid.formulaDependencyHighlight = createSpreadsheetFormulaDependencyHighlightConfig();
     grid.exportExcel = createSpreadsheetExportExcelConfig();
-    grid.rowContextMenu = contextMenus.rowContextMenu;
-    grid.columnContextMenu = contextMenus.columnContextMenu;
     void installSpreadsheetAutofillStrategy(grid);
     syncToolbar();
   }
@@ -383,20 +332,6 @@ export function load(parentSelector: string) {
   async function exportWorkbook() {
     const plugin = await getPlugin(ExportExcelPlugin);
     await plugin?.export(SPREADSHEET_EXPORT_CONFIG);
-  }
-
-  async function formatFocusedCell() {
-    const selectionPlugin = await getPlugin(MultiRangeSelectionPlugin);
-    const result = toggleSpreadsheetFocusedCellFormat(
-      workbook,
-      await grid.getFocused?.(),
-      selectionPlugin,
-    );
-    workbook = result.workbook;
-    clipboardStatus.textContent = result.message;
-    grid.source = workbook.rows;
-    grid.columns = createSpreadsheetDisplayColumns(workbook);
-    syncToolbar();
   }
 
   function stopFeedFlash() {

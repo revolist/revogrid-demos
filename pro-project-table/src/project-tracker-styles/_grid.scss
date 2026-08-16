@@ -522,6 +522,12 @@ revo-grid.project-tracker-grid {
     }
   }
 
+  .rgCell:not(revo-grid.project-tracker-grid revo-grid .rgCell)
+    .project-owner-select
+    .project-owner-filter-name {
+    display: none;
+  }
+
   .project-block,
   .project-department {
     position: relative;

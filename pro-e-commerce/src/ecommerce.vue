@@ -45,7 +45,7 @@
       :column-context-menu.prop="contextMenus.columnContextMenu"
       stretch="last"
       :column-types="columnTypes"
-      :filter="true"
+      :filter="ecommerceFilterConfig"
       :hide-columns="hiddenColumns"
       style="min-height: 0"
       resize
@@ -73,6 +73,7 @@ import {
   createEcommerceExcelExportConfig,
   clearEcommerceSelection,
   ecommerceColumnTypes,
+  ecommerceFilterConfig,
   ecommercePlugins,
   filterEcommerceRows,
   formatEcommerceTotalSpend,

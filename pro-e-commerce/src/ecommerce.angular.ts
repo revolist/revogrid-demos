@@ -14,6 +14,7 @@ import {
   createEcommerceExcelExportConfig,
   clearEcommerceSelection,
   ecommerceColumnTypes,
+  ecommerceFilterConfig,
   ecommercePlugins,
   filterEcommerceRows,
   formatEcommerceTotalSpend,
@@ -67,7 +68,7 @@ import {
         [columnTypes]="columnTypes"
         [rowContextMenu]="rowContextMenu"
         [columnContextMenu]="columnContextMenu"
-        [filter]="true"
+        [filter]="filterConfig"
         stretch="last"
         [resize]="true"
         [hideAttribution]="true"
@@ -89,6 +90,7 @@ export class ECommerceGridComponent {
   @ViewChild('gridRef', { static: true }) gridRef!: ElementRef<HTMLRevoGridElement>;
 
   columnTypes = ecommerceColumnTypes;
+  filterConfig = ecommerceFilterConfig;
   hiddenColumns: ColumnProp[] = [];
   allColumns = createEcommerceAnalyticsColumns();
   columns = getVisibleEcommerceColumns(this.allColumns, this.hiddenColumns);

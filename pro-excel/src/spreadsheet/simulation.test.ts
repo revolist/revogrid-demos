@@ -57,3 +57,41 @@ test('patches physical feed rows without replacing source while FilterHeader tri
   assert.deepEqual(refreshCalls, ['rgRow']);
   assert.equal(result.rows[0].jan, targetRows[0].jan, 'simulation state follows the provider source');
 });
+
+test('preserves newer local values when a remote simulation patches the same row', async () => {
+  const sourceWorkbook = createSpreadsheetWorkbook();
+  const snapshotRows = sourceWorkbook.rows.map(row => ({ ...row }));
+  const targetRows = snapshotRows.map(row => ({ ...row }));
+  targetRows[0].jan = Number(targetRows[0].jan) + 1;
+
+  const liveRows = snapshotRows.map(row => ({ ...row }));
+  liveRows[0].owner = 'Locally updated owner';
+  const providers = {
+    data: {
+      stores: {
+        rgRow: {
+          store: {
+            get(key: string) {
+              return key === 'source' ? liveRows : undefined;
+            },
+          },
+        },
+      },
+      refresh() {},
+    },
+  };
+  const grid = {
+    source: snapshotRows,
+    getProviders: async () => providers,
+  };
+
+  const result = await syncSpreadsheetSimulationResultToGrid(
+    grid as never,
+    { ...sourceWorkbook, rows: snapshotRows },
+    { ...sourceWorkbook, rows: targetRows },
+  );
+
+  assert.equal(liveRows[0].jan, targetRows[0].jan, 'the remote cell value is applied');
+  assert.equal(liveRows[0].owner, 'Locally updated owner', 'the newer local cell value survives');
+  assert.equal(result.rows[0].owner, 'Locally updated owner', 'workbook state follows the merged provider row');
+});

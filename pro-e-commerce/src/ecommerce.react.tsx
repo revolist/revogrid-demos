@@ -15,6 +15,7 @@ import {
   createEcommerceExcelExportConfig,
   clearEcommerceSelection,
   ecommerceColumnTypes,
+  ecommerceFilterConfig,
   ecommercePlugins,
   filterEcommerceRows,
   formatEcommerceTotalSpend,
@@ -150,7 +151,7 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
         columnTypes={columnTypes}
         rowContextMenu={contextMenus.rowContextMenu}
         columnContextMenu={contextMenus.columnContextMenu}
-        filter={true}
+        filter={ecommerceFilterConfig}
         hideColumns={hiddenColumns}
         stretch="last"
         resize

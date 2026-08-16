@@ -1,4 +1,5 @@
 import type {
+  ColumnFilterConfig,
   ColumnGrouping,
   ColumnProp,
   ColumnRegular,
@@ -52,6 +53,42 @@ export const ecommerceAvatarProfiles = [
   { value: 'CR', label: 'Cam Rivera' },
   { value: 'AN', label: 'Ari Novak' },
 ];
+
+const ecommerceAvatarCellTemplate: ColumnRegular['cellTemplate'] = (h, { model, value }) => {
+  const profileIndex = ecommerceAvatarProfiles.findIndex(item => item.value === value);
+  const profile = ecommerceAvatarProfiles[profileIndex];
+  const label = String(model.label ?? profile?.label ?? value ?? '');
+  return h('span', { class: 'analytics-avatar-select analytics-avatar-option' }, [
+    avatarTemplate(h, {
+      className: 'analytics-avatar',
+      index: profileIndex,
+      initials: String(value ?? ''),
+      label,
+      size: 32,
+      value,
+    }),
+    h('span', null, label),
+  ]);
+};
+
+const ecommerceGenderCellTemplate: ColumnRegular['cellTemplate'] = (h, { value }) => {
+  const label = String(value ?? '');
+  return h('span', { class: `analytics-pill analytics-pill--${label.toLowerCase()}` }, label);
+};
+
+const ecommerceMembershipCellTemplate: ColumnRegular['cellTemplate'] = (h, { value }) => {
+  const label = String(value ?? '');
+  return h('span', { class: `analytics-tier analytics-tier--${label.toLowerCase()}` }, label);
+};
+
+const ecommerceDiscountCellTemplate: ColumnRegular['cellTemplate'] = (h, { value }) => {
+  const enabled = value === true;
+  return h(
+    'span',
+    { class: `analytics-discount analytics-discount--${enabled ? 'yes' : 'no'}` },
+    enabled ? 'Applied' : 'None',
+  );
+};
 
 const EXCEL_HEADER_STYLE = {
   fontWeight: 'bold' as const,
@@ -122,6 +159,17 @@ export const ecommercePlugins = Array.from(
     ColumnStretchPlugin,
   ]),
 );
+
+export const ecommerceFilterConfig = {
+  selection: {
+    syncCellTemplate: {
+      avatar: true,
+      Gender: true,
+      'Membership Type': true,
+      'Discount Applied': true,
+    },
+  },
+} as unknown as ColumnFilterConfig;
 
 export type EcommerceContextMenuController = {
   getRows: () => any[];
@@ -635,8 +683,7 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
       size: 112,
       filter: ['selection'],
       columnType: 'dropdown',
-      cellTemplate: ColumnDropdown.cellTemplate,
-      cellProperties: ColumnDropdown.cellProperties,
+      cellTemplate: ecommerceAvatarCellTemplate,
       excelExport: {
         ...excelExport,
         cellProperties: ({ value, rowIndex }) => {
@@ -654,47 +701,7 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
       },
       dropdown: {
         source: ecommerceAvatarProfiles,
-        renderSelectedValue: (h, selectedOptions, children) => {
-          const value = String(selectedOptions[0]?.value || '');
-          const index = ecommerceAvatarProfiles.findIndex(
-            (profile) => profile.value === value,
-          );
-          return h(
-            'span',
-            { class: 'analytics-avatar-select' },
-            [
-              avatarTemplate(h, {
-                className: 'analytics-avatar',
-                index,
-                initials: value,
-                label: selectedOptions[0]?.label,
-                size: 32,
-                value,
-              }),
-              children,
-            ],
-          );
-        },
-        renderOption: (h, option) => {
-          const index = ecommerceAvatarProfiles.findIndex(
-            (profile) => profile.value === option.value,
-          );
-          return h(
-            'span',
-            { class: 'analytics-avatar-option' },
-            [
-              avatarTemplate(h, {
-                className: 'analytics-avatar',
-                index,
-                initials: String(option.value ?? ''),
-                label: option.label,
-                size: 32,
-                value: option.value,
-              }),
-              h('span', null, option.label),
-            ],
-          );
-        },
+        syncCellTemplate: true,
       },
     };
   }
@@ -704,8 +711,7 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
       size: 130,
       filter: ['selection'],
       columnType: 'dropdown',
-      cellTemplate: ColumnDropdown.cellTemplate,
-      cellProperties: ColumnDropdown.cellProperties,
+      cellTemplate: ecommerceGenderCellTemplate,
       excelExport: {
         ...excelExport,
         cellProperties: ({ value }) => {
@@ -718,22 +724,7 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
       },
       dropdown: {
         source: ['Male', 'Female'].map((value) => ({ value, label: value })),
-        renderSelectedValue: (h, selectedOptions, children) =>
-          h(
-            'span',
-            {
-              class: `analytics-pill analytics-pill--${String(selectedOptions[0]?.label).toLowerCase()}`,
-            },
-            [selectedOptions[0]?.label, children],
-          ),
-        renderOption: (h, option) =>
-          h(
-            'span',
-            {
-              class: `analytics-dropdown-option analytics-pill analytics-pill--${String(option.label).toLowerCase()}`,
-            },
-            option.label,
-          ),
+        syncCellTemplate: true,
       },
     };
   }
@@ -751,8 +742,7 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
       ...column,
       size: 176,
       columnType: 'dropdown',
-      cellTemplate: ColumnDropdown.cellTemplate,
-      cellProperties: ColumnDropdown.cellProperties,
+      cellTemplate: ecommerceMembershipCellTemplate,
       excelExport: {
         ...excelExport,
         cellProperties: ({ value }) => {
@@ -768,22 +758,7 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
           value,
           label: value,
         })),
-        renderSelectedValue: (h, selectedOptions, children) =>
-          h(
-            'span',
-            {
-              class: `analytics-tier analytics-tier--${String(selectedOptions[0]?.label).toLowerCase()}`,
-            },
-            [selectedOptions[0]?.label, children],
-          ),
-        renderOption: (h, option) =>
-          h(
-            'span',
-            {
-              class: `analytics-dropdown-option analytics-tier analytics-tier--${String(option.label).toLowerCase()}`,
-            },
-            option.label,
-          ),
+        syncCellTemplate: true,
       },
     };
   }
@@ -838,8 +813,7 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
       ...column,
       size: 130,
       columnType: 'dropdown',
-      cellTemplate: ColumnDropdown.cellTemplate,
-      cellProperties: ColumnDropdown.cellProperties,
+      cellTemplate: ecommerceDiscountCellTemplate,
       excelExport: {
         ...excelExport,
         cellProperties: ({ value }) => {
@@ -855,24 +829,7 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
           { value: true, label: 'Applied' },
           { value: false, label: 'None' },
         ],
-        renderSelectedValue: (h, selectedOptions, children) => {
-          const enabled = selectedOptions[0]?.value === true;
-          return h(
-            'span',
-            {
-              class: `analytics-discount analytics-discount--${enabled ? 'yes' : 'no'}`,
-            },
-            [selectedOptions[0]?.label, children],
-          );
-        },
-        renderOption: (h, option) =>
-          h(
-            'span',
-            {
-              class: `analytics-dropdown-option analytics-discount analytics-discount--${option.value === true ? 'yes' : 'no'}`,
-            },
-            option.label,
-          ),
+        syncCellTemplate: true,
       },
     };
   }

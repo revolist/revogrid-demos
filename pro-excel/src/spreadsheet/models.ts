@@ -59,30 +59,6 @@ export type SpreadsheetWorkbook = {
   sheetKey: SpreadsheetWorkbookKey;
 };
 
-export type SpreadsheetFormulaTokenType =
-  | 'plain'
-  | 'function'
-  | 'reference'
-  | 'number'
-  | 'operator'
-  | 'string'
-  | 'name'
-  | 'punctuation';
-
-export type SpreadsheetFormulaToken = {
-  type: SpreadsheetFormulaTokenType;
-  value: string;
-};
-
-/** Framework-neutral callbacks used by spreadsheet context-menu actions. */
-export type SpreadsheetContextMenuController = {
-  getGrid: () => HTMLRevoGridElement | null | undefined;
-  getWorkbook?: () => SpreadsheetWorkbook;
-  setWorkbook?: (workbook: SpreadsheetWorkbook) => void;
-  setClipboardStatus?: (message: string) => void;
-  exportWorkbook?: () => void | Promise<void>;
-};
-
 /** Minimal CellFlashPlugin surface required by demo-driven flash actions. */
 export type SpreadsheetFlashPlugin = {
   flashCells?: (

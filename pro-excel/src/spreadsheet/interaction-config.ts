@@ -84,8 +84,6 @@ export function flashSpreadsheetSampleCells(
 
 export function createSpreadsheetFormulaDependencyHighlightConfig() {
   return {
-    dependencyClass: 'spreadsheet-dependency-cell',
-    formulaCellClass: 'spreadsheet-dependency-active-cell',
     dependencyColors: ['#2563eb', '#16a34a', '#dc2626', '#9333ea', '#0891b2', '#ca8a04'],
     includeNamedRanges: true,
   };

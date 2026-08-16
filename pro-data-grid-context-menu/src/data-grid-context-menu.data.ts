@@ -220,6 +220,7 @@ export function createContextMenuColumns(): ColumnData {
       size: 110,
       sortable: true,
       columnType: 'boolean',
+      dropdown: { syncCellTemplate: true },
     },
     { prop: 'schedule', name: 'Schedule', size: 180, sortable: true },
     {

@@ -2,18 +2,6 @@ import type { ColumnFilterConfig } from '@revolist/revogrid';
 import { projectOwnerProfiles } from './options';
 import { departmentTone, renderProjectAvatar, renderProjectSkillBadge, tone } from './renderers';
 
-function renderBlockFilterOption(h: any, label: string) {
-  return h('span', { class: `project-filter-block project-filter-block--${tone(label)}` }, [
-    h('span', { class: 'project-block__label' }, label),
-  ]);
-}
-
-function renderDepartmentFilterOption(h: any, label: string) {
-  return h('span', { class: `project-filter-department project-filter-department--${departmentTone(label)}` }, [
-    h('span', { class: 'project-department__label' }, label),
-  ]);
-}
-
 function renderSkillFilterOption(h: any, label: string) {
   return renderProjectSkillBadge(h, label, 'project-filter-skill');
 }
@@ -135,29 +123,19 @@ export const projectFilterConfig = {
       owner: () => projectOwnerProfiles,
       custom_people: () => projectOwnerProfiles,
     },
+    syncCellTemplate: {
+      status: true,
+      priority: true,
+      risk: true,
+      department: true,
+      skills: true,
+      owner: true,
+      custom_status: true,
+      custom_label: true,
+      custom_people: true,
+    },
     itemTemplate: {
-      status: (h, { label }) => renderBlockFilterOption(h, label),
-      priority: (h, { label }) => renderBlockFilterOption(h, label),
-      risk: (h, { label }) => renderBlockFilterOption(h, label),
-      department: (h, { label }) => renderDepartmentFilterOption(h, label),
-      skills: (h, { label }) => renderSkillFilterOption(h, label),
       custom_dropdown: (h, { label }) => renderSkillFilterOption(h, label),
-      owner: renderOwnerFilterOption,
-      custom_people: renderOwnerFilterOption,
     },
   },
 } as unknown as ColumnFilterConfig;
-
-function renderOwnerFilterOption(h: any, { item, label, value }: { item: Record<string, any>; label: string; value: string }) {
-        const profile = resolveOwnerProfile(value, item.label ?? label);
-        const index = profile ? projectOwnerProfiles.indexOf(profile) : 0;
-        const ownerLabel = profile?.label ?? item.label ?? label;
-        return h('span', { class: 'project-owner-filter-option' }, [
-          renderProjectAvatar(h, {
-            index,
-            label: ownerLabel,
-            value: profile?.value ?? value,
-          }),
-          h('span', { class: 'project-owner-filter-name' }, ownerLabel),
-        ]);
-}

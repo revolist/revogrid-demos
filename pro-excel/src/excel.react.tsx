@@ -9,11 +9,10 @@ import {
   CellValidatePlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
-  ColumnHidePlugin,
   ColumnDropdown,
   ColumnMoveAdvancedPlugin,
   ColumnStretchPlugin,
-  ContextMenuPlugin,
+  DataGridFormattingPlugin,
   EventManagerPlugin,
   ExportExcelPlugin,
   FilterHeaderPlugin,
@@ -21,22 +20,20 @@ import {
   FormulaDependencyHighlightPlugin,
   FormulaPlugin,
   HistoryPlugin,
-  MultiRangeSelectionPlugin,
   NamedRangesPlugin,
-  RowHeaderPlugin,
-  RowSelectPlugin,
   RowOrderPlugin,
-  TooltipPlugin,
+  SelectionPlugin,
   type HistoryState,
 } from '@revolist/revogrid-pro';
 import './spreadsheet.scss';
 import {
   SPREADSHEET_ACTION_ICONS,
+  SPREADSHEET_DATA_GRID_CONTEXT_MENU,
+  SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_EXPORT_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
   SPREADSHEET_ROW_SELECT_CONFIG,
   createSpreadsheetCellFlashConfig,
-  createSpreadsheetContextMenus,
   createSpreadsheetDisplayColumns,
   createSpreadsheetEventManagerConfig,
   createSpreadsheetExportExcelConfig,
@@ -48,15 +45,12 @@ import {
   formatWorkbookStatus,
   getSpreadsheetGridTheme,
   getSpreadsheetPluginLabels,
-  installSpreadsheetContextSelectionGuard,
-  installSpreadsheetFormulaEditorHighlight,
   installSpreadsheetReadonlyEditGuard,
   installSpreadsheetAutofillStrategy,
   preventReadonlySpreadsheetEdit,
   summarizeClipboardMatrix,
   summarizeSpreadsheetRowHeaderFocus,
   summarizeSelection,
-  toggleSpreadsheetFocusedCellFormat,
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
@@ -91,14 +85,13 @@ function ActionIcon({ icon }: { icon: string }) {
 export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: boolean }) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
   const shellRef = useRef<HTMLElement | null>(null);
-  const formulaInputRef = useRef<HTMLInputElement>(null);
+  const formulaHostRef = useRef<HTMLSpanElement>(null);
   const formulaBadgeRef = useRef<HTMLSpanElement>(null);
-  const formulaHighlightRef = useRef<HTMLSpanElement>(null);
   const feedTimerRef = useRef<number | undefined>(undefined);
   const feedStepRef = useRef(0);
   const presenceStepRef = useRef(0);
   const [formulaReady, setFormulaReady] = useState(false);
-  const [workbook, setWorkbook] = useState<SpreadsheetWorkbook>(() => createSpreadsheetWorkbook());
+  const [workbook] = useState<SpreadsheetWorkbook>(() => createSpreadsheetWorkbook());
   const workbookRef = useRef(workbook);
   const [presenceStep, setPresenceStep] = useState(0);
   const [feedFlashActive, setFeedFlashActive] = useState(true);
@@ -114,13 +107,14 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
   });
 
   const columnTypes = useMemo(() => ({ statusDropdown: ColumnDropdown, departmentDropdown: ColumnDropdown }), []);
-  const additionalData = useMemo(() => ({ formulaNames: workbook.formulaNames }), [workbook.formulaNames]);
   const filterConfig = useMemo(() => ({}), []);
   const eventManager = useMemo(() => createSpreadsheetEventManagerConfig(), []);
   const history = useMemo(() => createSpreadsheetHistoryConfig(), []);
   const cellFlash = useMemo(() => createSpreadsheetCellFlashConfig(), []);
   const collaborativePresence = useMemo(() => createSpreadsheetCollaborativePresence(presenceUsers), [presenceUsers]);
   const formulaDependencyHighlight = useMemo(() => createSpreadsheetFormulaDependencyHighlightConfig(), []);
+  const dataGridContextMenu = useMemo(() => SPREADSHEET_DATA_GRID_CONTEXT_MENU, []);
+  const dataGridFormatting = useMemo(() => SPREADSHEET_DATA_GRID_FORMATTING, []);
   const exportExcel = useMemo(() => createSpreadsheetExportExcelConfig(), []);
   const rowOrder = useMemo(() => SPREADSHEET_ROW_ORDER_CONFIG, []);
   const rowSelect = useMemo(() => SPREADSHEET_ROW_SELECT_CONFIG, []);
@@ -128,7 +122,7 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
   const pluginStack = useMemo(() => getSpreadsheetPluginLabels().join(','), []);
   const displayColumns = useMemo(() => createSpreadsheetDisplayColumns(workbook), [workbook]);
   const formulaBar = useMemo(() => ({
-    el: formulaInputRef.current ?? undefined,
+    host: formulaHostRef.current ?? undefined,
     badgeEl: formulaBadgeRef.current ?? undefined,
     showCellBadge: true,
   }), [formulaReady]);
@@ -142,22 +136,18 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     FormulaDependencyHighlightPlugin,
     NamedRangesPlugin,
     FormulaPlugin,
+    DataGridFormattingPlugin,
     AutoFillPlugin,
     AutoFillPreviewPlugin,
-    MultiRangeSelectionPlugin,
-    RowHeaderPlugin,
-    RowSelectPlugin,
+    SelectionPlugin,
     RowOrderPlugin,
     ColumnMoveAdvancedPlugin,
     ColumnCollapsePlugin,
-    ContextMenuPlugin,
     ExportExcelPlugin,
     AdvanceFilterPlugin,
     FilterHeaderPlugin,
     CellValidatePlugin,
     CellMergePlugin,
-    TooltipPlugin,
-    ColumnHidePlugin,
     ColumnStretchPlugin,
   ], []);
 
@@ -172,13 +162,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
   useEffect(() => {
     presenceStepRef.current = presenceStep;
   }, [presenceStep]);
-
-  useEffect(() => {
-    if (!shellRef.current) {
-      return;
-    }
-    return installSpreadsheetContextSelectionGuard(shellRef.current, () => gridRef.current);
-  }, []);
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -203,17 +186,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
       setClipboardStatus,
     );
   }, [workbook.columns]);
-
-  useEffect(() => {
-    if (!formulaInputRef.current || !formulaHighlightRef.current || !gridRef.current) {
-      return;
-    }
-    return installSpreadsheetFormulaEditorHighlight(
-      formulaInputRef.current,
-      formulaHighlightRef.current,
-      gridRef.current,
-    );
-  }, [formulaReady]);
 
   const getPlugin = useCallback(async <T,>(pluginClass: new (...args: any[]) => T): Promise<T | undefined> => {
     const plugins = await gridRef.current?.getPlugins?.();
@@ -276,18 +248,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
   const exportWorkbook = useCallback(async () => {
     const plugin = await getPlugin(ExportExcelPlugin);
     await plugin?.export(SPREADSHEET_EXPORT_CONFIG);
-  }, [getPlugin]);
-
-  const formatFocusedCell = useCallback(async () => {
-    const selectionPlugin = await getPlugin(MultiRangeSelectionPlugin);
-    const result = toggleSpreadsheetFocusedCellFormat(
-      workbookRef.current,
-      await gridRef.current?.getFocused?.(),
-      selectionPlugin,
-    );
-    workbookRef.current = result.workbook;
-    setWorkbook(result.workbook);
-    setClipboardStatus(result.message);
   }, [getPlugin]);
 
   const stopFeedFlash = useCallback((message?: string) => {
@@ -382,14 +342,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     preventReadonlySpreadsheetEdit(event, workbook.columns, setClipboardStatus);
   }, [workbook.columns]);
 
-  const contextMenus = useMemo(() => createSpreadsheetContextMenus({
-    getGrid: () => gridRef.current,
-    getWorkbook: () => workbook,
-    setWorkbook,
-    setClipboardStatus,
-    exportWorkbook,
-  }), [exportWorkbook, workbook]);
-
   const gridElement = useMemo(() => (
     <RevoGrid
       ref={gridRef}
@@ -408,12 +360,11 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
       formulaNames={workbook.formulaNames}
       formulaBar={formulaBar}
       formulaDependencyHighlight={formulaDependencyHighlight}
+      dataGridContextMenu={dataGridContextMenu}
+      dataGridFormatting={dataGridFormatting}
       exportExcel={exportExcel}
       rowOrder={rowOrder}
       rowSelect={rowSelect}
-      additionalData={additionalData}
-      rowContextMenu={contextMenus.rowContextMenu}
-      columnContextMenu={contextMenus.columnContextMenu}
       source={workbook.rows}
       stretch="all"
       range
@@ -429,11 +380,11 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
       onBeforeedit={onBeforeEdit as any}
     />
   ), [
-    additionalData,
     cellFlash,
     collaborativePresence,
     columnTypes,
-    contextMenus,
+    dataGridContextMenu,
+    dataGridFormatting,
     displayColumns,
     eventManager,
     exportExcel,
@@ -471,25 +422,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
           </button>
         </span>
         <span className="spreadsheet-ribbon-group">
-          <button
-            className="spreadsheet-btn"
-            type="button"
-            data-testid="spreadsheet-format-cell"
-            title="Toggle emphasis formatting on the selected cell"
-            onPointerDown={(event) => {
-              event.preventDefault();
-              void formatFocusedCell();
-            }}
-            onMouseUp={event => event.preventDefault()}
-            onClick={(event) => {
-              if (event.detail === 0) void formatFocusedCell();
-            }}
-          >
-            <ActionIcon icon={SPREADSHEET_ACTION_ICONS.format} />
-            Format cell
-          </button>
-        </span>
-        <span className="spreadsheet-ribbon-group">
           <button className="spreadsheet-btn" type="button" disabled={!historyState.canUndo} onClick={() => void runHistory('undo')}>
             <ActionIcon icon={SPREADSHEET_ACTION_ICONS.undo} />
             Undo {historyState.undoStackSize}
@@ -523,20 +455,7 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
 
       <div className="spreadsheet-formula-row">
         <span ref={formulaBadgeRef} className="spreadsheet-cell-badge">A1</span>
-        <span className="spreadsheet-formula-editor">
-          <span
-            ref={formulaHighlightRef}
-            className="spreadsheet-formula-highlight"
-            data-testid="spreadsheet-formula-highlight"
-          />
-          <input
-            ref={formulaInputRef}
-            className="spreadsheet-formula-input"
-            data-testid="spreadsheet-formula-input"
-            aria-label="Formula bar"
-            placeholder="Select a cell to inspect or edit its raw value"
-          />
-        </span>
+        <span ref={formulaHostRef} className="spreadsheet-formula-editor" data-testid="spreadsheet-formula-host" />
       </div>
 
       <div className="spreadsheet-main">

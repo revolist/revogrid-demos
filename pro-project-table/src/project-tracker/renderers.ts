@@ -53,17 +53,14 @@ function createBlockColumn(
     filterHeaderTemplate,
     columnType: 'dropdown',
     sortable: true,
+    cellTemplate: (h, { value }) => h(
+      'span',
+      { class: `project-block project-block--${tone(value)}` },
+      [h('span', { class: 'project-block__label' }, String(value ?? ''))],
+    ),
     dropdown: {
       source,
-      renderSelectedValue: (h, selectedOptions, children) =>
-        h('span', { class: `project-block project-block--${tone(selectedOptions[0]?.label)}` }, [
-          h('span', { class: 'project-block__label' }, selectedOptions[0]?.label),
-          ...normalizeVNodeChildren(children),
-        ]),
-      renderOption: (h, option) =>
-        h('span', { class: `project-dropdown-option project-block project-block--${tone(option.label)}` }, [
-          h('span', { class: 'project-block__label' }, option.label),
-        ]),
+      syncCellTemplate: true,
     },
   };
 }

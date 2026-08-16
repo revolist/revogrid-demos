@@ -34,6 +34,7 @@ const createBooleanColumnType = nativeBooleanColumnType ?? ((options = {}) => {
         : '',
     beforeSetup: (column) => {
       column.dropdown = {
+        ...column.dropdown,
         source: [
           { value: true, label: localeText.yes },
           { value: false, label: localeText.no },
