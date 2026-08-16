@@ -1,15 +1,39 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import * as spreadsheetConfig from './config';
 import { getSpreadsheetLeafColumns } from './columns';
 import { createSpreadsheetColumns } from './workbook';
 
-test('configures advanced filters for Owner and Margin', () => {
+test('syncs selection-filter templates and formats workbook sliders as percentages', () => {
+  const filterConfig = (
+    spreadsheetConfig as typeof spreadsheetConfig & {
+      SPREADSHEET_FILTER_CONFIG?: {
+        selection?: unknown;
+        slider?: { formatValue?: (value: number) => string };
+      };
+    }
+  ).SPREADSHEET_FILTER_CONFIG;
+
+  assert.deepEqual(filterConfig?.selection, {
+    sourceRowTypes: ['rgRow'],
+    syncCellTemplate: {
+      department: true,
+      status: true,
+    },
+  });
+  assert.equal(filterConfig?.slider?.formatValue?.(0.164), '16.4%');
+});
+
+test('configures advanced filters for Owner, Margin, and Trend', () => {
   const columns = getSpreadsheetLeafColumns(createSpreadsheetColumns([]));
   const owner = columns.find(column => column.prop === 'owner');
   const margin = columns.find(column => column.prop === 'margin');
+  const trend = columns.find(column => column.prop === 'trend');
 
   assert.deepEqual(owner?.filter, ['selection']);
   assert.deepEqual(margin?.filter, ['slider']);
+  assert.deepEqual(trend?.filter, ['slider']);
+  assert.equal(trend?.filterPlaceholder, 'Range');
 });
 
 test('enables sorting for every spreadsheet leaf column', () => {
@@ -19,6 +43,24 @@ test('enables sorting for every spreadsheet leaf column', () => {
     columns.filter(column => column.sortable !== true).map(column => column.prop),
     [],
   );
+});
+
+test('declares currency value semantics for editable actual and target columns', () => {
+  const columns = getSpreadsheetLeafColumns(createSpreadsheetColumns([]));
+  const formats = ['jan', 'feb', 'mar', 'target'].map(prop => (
+    columns.find(column => column.prop === prop)?.dataGridFormat
+  ));
+
+  formats.forEach(format => assert.deepEqual(format, {
+    value: {
+      preset: 'currency',
+      locale: 'en-US',
+      currency: 'USD',
+      decimalPlaces: 0,
+      useGrouping: true,
+      negativeStyle: 'minus',
+    },
+  }));
 });
 
 test('leaves formula-backed sorting to FormulaPlugin without a stale demo parser', () => {
@@ -104,4 +146,34 @@ test('leaves formula-backed slider values to FormulaPlugin filtering', () => {
 
   assert.ok(margin);
   assert.equal(margin.cellParser, undefined);
+});
+
+test('renders cleared advanced percentage cells as blank instead of zero', () => {
+  const columns = getSpreadsheetLeafColumns(createSpreadsheetColumns([]));
+  const render = (prop: 'margin' | 'trend') => {
+    const column = columns.find(item => item.prop === prop);
+    assert.ok(column?.cellTemplate);
+    return column.cellTemplate(
+      (tag: string, props: Record<string, unknown>, children?: unknown) => ({ tag, props, children }),
+      {
+        value: '',
+        model: {},
+        column,
+        prop,
+        rowIndex: 0,
+        colIndex: 0,
+        type: 'rgRow',
+        colType: 'rgCol',
+      } as never,
+      undefined,
+    ) as { props?: { class?: string }; children?: unknown };
+  };
+
+  const margin = render('margin');
+  const trend = render('trend');
+
+  assert.match(margin.props?.class ?? '', /spreadsheet-margin-empty/);
+  assert.equal(margin.children, '');
+  assert.match(trend.props?.class ?? '', /spreadsheet-trend-empty/);
+  assert.equal(trend.children, '');
 });

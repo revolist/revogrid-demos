@@ -21,6 +21,7 @@
   display: inline-flex;
   min-width: 0;
   align-items: center;
+  justify-content: flex-start;
   gap: space(3);
   color: token(text);
   font-size: 13px;
@@ -359,6 +360,11 @@
   .project-skill--#{"" + $name},
   .project-linked-item--#{"" + $name},
   .project-department--#{"" + $name} {
+    background: list.nth($pair, 1);
+    color: list.nth($pair, 2);
+  }
+
+  revo-grid.project-tracker-grid .selected-tag:has(.project-skill--#{"" + $name}) {
     background: list.nth($pair, 1);
     color: list.nth($pair, 2);
   }

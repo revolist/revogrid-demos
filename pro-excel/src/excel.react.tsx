@@ -5,7 +5,6 @@ import {
   AutoFillPlugin,
   AutoFillPreviewPlugin,
   CellFlashPlugin,
-  CellMergePlugin,
   CellValidatePlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
@@ -31,6 +30,7 @@ import {
   SPREADSHEET_DATA_GRID_CONTEXT_MENU,
   SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_EXPORT_CONFIG,
+  SPREADSHEET_FILTER_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
   SPREADSHEET_ROW_SELECT_CONFIG,
   createSpreadsheetCellFlashConfig,
@@ -54,7 +54,6 @@ import {
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
-import { installSpreadsheetCellMergeSync } from './spreadsheet/interaction-merge-sync';
 import {
   getSpreadsheetGridRowsForSimulation,
   hasSpreadsheetSimulationDataChange,
@@ -107,7 +106,7 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
   });
 
   const columnTypes = useMemo(() => ({ statusDropdown: ColumnDropdown, departmentDropdown: ColumnDropdown }), []);
-  const filterConfig = useMemo(() => ({}), []);
+  const filterConfig = useMemo(() => SPREADSHEET_FILTER_CONFIG, []);
   const eventManager = useMemo(() => createSpreadsheetEventManagerConfig(), []);
   const history = useMemo(() => createSpreadsheetHistoryConfig(), []);
   const cellFlash = useMemo(() => createSpreadsheetCellFlashConfig(), []);
@@ -147,7 +146,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     AdvanceFilterPlugin,
     FilterHeaderPlugin,
     CellValidatePlugin,
-    CellMergePlugin,
     ColumnStretchPlugin,
   ], []);
 
@@ -167,13 +165,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     requestAnimationFrame(() => {
       void installSpreadsheetAutofillStrategy(gridRef.current);
     });
-  }, []);
-
-  useEffect(() => {
-    if (!gridRef.current) {
-      return;
-    }
-    return installSpreadsheetCellMergeSync(gridRef.current);
   }, []);
 
   useEffect(() => {
@@ -352,7 +343,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
       pinnedBottomSource={workbook.pinnedBottomSource}
       columnTypes={columnTypes}
       filter={filterConfig}
-      cellMerge={workbook.cellMerge}
       eventManager={eventManager}
       history={history}
       cellFlash={cellFlash}

@@ -15,7 +15,6 @@ import {
   AutoFillPlugin,
   AutoFillPreviewPlugin,
   CellFlashPlugin,
-  CellMergePlugin,
   CellValidatePlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
@@ -41,6 +40,7 @@ import {
   SPREADSHEET_DATA_GRID_CONTEXT_MENU,
   SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_EXPORT_CONFIG,
+  SPREADSHEET_FILTER_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
   SPREADSHEET_ROW_SELECT_CONFIG,
   createSpreadsheetCellFlashConfig,
@@ -65,7 +65,6 @@ import {
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
-import { installSpreadsheetCellMergeSync } from './spreadsheet/interaction-merge-sync';
 import {
   getSpreadsheetGridRowsForSimulation,
   hasSpreadsheetSimulationDataChange,
@@ -152,7 +151,6 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
             [pinnedBottomSource]="workbook.pinnedBottomSource"
             [columnTypes]="columnTypes"
             [filter]="filterConfig"
-            [cellMerge]="workbook.cellMerge"
             [eventManager]="eventManager"
             [history]="history"
             [cellFlash]="cellFlash"
@@ -220,7 +218,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   };
 
   columnTypes = { statusDropdown: ColumnDropdown, departmentDropdown: ColumnDropdown };
-  filterConfig = {};
+  filterConfig = SPREADSHEET_FILTER_CONFIG;
   eventManager = createSpreadsheetEventManagerConfig();
   history = createSpreadsheetHistoryConfig();
   cellFlash = createSpreadsheetCellFlashConfig();
@@ -235,7 +233,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     showCellBadge: true,
   };
   plugins = this.buildPlugins();
-  private disconnectCellMergeSync?: () => void;
   private disconnectReadonlyEditGuard?: () => void;
   private presenceTimer?: number;
   private feedTimer?: number;
@@ -266,7 +263,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     const grid = this.gridElement.nativeElement;
     grid.formulaBar = this.formulaBar;
     void installSpreadsheetAutofillStrategy(grid);
-    this.disconnectCellMergeSync = installSpreadsheetCellMergeSync(grid);
     this.disconnectReadonlyEditGuard = installSpreadsheetReadonlyEditGuard(
       grid,
       () => this.workbook.columns,
@@ -285,7 +281,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   }
 
   ngOnDestroy() {
-    this.disconnectCellMergeSync?.();
     this.disconnectReadonlyEditGuard?.();
     if (this.presenceTimer) {
       window.clearInterval(this.presenceTimer);
@@ -451,7 +446,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
       AdvanceFilterPlugin,
       FilterHeaderPlugin,
       CellValidatePlugin,
-      CellMergePlugin,
       ColumnStretchPlugin,
     ];
   }

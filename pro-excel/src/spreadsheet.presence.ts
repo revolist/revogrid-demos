@@ -192,7 +192,6 @@ export function applySpreadsheetPresenceSimulationStep(
     formulaNames: workbook.formulaNames,
     columns: workbook.columns,
     pinnedBottomSource: createSpreadsheetPinnedBottomSource(nextRows),
-    cellMerge: workbook.cellMerge,
   };
 
   return {

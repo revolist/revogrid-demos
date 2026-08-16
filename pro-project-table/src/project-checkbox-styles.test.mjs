@@ -87,6 +87,49 @@ test('all framework variants enable column dragging', () => {
   }
 });
 
+test('semantic block columns fill the complete grid cell', () => {
+  const renderers = readFileSync(
+    new URL('./project-tracker/renderers.ts', import.meta.url),
+    'utf8',
+  );
+  const tokens = readFileSync(
+    new URL('./project-tracker-styles/_tokens.scss', import.meta.url),
+    'utf8',
+  );
+
+  assert.match(renderers, /cellProperties:\s*\(\)\s*=>\s*\(\{[\s\S]*?class:\s*'project-block-cell'/);
+  assert.match(
+    styles,
+    /\.rgCell\.project-block-cell[\s\S]*?padding:\s*0\s*!important/,
+  );
+  assert.match(
+    tokens,
+    /@mixin full-cell-block\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?inset:\s*0;/,
+  );
+});
+
+test('project tags and synced owner options keep one aligned visual surface', () => {
+  const columns = readFileSync(
+    new URL('./project-tracker/columns.ts', import.meta.url),
+    'utf8',
+  );
+  const dropdownStyles = readFileSync(
+    new URL('./project-tracker-styles/_dropdowns.scss', import.meta.url),
+    'utf8',
+  );
+
+  assert.match(styles, /\.selected-values\s*\{[\s\S]*?justify-content:\s*flex-start/);
+  assert.match(
+    dropdownStyles,
+    /\.selected-tag:has\(\.project-skill--#\{[\s\S]*?background:\s*list\.nth\(\$pair,\s*1\)/,
+  );
+  assert.match(columns, /project-owner-select\$\{isOptionTemplate\s*\?\s*' project-owner-filter-option'/);
+  assert.match(
+    dropdownStyles,
+    /\.project-owner-filter-option\s*\{[\s\S]*?justify-content:\s*flex-start;[\s\S]*?gap:\s*space\(3\)/,
+  );
+});
+
 test('project rows expose the shared Pro row-order configuration', () => {
   const columns = readFileSync(
     new URL('./project-tracker/columns.ts', import.meta.url),

@@ -53,6 +53,9 @@ function createBlockColumn(
     filterHeaderTemplate,
     columnType: 'dropdown',
     sortable: true,
+    cellProperties: () => ({
+      class: 'project-block-cell',
+    }),
     cellTemplate: (h, { value }) => h(
       'span',
       { class: `project-block project-block--${tone(value)}` },

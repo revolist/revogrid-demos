@@ -87,8 +87,17 @@ export async function syncSpreadsheetSimulationResultToGrid(
   const dataStore = providers?.data?.stores?.[rowType];
   const providerSource = dataStore?.store?.get?.('source');
   const targetRows = targetWorkbook.rows;
-  const canWriteRowStore = Array.isArray(providerSource);
+  const canWriteRowStore = Array.isArray(providerSource) && providerSource.length === targetRows.length;
   let didUpdate = false;
+
+  // Theme density changes can rebuild Core's row store. During that narrow
+  // transition getProviders() may expose an empty store even though the public
+  // workbook source is still populated. Never promote that temporary store to
+  // workbook state; restore the intended source and let Core finish applying it.
+  if (!canWriteRowStore || !dataStore) {
+    grid.source = targetRows;
+    return createSpreadsheetWorkbookFromGridSource(targetWorkbook, targetRows);
+  }
 
   const simulationSourceRows = sourceWorkbook.rows;
   const maxRows = Math.max(simulationSourceRows.length, targetRows.length);
@@ -104,19 +113,12 @@ export async function syncSpreadsheetSimulationResultToGrid(
       continue;
     }
 
-    if (!canWriteRowStore) {
-      continue;
-    }
     didUpdate = applySpreadsheetGridRowUpdates(
       rowIndex,
       rowDiff,
       providers,
       rowType,
     ) || didUpdate;
-  }
-
-  if (!canWriteRowStore || !dataStore) {
-    return createSpreadsheetWorkbookFromGridSource(targetWorkbook, targetWorkbook.rows);
   }
 
   if (didUpdate) {

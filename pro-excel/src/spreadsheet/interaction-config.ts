@@ -1,5 +1,8 @@
 /** Configuration factories used while composing spreadsheet plugins and toolbar actions. */
-import { type HistoryConfig } from '@revolist/revogrid-pro';
+import {
+  createFormulaExcelExportTransformer,
+  type HistoryConfig,
+} from '@revolist/revogrid-pro';
 import { getSpreadsheetLeafColumns } from './columns';
 import { SPREADSHEET_DEMO_ID } from './config';
 import {
@@ -18,7 +21,7 @@ export function createSpreadsheetHistoryConfig(sourceId = SPREADSHEET_DEMO_ID): 
     clearOnSourceChange: true,
     clearOnFilterChange: false,
     clearOnSortingChange: false,
-    rowOrderHistory: 'preserve',
+    rowOrderHistory: 'track',
   };
 }
 
@@ -106,5 +109,8 @@ export function createSpreadsheetExportExcelConfig() {
   return {
     allowDrag: true,
     allowedExtensions: ['.csv'],
+    exportTransformers: [createFormulaExcelExportTransformer({
+      includeEvaluatedResult: true,
+    })],
   };
 }

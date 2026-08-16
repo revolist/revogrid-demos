@@ -1,9 +1,6 @@
 /** Shared data contracts for the spreadsheet demo modules. */
 import type { DataType } from '@revolist/revogrid';
-import type {
-  FormulaNamesConfig,
-  MergeData,
-} from '@revolist/revogrid-pro';
+import type { FormulaNamesConfig } from '@revolist/revogrid-pro';
 
 export type SpreadsheetPreviewMode = 'smart-fill' | 'copy-preview';
 
@@ -53,7 +50,6 @@ export type SpreadsheetWorkbook = {
   columns: import('@revolist/revogrid').ColumnData;
   pinnedBottomSource: DataType[];
   formulaNames: FormulaNamesConfig;
-  cellMerge: MergeData[];
   imported: boolean;
   name: string;
   sheetKey: SpreadsheetWorkbookKey;
