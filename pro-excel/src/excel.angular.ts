@@ -15,7 +15,6 @@ import {
   AutoFillPlugin,
   AutoFillPreviewPlugin,
   CellFlashPlugin,
-  CellMergePlugin,
   CellValidatePlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
@@ -38,9 +37,11 @@ import {
 } from '@revolist/revogrid-pro';
 import {
   SPREADSHEET_ACTION_ICONS,
+  SPREADSHEET_CLIPBOARD_CONFIG,
   SPREADSHEET_DATA_GRID_CONTEXT_MENU,
   SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_EXPORT_CONFIG,
+  SPREADSHEET_FILTER_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
   SPREADSHEET_ROW_SELECT_CONFIG,
   createSpreadsheetCellFlashConfig,
@@ -65,7 +66,6 @@ import {
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
-import { installSpreadsheetCellMergeSync } from './spreadsheet/interaction-merge-sync';
 import {
   getSpreadsheetGridRowsForSimulation,
   hasSpreadsheetSimulationDataChange,
@@ -152,7 +152,6 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
             [pinnedBottomSource]="workbook.pinnedBottomSource"
             [columnTypes]="columnTypes"
             [filter]="filterConfig"
-            [cellMerge]="workbook.cellMerge"
             [eventManager]="eventManager"
             [history]="history"
             [cellFlash]="cellFlash"
@@ -166,6 +165,7 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
             [rowOrder]="rowOrder"
             [rowSelect]="rowSelect"
             [source]="workbook.rows"
+            [useClipboard]="clipboardConfig"
             stretch="all"
             [range]="true"
             [rowHeaders]="rowHeaders"
@@ -220,7 +220,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   };
 
   columnTypes = { statusDropdown: ColumnDropdown, departmentDropdown: ColumnDropdown };
-  filterConfig = {};
+  filterConfig = SPREADSHEET_FILTER_CONFIG;
   eventManager = createSpreadsheetEventManagerConfig();
   history = createSpreadsheetHistoryConfig();
   cellFlash = createSpreadsheetCellFlashConfig();
@@ -231,11 +231,11 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   rowHeaders = createSpreadsheetRowHeaders();
   rowOrder = SPREADSHEET_ROW_ORDER_CONFIG;
   rowSelect = SPREADSHEET_ROW_SELECT_CONFIG;
+  clipboardConfig = SPREADSHEET_CLIPBOARD_CONFIG;
   formulaBar: FormulaBarConfig = {
     showCellBadge: true,
   };
   plugins = this.buildPlugins();
-  private disconnectCellMergeSync?: () => void;
   private disconnectReadonlyEditGuard?: () => void;
   private presenceTimer?: number;
   private feedTimer?: number;
@@ -266,7 +266,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     const grid = this.gridElement.nativeElement;
     grid.formulaBar = this.formulaBar;
     void installSpreadsheetAutofillStrategy(grid);
-    this.disconnectCellMergeSync = installSpreadsheetCellMergeSync(grid);
     this.disconnectReadonlyEditGuard = installSpreadsheetReadonlyEditGuard(
       grid,
       () => this.workbook.columns,
@@ -285,7 +284,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   }
 
   ngOnDestroy() {
-    this.disconnectCellMergeSync?.();
     this.disconnectReadonlyEditGuard?.();
     if (this.presenceTimer) {
       window.clearInterval(this.presenceTimer);
@@ -451,7 +449,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
       AdvanceFilterPlugin,
       FilterHeaderPlugin,
       CellValidatePlugin,
-      CellMergePlugin,
       ColumnStretchPlugin,
     ];
   }

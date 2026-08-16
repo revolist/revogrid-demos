@@ -16,7 +16,10 @@ const projectOwnerCellTemplate: ColumnRegular['cellTemplate'] = (h, { model, val
   const ownerValue = String(value ?? '');
   const profileIndex = projectOwnerProfiles.findIndex(owner => owner.value === ownerValue);
   const profile = projectOwnerProfiles[profileIndex];
-  return h('span', { class: 'project-owner-select' }, [
+  const isOptionTemplate = model.label !== undefined;
+  return h('span', {
+    class: `project-owner-select${isOptionTemplate ? ' project-owner-filter-option' : ''}`,
+  }, [
     renderProjectAvatar(h, {
       index: profileIndex,
       label: String(model.label ?? profile?.label ?? ownerValue),

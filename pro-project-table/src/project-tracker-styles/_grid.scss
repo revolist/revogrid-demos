@@ -34,6 +34,10 @@ revo-grid.project-tracker-grid {
     text-align: left;
   }
 
+  .rgCell.project-block-cell:not(revo-grid.project-tracker-grid revo-grid .rgCell) {
+    padding: 0 !important;
+  }
+
   .rv-column-add-header {
     &.rgHeaderCell .header-content,
     &[data-hide-filter-header] .header-content,
@@ -509,7 +513,7 @@ revo-grid.project-tracker-grid {
     }
   }
 
-  .project-owner-select {
+  .rgCell:not(revo-grid.project-tracker-grid revo-grid .rgCell) .project-owner-select {
     display: inline-flex;
     width: 100%;
     height: 100%;
@@ -887,7 +891,7 @@ revo-grid.project-tracker-grid {
 
   .selected-values {
     width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
     gap: space(2);
     padding: 0;
   }

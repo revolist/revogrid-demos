@@ -6,7 +6,6 @@ import {
   AutoFillPlugin,
   AutoFillPreviewPlugin,
   CellFlashPlugin,
-  CellMergePlugin,
   CellValidatePlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
@@ -30,9 +29,11 @@ import './spreadsheet.scss';
 import type { DataType } from '@revolist/revogrid';
 import {
   SPREADSHEET_ACTION_ICONS,
+  SPREADSHEET_CLIPBOARD_CONFIG,
   SPREADSHEET_DATA_GRID_CONTEXT_MENU,
   SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_EXPORT_CONFIG,
+  SPREADSHEET_FILTER_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
   SPREADSHEET_ROW_SELECT_CONFIG,
   createSpreadsheetCellFlashConfig,
@@ -56,7 +57,6 @@ import {
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
-import { installSpreadsheetCellMergeSync } from './spreadsheet/interaction-merge-sync';
 import {
   applySpreadsheetPresenceSimulationStep,
   createSpreadsheetCollaborativePresence,
@@ -114,13 +114,14 @@ export function load(parentSelector: string) {
   grid.theme = getSpreadsheetGridTheme();
   grid.stretch = 'all';
   grid.range = true;
+  grid.useClipboard = SPREADSHEET_CLIPBOARD_CONFIG;
   grid.rowHeaders = createSpreadsheetRowHeaders();
   grid.rowOrder = SPREADSHEET_ROW_ORDER_CONFIG;
   grid.rowSelect = SPREADSHEET_ROW_SELECT_CONFIG;
   grid.resize = true;
   grid.hideAttribution = true;
   grid.columnTypes = { statusDropdown: ColumnDropdown, departmentDropdown: ColumnDropdown };
-  grid.filter = {};
+  grid.filter = SPREADSHEET_FILTER_CONFIG;
 
   const exportButton = button('Export XLSX', exportWorkbook, SPREADSHEET_ACTION_ICONS.export);
   exportButton.dataset.testid = 'spreadsheet-export';
@@ -177,7 +178,6 @@ export function load(parentSelector: string) {
     shell.classList.toggle('is-dark', isDark);
     grid.theme = getSpreadsheetGridTheme(isDark);
   });
-  const disconnectCellMergeSync = installSpreadsheetCellMergeSync(grid);
   const disconnectReadonlyEditGuard = installSpreadsheetReadonlyEditGuard(
     grid,
     () => workbook.columns,
@@ -195,7 +195,6 @@ export function load(parentSelector: string) {
 
   return () => {
     disconnectThemeObserver();
-    disconnectCellMergeSync();
     disconnectReadonlyEditGuard();
     window.clearInterval(presenceTimer);
     stopFeedFlash();
@@ -300,14 +299,12 @@ export function load(parentSelector: string) {
       AdvanceFilterPlugin,
       FilterHeaderPlugin,
       CellValidatePlugin,
-      CellMergePlugin,
       ColumnStretchPlugin,
     ];
     grid.formulaNames = workbook.formulaNames;
     grid.source = workbook.rows;
     grid.pinnedBottomSource = workbook.pinnedBottomSource;
     grid.columns = createSpreadsheetDisplayColumns(workbook);
-    grid.cellMerge = workbook.cellMerge;
     grid.eventManager = createSpreadsheetEventManagerConfig();
     grid.history = createSpreadsheetHistoryConfig();
     grid.cellFlash = createSpreadsheetCellFlashConfig();

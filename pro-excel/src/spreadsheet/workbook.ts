@@ -28,7 +28,6 @@ import {
   DEPARTMENT_VALUES,
   STATUS_VALUES,
   createEmptySpreadsheetFormulaNames,
-  createSpreadsheetCellMerge,
   createSpreadsheetFormulaNames,
   createSpreadsheetPinnedBottomSource,
   createSpreadsheetRows,
@@ -195,6 +194,8 @@ export function createSpreadsheetColumns(rows: DataType[], formulaNames = create
       spreadsheetHeaderIconType: 'decimal',
       minValue: 0,
       maxValue: 650000,
+      filter: ['slider'],
+      filterPlaceholder: 'Range',
       thresholds: [
         { value: 420000, className: 'high' },
         { value: 240000, className: 'medium' },
@@ -324,7 +325,6 @@ export function createSpreadsheetWorkbook(sheetKey: SpreadsheetSheetKey = 'budge
     formulaNames,
     columns: createSpreadsheetColumns(rows, formulaNames),
     pinnedBottomSource: createSpreadsheetPinnedBottomSource(rows),
-    cellMerge: createSpreadsheetCellMerge(rows),
     imported: false,
     name: getSpreadsheetSheetLabel(sheetKey),
     sheetKey,
@@ -339,7 +339,6 @@ export function createEmptySpreadsheetWorkbook(rowCount = 25, columnCount = 8): 
     columns,
     pinnedBottomSource: [],
     formulaNames: createEmptySpreadsheetFormulaNames(),
-    cellMerge: [],
     imported: false,
     name: 'Blank workbook',
     sheetKey: 'empty',
@@ -477,6 +476,7 @@ function currencyColumn(name: string, prop: keyof SpreadsheetRow, size = 118): C
     filter: 'number',
     flash: true,
     spreadsheetHeaderIconType: 'currency',
+    dataGridFormat: SPREADSHEET_CURRENCY_FORMAT,
     cellTemplate: validation.cellTemplate,
     cellProperties: createSpreadsheetNumberCellProperties(validation.cellProperties),
     validate: isNonNegativeNumber,
@@ -529,6 +529,9 @@ function spreadsheetActualsCollapsedValue(schema: CellTemplateProp) {
 
 function marginTemplate(h: Parameters<CellTemplate>[0], schema: CellTemplateProp) {
   const value = schema.value;
+  if (value === '' || value === null || value === undefined) {
+    return h('span', { class: 'spreadsheet-margin spreadsheet-margin-empty' }, '');
+  }
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) {
     return h('span', { class: 'spreadsheet-margin spreadsheet-margin-empty' }, String(value ?? ''));
@@ -542,6 +545,9 @@ function marginTemplate(h: Parameters<CellTemplate>[0], schema: CellTemplateProp
 
 function trendTemplate(h: Parameters<CellTemplate>[0], schema: CellTemplateProp) {
   const value = schema.value;
+  if (value === '' || value === null || value === undefined) {
+    return h('span', { class: 'spreadsheet-trend spreadsheet-trend-empty' }, '');
+  }
   const numeric = Number(value);
   const label = Number.isFinite(numeric) ? PERCENT_FORMATTER.format(numeric) : String(value ?? '');
   const tone = numeric < 0 ? 'down' : numeric < 0.08 ? 'flat' : 'up';
@@ -569,10 +575,14 @@ function createSpreadsheetTrendSeries(row: Partial<SpreadsheetRow>) {
 
 const spreadsheetStatusTemplate: ColumnRegular['cellTemplate'] = (h, schema, additionalData) => (
   schema.type === 'rowPinEnd'
-    ? h('span', {
-      class: 'spreadsheet-summary-status',
-      'aria-label': 'No governance status for total row',
-    })
+    ? h(
+      'span',
+      {
+        class: 'spreadsheet-summary-status',
+        'aria-label': `Governance summary: ${String(schema.value ?? '')} at risk`,
+      },
+      `${String(schema.value ?? '')} at risk`,
+    )
     : editorDropdown(h, schema, additionalData)
 );
 
@@ -591,6 +601,7 @@ export const SPREADSHEET_ADVANCED_FORMATS = [
     valueKind: 'number',
     cellTemplate: marginTemplate,
     previewTemplate: marginTemplate,
+    excelNumberFormat: '0.0%',
     defaults: { minValue: 90, maxValue: 110 },
     controls: SPREADSHEET_RANGE_CONTROLS,
     replaceAuthoredTemplate: true,
@@ -604,6 +615,7 @@ export const SPREADSHEET_ADVANCED_FORMATS = [
     valueKind: 'number',
     cellTemplate: trendTemplate,
     previewTemplate: spreadsheetTrendPreviewTemplate,
+    excelNumberFormat: '0.0%',
     defaults: { minValue: 0, maxValue: 650000 },
     controls: SPREADSHEET_RANGE_CONTROLS,
     replaceAuthoredTemplate: true,

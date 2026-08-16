@@ -1,3 +1,4 @@
+@use "sass:list";
 @use "./tokens" as *;
 
 [data-theme="dark"] {
@@ -102,16 +103,26 @@
 
     .project-skill,
     .project-linked-item {
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      background: #20283a;
-      color: #c5cee0;
+      border: 1px solid transparent;
     }
 
-    @each $name, $color in $semantic-colors {
+    @each $name, $pair in $label-colors {
       .project-skill--#{"" + $name},
       .project-linked-item--#{"" + $name} {
-        background: rgba($color, 0.13);
-        color: color-mix(in srgb, $color 52%, #d8e0ef);
+        background: list.nth($pair, 1);
+        color: list.nth($pair, 2);
+        -webkit-text-fill-color: list.nth($pair, 2);
+      }
+
+      .selected-tag:has(.project-skill--#{"" + $name}) {
+        background: list.nth($pair, 1);
+        color: list.nth($pair, 2);
+        -webkit-text-fill-color: list.nth($pair, 2);
+
+        button {
+          color: list.nth($pair, 2);
+          -webkit-text-fill-color: list.nth($pair, 2);
+        }
       }
     }
 

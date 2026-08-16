@@ -637,26 +637,6 @@ revo-grid.spreadsheet-grid {
   width: 100%;
 }
 
-.spreadsheet-workbench revo-grid .rowHeaders .revo-draggable {
-  align-items: center;
-  cursor: grab;
-  display: flex;
-  flex: 0 0 16px;
-  height: 100%;
-  justify-content: center;
-  opacity: 0.45;
-  width: 16px;
-}
-
-.spreadsheet-workbench revo-grid .rowHeaders .revo-draggable:active {
-  cursor: grabbing;
-}
-
-.spreadsheet-workbench revo-grid .rowHeaders .rgRow:hover .revo-draggable,
-.spreadsheet-workbench revo-grid .rowHeaders .focused-rgRow .revo-draggable {
-  opacity: 1;
-}
-
 .spreadsheet-workbench revo-grid .rowHeaders .row-menu {
   color: color-mix(in srgb, var(--sheet-text) 80%, transparent);
   cursor: pointer;
@@ -667,7 +647,6 @@ revo-grid.spreadsheet-grid {
   position: relative;
   text-align: center;
   user-select: none;
-  z-index: 3;
 }
 
 .spreadsheet-workbench revo-grid .rowHeaders .rgRow:hover .row-header-holder {
@@ -800,7 +779,16 @@ revo-grid.spreadsheet-grid {
 
 .spreadsheet-workbench revo-grid.column-collapse .column-collapse-placeholder-cell {
   background:
-    linear-gradient(135deg, transparent 0 46%, var(--sheet-border) 47% 53%, transparent 54% 100%);
+    linear-gradient(
+      135deg,
+      transparent 0 46%,
+      color-mix(in srgb, var(--sheet-border) 55%, transparent) 47% 53%,
+      transparent 54% 100%
+    );
+  border-inline-end: 1px solid var(--sheet-border-strong);
+}
+
+.spreadsheet-workbench revo-grid.column-collapse .column-collapse-placeholder-cell > .spreadsheet-money {
   opacity: 0.55;
 }
 

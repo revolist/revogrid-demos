@@ -5,7 +5,6 @@ import copyIcon from '@fortawesome/fontawesome-free/svgs/solid/copy.svg?raw';
 import fileCirclePlusIcon from '@fortawesome/fontawesome-free/svgs/solid/file-circle-plus.svg?raw';
 import fileExportIcon from '@fortawesome/fontawesome-free/svgs/solid/file-export.svg?raw';
 import magnifyingGlassIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?raw';
-import tableColumnsIcon from '@fortawesome/fontawesome-free/svgs/solid/table-columns.svg?raw';
 import wandMagicSparklesIcon from '@fortawesome/fontawesome-free/svgs/solid/wand-magic-sparkles.svg?raw';
 import xmarkIcon from '@fortawesome/fontawesome-free/svgs/solid/xmark.svg?raw';
 
@@ -16,7 +15,6 @@ export const SPREADSHEET_ACTION_ICONS = {
   redo: arrowRotateRightIcon,
   smartFill: wandMagicSparklesIcon,
   copyPreview: copyIcon,
-  freeze: tableColumnsIcon,
   flash: boltIcon,
   find: magnifyingGlassIcon,
   clear: xmarkIcon,

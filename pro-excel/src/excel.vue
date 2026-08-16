@@ -64,7 +64,6 @@
           :pinned-bottom-source="workbook.pinnedBottomSource"
           :column-types="columnTypes"
           :filter="filterConfig"
-          :cell-merge.prop="workbook.cellMerge"
           :event-manager.prop="eventManager"
           :history.prop="history"
           :cell-flash.prop="cellFlash"
@@ -80,6 +79,7 @@
           :source="workbook.rows"
           stretch="all"
           range
+          :use-clipboard.prop="SPREADSHEET_CLIPBOARD_CONFIG"
           :row-headers="rowHeaderConfig"
           resize
           hide-attribution
@@ -111,7 +111,6 @@ import {
   AutoFillPlugin,
   AutoFillPreviewPlugin,
   CellFlashPlugin,
-  CellMergePlugin,
   CellValidatePlugin,
   CollaborativePresencePlugin,
   ColumnCollapsePlugin,
@@ -134,9 +133,11 @@ import {
 import './spreadsheet.scss';
 import {
   SPREADSHEET_ACTION_ICONS,
+  SPREADSHEET_CLIPBOARD_CONFIG,
   SPREADSHEET_DATA_GRID_CONTEXT_MENU,
   SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_EXPORT_CONFIG,
+  SPREADSHEET_FILTER_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
   SPREADSHEET_ROW_SELECT_CONFIG,
   createSpreadsheetCellFlashConfig,
@@ -161,7 +162,6 @@ import {
   type SpreadsheetFlashPlugin,
   type SpreadsheetWorkbook,
 } from './spreadsheet.shared';
-import { installSpreadsheetCellMergeSync } from './spreadsheet/interaction-merge-sync';
 import {
   getSpreadsheetGridRowsForSimulation,
   hasSpreadsheetSimulationDataChange,
@@ -204,7 +204,7 @@ const historyState = ref<HistoryState>({
 });
 
 const columnTypes = { statusDropdown: ColumnDropdown, departmentDropdown: ColumnDropdown };
-const filterConfig = {};
+const filterConfig = SPREADSHEET_FILTER_CONFIG;
 const eventManager = createSpreadsheetEventManagerConfig();
 const history = createSpreadsheetHistoryConfig();
 const cellFlash = createSpreadsheetCellFlashConfig();
@@ -246,11 +246,9 @@ const plugins = [
   AdvanceFilterPlugin,
   FilterHeaderPlugin,
   CellValidatePlugin,
-  CellMergePlugin,
   ColumnStretchPlugin,
 ];
 
-let disconnectCellMergeSync: (() => void) | undefined;
 let disconnectReadonlyEditGuard: (() => void) | undefined;
 let disconnectThemeObserver: (() => void) | undefined;
 let presenceTimer: ReturnType<typeof window.setInterval> | undefined;
@@ -264,7 +262,6 @@ onMounted(() => {
   const grid = getGrid();
   if (grid) {
     void installSpreadsheetAutofillStrategy(grid);
-    disconnectCellMergeSync = installSpreadsheetCellMergeSync(grid);
     disconnectReadonlyEditGuard = installSpreadsheetReadonlyEditGuard(
       grid,
       () => workbook.value.columns,
@@ -285,7 +282,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   disconnectThemeObserver?.();
-  disconnectCellMergeSync?.();
   disconnectReadonlyEditGuard?.();
   if (presenceTimer) {
     window.clearInterval(presenceTimer);

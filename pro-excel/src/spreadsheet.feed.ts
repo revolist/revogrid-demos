@@ -66,7 +66,6 @@ export function applySpreadsheetFeedFlashStep(
     formulaNames: workbook.formulaNames,
     columns: workbook.columns,
     pinnedBottomSource: createSpreadsheetPinnedBottomSource(nextRows),
-    cellMerge: workbook.cellMerge,
   };
   const direction = nextValue >= previousValue ? 'up' : 'down';
   const owner = String(row.owner || `Row ${rowIndex + 1}`);

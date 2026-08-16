@@ -95,3 +95,37 @@ test('preserves newer local values when a remote simulation patches the same row
   assert.equal(liveRows[0].owner, 'Locally updated owner', 'the newer local cell value survives');
   assert.equal(result.rows[0].owner, 'Locally updated owner', 'workbook state follows the merged provider row');
 });
+
+test('restores a non-empty workbook when the provider store is transiently empty', async () => {
+  const sourceWorkbook = createSpreadsheetWorkbook();
+  const targetRows = sourceWorkbook.rows.map(row => ({ ...row }));
+  targetRows[0].mar = Number(targetRows[0].mar) + 1;
+  const providerRows: typeof targetRows = [];
+  const grid = {
+    source: sourceWorkbook.rows,
+    getProviders: async () => ({
+      data: {
+        stores: {
+          rgRow: {
+            store: {
+              get(key: string) {
+                return key === 'source' ? providerRows : undefined;
+              },
+            },
+          },
+        },
+        refresh() {},
+      },
+    }),
+  };
+
+  const result = await syncSpreadsheetSimulationResultToGrid(
+    grid as never,
+    sourceWorkbook,
+    { ...sourceWorkbook, rows: targetRows },
+  );
+
+  assert.equal(result.rows.length, 40, 'the transient store does not replace the workbook');
+  assert.equal(grid.source.length, 40, 'the public source is restored for the next render');
+  assert.equal(grid.source[0].mar, targetRows[0].mar, 'the pending simulation update is retained');
+});

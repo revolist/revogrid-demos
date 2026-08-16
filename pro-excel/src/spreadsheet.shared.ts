@@ -21,10 +21,12 @@ export type {
 
 export {
   SPREADSHEET_BASE_PLUGIN_LABELS,
+  SPREADSHEET_CLIPBOARD_CONFIG,
   SPREADSHEET_DATA_GRID_CONTEXT_MENU,
   SPREADSHEET_DATA_GRID_FORMATTING,
   SPREADSHEET_DEMO_ID,
   SPREADSHEET_EXPORT_CONFIG,
+  SPREADSHEET_FILTER_CONFIG,
   SPREADSHEET_ROW_ORDER_CONFIG,
   SPREADSHEET_ROW_SELECT_CONFIG,
   SPREADSHEET_WORKBOOK_NAME,
@@ -32,7 +34,6 @@ export {
 } from './spreadsheet/config';
 
 export {
-  createSpreadsheetCellMerge,
   createSpreadsheetFormulaNames,
   createSpreadsheetPinnedBottomSource,
   createSpreadsheetRows,
@@ -51,7 +52,6 @@ export {
   createSpreadsheetRowHeaders,
   formatSpreadsheetSearchStatus,
   installSpreadsheetAutofillStrategy,
-  setSpreadsheetFreezePane,
   summarizeSpreadsheetRowHeaderFocus,
 } from './spreadsheet/presentation';
 
@@ -83,7 +83,6 @@ export {
   createSpreadsheetFormulaDependencyHighlightConfig,
   createSpreadsheetHistoryConfig,
   flashSpreadsheetSampleCells,
-  installSpreadsheetCellMergeSync,
   installSpreadsheetReadonlyEditGuard,
   preventReadonlySpreadsheetEdit,
 } from './spreadsheet/interactions';

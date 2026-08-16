@@ -22,6 +22,29 @@ export const SPREADSHEET_DATA_GRID_CONTEXT_MENU = {
   },
 } as const;
 
+/** Apply valid clipboard destinations while preserving strict-validation failures. */
+export const SPREADSHEET_CLIPBOARD_CONFIG = {
+  validationResolution: 'valid-cells' as const,
+};
+
+const SPREADSHEET_PERCENT_FILTER_FORMATTER = new Intl.NumberFormat('en-US', {
+  style: 'percent',
+  maximumFractionDigits: 1,
+});
+
+export const SPREADSHEET_FILTER_CONFIG = {
+  selection: {
+    sourceRowTypes: ['rgRow' as const],
+    syncCellTemplate: {
+      department: true,
+      status: true,
+    },
+  },
+  slider: {
+    formatValue: (value: number) => SPREADSHEET_PERCENT_FILTER_FORMATTER.format(value),
+  },
+};
+
 export const SPREADSHEET_BASE_PLUGIN_LABELS = [
   'EventManagerPlugin',
   'HistoryPlugin',
@@ -40,7 +63,6 @@ export const SPREADSHEET_BASE_PLUGIN_LABELS = [
   'AdvanceFilterPlugin',
   'FilterHeaderPlugin',
   'CellValidatePlugin',
-  'CellMergePlugin',
   'ColumnStretchPlugin',
 ] as const;
 

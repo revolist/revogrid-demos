@@ -1,4 +1,4 @@
-/** Display shaping, autofill behavior, freeze panes, and workbook insights. */
+/** Display shaping, autofill behavior, and workbook insights. */
 import type {
   CellProps,
   CellTemplateProp,
@@ -29,13 +29,10 @@ type SpreadsheetRowFocusEvent = Event & {
 /** Derives display-only columns without mutating the workbook schema. */
 export function createSpreadsheetDisplayColumns(
   workbook: SpreadsheetWorkbook,
-  options: { freezePane?: boolean; searchQuery?: string } = {},
+  options: { searchQuery?: string } = {},
 ): ColumnData {
-  const frozenColumns = options.freezePane !== false
-    ? setSpreadsheetFreezePane(workbook.columns, true)
-    : workbook.columns;
   return applySpreadsheetSearchHighlight(
-    frozenColumns,
+    workbook.columns,
     options.searchQuery ?? '',
   );
 }
@@ -43,6 +40,7 @@ export function createSpreadsheetDisplayColumns(
 export function createSpreadsheetRowHeaders(): RowHeaders {
   const baseRowHeaders = rowHeaders({
     showHeaderFocusBtn: false,
+    showSelectAllButton: true,
     rowDrag: ({ type }) => type === 'rgRow',
   });
   const baseCellTemplate = baseRowHeaders.cellTemplate;
@@ -146,22 +144,6 @@ export function summarizeSpreadsheetRowHeaderFocus(
   ]);
 }
 
-/** Returns a cloned column tree with the leading planning columns pinned or unpinned. */
-export function setSpreadsheetFreezePane(columns: ColumnData, freezePane: boolean): ColumnData {
-  const props = getSpreadsheetFreezeProps(columns);
-  if (!props.size) {
-    return columns;
-  }
-
-  return updateSpreadsheetColumnsByProps(columns, props, (column) => {
-    if (!freezePane) {
-      const { pin: _pin, ...rest } = column;
-      return rest;
-    }
-    return { ...column, pin: 'colPinStart' };
-  });
-}
-
 export function createSpreadsheetInsights(workbook: SpreadsheetWorkbook): SpreadsheetInsight[] {
   if (workbook.imported) {
     const leafColumns = getSpreadsheetLeafColumns(workbook.columns);
@@ -222,32 +204,6 @@ export function formatSpreadsheetSearchStatus(searchQuery: string, matches: numb
     return 'Find is ready';
   }
   return `${matches} match${matches === 1 ? '' : 'es'} for "${query}"`;
-}
-
-export function updateSpreadsheetColumnsByProps(
-  columns: ColumnData,
-  props: Set<ColumnProp>,
-  updater: (column: ColumnRegular) => ColumnRegular,
-): ColumnData {
-  return columns.map(column => {
-    if (isSpreadsheetColumnGroup(column)) {
-      return {
-        ...column,
-        children: updateSpreadsheetColumnsByProps(column.children, props, updater),
-      };
-    }
-
-    return props.has(column.prop) ? updater({ ...column }) : column;
-  });
-}
-
-function getSpreadsheetFreezeProps(columns: ColumnData) {
-  const leaves = getSpreadsheetLeafColumns(columns);
-  const namedFreezeProps = leaves
-    .filter(column => column.prop === 'department' || column.prop === 'owner')
-    .map(column => column.prop);
-  const freezeProps = namedFreezeProps.length ? namedFreezeProps : leaves.slice(0, 2).map(column => column.prop);
-  return new Set(freezeProps);
 }
 
 function applySpreadsheetSearchHighlight(columns: ColumnData, searchQuery: string): ColumnData {

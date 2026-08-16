@@ -1,6 +1,6 @@
-/** Scenario rows, named ranges, totals, and merge metadata. */
+/** Scenario rows, named ranges, and totals. */
 import type { DataType } from '@revolist/revogrid';
-import type { FormulaNamesConfig, MergeData } from '@revolist/revogrid-pro';
+import type { FormulaNamesConfig } from '@revolist/revogrid-pro';
 import {
   SPREADSHEET_SHEETS,
   type SpreadsheetBaseRow,
@@ -129,6 +129,8 @@ export function createSpreadsheetFormulaNames(rows: DataType[]): FormulaNamesCon
     rowIdProp: 'id',
     names: [
       { name: 'Actuals', scope: 'workbook', kind: 'range', ref: `C1:E${lastRow}` },
+      { name: 'JanuaryActuals', scope: 'workbook', kind: 'range', ref: `C1:C${lastRow}` },
+      { name: 'MarchActuals', scope: 'workbook', kind: 'range', ref: `E1:E${lastRow}` },
       { name: 'QuarterTotals', scope: 'workbook', kind: 'range', ref: `F1:F${lastRow}` },
       { name: 'Targets', scope: 'workbook', kind: 'range', ref: `G1:G${lastRow}` },
       { name: 'StatusList', scope: 'workbook', kind: 'range', ref: `K1:K${Math.min(lastRow, 4)}` },
@@ -162,44 +164,7 @@ export function createSpreadsheetPinnedBottomSource(rows: DataType[]): DataType[
     target: `=SUM(G1:G${lastRow})`,
     variance: '=PortfolioTotal-SUM(Targets)',
     margin: '=IF(SUM(Targets)=0,0,PortfolioTotal/SUM(Targets))',
-    trend: 0,
-    status: '',
+    trend: '=IF(SUM(JanuaryActuals)=0,0,(SUM(MarchActuals)-SUM(JanuaryActuals))/SUM(JanuaryActuals))',
+    status: `=(COUNTIF(K1:K${lastRow},"Watch")+COUNTIF(K1:K${lastRow},"Blocked"))`,
   }];
-}
-
-export function createSpreadsheetCellMerge(rows: DataType[], imported = false): MergeData[] {
-  if (imported || !rows.length) {
-    return [];
-  }
-
-  const departmentMerges: MergeData[] = [];
-  let runStart = 0;
-  while (runStart < rows.length) {
-    const department = rows[runStart]?.department;
-    let runEnd = runStart + 1;
-    while (runEnd < rows.length && rows[runEnd]?.department === department) {
-      runEnd += 1;
-    }
-    if (department !== '' && department !== null && typeof department !== 'undefined' && runEnd - runStart > 1) {
-      departmentMerges.push({
-        row: runStart,
-        column: 0,
-        rowType: 'rgRow',
-        colType: 'colPinStart',
-        rowSpan: runEnd - runStart,
-      });
-    }
-    runStart = runEnd;
-  }
-
-  return [
-    ...departmentMerges,
-    {
-      row: 0,
-      column: 0,
-      rowType: 'rowPinEnd',
-      colType: 'colPinStart',
-      colSpan: 2,
-    },
-  ];
 }
