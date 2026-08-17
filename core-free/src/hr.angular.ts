@@ -338,14 +338,10 @@ export class HRDemoGridComponent implements AfterViewInit, OnDestroy {
 
   resetView() {
     this.workspaceController?.clear();
-    this.workspaceState.set({});
+    this.workspaceState.set({ filter: { collection: {} } });
     this.currentSize.set(HR_DEFAULT_ROW_COUNT);
     this.selectedTheme.set(getInitialHRTheme(this.isDark));
     this.workspaceStatus.set('View reset');
-    if (this.gridElement) {
-      this.gridElement.nativeElement.filter = { collection: {} };
-      this.gridElement.nativeElement.sorting = undefined;
-    }
     this.loadData(HR_DEFAULT_ROW_COUNT);
   }
 

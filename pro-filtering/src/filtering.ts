@@ -1,9 +1,5 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import type { MultiFilterItem } from '@revolist/revogrid';
-import {
-  mountAdvancedFilterBadges,
-  type AdvancedFilterBadgesController,
-} from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
   createOrderExplorerColumns,
@@ -65,13 +61,12 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
   grid.columns = createOrderExplorerColumns();
   grid.plugins = orderExplorerPlugins;
   grid.columnTypes = createOrderExplorerColumnTypes();
+  grid.filter = createOrderExplorerFilter(createOrderExplorerInitialFilters());
+  grid.filterBadges = orderExplorerFilterBadgeOptions;
   grid.stretch = 'all';
   grid.hideAttribution = true;
   grid.readonly = true;
   grid.resize = true;
-
-  const badges = document.createElement('div');
-  badges.className = 'order-explorer__active-filters';
 
   const renderCount = (visible: number) => {
     count.textContent = `${visible.toLocaleString()} of ${source.length.toLocaleString()} orders`;
@@ -112,44 +107,20 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
     applyQuickFilter('');
   }, 'rv-btn-secondary'));
   toolbar.append(presets, search, summary);
-  container.append(toolbar, badges, grid);
+  container.append(toolbar, grid);
 
   grid.addEventListener('afterfilterapply', async () => {
     renderCount(await getOrderExplorerVisibleCount(grid, source.length));
   });
 
   parent.appendChild(container);
-  let destroyed = false;
   const disconnectTheme = observeCurrentTheme((isDark) => {
     grid.theme = isDark ? 'darkMaterial' : 'material';
   });
-  let badgesController: AdvancedFilterBadgesController | undefined;
   renderCount(source.length);
-  void grid.componentOnReady().then(async () => {
-    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-    if (destroyed) return;
-    grid.source = source;
-    const initialFilter = createOrderExplorerFilter(createOrderExplorerInitialFilters());
-    grid.filter = initialFilter;
-    grid.columns = createOrderExplorerColumns();
-    void mountAdvancedFilterBadges({
-        grid,
-        root: badges,
-        ...orderExplorerFilterBadgeOptions,
-      })
-      .then(controller => {
-        if (destroyed) controller.destroy();
-        else badgesController = controller;
-      })
-      .catch(() => {
-        // Filtering remains available when optional badge discovery is unavailable.
-      });
-  });
+  grid.source = source;
 
   return () => {
-    destroyed = true;
-    badgesController?.destroy();
-    badgesController = undefined;
     disconnectTheme();
     grid.remove();
     container.remove();

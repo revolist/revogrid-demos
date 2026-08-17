@@ -10,7 +10,6 @@ import {
   createTreeColumns,
   createTreeConfig,
   createTreeRows,
-  initializeTreeStickyColumns,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
@@ -64,11 +63,9 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   grid.plugins = TREE_PLUGINS;
   grid.columns = createTreeColumns(source);
   grid.columnTypes = TREE_COLUMN_TYPES;
-  Object.assign(grid, {
-    rowOrder: TREE_ROW_ORDER_CONFIG,
-    rowSelect: TREE_ROW_SELECT_CONFIG,
-    tree: treeConfig,
-  });
+  grid.rowOrder = TREE_ROW_ORDER_CONFIG;
+  grid.rowSelect = TREE_ROW_SELECT_CONFIG;
+  grid.tree = treeConfig;
   grid.range = true;
   grid.readonly = true;
   grid.stickyCells = TREE_STICKY_CELLS_CONFIG;
@@ -84,7 +81,7 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
       expandedRowIds: treeConfig.expandedRowIds,
       stickyParents: stickyInput.checked,
     });
-    Object.assign(grid, { tree: treeConfig });
+    grid.tree = treeConfig;
     grid.columns = createTreeColumns(source, stickyInput.checked);
   };
   const syncTreeState = ({ detail }: CustomEvent<HTMLRevoGridElementEventMap[typeof TREE_STATE_CHANGED_EVENT]>) => {
@@ -114,7 +111,6 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   container.append(toolbar, grid);
   parent.appendChild(container);
   grid.source = source;
-  void initializeTreeStickyColumns(grid, source, () => treeConfig);
   const disconnectTheme = observeCurrentTheme((isDark) => {
     grid.theme = isDark ? 'darkMaterial' : 'material';
   });

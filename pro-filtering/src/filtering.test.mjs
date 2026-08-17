@@ -68,7 +68,7 @@ test('all framework examples use direct grid properties', async () => {
   }
 });
 
-test('all framework examples mount filter badges through the Pro 2.5.6 API', async () => {
+test('all framework examples bind filter badges declaratively', async () => {
   const files = [
     'filtering.ts',
     'filtering.react.tsx',
@@ -78,11 +78,8 @@ test('all framework examples mount filter badges through the Pro 2.5.6 API', asy
   const sources = await Promise.all(files.map(readSource));
 
   for (const source of sources) {
-    assert.match(source, /mountAdvancedFilterBadges/);
-    assert.match(source, /AdvancedFilterBadgesController/);
-    assert.match(source, /\.destroy\(\)/);
-    assert.match(source, /order-explorer__active-filters/);
-    assert.doesNotMatch(source, /createOrderExplorerFilterBadges|activeBadges|renderBadges/);
+    assert.match(source, /filterBadges|filter-badges/);
+    assert.doesNotMatch(source, /mountAdvancedFilterBadges|AdvancedFilterBadgesController|badgesRef/);
   }
 
   const config = await readSource('filtering.config.ts');
@@ -92,14 +89,14 @@ test('all framework examples mount filter badges through the Pro 2.5.6 API', asy
   const packageJson = JSON.parse(await readSource('../package.json'));
   assert.equal(
     packageJson.dependencies['@revolist/revogrid-pro'],
-    'npm:@revolist/rv-pro-trial@2.5.6',
+    'npm:@revolist/rv-pro-trial@2.7.1',
   );
 
   const styles = await readSource('filtering.scss');
   assert.match(styles, /\.order-explorer__filter-badge/);
 });
 
-test('frameworks wait for grid readiness before assigning advanced filter config', async () => {
+test('frameworks configure advanced filters without custom-element readiness workarounds', async () => {
   const [typescript, react, vue, angular] = await Promise.all([
     readSource('filtering.ts'),
     readSource('filtering.react.tsx'),
@@ -107,13 +104,16 @@ test('frameworks wait for grid readiness before assigning advanced filter config
     readSource('filtering.angular.ts'),
   ]);
 
-  assert.ok(typescript.indexOf('componentOnReady') < typescript.indexOf('grid.filter = initialFilter'));
+  for (const source of [typescript, react, vue, angular]) {
+    assert.doesNotMatch(source, /customElements\.whenDefined|componentOnReady|requestAnimationFrame/);
+  }
+  assert.match(typescript, /grid\.filter = createOrderExplorerFilter\(createOrderExplorerInitialFilters\(\)\)/);
   assert.match(react, /useState<ColumnFilterConfig>\(\(\) =>[\s\S]*?createOrderExplorerInitialFilters/);
   assert.match(vue, /const filter = ref<ColumnFilterConfig>\([\s\S]*?createOrderExplorerInitialFilters/);
   assert.match(angular, /filter: ColumnFilterConfig = createOrderExplorerFilter\(createOrderExplorerInitialFilters\(\)\)/);
 });
 
-test('all frameworks apply the default preset without waiting for badge discovery', async () => {
+test('all frameworks configure the default preset with declarative badges', async () => {
   const [config, typescript, react, vue, angular] = await Promise.all([
     readSource('filtering.config.ts'),
     readSource('filtering.ts'),
@@ -123,29 +123,11 @@ test('all frameworks apply the default preset without waiting for badge discover
   ]);
 
   assert.match(config, /createOrderExplorerInitialFilters[\s\S]*?createOrderExplorerPreset\('high-value-europe'\)/);
-  assert.ok(typescript.indexOf('grid.source = source') < typescript.indexOf('grid.filter = initialFilter'));
+  assert.ok(typescript.indexOf('grid.filter = createOrderExplorerFilter') < typescript.indexOf('grid.filterBadges ='));
   for (const source of [typescript, react, vue, angular]) {
-    assert.doesNotMatch(
-      source,
-      /componentOnReady[\s\S]*?grid\.plugins = \[\.\.\.orderExplorerPlugins\]/,
-      'hydrated plugins should not be rebuilt while the default filter is applied',
-    );
-    assert.match(
-      source,
-      /componentOnReady[\s\S]*?requestAnimationFrame[\s\S]*?grid\.filter/,
-      'the default filter should wait for the framework wrapper first render flush',
-    );
-    const initialFilterIndex = source.search(/grid\.filter = (?:initialFilter|filter|this\.filter)/);
-    assert.notEqual(initialFilterIndex, -1, 'a default filter should be assigned to the grid');
-    assert.ok(
-      initialFilterIndex < source.indexOf('mountAdvancedFilterBadges({'),
-      'the default filter should be assigned before optional badge discovery begins',
-    );
-    assert.match(
-      source.slice(initialFilterIndex),
-      /grid\.columns = (?:createOrderExplorerColumns\(\)|columns\.value)/,
-      'columns should refresh after the default filter so header values render',
-    );
+    const initialFilterIndex = source.indexOf('createOrderExplorerInitialFilters()');
+    assert.notEqual(initialFilterIndex, -1, 'a default filter should be created');
+    assert.doesNotMatch(source, /componentOnReady|getPlugins\(\).*AdvanceFilterPlugin/);
   }
 });
 
@@ -190,7 +172,7 @@ test('showcase stays focused on local filtering', async () => {
   for (const source of [typescript, react, vue, angular, main, styles]) {
     assert.doesNotMatch(source, /remote/i);
   }
-  assert.match(styles, /\.order-explorer__search-input[\s\S]*?height:\s*32px/);
+  assert.match(styles, /\.order-explorer__search-input[\s\S]*?height:\s*36px/);
 });
 
 test('framework examples follow their lifecycle conventions', async () => {

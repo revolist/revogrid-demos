@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ColumnFilterConfig, MultiFilterItem } from '@revolist/revogrid';
-import {
-  mountAdvancedFilterBadges,
-  type AdvancedFilterBadgesController,
-} from '@revolist/revogrid-pro';
 import { RevoGrid } from '@revolist/react-datagrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -25,10 +21,8 @@ import './filtering.scss';
 
 export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
-  const badgesRef = useRef<HTMLDivElement>(null);
-  const badgesControllerRef = useRef<AdvancedFilterBadgesController>();
   const source = useMemo(() => rows?.length ? rows : createOrderExplorerRows(), [rows]);
-  const columns = useMemo(() => createOrderExplorerColumns(), []);
+  const [columns, setColumns] = useState(() => createOrderExplorerColumns());
   const plugins = useMemo(() => [...orderExplorerPlugins], []);
   const columnTypes = useMemo(() => createOrderExplorerColumnTypes(), []);
   const [filter, setFilter] = useState<ColumnFilterConfig>(() =>
@@ -40,43 +34,11 @@ export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
 
   useEffect(() => observeCurrentTheme(setDarkTheme), []);
 
-  useEffect(() => {
-    const grid = gridRef.current;
-    if (!grid) return;
-    let cancelled = false;
-    void grid.componentOnReady().then(async () => {
-      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-      if (cancelled || !badgesRef.current) return;
-      grid.filter = filter;
-      grid.columns = createOrderExplorerColumns();
-      void mountAdvancedFilterBadges({
-          grid,
-          root: badgesRef.current,
-          ...orderExplorerFilterBadgeOptions,
-        })
-        .then(controller => {
-          if (cancelled) controller.destroy();
-          else badgesControllerRef.current = controller;
-        })
-        .catch(() => {
-          // Filtering remains available when optional badge discovery is unavailable.
-        });
-    });
-    return () => {
-      cancelled = true;
-      badgesControllerRef.current?.destroy();
-      badgesControllerRef.current = undefined;
-    };
-  }, []);
-
   // Presets and header filters use the same public `filter` property.
   const applyFilterItems = useCallback((items: MultiFilterItem) => {
     const nextFilter = createOrderExplorerFilter(items);
     setFilter(nextFilter);
-    if (gridRef.current) {
-      gridRef.current.filter = nextFilter;
-      gridRef.current.columns = createOrderExplorerColumns();
-    }
+    setColumns(createOrderExplorerColumns());
   }, []);
 
   const applyPreset = (preset: OrderExplorerPreset) => {
@@ -131,7 +93,6 @@ export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
           }}>Clear All</button>
         </div>
       </div>
-      <div ref={badgesRef} className="order-explorer__active-filters"></div>
       <div className="order-explorer__grid">
         <RevoGrid
           ref={gridRef}
@@ -141,6 +102,7 @@ export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
           plugins={plugins}
           columnTypes={columnTypes}
           filter={filter}
+          filterBadges={orderExplorerFilterBadgeOptions}
           stretch="all"
           hideAttribution={true}
           readonly={true}

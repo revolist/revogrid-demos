@@ -11,7 +11,6 @@ import {
   createTreeColumns,
   createTreeConfig,
   createTreeRows,
-  initializeTreeStickyColumns,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
@@ -40,8 +39,6 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
     expandedRowIds,
     stickyParents,
   }), [expandedRowIds, source, stickyParents]);
-  const treeRef = useRef(tree);
-  treeRef.current = tree;
   const pluginProps = useMemo(() => ({
     rowOrder,
     rowSelect,
@@ -56,7 +53,6 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
       setExpandedRowIds(new Set(detail.expandedRowIds));
     };
     grid?.addEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
-    if (grid) void initializeTreeStickyColumns(grid, source, () => treeRef.current);
     return () => {
       grid?.removeEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
       disconnectTheme();

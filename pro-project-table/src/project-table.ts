@@ -126,7 +126,7 @@ export function load(parentSelector: string) {
     setHiddenColumns: (nextHiddenColumns) => {
       hiddenColumns = nextHiddenColumns;
       grid.hideColumns = hiddenColumns;
-      syncHiddenColumnControls();
+      syncToolbar();
     },
     getGrid: () => grid,
     getSelectedIndexes: () => selectedIndexes,

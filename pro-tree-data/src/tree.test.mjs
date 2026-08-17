@@ -110,7 +110,7 @@ test('plugins are applied before columns so tree sticky decorators see the initi
   assert.ok(angular.indexOf('[plugins]="plugins"') < angular.indexOf('[columns]="columns"'));
 });
 
-test('frameworks refresh tree columns once plugins are ready without capturing stale tree state', async () => {
+test('frameworks configure tree plugins declaratively without readiness workarounds', async () => {
   const [shared, typescript, react, vue, angular] = await Promise.all([
     readSource('tree.shared.ts'),
     readSource('tree.ts'),
@@ -119,11 +119,9 @@ test('frameworks refresh tree columns once plugins are ready without capturing s
     readSource('tree.angular.ts'),
   ]);
 
-  assert.match(shared, /initializeTreeStickyColumns[\s\S]*?componentOnReady[\s\S]*?const tree = getTree\(\)[\s\S]*?grid\.tree = tree[\s\S]*?grid\.stickyCells = TREE_STICKY_CELLS_CONFIG[\s\S]*?grid\.columns = createTreeColumns\(rows,/);
-  assert.match(typescript, /initializeTreeStickyColumns\(grid,[\s\S]*?\(\) => treeConfig\)/);
-  assert.match(react, /useEffect[\s\S]*?initializeTreeStickyColumns\(grid,[\s\S]*?\(\) => treeRef\.current\)/);
-  assert.match(vue, /onMounted[\s\S]*?initializeTreeStickyColumns\(grid,[\s\S]*?\(\) => treeConfig\.value\)/);
-  assert.match(angular, /ngAfterViewInit[\s\S]*?initializeTreeStickyColumns\(grid,[\s\S]*?\(\) => this\.treeConfig\)/);
+  for (const source of [shared, typescript, react, vue, angular]) {
+    assert.doesNotMatch(source, /customElements\.whenDefined|componentOnReady|initializeTreeStickyColumns|Object\.assign/);
+  }
 });
 
 test('all framework variants mirror live tree expansion state', async () => {

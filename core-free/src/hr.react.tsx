@@ -212,14 +212,10 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
 
   const resetView = () => {
     workspaceController.current?.clear();
-    setWorkspaceState({});
+    setWorkspaceState({ filter: { collection: {} } });
     setCurrentSize(HR_DEFAULT_ROW_COUNT);
     setSelectedTheme(getInitialHRTheme(isDark));
     setWorkspaceStatus('View reset');
-    if (gridRef.current) {
-      gridRef.current.filter = { collection: {} };
-      gridRef.current.sorting = undefined;
-    }
     loadData(HR_DEFAULT_ROW_COUNT);
   };
 

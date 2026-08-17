@@ -287,19 +287,12 @@ async function saveView() {
   workspaceStatus.value = 'Saved locally';
 }
 
-async function resetView() {
+function resetView() {
   workspaceController?.clear();
-  workspaceState.value = {};
+  workspaceState.value = { filter: { collection: {} } };
   currentSize.value = HR_DEFAULT_ROW_COUNT;
   selectedTheme.value = defaultTheme();
   workspaceStatus.value = 'View reset';
-  await nextTick();
-  const gridValue = gridRef.value;
-  const grid = gridValue && ('$el' in gridValue ? gridValue.$el : gridValue);
-  if (grid) {
-    grid.filter = { collection: {} };
-    grid.sorting = undefined;
-  }
   loadData();
 }
 

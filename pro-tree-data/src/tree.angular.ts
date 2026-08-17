@@ -1,4 +1,4 @@
-import { Component, ElementRef, type AfterViewInit, type OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, NO_ERRORS_SCHEMA, type AfterViewInit, type OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import {
   ExportExcelPlugin,
@@ -11,7 +11,6 @@ import {
   createTreeColumns,
   createTreeConfig,
   createTreeRows,
-  initializeTreeStickyColumns,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
@@ -19,13 +18,14 @@ import {
   TREE_ROW_SELECT_CONFIG,
   TREE_STICKY_CELLS_CONFIG,
 } from './tree.shared';
-import './tree.scss';
 
 @Component({
   selector: 'tree-data-grid',
   standalone: true,
   imports: [RevoGrid],
+  schemas: [NO_ERRORS_SCHEMA],
   encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./tree.scss'],
   template: `
     <section class="tree-showcase" aria-label="Tree Data organization explorer">
       <div class="tree-toolbar">
@@ -84,7 +84,6 @@ export class TreeDataGridComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     const grid = this.gridElement?.nativeElement;
     grid?.addEventListener(TREE_STATE_CHANGED_EVENT, this.syncTreeState);
-    if (grid) void initializeTreeStickyColumns(grid, this.rows, () => this.treeConfig);
   }
 
   ngOnDestroy() {

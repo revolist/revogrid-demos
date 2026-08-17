@@ -49,7 +49,6 @@ import {
   createTreeColumns,
   createTreeConfig,
   createTreeRows,
-  initializeTreeStickyColumns,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
@@ -84,7 +83,6 @@ onMounted(() => {
   });
   const grid = getGrid();
   grid?.addEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
-  if (grid) void initializeTreeStickyColumns(grid, rows.value, () => treeConfig.value);
 });
 
 onUnmounted(() => {
