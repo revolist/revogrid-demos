@@ -113,6 +113,13 @@ test('selection filters reuse team member and status cell templates', () => {
   });
 });
 
+test('tree member avatars use the shared 20px size preset', async () => {
+  const shared = await readSource('tree.shared.ts');
+
+  assert.equal((shared.match(/avatarSize:\s*20/g) ?? []).length, 2);
+  assert.doesNotMatch(shared, /avatarSize:\s*21/);
+});
+
 test('all framework variants provide the synchronized selection filter config', async () => {
   const [typescript, react, vue, angular] = await Promise.all([
     readSource('tree.ts'),
