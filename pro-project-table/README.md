@@ -22,8 +22,8 @@ _Click the animated preview to open the full-quality MP4._
 ## Example-owned setup
 
 All four framework variants use the same explicit plugin list and create their
-column types from source in this example. There is no aggregate preset or
-`gridPreset` configuration to copy into a host application.
+column types from source in this example, so the runtime composition is ready
+to copy into a host application.
 
 | Package feature | How this demo uses it and why it helps |
 | --- | --- |

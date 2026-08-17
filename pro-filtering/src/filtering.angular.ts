@@ -1,6 +1,7 @@
 import {
   type AfterViewInit,
   Component,
+  NO_ERRORS_SCHEMA,
   type OnDestroy,
   ViewChild,
   ViewEncapsulation,
@@ -27,6 +28,7 @@ import {
   selector: 'filtering-grid',
   standalone: true,
   imports: [RevoGrid],
+  schemas: [NO_ERRORS_SCHEMA],
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./filtering.scss'],
   template: `

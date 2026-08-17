@@ -24,7 +24,6 @@ import {
   createPanelOptions,
   type InvoiceRow,
 } from './audit-history.shared';
-import './audit-history.scss';
 
 @Component({
   selector: 'audit-history-grid',
@@ -32,6 +31,7 @@ import './audit-history.scss';
   imports: [RevoGrid],
   encapsulation: ViewEncapsulation.None,
   schemas: [NO_ERRORS_SCHEMA],
+  styleUrls: ['./audit-history.scss'],
   template: `
     <section class="audit-showcase" aria-label="Invoice audit history workspace">
       <div class="audit-workspace">

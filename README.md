@@ -117,7 +117,7 @@ pnpm media:record
 Showcase source imports the production package names
 `@revolist/revogrid-pro`, `@revolist/pivot`, `@revolist/gantt`,
 `@revolist/kanban`, and `@revolist/scheduler`. Dependency specifications alias
-those imports to the 2.7.1 trial packages by default. Licensed users change
+those imports to the 2.7.4 trial packages by default. Licensed users change
 package specifications and registry configuration; no source imports need to
 be rewritten. RevoGrid core and framework wrappers are pinned to the validated
 4.25.1 line.

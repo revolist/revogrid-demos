@@ -84,7 +84,7 @@ function renderTeamMemberFilterOption(
       avatarProp: 'avatar',
       avatarLabelProp: 'fullName',
       avatarIndexProp: 'id',
-      avatarSize: 22,
+      avatarSize: 21,
     },
   } as never);
 }
@@ -181,7 +181,7 @@ export function createTreeColumns(
       avatarProp: 'avatar',
       avatarLabelProp: 'fullName',
       avatarIndexProp: 'id',
-      avatarSize: 22,
+      avatarSize: 21,
       cellTemplate: avatarWithTextRenderer,
       cellProperties: childCell,
       stickyCell: ({ model }) => stickyParents && parentIds.has(String(model.id)),
