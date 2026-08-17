@@ -94,6 +94,7 @@ test('all framework examples bind filter badges declaratively', async () => {
 
   const styles = await readSource('filtering.scss');
   assert.match(styles, /\.order-explorer__filter-badge/);
+  assert.match(styles, /\.order-explorer__active-filters[\s\S]*?padding-bottom:\s*8px/);
 });
 
 test('frameworks configure advanced filters without custom-element readiness workarounds', async () => {
