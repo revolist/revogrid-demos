@@ -10,6 +10,7 @@ import { currentTheme, observeCurrentTheme } from '../../composables/useRandomDa
 import {
   createTreeColumns,
   createTreeConfig,
+  createTreeFilterConfig,
   createTreeRows,
   initializeTreeStickyColumns,
   TREE_COLUMN_TYPES,
@@ -56,7 +57,7 @@ import './tree.scss';
         [range]="true"
         [readonly]="true"
         [resize]="true"
-        [filter]="true"
+        [filter]="filterConfig"
         [stretch]="true"
         [hideAttribution]="true"
       ></revo-grid>
@@ -71,6 +72,7 @@ export class TreeDataGridComponent implements AfterViewInit, OnDestroy {
     this.theme = isDark ? 'darkMaterial' : 'material';
   });
   readonly rows = createTreeRows();
+  readonly filterConfig = createTreeFilterConfig(this.rows);
   columns = createTreeColumns(this.rows);
   readonly plugins = TREE_PLUGINS;
   readonly columnTypes = TREE_COLUMN_TYPES;

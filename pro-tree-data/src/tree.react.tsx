@@ -10,6 +10,7 @@ import { currentTheme, observeCurrentTheme } from '../../composables/useRandomDa
 import {
   createTreeColumns,
   createTreeConfig,
+  createTreeFilterConfig,
   createTreeRows,
   initializeTreeStickyColumns,
   TREE_COLUMN_TYPES,
@@ -30,6 +31,7 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
     () => createTreeConfig(source).expandedRowIds,
   );
   const columns = useMemo(() => createTreeColumns(source, stickyParents), [source, stickyParents]);
+  const filterConfig = useMemo(() => createTreeFilterConfig(source), [source]);
   const plugins = useMemo(() => [...TREE_PLUGINS], []);
   const columnTypes = useMemo(() => ({ ...TREE_COLUMN_TYPES }), []);
   const rowOrder = useMemo(() => TREE_ROW_ORDER_CONFIG, []);
@@ -104,7 +106,7 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
         range={true}
         readonly={true}
         resize={true}
-        filter={true}
+        filter={filterConfig}
         stretch={true}
         hideAttribution={true}
       />

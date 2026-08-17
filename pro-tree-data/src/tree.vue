@@ -28,7 +28,7 @@
       :range="true"
       :readonly="true"
       :resize="true"
-      :filter="true"
+      :filter="filterConfig"
       :stretch="true"
       hide-attribution
     />
@@ -48,6 +48,7 @@ import { currentTheme, observeCurrentTheme } from '../../composables/useRandomDa
 import {
   createTreeColumns,
   createTreeConfig,
+  createTreeFilterConfig,
   createTreeRows,
   initializeTreeStickyColumns,
   TREE_COLUMN_TYPES,
@@ -63,6 +64,7 @@ const gridRef = ref<{ $el: HTMLRevoGridElement } | HTMLRevoGridElement | null>(n
 const rows = ref(createTreeRows());
 const stickyParents = ref(true);
 const columns = computed(() => createTreeColumns(rows.value, stickyParents.value));
+const filterConfig = computed(() => createTreeFilterConfig(rows.value));
 const plugins = [...TREE_PLUGINS];
 const columnTypes = TREE_COLUMN_TYPES;
 const exporting = ref(false);

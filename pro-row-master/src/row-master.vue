@@ -8,6 +8,7 @@
       :plugins="plugins"
       :master-row.prop="masterRow"
       :tree.prop="tree"
+      :readonly="true"
       stretch="last"
       hide-attribution
     />
