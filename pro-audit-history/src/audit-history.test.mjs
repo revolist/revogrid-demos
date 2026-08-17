@@ -118,3 +118,13 @@ test('risk indicators keep their dot beside longer labels', async () => {
 
   assert.match(dotBlock, /flex:\s*0\s+0\s+7px/);
 });
+
+test('compact layouts keep the audit panel docked beside the grid', async () => {
+  const styles = await readSource('audit-history.scss');
+  const compactStyles = styles.match(/@media \(max-width:\s*960px\)\s*\{([\s\S]*)\}\s*$/)?.[1] ?? '';
+
+  assert.doesNotMatch(compactStyles, /flex-direction:\s*column/);
+  assert.match(styles, /\.audit-workspace\.rv-audit-history-dock\.rv-audit-history-dock--right\s*\{[^}]*flex-direction:\s*row/);
+  assert.match(compactStyles, /flex-basis:\s*320px/);
+  assert.match(compactStyles, /width:\s*320px/);
+});

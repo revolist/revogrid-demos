@@ -22,6 +22,11 @@
   box-shadow: none;
 }
 
+.audit-workspace.rv-audit-history-dock.rv-audit-history-dock--right {
+  flex-direction: row;
+  align-items: stretch;
+}
+
 .audit-grid {
   min-width: 0;
   height: 100%;
@@ -96,7 +101,10 @@
 .risk-dot--high::before { background: #e3485d; }
 
 @media (max-width: 960px) {
-  .audit-workspace { min-height: 760px; }
-  .audit-workspace.rv-audit-history-dock { flex-direction: column; }
-  .audit-workspace .rv-audit-history-panel-host { width: 100%; min-width: 0; max-width: none; height: 310px; }
+  .audit-workspace .rv-audit-history-panel-host {
+    flex-basis: 320px;
+    width: 320px;
+    min-width: 320px;
+    max-width: 320px;
+  }
 }
