@@ -1,4 +1,4 @@
-import type { ColumnRegular, ColumnType } from '@revolist/revogrid';
+import type { ColumnFilterConfig, ColumnRegular, ColumnType } from '@revolist/revogrid';
 import {
   AdvanceFilterPlugin,
   avatarWithTextRenderer,
@@ -66,6 +66,61 @@ export const TREE_COLUMN_TYPES: Record<string, ColumnType> = {
     cellTemplate: (_h, { value }) => currencyFormatter.format(Number(value ?? 0)),
   },
 };
+
+type TreeSelectionItem = Pick<TreeDataRow, 'id' | 'avatar' | 'fullName'> & {
+  value: string;
+  label: string;
+};
+type TreeTemplateH = Parameters<NonNullable<ColumnRegular['cellTemplate']>>[0];
+
+function renderTeamMemberFilterOption(
+  h: TreeTemplateH,
+  { item, value }: { item: TreeSelectionItem; value: string },
+) {
+  return avatarWithTextRenderer!(h, {
+    value,
+    model: item,
+    column: {
+      avatarProp: 'avatar',
+      avatarLabelProp: 'fullName',
+      avatarIndexProp: 'id',
+      avatarSize: 22,
+    },
+  } as never);
+}
+
+function renderStatusFilterOption(h: TreeTemplateH, { value }: { value: string }) {
+  return statusTemplate(h, value);
+}
+
+/** Keep selection-filter options visually aligned with their owning columns. */
+export function createTreeFilterConfig(rows: TreeDataRow[]): ColumnFilterConfig {
+  return {
+    selection: {
+      sortDirection: 'asc',
+      getItems: {
+        fullName: () => rows.map(({ id, avatar, fullName }) => ({
+          value: fullName,
+          label: fullName,
+          id,
+          avatar,
+          fullName,
+        })),
+      },
+      syncCellTemplate: {
+        fullName: true,
+        status: true,
+      },
+      // Keep explicit option renderers for the packaged demo runtime too.
+      // They share the same cell templates, while `syncCellTemplate` remains
+      // available to newer runtime versions.
+      itemTemplate: {
+        fullName: renderTeamMemberFilterOption,
+        status: renderStatusFilterOption,
+      },
+    },
+  } as unknown as ColumnFilterConfig;
+}
 
 export function createTreeRows(): TreeDataRow[] {
   return [

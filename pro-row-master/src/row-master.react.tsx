@@ -41,6 +41,7 @@ export default function RowMaster({ rows }: { rows?: MasterProjectRow[] }) {
         plugins={plugins}
         masterRow={masterRow}
         tree={tree}
+        readonly={true}
         stretch="last"
         hideAttribution={true}
       />

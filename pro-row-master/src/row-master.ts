@@ -36,6 +36,7 @@ export function load(parentSelector: string, rows?: MasterProjectRow[]) {
   grid.plugins = plugins;
   grid.masterRow = createMasterRowConfig();
   grid.tree = createMasterTreeConfig();
+  grid.readonly = true;
   grid.stretch = 'last';
   grid.hideAttribution = true;
 

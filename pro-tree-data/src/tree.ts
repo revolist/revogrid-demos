@@ -9,6 +9,7 @@ import { currentTheme, observeCurrentTheme } from '../../composables/useRandomDa
 import {
   createTreeColumns,
   createTreeConfig,
+  createTreeFilterConfig,
   createTreeRows,
   TREE_COLUMN_TYPES,
   TREE_EXPORT_CONFIG,
@@ -70,7 +71,7 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   grid.readonly = true;
   grid.stickyCells = TREE_STICKY_CELLS_CONFIG;
   grid.resize = true;
-  grid.filter = true;
+  grid.filter = createTreeFilterConfig(source);
   grid.stretch = true;
   grid.hideAttribution = true;
 

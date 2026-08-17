@@ -32,6 +32,7 @@ import './row-master.scss';
         [plugins]="plugins"
         [masterRow]="masterRow"
         [tree]="tree"
+        [readonly]="true"
         [stretch]="'last'"
         [hideAttribution]="true"
       ></revo-grid>

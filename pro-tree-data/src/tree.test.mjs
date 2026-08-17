@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { createTreeConfig, createTreeRows } from './tree.shared.ts';
+import { createTreeConfig, createTreeFilterConfig, createTreeRows } from './tree.shared.ts';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const readSource = file => readFile(join(root, file), 'utf8');
@@ -94,6 +94,37 @@ test('tree config preserves live expansion state across framework refreshes', ()
   assert.deepEqual(config.expandedRowIds, expandedRowIds);
   assert.notEqual(config.expandedRowIds, expandedRowIds);
   assert.equal(config.stickyParents, false);
+});
+
+test('selection filters reuse team member and status cell templates', () => {
+  const rows = createTreeRows();
+  const selection = createTreeFilterConfig(rows).selection;
+
+  assert.deepEqual(selection?.syncCellTemplate, { fullName: true, status: true });
+  assert.equal(typeof selection?.itemTemplate?.fullName, 'function');
+  assert.equal(typeof selection?.itemTemplate?.status, 'function');
+  assert.equal(selection?.sortDirection, 'asc');
+  assert.deepEqual(selection?.getItems?.fullName?.('fullName')[0], {
+    value: 'Maya Chen',
+    label: 'Maya Chen',
+    id: 'product',
+    avatar: 'MC',
+    fullName: 'Maya Chen',
+  });
+});
+
+test('all framework variants provide the synchronized selection filter config', async () => {
+  const [typescript, react, vue, angular] = await Promise.all([
+    readSource('tree.ts'),
+    readSource('tree.react.tsx'),
+    readSource('tree.vue'),
+    readSource('tree.angular.ts'),
+  ]);
+
+  assert.match(typescript, /grid\.filter = createTreeFilterConfig\(source\)/);
+  assert.match(react, /filter=\{filterConfig\}/);
+  assert.match(vue, /:filter="filterConfig"/);
+  assert.match(angular, /\[filter\]="filterConfig"/);
 });
 
 test('plugins are applied before columns so tree sticky decorators see the initial column set', async () => {
