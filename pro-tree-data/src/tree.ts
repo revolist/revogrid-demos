@@ -3,7 +3,6 @@ import {
   ExportExcelPlugin,
   TREE_COLLAPSE_ALL_EVENT,
   TREE_EXPAND_ALL_EVENT,
-  TREE_STATE_CHANGED_EVENT,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -12,6 +11,8 @@ import {
   createTreeFilterConfig,
   createTreeRows,
   TREE_COLUMN_TYPES,
+  TREE_DATA_GRID_CONTEXT_MENU,
+  TREE_DATA_GRID_FORMATTING,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
   TREE_ROW_ORDER_CONFIG,
@@ -72,6 +73,8 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   grid.stickyCells = TREE_STICKY_CELLS_CONFIG;
   grid.resize = true;
   grid.filter = createTreeFilterConfig(source);
+  grid.dataGridFormatting = TREE_DATA_GRID_FORMATTING;
+  grid.dataGridContextMenu = TREE_DATA_GRID_CONTEXT_MENU;
   grid.stretch = true;
   grid.hideAttribution = true;
 
@@ -79,17 +82,10 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   const collapseAll = () => grid.dispatchEvent(new CustomEvent(TREE_COLLAPSE_ALL_EVENT));
   const toggleSticky = () => {
     treeConfig = createTreeConfig(source, {
-      expandedRowIds: treeConfig.expandedRowIds,
       stickyParents: stickyInput.checked,
     });
     grid.tree = treeConfig;
     grid.columns = createTreeColumns(source, stickyInput.checked);
-  };
-  const syncTreeState = ({ detail }: CustomEvent<HTMLRevoGridElementEventMap[typeof TREE_STATE_CHANGED_EVENT]>) => {
-    treeConfig = createTreeConfig(source, {
-      expandedRowIds: detail.expandedRowIds,
-      stickyParents: stickyInput.checked,
-    });
   };
   const exportToExcel = async () => {
     exportButton.disabled = true;
@@ -108,7 +104,6 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   collapseButton.addEventListener('click', collapseAll);
   exportButton.addEventListener('click', exportToExcel);
   stickyInput.addEventListener('change', toggleSticky);
-  grid.addEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
   container.append(toolbar, grid);
   parent.appendChild(container);
   grid.source = source;
@@ -122,7 +117,6 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
     collapseButton.removeEventListener('click', collapseAll);
     exportButton.removeEventListener('click', exportToExcel);
     stickyInput.removeEventListener('change', toggleSticky);
-    grid.removeEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
     container.remove();
   };
 }

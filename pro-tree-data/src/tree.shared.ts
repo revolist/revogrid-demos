@@ -3,6 +3,7 @@ import {
   AdvanceFilterPlugin,
   avatarWithTextRenderer,
   ColumnStretchPlugin,
+  DataGridFormattingPlugin,
   DimensionAnimationPlugin,
   ExportExcelPlugin,
   type ExportExcelEvent,
@@ -13,6 +14,7 @@ import {
   StickyCellsPlugin,
   TreeDataPlugin,
 } from '@revolist/revogrid-pro';
+import { createTreeExcelExportOptions } from './tree.excel.ts';
 
 export type TreeDataRow = {
   id: string;
@@ -30,6 +32,7 @@ export const TREE_PLUGINS = [
   DimensionAnimationPlugin,
   RowOrderPlugin,
   AdvanceFilterPlugin,
+  DataGridFormattingPlugin,
   ExportExcelPlugin,
   RowSelectPlugin,
   RowOddPlugin,
@@ -46,8 +49,16 @@ export const TREE_ROW_SELECT_CONFIG = {
   rowOrder: true,
 };
 
+export const TREE_DATA_GRID_FORMATTING = {
+  rowKeyProp: 'id',
+} as const;
+
+export const TREE_DATA_GRID_CONTEXT_MENU = {
+  formatting: {},
+} as const;
+
 export const TREE_STICKY_CELLS_CONFIG: StickyCellsConfig = {
-  maxRows: 2,
+  maxRows: 1,
 };
 
 export const TREE_EXPORT_CONFIG: ExportExcelEvent = {
@@ -89,13 +100,20 @@ function renderTeamMemberFilterOption(
   } as never);
 }
 
-function renderStatusFilterOption(h: TreeTemplateH, { value }: { value: string }) {
-  return statusTemplate(h, value);
+function renderStatusFilterOption(
+  h: TreeTemplateH,
+  { value, label }: { value: string; label?: string },
+) {
+  return statusTemplate(h, label ?? value);
 }
 
 /** Keep selection-filter options visually aligned with their owning columns. */
 export function createTreeFilterConfig(rows: TreeDataRow[]): ColumnFilterConfig {
   return {
+    slider: {
+      showRangeDisplay: true,
+      formatValue: value => currencyFormatter.format(value ?? 0),
+    },
     selection: {
       sortDirection: 'asc',
       getItems: {
@@ -164,6 +182,7 @@ export function createTreeColumns(
   stickyParents = true,
 ): ColumnRegular[] {
   const parentIds = new Set(rows.flatMap(row => row.parentId === null ? [] : [row.parentId]));
+  const excelExport = createTreeExcelExportOptions(rows);
   const childCell = ({ model }: { model: Record<string, unknown> }) => ({
     subRow: Boolean(model.parentId),
   });
@@ -185,6 +204,7 @@ export function createTreeColumns(
       cellTemplate: avatarWithTextRenderer,
       cellProperties: childCell,
       stickyCell: ({ model }) => stickyParents && parentIds.has(String(model.id)),
+      excelExport: excelExport.teamMember,
     },
     {
       name: 'Team',
@@ -193,6 +213,7 @@ export function createTreeColumns(
       sortable: true,
       filter: ['selection'],
       cellProperties: childCell,
+      excelExport: excelExport.text,
     },
     {
       name: 'Role',
@@ -201,6 +222,7 @@ export function createTreeColumns(
       sortable: true,
       filter: ['selection'],
       cellProperties: childCell,
+      excelExport: excelExport.text,
     },
     {
       name: 'Status',
@@ -209,6 +231,7 @@ export function createTreeColumns(
       filter: ['selection'],
       cellTemplate: (h, { value }) => statusTemplate(h, value),
       cellProperties: childCell,
+      excelExport: excelExport.status,
     },
     {
       name: 'Salary',
@@ -216,10 +239,12 @@ export function createTreeColumns(
       size: 130,
       columnType: 'currency',
       sortable: true,
+      filter: ['slider'],
       cellProperties: ({ model }) => ({
         ...childCell({ model }),
         class: { 'tree-salary': true },
       }),
+      excelExport: excelExport.salary,
     },
   ];
 }

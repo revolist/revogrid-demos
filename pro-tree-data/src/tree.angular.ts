@@ -1,10 +1,9 @@
-import { Component, ElementRef, NO_ERRORS_SCHEMA, type AfterViewInit, type OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, NO_ERRORS_SCHEMA, type OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import {
   ExportExcelPlugin,
   TREE_COLLAPSE_ALL_EVENT,
   TREE_EXPAND_ALL_EVENT,
-  TREE_STATE_CHANGED_EVENT,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -13,6 +12,8 @@ import {
   createTreeFilterConfig,
   createTreeRows,
   TREE_COLUMN_TYPES,
+  TREE_DATA_GRID_CONTEXT_MENU,
+  TREE_DATA_GRID_FORMATTING,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
   TREE_ROW_ORDER_CONFIG,
@@ -58,13 +59,15 @@ import {
         [readonly]="true"
         [resize]="true"
         [filter]="filterConfig"
+        [dataGridFormatting]="dataGridFormatting"
+        [dataGridContextMenu]="dataGridContextMenu"
         [stretch]="true"
         [hideAttribution]="true"
       ></revo-grid>
     </section>
   `,
 })
-export class TreeDataGridComponent implements AfterViewInit, OnDestroy {
+export class TreeDataGridComponent implements OnDestroy {
   @ViewChild('grid', { read: ElementRef }) gridElement?: ElementRef<HTMLRevoGridElement>;
 
   theme: HTMLRevoGridElement['theme'] = currentTheme().isDark() ? 'darkMaterial' : 'material';
@@ -73,6 +76,8 @@ export class TreeDataGridComponent implements AfterViewInit, OnDestroy {
   });
   readonly rows = createTreeRows();
   readonly filterConfig = createTreeFilterConfig(this.rows);
+  readonly dataGridFormatting = TREE_DATA_GRID_FORMATTING;
+  readonly dataGridContextMenu = TREE_DATA_GRID_CONTEXT_MENU;
   columns = createTreeColumns(this.rows);
   readonly plugins = TREE_PLUGINS;
   readonly columnTypes = TREE_COLUMN_TYPES;
@@ -83,13 +88,7 @@ export class TreeDataGridComponent implements AfterViewInit, OnDestroy {
   exporting = false;
   treeConfig = createTreeConfig(this.rows);
 
-  ngAfterViewInit() {
-    const grid = this.gridElement?.nativeElement;
-    grid?.addEventListener(TREE_STATE_CHANGED_EVENT, this.syncTreeState);
-  }
-
   ngOnDestroy() {
-    this.gridElement?.nativeElement.removeEventListener(TREE_STATE_CHANGED_EVENT, this.syncTreeState);
     this.disconnectTheme();
   }
 
@@ -104,18 +103,10 @@ export class TreeDataGridComponent implements AfterViewInit, OnDestroy {
   setStickyParents(event: Event) {
     this.stickyParents = (event.target as HTMLInputElement).checked;
     this.treeConfig = createTreeConfig(this.rows, {
-      expandedRowIds: this.treeConfig.expandedRowIds,
       stickyParents: this.stickyParents,
     });
     this.columns = createTreeColumns(this.rows, this.stickyParents);
   }
-
-  private readonly syncTreeState = ({ detail }: CustomEvent<HTMLRevoGridElementEventMap[typeof TREE_STATE_CHANGED_EVENT]>) => {
-    this.treeConfig = createTreeConfig(this.rows, {
-      expandedRowIds: detail.expandedRowIds,
-      stickyParents: this.stickyParents,
-    });
-  };
 
   async exportToExcel() {
     const grid = this.gridElement?.nativeElement;

@@ -29,6 +29,8 @@
       :readonly="true"
       :resize="true"
       :filter="filterConfig"
+      :data-grid-formatting.prop="TREE_DATA_GRID_FORMATTING"
+      :data-grid-context-menu.prop="TREE_DATA_GRID_CONTEXT_MENU"
       :stretch="true"
       hide-attribution
     />
@@ -42,7 +44,6 @@ import {
   ExportExcelPlugin,
   TREE_COLLAPSE_ALL_EVENT,
   TREE_EXPAND_ALL_EVENT,
-  TREE_STATE_CHANGED_EVENT,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -51,6 +52,8 @@ import {
   createTreeFilterConfig,
   createTreeRows,
   TREE_COLUMN_TYPES,
+  TREE_DATA_GRID_CONTEXT_MENU,
+  TREE_DATA_GRID_FORMATTING,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
   TREE_ROW_ORDER_CONFIG,
@@ -68,27 +71,18 @@ const plugins = [...TREE_PLUGINS];
 const columnTypes = TREE_COLUMN_TYPES;
 const exporting = ref(false);
 const darkTheme = ref(typeof window !== 'undefined' && currentTheme().isDark());
-const expandedRowIds = ref(createTreeConfig(rows.value).expandedRowIds);
 const treeConfig = computed(() => createTreeConfig(rows.value, {
-  expandedRowIds: expandedRowIds.value,
   stickyParents: stickyParents.value,
 }));
 let disconnectTheme: (() => void) | undefined;
-
-const syncTreeState = ({ detail }: CustomEvent<HTMLRevoGridElementEventMap[typeof TREE_STATE_CHANGED_EVENT]>) => {
-  expandedRowIds.value = new Set(detail.expandedRowIds);
-};
 
 onMounted(() => {
   disconnectTheme = observeCurrentTheme((isDark) => {
     darkTheme.value = isDark;
   });
-  const grid = getGrid();
-  grid?.addEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
 });
 
 onUnmounted(() => {
-  getGrid()?.removeEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
   disconnectTheme?.();
 });
 

@@ -3,7 +3,12 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { createTreeConfig, createTreeFilterConfig, createTreeRows } from './tree.shared.ts';
+import {
+  createTreeColumns,
+  createTreeConfig,
+  createTreeFilterConfig,
+  createTreeRows,
+} from './tree.shared.ts';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const readSource = file => readFile(join(root, file), 'utf8');
@@ -69,11 +74,32 @@ test('all framework variants configure sticky parent rows', async () => {
     readSource('tree.angular.ts'),
   ]);
 
-  assert.match(shared, /TREE_STICKY_CELLS_CONFIG[\s\S]*?maxRows:\s*2/);
+  assert.match(shared, /TREE_STICKY_CELLS_CONFIG[\s\S]*?maxRows:\s*1/);
   assert.match(typescript, /grid\.stickyCells = TREE_STICKY_CELLS_CONFIG/);
   assert.match(react, /stickyCells:\s*TREE_STICKY_CELLS_CONFIG/);
   assert.match(vue, /:sticky-cells\.prop="TREE_STICKY_CELLS_CONFIG"/);
   assert.match(angular, /\[stickyCells\]="stickyCells"/);
+});
+
+test('all framework variants enable the formatting context menu', async () => {
+  const [shared, typescript, react, vue, angular] = await Promise.all([
+    readSource('tree.shared.ts'),
+    readSource('tree.ts'),
+    readSource('tree.react.tsx'),
+    readSource('tree.vue'),
+    readSource('tree.angular.ts'),
+  ]);
+
+  assert.match(shared, /DataGridFormattingPlugin/);
+  assert.match(shared, /TREE_DATA_GRID_CONTEXT_MENU[\s\S]*?formatting:\s*\{\}/);
+  assert.match(typescript, /grid\.dataGridFormatting = TREE_DATA_GRID_FORMATTING/);
+  assert.match(typescript, /grid\.dataGridContextMenu = TREE_DATA_GRID_CONTEXT_MENU/);
+  assert.match(react, /dataGridFormatting=\{dataGridFormatting\}/);
+  assert.match(react, /dataGridContextMenu=\{dataGridContextMenu\}/);
+  assert.match(vue, /:data-grid-formatting\.prop="TREE_DATA_GRID_FORMATTING"/);
+  assert.match(vue, /:data-grid-context-menu\.prop="TREE_DATA_GRID_CONTEXT_MENU"/);
+  assert.match(angular, /\[dataGridFormatting\]="dataGridFormatting"/);
+  assert.match(angular, /\[dataGridContextMenu\]="dataGridContextMenu"/);
 });
 
 test('expanded tree has enough rows to exercise internal sticky scrolling', () => {
@@ -81,6 +107,56 @@ test('expanded tree has enough rows to exercise internal sticky scrolling', () =
 
   assert.ok(rows.length >= 24);
   assert.ok(rows.filter(row => row.parentId !== null).length >= 20);
+});
+
+test('status selection templates preserve the display label casing', () => {
+  const filter = createTreeFilterConfig(createTreeRows());
+  const template = filter.selection.itemTemplate.status;
+  const rendered = template((tag, props, content) => ({ tag, props, content }), {
+    value: 'at risk',
+    label: 'At risk',
+  });
+
+  assert.equal(rendered.content, 'At risk');
+  assert.match(rendered.props.class, /tree-status--at-risk/);
+});
+
+test('salary uses a currency-formatted slider filter', () => {
+  const rows = createTreeRows();
+  const salaryColumn = createTreeColumns(rows).find(({ prop }) => prop === 'salary');
+  const filter = createTreeFilterConfig(rows);
+
+  assert.deepEqual(salaryColumn?.filter, ['slider']);
+  assert.equal(filter.slider?.formatValue?.(126000), '$126,000');
+});
+
+test('Excel export preserves tree presentation and native salary values', () => {
+  const rows = createTreeRows();
+  const columns = createTreeColumns(rows);
+  const teamMember = columns.find(({ prop }) => prop === 'fullName');
+  const status = columns.find(({ prop }) => prop === 'status');
+  const salary = columns.find(({ prop }) => prop === 'salary');
+
+  const root = teamMember?.excelExport?.cellProperties?.({
+    value: 'Maya Chen', model: rows[0],
+  });
+  const nested = teamMember?.excelExport?.cellProperties?.({
+    value: 'Eva Green', model: rows[2],
+  });
+  const statusCell = status?.excelExport?.cellProperties?.({
+    value: 'At risk', model: rows[2],
+  });
+  const salaryCell = salary?.excelExport?.cellProperties?.({
+    value: 154000, model: rows[2],
+  });
+
+  assert.equal(root?.indent, 0);
+  assert.equal(root?.fontWeight, 'bold');
+  assert.equal(nested?.indent, 2);
+  assert.equal(statusCell?.backgroundColor, '#FEF3C7');
+  assert.equal(salaryCell?.value, 154000);
+  assert.equal(salaryCell?.format, '$#,##0');
+  assert.equal(salaryCell?.align, 'right');
 });
 
 test('tree config preserves live expansion state across framework refreshes', () => {
@@ -162,14 +238,13 @@ test('frameworks configure tree plugins declaratively without readiness workarou
   }
 });
 
-test('all framework variants mirror live tree expansion state', async () => {
+test('framework variants reset to their default expansion state after a sticky-parent refresh', async () => {
   const files = ['tree.ts', 'tree.react.tsx', 'tree.vue', 'tree.angular.ts'];
   const sources = await Promise.all(files.map(readSource));
 
   for (const source of sources) {
-    assert.match(source, /TREE_STATE_CHANGED_EVENT/);
-    assert.match(source, /detail\.expandedRowIds/);
-    assert.match(source, /createTreeConfig\([\s\S]*?expandedRowIds/);
+    assert.doesNotMatch(source, /TREE_STATE_CHANGED_EVENT|syncTreeState|expandedRowIds/);
+    assert.match(source, /createTreeConfig\([\s\S]*?stickyParents/);
   }
 });
 

@@ -4,7 +4,6 @@ import {
   ExportExcelPlugin,
   TREE_COLLAPSE_ALL_EVENT,
   TREE_EXPAND_ALL_EVENT,
-  TREE_STATE_CHANGED_EVENT,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -13,6 +12,8 @@ import {
   createTreeFilterConfig,
   createTreeRows,
   TREE_COLUMN_TYPES,
+  TREE_DATA_GRID_CONTEXT_MENU,
+  TREE_DATA_GRID_FORMATTING,
   TREE_EXPORT_CONFIG,
   TREE_PLUGINS,
   TREE_ROW_ORDER_CONFIG,
@@ -26,11 +27,10 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
   const source = useMemo(() => rows?.length ? rows : createTreeRows(), [rows]);
   const [stickyParents, setStickyParents] = useState(true);
-  const [expandedRowIds, setExpandedRowIds] = useState(
-    () => createTreeConfig(source).expandedRowIds,
-  );
   const columns = useMemo(() => createTreeColumns(source, stickyParents), [source, stickyParents]);
   const filterConfig = useMemo(() => createTreeFilterConfig(source), [source]);
+  const dataGridFormatting = useMemo(() => TREE_DATA_GRID_FORMATTING, []);
+  const dataGridContextMenu = useMemo(() => TREE_DATA_GRID_CONTEXT_MENU, []);
   const plugins = useMemo(() => [...TREE_PLUGINS], []);
   const columnTypes = useMemo(() => ({ ...TREE_COLUMN_TYPES }), []);
   const rowOrder = useMemo(() => TREE_ROW_ORDER_CONFIG, []);
@@ -38,28 +38,20 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
   const [exporting, setExporting] = useState(false);
   const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
   const tree = useMemo(() => createTreeConfig(source, {
-    expandedRowIds,
     stickyParents,
-  }), [expandedRowIds, source, stickyParents]);
+  }), [source, stickyParents]);
   const pluginProps = useMemo(() => ({
     rowOrder,
     rowSelect,
     stickyCells: TREE_STICKY_CELLS_CONFIG,
     tree,
   }) as any, [rowOrder, rowSelect, tree]);
-
   useEffect(() => {
     const disconnectTheme = observeCurrentTheme(setDarkTheme);
-    const grid = gridRef.current;
-    const syncTreeState = ({ detail }: CustomEvent<HTMLRevoGridElementEventMap[typeof TREE_STATE_CHANGED_EVENT]>) => {
-      setExpandedRowIds(new Set(detail.expandedRowIds));
-    };
-    grid?.addEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
     return () => {
-      grid?.removeEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
       disconnectTheme();
     };
-  }, [source]);
+  }, []);
 
   const expandAll = () => gridRef.current?.dispatchEvent(new CustomEvent(TREE_EXPAND_ALL_EVENT));
   const collapseAll = () => gridRef.current?.dispatchEvent(new CustomEvent(TREE_COLLAPSE_ALL_EVENT));
@@ -103,6 +95,8 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
         readonly={true}
         resize={true}
         filter={filterConfig}
+        dataGridFormatting={dataGridFormatting}
+        dataGridContextMenu={dataGridContextMenu}
         stretch={true}
         hideAttribution={true}
       />
