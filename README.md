@@ -2,7 +2,7 @@
 
 # RevoGrid Examples
 
-**Sixteen production-style showcases. Four feature repositories. One polished gallery.**
+**Nineteen production-style showcases. Four feature repositories. One polished gallery.**
 
 [![Frameworks](https://img.shields.io/badge/TypeScript%20%7C%20React%20%7C%20Vue%20%7C%20Angular-4f46e5)](#showcases)
 [![RevoGrid](https://img.shields.io/badge/RevoGrid-4.25.1-2563eb)](https://rv-grid.com/)
@@ -37,6 +37,7 @@ revogrid-demos/
 ├── pro-audit-history/         # retained accountable change-log showcase
 ├── pro-tree-data/             # retained hierarchical data showcase
 ├── pro-advanced-planning/     # retained planning suite
+├── pro-construction-operations/ # retained construction operations suite
 ├── gallery/                   # visual system and retained metadata
 └── scripts/                   # setup, build, test, media delegation
 ```
@@ -64,6 +65,7 @@ initializes them and advances every checkout to the latest remote `main`.
 | Pro Advanced | Kanban | [`revolist/kanban`](https://github.com/revolist/kanban) | [`kanban.rv-grid.com`](https://kanban.rv-grid.com/demo/) |
 | Pro Advanced | Scheduler | [`revolist/scheduler`](https://github.com/revolist/scheduler) | [`scheduler.rv-grid.com`](https://scheduler.rv-grid.com/demo/) |
 | Pro Advanced | Unified Planning Suite | [`pro-advanced-planning`](./pro-advanced-planning/) | [`/planning/`](https://example.rv-grid.com/planning/) |
+| Pro Advanced | Construction + Fabrication Operations | [`pro-construction-operations`](./pro-construction-operations/) | [`/construction-operations/`](https://example.rv-grid.com/construction-operations/) |
 
 The gallery retains detail and demo routes at `/<showcase>/` and
 `/<showcase>/demo/`. Feature live-demo links use the dedicated subdomains.
@@ -117,7 +119,7 @@ pnpm media:record
 Showcase source imports the production package names
 `@revolist/revogrid-pro`, `@revolist/pivot`, `@revolist/gantt`,
 `@revolist/kanban`, and `@revolist/scheduler`. Dependency specifications alias
-those imports to the 2.7.8 trial packages by default. Licensed users change
+those imports to the 2.7.12 trial packages by default. Licensed users change
 package specifications and registry configuration; no source imports need to
 be rewritten. RevoGrid core and framework wrappers are pinned to the validated
 4.25.1 line.

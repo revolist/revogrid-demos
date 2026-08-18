@@ -24,7 +24,7 @@ test('feature repositories track their public main branches', async () => {
 
 test('child metadata is complete and remains the source for feature copy', async () => {
   const catalog = await loadCatalog();
-  assert.equal(catalog.length, 18);
+  assert.equal(catalog.length, 19);
   for (const slug of featureSlugs) {
     const showcase = catalog.find((entry) => entry.slug === slug);
     assert.ok(showcase);
@@ -36,7 +36,7 @@ test('child metadata is complete and remains the source for feature copy', async
 
 test('gallery publishes every detail and canonical demo route', async () => {
   const manifest = JSON.parse(await readFile(join(output, 'manifest.json'), 'utf8'));
-  assert.equal(manifest.showcases.length, 18);
+  assert.equal(manifest.showcases.length, 19);
   for (const showcase of manifest.showcases) {
     await access(join(output, showcase.slug, 'index.html'));
     await access(join(output, showcase.slug, 'demo', 'index.html'));
@@ -61,8 +61,8 @@ test('all generated internal links and media references resolve', async () => {
   }
 });
 
-test('home page renders eighteen keyboard-reachable showcase links', async () => {
+test('home page renders nineteen keyboard-reachable showcase links', async () => {
   const html = await readFile(join(output, 'index.html'), 'utf8');
-  assert.equal((html.match(/class="showcase-card"/g) ?? []).length, 18);
-  assert.equal((html.match(/href="\/(?:pivot|gantt|kanban|scheduler|core|core-ai-prompts|core-project-portfolio|excel|ecommerce|project-table|filtering|infinity-scroll|column-collapse|data-grid-context-menu|row-master|audit-history|tree-data|planning)\/"/g) ?? []).length, 18);
+  assert.equal((html.match(/class="showcase-card"/g) ?? []).length, 19);
+  assert.equal((html.match(/href="\/(?:pivot|gantt|kanban|scheduler|core|core-ai-prompts|core-project-portfolio|excel|ecommerce|project-table|filtering|infinity-scroll|column-collapse|data-grid-context-menu|row-master|audit-history|tree-data|planning|construction-operations)\/"/g) ?? []).length, 19);
 });

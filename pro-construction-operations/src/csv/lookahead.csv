@@ -1,0 +1,15 @@
+id,master_task_id,project_ref,work_area,name,activity_type,crew_or_party,start,finish,committed_start,committed_finish,status,constraint_owner,constraint_due,push_to_master,notes
+1,22,2801,Level 1 East,Set out and fix base plates L1 East,work,Install Crew A,2026-08-24,2026-08-26,2026-08-24,2026-08-26,planned,,,no,First zone after site access
+2,22,2801,Level 1 East,Delivery - balustrade panels batch 1,delivery,Coatings Supplier,2026-08-21,2026-08-21,2026-08-21,2026-08-21,confirmed,,,no,Crane booking required with the builder
+3,22,2801,Level 1 East,Install glass panels L1 East,work,Install Crew A,2026-08-27,2026-08-29,2026-08-27,2026-08-28,in_progress,,,yes,Ran a day over; breaches the master task window
+4,22,2801,Level 1 East,Builder inspection - L1 East balustrade,inspection,Builder,2026-08-31,2026-08-31,2026-08-31,2026-08-31,planned,,,no,Sits just outside the 2-week window; visible at 3 weeks
+5,22,2801,Level 2 East,Set out and fix base plates L2 East,work,Install Crew A,2026-08-31,2026-09-02,2026-08-31,2026-09-02,planned,,,no,
+6,,2801,Level 1 East,Hoist unavailable Wed - builder concrete pour,constraint,Builder,2026-08-26,2026-08-26,,,open,Builder site manager,2026-08-25,no,Blocks activity 1; needs a make-ready decision
+7,,2801,Site wide,Scissor lift hire on site,delivery,Hired EWP,2026-08-24,2026-09-25,2026-08-24,2026-09-25,confirmed,,,no,Hire cost runs on calendar days
+8,17,2801,Workshop,Fabricate balustrade panels L1-L3 batch 2,work,Workshop Crew,2026-08-17,2026-08-28,2026-08-17,2026-08-28,in_progress,,,no,Workshop look-ahead runs on the same board as site
+9,,2776,Site wide,Defect rectification - handrail brackets,work,Install Crew A,2026-08-17,2026-08-20,2026-08-17,2026-08-20,in_progress,,,no,No master task; call-back work on a completed job
+10,,2776,Site wide,Client walk-through and sign-off,handover,Project Manager,2026-08-21,2026-08-21,2026-08-21,2026-08-21,planned,,,no,No master task
+11,33,2814,Office,Issue purchase order - louvre system,work,Project Manager,2026-08-17,2026-08-21,2026-08-17,2026-08-21,in_progress,,,no,Procurement activity in the same look-ahead
+12,,2814,Office,Awaiting builder colour selection,constraint,Builder,2026-08-17,2026-08-28,,,open,Project Manager,2026-08-21,no,Blocks activity 11; classic make-ready item
+13,,2814,Level 3,Site measure - louvre openings L3,work,Drafter,2026-08-25,2026-08-26,2026-08-25,2026-08-26,planned,,,no,Cross-project use of the same person in one fortnight
+14,24,2801,Level 1 West,Pre-start - privacy screen zone survey,work,Install Crew B,2026-08-27,2026-08-28,2026-08-27,2026-08-28,planned,,,no,Second crew, same site, different work area

@@ -1,0 +1,12 @@
+id,name,type,department,headcount,capacity_hours_per_day,calendar,cost_basis,notes
+1,Install Crew A,crew,construction,3,8,site_mon_fri,internal_labour,Works across multiple sites in the same fortnight
+2,Install Crew B,crew,construction,2,8,site_mon_fri,internal_labour,Also covers defects and call-backs
+3,Workshop Crew,crew,fabrication,3,8,workshop_mon_fri,internal_labour,Single shared workshop; the hard capacity constraint
+4,Drafter,person,projects,1,8,office_mon_fri,internal_labour,Also does site measures
+5,Project Manager,person,projects,1,8,office_mon_fri,internal_labour,
+6,Hired EWP - scissor lift,plant,construction,1,10,site_mon_sat,hired_plant,Hire cost accrues per calendar day, not per working day
+7,Alloy Extrusions,supplier,procurement,,,supplier_lead_time,external,Aluminium extrusion; 6 week nominal lead
+8,Coatings Supplier,supplier,procurement,,,supplier_lead_time,external,Powder coat; 2 week nominal lead
+9,Glass Supplier,supplier,procurement,,,supplier_lead_time,external,Balustrade glass; 8-9 week nominal lead
+10,Louvre Supplier,supplier,procurement,,,supplier_lead_time,external,Louvre blade supply; 11 week nominal lead
+11,Builder,external,external,,,builder_programme,external,Controls site access and inspection sign-off; not our resource but drives our dates
