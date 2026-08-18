@@ -112,18 +112,44 @@ pnpm media:inspect
 pnpm media:record
 ```
 
-## Trial and licensed installs
+## Installation
 
-Showcase source imports the production package names
-`@revolist/revogrid-pro`, `@revolist/pivot`, `@revolist/gantt`,
-`@revolist/kanban`, and `@revolist/scheduler`. Dependency specifications alias
-those imports to the 2.7.10 trial packages by default. Licensed users change
-package specifications and registry configuration; no source imports need to
-be rewritten. RevoGrid core and framework wrappers are pinned to the validated
-4.25.1 line.
+The parent repository is a self-contained gallery once its submodules are
+initialized. Each advanced feature is also a standalone repository: follow its
+README for the smallest install, or use the commands below after `pnpm run
+setup`. Source always imports the production names; the trial commands alias
+them to the free packages.
 
-Never commit registry tokens, credentials, proprietary implementation source,
-or commercial license material.
+### Free trial
+
+The trial registry is public—no token or login is needed. Configure it once,
+then choose the feature you want to run:
+
+```bash
+pnpm config set @revolist:registry https://trial.rv-grid.com --location=project
+pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.10 @revolist/pivot@npm:@revolist/pivot-trial@2.7.10
+pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.10 @revolist/gantt@npm:@revolist/gantt-trial@2.7.10
+pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.10 @revolist/kanban@npm:@revolist/kanban-trial@2.7.10
+pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.10 @revolist/scheduler@npm:@revolist/scheduler-trial@2.7.10
+```
+
+### Pro version
+
+Remove the trial registry override if you previously used it, then install the
+matching production packages instead:
+
+```bash
+pnpm config delete @revolist:registry --location=project
+pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@2.7.10 @revolist/pivot@2.7.10
+pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@2.7.10 @revolist/gantt@2.7.10
+pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@2.7.10 @revolist/kanban@2.7.10
+pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@2.7.10 @revolist/scheduler@2.7.10
+```
+
+No source imports change between editions. RevoGrid core and framework wrappers
+are pinned to the validated 4.25.1 line. See the [official installation
+guide](https://pro.rv-grid.com/guides/installation-npm-trial/) for current
+package and framework details.
 
 ## Publishing
 
