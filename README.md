@@ -2,7 +2,7 @@
 
 # RevoGrid Examples
 
-**Nineteen production-style showcases. Four feature repositories. One polished gallery.**
+**Twenty production-style showcases. Four feature repositories. One polished gallery.**
 
 [![Frameworks](https://img.shields.io/badge/TypeScript%20%7C%20React%20%7C%20Vue%20%7C%20Angular-4f46e5)](#showcases)
 [![RevoGrid](https://img.shields.io/badge/RevoGrid-4.25.1-2563eb)](https://rv-grid.com/)
@@ -38,6 +38,7 @@ revogrid-demos/
 ├── pro-tree-data/             # retained hierarchical data showcase
 ├── pro-advanced-planning/     # retained planning suite
 ├── pro-construction-operations/ # retained construction operations suite
+├── pro-construction-gantt-simple/ # one-Gantt construction portfolio
 ├── gallery/                   # visual system and retained metadata
 └── scripts/                   # setup, build, test, media delegation
 ```
@@ -66,6 +67,7 @@ initializes them and advances every checkout to the latest remote `main`.
 | Pro Advanced | Scheduler | [`revolist/scheduler`](https://github.com/revolist/scheduler) | [`scheduler.rv-grid.com`](https://scheduler.rv-grid.com/demo/) |
 | Pro Advanced | Unified Planning Suite | [`pro-advanced-planning`](./pro-advanced-planning/) | [`/planning/`](https://example.rv-grid.com/planning/) |
 | Pro Advanced | Construction + Fabrication Operations | [`pro-construction-operations`](./pro-construction-operations/) | [`/construction-operations/`](https://example.rv-grid.com/construction-operations/) |
+| Pro Advanced | Construction Gantt: Simple Portfolio | [`pro-construction-gantt-simple`](./pro-construction-gantt-simple/) | [`/construction-gantt-simple/`](https://example.rv-grid.com/construction-gantt-simple/) |
 
 The gallery retains detail and demo routes at `/<showcase>/` and
 `/<showcase>/demo/`. Feature live-demo links use the dedicated subdomains.

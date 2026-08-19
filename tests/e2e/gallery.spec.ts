@@ -17,6 +17,7 @@ const retainedSlugs = [
   'tree-data',
   'planning',
   'construction-operations',
+  'construction-gantt-simple',
 ];
 
 test('gallery is complete, keyboard navigable, and responsive', async ({ page }) => {
@@ -25,8 +26,8 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('19 complete ways');
-  await expect(page.locator('.showcase-card')).toHaveCount(19);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('20 complete ways');
+  await expect(page.locator('.showcase-card')).toHaveCount(20);
   await page.keyboard.press('Tab');
   await expect(page.locator(':focus')).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
