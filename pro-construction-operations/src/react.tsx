@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import { DEFAULT_LOOK_AHEAD, DEFAULT_LOOK_AHEAD_FILTERS } from './shared/data/projections';
-import { applyConstructionTaskPatch, moveLookAheadPeriod } from './shared/data/updates';
+import { moveLookAheadPeriod } from './shared/data/updates';
 import { applySchedulerTaskChanges } from './shared/scheduler/updates';
-import { allowsConstructionTaskChange } from './shared/services/validation';
+import { applyConstructionTaskChange } from './shared/services/task-change';
 import {
   createConstructionGridBindings,
   type ConstructionGridOptions,
@@ -54,6 +54,7 @@ export default function ConstructionFabricationGanttDemo() {
   const [projectDepartment, setProjectDepartment] = useState<ProjectDepartmentFilter>('all');
   const [scale, setScale] = useState<ConstructionScale>('day-week');
   const [tasks, setTasks] = useState<ConstructionTask[]>(initial.tasks);
+  const [activeSource, setActiveSource] = useState<ConstructionTask[]>(() => constructionSource(initial));
   const [expandedRowIds, setExpandedRowIds] = useState(initial.expandedRowIds);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -65,7 +66,9 @@ export default function ConstructionFabricationGanttDemo() {
     view, selectedProject, period, filters, projectDepartment, scale,
     tasks, expandedRowIds, resourcesOpen,
   }), [view, selectedProject, period, filters, projectDepartment, scale, tasks, expandedRowIds, resourcesOpen]);
-  const source = useMemo(() => constructionSource(state), [state]);
+  useEffect(() => {
+    setActiveSource(constructionSource(state));
+  }, [view, selectedProject, period, filters, resourcesOpen]);
   const expansionFor = useCallback((nextView: ConstructionView, projectRef = selectedProject) => {
     const nextState = { ...state, view: nextView, selectedProject: projectRef, resourcesOpen: false };
     return defaultExpandedRows(nextView, projectRef, constructionSource(nextState));
@@ -81,11 +84,12 @@ export default function ConstructionFabricationGanttDemo() {
   const gridOptions = useMemo<ConstructionGridOptions>(() => ({
     ...state,
     projectName,
-    sourceForView: () => source,
+    // Keep this reference stable while Gantt applies a task-store patch.
+    sourceForView: () => activeSource,
     openProject,
     setTasks,
     setExpandedRowIds,
-  }), [state, projectName, source, openProject]);
+  }), [view, selectedProject, period, filters, projectDepartment, scale, expandedRowIds, resourcesOpen, activeSource, projectName, openProject]);
   const bindings = useMemo(() => createConstructionGridBindings(gridOptions), [gridOptions]);
   const gridKey = `${view}:${resourcesOpen}:${selectedProject}`;
   const showSchedule = () => { setExpandedRowIds(expansionFor('project')); setView('project'); setResourcesOpen(false); setFiltersOpen(false); };
@@ -102,13 +106,21 @@ export default function ConstructionFabricationGanttDemo() {
   const gridEvents = {
     'onTree-state-changed': (event: CustomEvent<{ expandedRowIds: Set<string> }>) => setExpandedRowIds(new Set(event.detail.expandedRowIds)),
     'onGantt-before-task-change': (event: CustomEvent) => setTasks((current) => {
-      if (!allowsConstructionTaskChange(event.detail, current, view === 'master')) {
+      const result = applyConstructionTaskChange(event.detail, current, view === 'master');
+      if (!result.accepted) {
         event.preventDefault();
         return current;
       }
-      return applyConstructionTaskPatch(current, event.detail);
+      if (result.refreshProjection) {
+        setActiveSource(constructionSource({ ...state, tasks: result.tasks }));
+      }
+      return result.tasks;
     }),
-    'onEvent-scheduler-event-changed': (event: CustomEvent) => setTasks((current) => applySchedulerTaskChanges(current, event.detail)),
+    'onEvent-scheduler-event-changed': (event: CustomEvent) => setTasks((current) => {
+      const nextTasks = applySchedulerTaskChanges(current, event.detail);
+      setActiveSource(constructionSource({ ...state, tasks: nextTasks }));
+      return nextTasks;
+    }),
   } as any;
   const { source: boundSource, ...gridProperties } = bindings;
 

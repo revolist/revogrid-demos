@@ -1,9 +1,7 @@
 import { createGanttBindings } from './gantt/bindings';
-import { applyConstructionTaskPatch } from './data/updates';
-import { dependenciesFor, trimmedProjectRows } from './data/projections';
 import { createSchedulerBindings } from './scheduler/bindings';
 import { applySchedulerTaskChanges } from './scheduler/updates';
-import { allowsConstructionTaskChange } from './services/validation';
+import { applyConstructionTaskChange } from './services/task-change';
 import type { ConstructionScale, ConstructionTask, ConstructionView, LookAheadPeriod, ProjectDepartmentFilter } from './types';
 
 export interface ConstructionGridOptions {
@@ -20,6 +18,7 @@ export interface ConstructionGridOptions {
   openProject: (projectRef: string) => void;
   setTasks: (tasks: ConstructionTask[]) => void;
   setExpandedRowIds: (ids: Set<string>) => void;
+  refreshProjection?: () => void;
 }
 
 export type ConstructionGridMount = (container: HTMLElement, options: ConstructionGridOptions) => void | (() => void);
@@ -32,7 +31,6 @@ export function createConstructionGridBindings(options: ConstructionGridOptions)
 }
 
 export function configureConstructionGrid(grid: HTMLRevoGridElement, options: ConstructionGridOptions): () => void {
-  let active = true;
   grid.className = 'construction-fabrication__grid skip-style cell-border';
   const { source, ...properties } = createConstructionGridBindings(options);
   Object.assign(grid, properties);
@@ -57,27 +55,21 @@ export function configureConstructionGrid(grid: HTMLRevoGridElement, options: Co
   };
   const handleTaskChange = (event: Event) => {
     const change = (event as CustomEvent).detail;
-    if (!allowsConstructionTaskChange(change, options.tasks, options.view === 'master')) {
+    const result = applyConstructionTaskChange(change, options.tasks, options.view === 'master');
+    if (!result.accepted) {
       event.preventDefault();
       return;
     }
-    const nextTasks = applyConstructionTaskPatch(options.tasks, change);
-    if (nextTasks === options.tasks) return;
-    options.tasks = nextTasks;
-    options.setTasks(nextTasks);
-    queueMicrotask(() => {
-      if (!active) return;
-      const nextSource = options.sourceForView();
-      grid.ganttDependencies = dependenciesFor(nextSource);
-      if (options.view === 'project') grid.trimmedRows = trimmedProjectRows(nextSource, options.projectDepartment);
-      grid.source = nextSource;
-    });
+    if (result.tasks !== options.tasks) {
+      options.tasks = result.tasks;
+      options.setTasks(result.tasks);
+    }
+    if (result.refreshProjection) queueMicrotask(() => options.refreshProjection?.());
   };
   grid.addEventListener('tree-state-changed', handleTreeStateChange);
   grid.addEventListener('gantt-before-task-change', handleTaskChange);
   grid.source = source;
   return () => {
-    active = false;
     grid.removeEventListener('tree-state-changed', handleTreeStateChange);
     grid.removeEventListener('gantt-before-task-change', handleTaskChange);
   };

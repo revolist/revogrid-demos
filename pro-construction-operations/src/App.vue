@@ -66,7 +66,7 @@
                   </div>
                   <label v-if="view === 'lookahead'" class="construction-fabrication__control-group">
                     <span class="construction-fabrication__toolbar-label">Work area</span>
-                    <select v-model="filters.workArea" class="construction-fabrication__select">
+                    <select v-model="filters.workArea" class="construction-fabrication__select" @change="refreshActiveSource()">
                       <option value="all">All work areas</option>
                       <option v-for="area in workAreas" :key="area">{{ area }}</option>
                     </select>
@@ -106,9 +106,9 @@ import { computed, onBeforeUnmount, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import { DEFAULT_LOOK_AHEAD, DEFAULT_LOOK_AHEAD_FILTERS } from './shared/data/projections';
-import { applyConstructionTaskPatch, moveLookAheadPeriod } from './shared/data/updates';
+import { moveLookAheadPeriod } from './shared/data/updates';
 import { applySchedulerTaskChanges } from './shared/scheduler/updates';
-import { allowsConstructionTaskChange } from './shared/services/validation';
+import { applyConstructionTaskChange } from './shared/services/task-change';
 import {
   createConstructionGridBindings,
   type ConstructionGridOptions,
@@ -134,6 +134,7 @@ const filters = ref(initial.filters);
 const projectDepartment = ref<ProjectDepartmentFilter>('all');
 const scale = ref<ConstructionScale>('day-week');
 const tasks = ref(initial.tasks);
+const activeSource = ref(constructionSource(initial));
 const expandedRowIds = ref(initial.expandedRowIds);
 const resourcesOpen = ref(false);
 const filtersOpen = ref(false);
@@ -155,15 +156,27 @@ const state = computed(() => ({
   expandedRowIds: expandedRowIds.value,
   resourcesOpen: resourcesOpen.value,
 }));
-const source = computed(() => constructionSource(state.value));
+const gridState = computed(() => ({
+  view: view.value,
+  selectedProject: selectedProject.value,
+  period: period.value,
+  filters: filters.value,
+  projectDepartment: projectDepartment.value,
+  scale: scale.value,
+  expandedRowIds: expandedRowIds.value,
+  resourcesOpen: resourcesOpen.value,
+  // The mounted grid reads this stable projection while task patches update
+  // the canonical collection above.
+  tasks: activeSource.value,
+}));
 const projectName = computed(() => constructionProjectName(selectedProject.value));
 const workAreas = computed(() => constructionWorkAreas(state.value));
 const activeDepartment = computed(() => view.value === 'lookahead' ? filters.value.department : projectDepartment.value);
 const gridKey = computed(() => `${view.value}:${resourcesOpen.value}:${selectedProject.value}`);
 const gridOptions = computed<ConstructionGridOptions>(() => ({
-  ...state.value,
+  ...gridState.value,
   projectName: projectName.value,
-  sourceForView: () => source.value,
+  sourceForView: () => activeSource.value,
   openProject,
   setTasks: (value) => { tasks.value = value; },
   setExpandedRowIds: (value) => { expandedRowIds.value = value; },
@@ -179,36 +192,42 @@ function openProject(projectRef: string) {
   selectedProject.value = projectRef;
   showSchedule();
 }
+function refreshActiveSource(nextTasks = tasks.value) {
+  activeSource.value = constructionSource({ ...state.value, tasks: nextTasks });
+}
 function expandedFor(nextView: ConstructionView) {
   const nextState = { ...state.value, view: nextView, resourcesOpen: false };
   return defaultExpandedRows(nextView, selectedProject.value, constructionSource(nextState));
 }
-function showMaster() { expandedRowIds.value = new Set(); view.value = 'master'; resourcesOpen.value = false; filtersOpen.value = false; }
-function showSchedule() { expandedRowIds.value = expandedFor('project'); view.value = 'project'; resourcesOpen.value = false; filtersOpen.value = false; }
-function showLookAhead() { expandedRowIds.value = expandedFor('lookahead'); view.value = 'lookahead'; resourcesOpen.value = false; filtersOpen.value = false; }
-function showResources() { view.value = 'project'; resourcesOpen.value = true; filtersOpen.value = false; }
-function movePeriod(direction: -1 | 1) { period.value = moveLookAheadPeriod(period.value, direction); }
-function resetPeriod() { period.value = { ...DEFAULT_LOOK_AHEAD }; }
+function showMaster() { expandedRowIds.value = new Set(); view.value = 'master'; resourcesOpen.value = false; filtersOpen.value = false; refreshActiveSource(); }
+function showSchedule() { expandedRowIds.value = expandedFor('project'); view.value = 'project'; resourcesOpen.value = false; filtersOpen.value = false; refreshActiveSource(); }
+function showLookAhead() { expandedRowIds.value = expandedFor('lookahead'); view.value = 'lookahead'; resourcesOpen.value = false; filtersOpen.value = false; refreshActiveSource(); }
+function showResources() { view.value = 'project'; resourcesOpen.value = true; filtersOpen.value = false; refreshActiveSource(); }
+function movePeriod(direction: -1 | 1) { period.value = moveLookAheadPeriod(period.value, direction); refreshActiveSource(); }
+function resetPeriod() { period.value = { ...DEFAULT_LOOK_AHEAD }; refreshActiveSource(); }
 function resetFilters() {
-  if (view.value === 'lookahead') filters.value = { ...DEFAULT_LOOK_AHEAD_FILTERS };
+  if (view.value === 'lookahead') { filters.value = { ...DEFAULT_LOOK_AHEAD_FILTERS }; refreshActiveSource(); }
   else projectDepartment.value = 'all';
 }
 function updateDepartment(department: typeof DEPARTMENT_FILTERS[number]) {
-  if (view.value === 'lookahead') filters.value = { ...filters.value, department };
+  if (view.value === 'lookahead') { filters.value = { ...filters.value, department }; refreshActiveSource(); }
   else projectDepartment.value = department;
 }
 function handleTreeState(event: CustomEvent<{ expandedRowIds: Set<string> }>) {
   expandedRowIds.value = new Set(event.detail.expandedRowIds);
 }
 function handleTaskChange(event: CustomEvent) {
-  if (!allowsConstructionTaskChange(event.detail, tasks.value, view.value === 'master')) {
+  const result = applyConstructionTaskChange(event.detail, tasks.value, view.value === 'master');
+  if (!result.accepted) {
     event.preventDefault();
     return;
   }
-  tasks.value = applyConstructionTaskPatch(tasks.value, event.detail);
+  tasks.value = result.tasks;
+  if (result.refreshProjection) refreshActiveSource(result.tasks);
 }
 function handleSchedulerChange(event: CustomEvent) {
   tasks.value = applySchedulerTaskChanges(tasks.value, event.detail);
+  refreshActiveSource(tasks.value);
 }
 const disconnectTheme = observeCurrentTheme((dark) => { isDark.value = dark; });
 onBeforeUnmount(disconnectTheme);

@@ -10,9 +10,9 @@ import {
 import { RevoGrid } from '@revolist/angular-datagrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import { DEFAULT_LOOK_AHEAD, DEFAULT_LOOK_AHEAD_FILTERS } from './shared/data/projections';
-import { applyConstructionTaskPatch, moveLookAheadPeriod } from './shared/data/updates';
+import { moveLookAheadPeriod } from './shared/data/updates';
 import { applySchedulerTaskChanges } from './shared/scheduler/updates';
-import { allowsConstructionTaskChange } from './shared/services/validation';
+import { applyConstructionTaskChange } from './shared/services/task-change';
 import {
   createConstructionGridBindings,
   type ConstructionGridBindings,
@@ -185,6 +185,7 @@ export class ConstructionFabricationGanttComponent implements OnDestroy {
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly zone = inject(NgZone);
   private readonly initial = createConstructionWorkspaceState();
+  private activeSource = constructionSource(this.initial);
   private readonly disconnectTheme = observeCurrentTheme((dark) => this.zone.run(() => {
     this.isDark = dark;
     this.changeDetector.markForCheck();
@@ -241,7 +242,7 @@ export class ConstructionFabricationGanttComponent implements OnDestroy {
   showSchedule() { this.expandedRowIds = this.expandedFor('project'); this.view = 'project'; this.resourcesOpen = false; this.filtersOpen = false; this.commit(); }
   showLookAhead() { this.expandedRowIds = this.expandedFor('lookahead'); this.view = 'lookahead'; this.resourcesOpen = false; this.filtersOpen = false; this.commit(); }
   showResources() { this.view = 'project'; this.resourcesOpen = true; this.filtersOpen = false; this.commit(); }
-  setScale(scale: ConstructionScale) { this.scale = scale; this.commit(); }
+  setScale(scale: ConstructionScale) { this.scale = scale; this.commit(false); }
   movePeriod(direction: -1 | 1) { this.period = moveLookAheadPeriod(this.period, direction); this.commit(); }
   resetPeriod() { this.period = { ...DEFAULT_LOOK_AHEAD }; this.commit(); }
   resetFilters() {
@@ -252,7 +253,7 @@ export class ConstructionFabricationGanttComponent implements OnDestroy {
   updateDepartment(department: typeof DEPARTMENT_FILTERS[number]) {
     if (this.view === 'lookahead') this.filters = { ...this.filters, department };
     else this.projectDepartment = department;
-    this.commit();
+    this.commit(this.view === 'lookahead');
   }
   updateWorkArea(event: Event) {
     this.filters = { ...this.filters, workArea: (event.target as HTMLSelectElement).value };
@@ -263,12 +264,14 @@ export class ConstructionFabricationGanttComponent implements OnDestroy {
     this.refreshBindings();
   }
   handleTaskChange(event: CustomEvent) {
-    if (!allowsConstructionTaskChange(event.detail, this.tasks, this.view === 'master')) {
+    const result = applyConstructionTaskChange(event.detail, this.tasks, this.view === 'master');
+    if (!result.accepted) {
       event.preventDefault();
       return;
     }
-    this.tasks = applyConstructionTaskPatch(this.tasks, event.detail);
-    this.commit();
+    this.tasks = result.tasks;
+    if (result.refreshProjection) this.commit();
+    else this.changeDetector.detectChanges();
   }
   handleSchedulerChange(event: CustomEvent) {
     this.tasks = applySchedulerTaskChanges(this.tasks, event.detail);
@@ -276,18 +279,18 @@ export class ConstructionFabricationGanttComponent implements OnDestroy {
   }
 
   private refreshBindings() {
-    const source = constructionSource(this.state);
     const options: ConstructionGridOptions = {
       ...this.state,
       projectName: this.projectName,
-      sourceForView: () => source,
+      sourceForView: () => this.activeSource,
       openProject: this.openProject,
       setTasks: (tasks) => { this.tasks = tasks; },
       setExpandedRowIds: (ids) => { this.expandedRowIds = ids; },
     };
     this.gridBindings = createConstructionGridBindings(options);
   }
-  private commit() {
+  private commit(refreshProjection = true) {
+    if (refreshProjection) this.activeSource = constructionSource(this.state);
     this.refreshBindings();
     this.changeDetector.detectChanges();
   }

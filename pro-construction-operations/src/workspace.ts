@@ -343,6 +343,7 @@ export function mountConstructionFabricationWorkspace(
       openProject,
       setTasks: (nextTasks) => { tasks = nextTasks; },
       setExpandedRowIds: (ids) => { expandedRowIds = ids; },
+      refreshProjection: render,
     }) || (() => {});
     workspace.append(main);
     shell.append(workspace);

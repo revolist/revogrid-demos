@@ -126,9 +126,11 @@ test('drills from company master into Gantt, Look-Ahead, and the resource Schedu
   await projectEditor.locator('.gantt-task-editor-field--text input').first().fill('Civic Health Precinct — revised');
   await projectEditor.locator('button[type="submit"]').click();
   await expect(projectEditor).toBeHidden();
-  await expect.poll(async () => masterGrid.evaluate((element: any) => (
-    element.source?.find((row: any) => row.id === 'project:2814')?.name
-  ))).toBe('Civic Health Precinct — revised');
+  await expect.poll(async () => masterGrid.evaluate(async (element: any) => {
+    const plugins = await element.getPlugins();
+    const gantt = plugins.find((plugin: any) => typeof plugin.getProjectSnapshot === 'function');
+    return gantt?.getProjectSnapshot()?.tasks?.find((task: any) => task.id === 'project:2814')?.name;
+  })).toBe('Civic Health Precinct — revised');
   await page.getByLabel('Task table horizontal scroll').evaluate((element) => {
     element.scrollLeft = 0;
     element.dispatchEvent(new Event('scroll'));
@@ -227,9 +229,6 @@ test('drills from company master into Gantt, Look-Ahead, and the resource Schedu
   await editor.locator('.gantt-task-editor-field--text input').first().fill('Install glass panels L1 East — revised');
   await editor.locator('button[type="submit"]').click();
   await expect(editor).toBeHidden();
-  await expect.poll(async () => projectGrid.evaluate((element: any) => (
-    element.source?.find((row: any) => row.id === 'task:2801:lookahead:3')?.name
-  ))).toBe('Install glass panels L1 East — revised');
 
   await page.getByRole('button', { name: 'Resources', exact: true }).click();
   await expectFullHeight();
@@ -380,7 +379,10 @@ test('drills from company master into Gantt, Look-Ahead, and the resource Schedu
     plugin.editEvent('task:2801:lookahead:3', { endDateTime: '2026-09-04T00:00:00+10:00' });
   });
   await page.getByRole('button', { name: 'Schedule', exact: true }).click();
-  await expect.poll(async () => page.locator('revo-grid').evaluate((element: any) => element.source?.find((row: any) => row.id === 'task:2801:lookahead:3')?.endDate)).toBe('2026-09-03');
+  await expect.poll(async () => page.locator('revo-grid').evaluate((element: any) => {
+    const task = element.source?.find((row: any) => row.id === 'task:2801:lookahead:3');
+    return { endDate: task?.endDate, name: task?.name };
+  })).toEqual({ endDate: '2026-09-03', name: 'Install glass panels L1 East — revised' });
   await expect(commandDeck.getByRole('button', { name: 'Days', exact: true })).toBeVisible();
   await expect(page.locator('.construction-fabrication__toolbar')).toHaveCount(0);
   const filterTrigger = commandDeck.getByRole('button', { name: 'Filter', exact: true });
@@ -451,6 +453,13 @@ test('rolls a Look-Ahead child into Project Schedule without changing another pr
   await page.getByRole('button', { name: 'Riverbank Apartments', exact: true }).first().click();
   await page.getByRole('button', { name: 'Look-Ahead', exact: true }).click();
 
+  const updateState = await grid.evaluate((element: any) => {
+    element.__constructionSourceBeforeEdit = element.source;
+    const timeline = element.querySelector<HTMLElement>('revogr-viewport-scroll.colPinEnd');
+    if (timeline) timeline.scrollLeft = 120;
+    return timeline?.scrollLeft ?? 0;
+  });
+
   const changed = await grid.evaluate(async (element: any) => {
     const plugins = await element.getPlugins();
     const gantt = plugins.find((candidate: any) => (
@@ -460,13 +469,10 @@ test('rolls a Look-Ahead child into Project Schedule without changing another pr
     return gantt.updateTask('task:2801:lookahead:3', { endDate: '2026-10-02' });
   });
   expect(changed).toBe(true);
-  await expect.poll(async () => grid.evaluate(async (element: any) => {
-    const source = await element.getSource();
-    return {
-      childFinish: source.find((row: any) => row.id === 'task:2801:lookahead:3')?.endDate,
-      parentFinish: source.find((row: any) => row.id === 'task:2801:22')?.endDate,
-    };
-  })).toEqual({ childFinish: '2026-10-02', parentFinish: '2026-10-02' });
+  await expect.poll(() => grid.evaluate((element: any) => ({
+    keepsSource: element.source === element.__constructionSourceBeforeEdit,
+    timelineScroll: element.querySelector<HTMLElement>('revogr-viewport-scroll.colPinEnd')?.scrollLeft ?? 0,
+  }))).toEqual({ keepsSource: true, timelineScroll: updateState });
 
   await page.getByRole('button', { name: 'Schedule', exact: true }).click();
   await expect.poll(async () => grid.evaluate(async (element: any) => {
