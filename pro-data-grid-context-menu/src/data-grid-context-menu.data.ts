@@ -78,10 +78,9 @@ export function createTeamRowForAction(
 
 export function createDataGridFormattingPresets() {
   return {
-    rowKeyProp: 'id',
     columns: [
       {
-        prop: 'score',
+        column: 4,
         format: {
           presentation: {
             id: 'progress-line',
@@ -90,10 +89,10 @@ export function createDataGridFormattingPresets() {
           appearance: { horizontal: 'right' },
         },
       },
-      { prop: 'status', format: { presentation: { id: 'badge' } } },
-      { prop: 'approved', format: { presentation: { id: 'thumbs' } } },
+      { column: 3, format: { presentation: { id: 'badge' } } },
+      { column: 6, format: { presentation: { id: 'thumbs' } } },
       {
-        prop: 'schedule',
+        column: 7,
         format: {
           presentation: {
             id: 'timeline',
@@ -102,14 +101,13 @@ export function createDataGridFormattingPresets() {
         },
       },
       {
-        prop: 'joinedAt',
+        column: 8,
         format: { value: { preset: 'date', dateStyle: 'medium' } },
       },
     ],
     cells: [
       {
-        rowKey: 101,
-        prop: 'score',
+        range: { start: { row: 0, column: 4 } },
         format: {
           presentation: {
             id: 'circular-progress',
@@ -124,8 +122,7 @@ export function createDataGridFormattingPresets() {
         },
       },
       {
-        rowKey: 102,
-        prop: 'name',
+        range: { start: { row: 1, column: 1 } },
         format: {
           presentation: {
             id: 'avatar-with-text',
@@ -134,8 +131,7 @@ export function createDataGridFormattingPresets() {
         },
       },
       {
-        rowKey: 103,
-        prop: 'score',
+        range: { start: { row: 2, column: 4 } },
         format: {
           presentation: {
             id: 'heatmap',
@@ -150,8 +146,7 @@ export function createDataGridFormattingPresets() {
         },
       },
       {
-        rowKey: 105,
-        prop: 'score',
+        range: { start: { row: 4, column: 4 } },
         format: {
           presentation: { id: 'rating', options: { maxStars: 5 } },
           appearance: {
@@ -163,8 +158,7 @@ export function createDataGridFormattingPresets() {
         },
       },
       {
-        rowKey: 108,
-        prop: 'owner',
+        range: { start: { row: 7, column: 5 } },
         format: {
           appearance: {
             italic: true,

@@ -47,32 +47,37 @@ test('showcase data covers grouped, editable, and readonly targets', () => {
 test('showcase assigns date formatting and its editor to the Joined column', async () => {
   const formatting = createDataGridFormattingPresets();
 
-  assert.equal(formatting.rowKeyProp, 'id');
   assert.equal(formatting.columns.length, 5);
   assert.deepEqual(
-    formatting.columns.map(column => column.prop),
-    ['score', 'status', 'approved', 'schedule', 'joinedAt'],
+    formatting.columns.map(column => column.column),
+    [4, 3, 6, 7, 8],
   );
   assert.equal(formatting.cells.length, 5);
   assert.equal(
-    new Set(formatting.cells.map(cell => `${cell.rowKey}:${cell.prop}`)).size,
+    new Set(formatting.cells.map(cell => (
+      `${cell.range.start.row}:${cell.range.start.column}`
+    ))).size,
     formatting.cells.length,
   );
   assert.deepEqual(
-    formatting.cells.map(cell => [cell.rowKey, cell.prop]),
+    formatting.cells.map(cell => [cell.range.start.row, cell.range.start.column]),
     [
-      [101, 'score'],
-      [102, 'name'],
-      [103, 'score'],
-      [105, 'score'],
-      [108, 'owner'],
+      [0, 4],
+      [1, 1],
+      [2, 4],
+      [4, 4],
+      [7, 5],
     ],
   );
-  const joined = formatting.columns.find(column => column.prop === 'joinedAt');
+  const joined = formatting.columns.find(column => column.column === 8);
   assert.equal(joined?.format.value?.preset, 'date');
-  const avatar = formatting.cells.find(cell => cell.rowKey === 102 && cell.prop === 'name');
+  const avatar = formatting.cells.find(cell => (
+    cell.range.start.row === 1 && cell.range.start.column === 1
+  ));
   assert.equal(avatar?.format.presentation?.id, 'avatar-with-text');
-  const rating = formatting.cells.find(cell => cell.rowKey === 105 && cell.prop === 'score');
+  const rating = formatting.cells.find(cell => (
+    cell.range.start.row === 4 && cell.range.start.column === 4
+  ));
   assert.equal(rating?.format.presentation?.id, 'rating');
   assert.equal(rating?.format.appearance?.horizontal, 'center');
 

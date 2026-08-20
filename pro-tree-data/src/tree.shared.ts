@@ -49,9 +49,7 @@ export const TREE_ROW_SELECT_CONFIG = {
   rowOrder: true,
 };
 
-export const TREE_DATA_GRID_FORMATTING = {
-  rowKeyProp: 'id',
-} as const;
+export const TREE_DATA_GRID_FORMATTING = {} as const;
 
 export const TREE_DATA_GRID_CONTEXT_MENU = {
   formatting: {},

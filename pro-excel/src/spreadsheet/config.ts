@@ -10,9 +10,7 @@ export const SPREADSHEET_EXPORT_CONFIG: ExportExcelEvent = {
   workbookName: 'revogrid-spreadsheet-workbench.xlsx',
 };
 
-export const SPREADSHEET_DATA_GRID_FORMATTING = {
-  rowKeyProp: 'id',
-} as const;
+export const SPREADSHEET_DATA_GRID_FORMATTING = {} as const;
 
 export const SPREADSHEET_DATA_GRID_CONTEXT_MENU = {
   formatting: {
