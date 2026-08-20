@@ -3,6 +3,7 @@
 
 # Build output
 **/dist/
+**/.artifacts/
 **/out-tsc/
 **/.angular/
 

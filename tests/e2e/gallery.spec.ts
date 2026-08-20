@@ -16,6 +16,8 @@ const retainedSlugs = [
   'audit-history',
   'tree-data',
   'planning',
+  'construction-operations',
+  'construction-gantt-simple',
 ];
 
 test('gallery is complete, keyboard navigable, and responsive', async ({ page }) => {
@@ -24,8 +26,8 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('18 complete ways');
-  await expect(page.locator('.showcase-card')).toHaveCount(18);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('20 complete ways');
+  await expect(page.locator('.showcase-card')).toHaveCount(20);
   await page.keyboard.press('Tab');
   await expect(page.locator(':focus')).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
@@ -43,6 +45,17 @@ for (const slug of [...featureSlugs, ...retainedSlugs]) {
     await expect(page.locator('revo-grid').first()).toBeVisible({ timeout: 15_000 });
   });
 }
+
+test('construction gallery route keeps the canonical TypeScript build and current scoped styles', async ({ page }) => {
+  await page.goto('/construction-operations/demo/');
+
+  const shell = page.locator('.construction-fabrication');
+  const projectLink = shell.locator('.construction-fabrication__project-link').first();
+  await expect(shell).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('construction-operations-grid')).toHaveCount(0);
+  await expect(projectLink).toHaveCSS('color', 'rgb(29, 78, 216)');
+  await expect(shell.locator('.rowHeaders .revo-drag-icon').first()).toBeHidden();
+});
 
 test('audit history attributes a live edit and appends it to the ledger', async ({ page }) => {
   const errors: string[] = [];
@@ -79,7 +92,7 @@ test('feature pages expose trial and upgrade paths', async ({ page }) => {
   }
 });
 
-test('filtering showcase composes global search, chips, and Clear All responsively', async ({ page }) => {
+test('filtering showcase composes global search, filter badges, and Clear All responsively', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   page.on('pageerror', error => errors.push(error.message));
@@ -97,9 +110,10 @@ test('filtering showcase composes global search, chips, and Clear All responsive
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(explorer).toBeVisible();
+  await expect(explorer.getByRole('listitem')).toHaveCount(2);
 
   await explorer.getByRole('button', { name: 'Try example' }).click();
-  await expect(explorer.locator('.order-explorer__quick-chip')).toContainText('Search: Lisbon pending');
+  await expect(explorer.getByRole('searchbox', { name: 'Search all visible columns' })).toHaveValue('Lisbon pending');
   await expect.poll(async () => count.textContent()).not.toBe('1,000 of 1,000 orders');
 
   await explorer.getByRole('button', { name: 'Clear All' }).click();

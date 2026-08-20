@@ -176,6 +176,34 @@
     "media": { "poster": "assets/pro-tree-data-poster.svg" }
   },
   {
+    "slug": "construction-operations",
+    "title": "Construction + Fabrication Operations",
+    "summary": "A CSV-backed construction workspace connecting company master schedules, fabrication and installation Gantt plans, rolling Look-Ahead control, and a crew Scheduler.",
+    "edition": "Pro Advanced",
+    "sourceDir": "pro-construction-operations",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-construction-operations",
+    "productUrl": "https://pro.rv-grid.com/",
+    "trialUrl": "https://pro.rv-grid.com/guides/installation-npm-trial/",
+    "pricingUrl": "https://rv-grid.com/pricing/",
+    "frameworks": ["ts", "react", "vue", "angular"],
+    "highlights": ["Company-to-project drill-down", "Rolling two-week field control", "Gantt and Scheduler synchronization"],
+    "media": { "poster": "assets/pro-construction-operations-poster.jpg" }
+  },
+  {
+    "slug": "construction-gantt-simple",
+    "title": "Construction Gantt: Simple Portfolio",
+    "summary": "A deliberately minimal construction plan: one Gantt source for the company portfolio, project focus, and an inclusive date-range Look-Ahead.",
+    "edition": "Pro Advanced",
+    "sourceDir": "pro-construction-gantt-simple",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-construction-gantt-simple",
+    "productUrl": "https://pro.rv-grid.com/",
+    "trialUrl": "https://pro.rv-grid.com/guides/installation-npm-trial/",
+    "pricingUrl": "https://rv-grid.com/pricing/",
+    "frameworks": ["ts", "react", "vue", "angular"],
+    "highlights": ["One persistent Gantt", "Project and date-range projections", "Unrestricted hierarchy reordering"],
+    "media": { "poster": "assets/pro-construction-gantt-simple-poster.svg" }
+  },
+  {
     "slug": "planning",
     "title": "Unified Planning Suite",
     "summary": "One editable task model presented through coordinated Grid, Gantt, Scheduler, and Calendar planning surfaces.",

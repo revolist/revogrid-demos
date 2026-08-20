@@ -2,7 +2,7 @@
 
 # RevoGrid Examples
 
-**Sixteen production-style showcases. Four feature repositories. One polished gallery.**
+**Twenty production-style showcases. Four feature repositories. One polished gallery.**
 
 [![Frameworks](https://img.shields.io/badge/TypeScript%20%7C%20React%20%7C%20Vue%20%7C%20Angular-4f46e5)](#showcases)
 [![RevoGrid](https://img.shields.io/badge/RevoGrid-4.25.1-2563eb)](https://rv-grid.com/)
@@ -37,6 +37,8 @@ revogrid-demos/
 ├── pro-audit-history/         # retained accountable change-log showcase
 ├── pro-tree-data/             # retained hierarchical data showcase
 ├── pro-advanced-planning/     # retained planning suite
+├── pro-construction-operations/ # retained construction operations suite
+├── pro-construction-gantt-simple/ # one-Gantt construction portfolio
 ├── gallery/                   # visual system and retained metadata
 └── scripts/                   # setup, build, test, media delegation
 ```
@@ -64,6 +66,8 @@ initializes them and advances every checkout to the latest remote `main`.
 | Pro Advanced | Kanban | [`revolist/kanban`](https://github.com/revolist/kanban) | [`kanban.rv-grid.com`](https://kanban.rv-grid.com/demo/) |
 | Pro Advanced | Scheduler | [`revolist/scheduler`](https://github.com/revolist/scheduler) | [`scheduler.rv-grid.com`](https://scheduler.rv-grid.com/demo/) |
 | Pro Advanced | Unified Planning Suite | [`pro-advanced-planning`](./pro-advanced-planning/) | [`/planning/`](https://example.rv-grid.com/planning/) |
+| Pro Advanced | Construction + Fabrication Operations | [`pro-construction-operations`](./pro-construction-operations/) | [`/construction-operations/`](https://example.rv-grid.com/construction-operations/) |
+| Pro Advanced | Construction Gantt: Simple Portfolio | [`pro-construction-gantt-simple`](./pro-construction-gantt-simple/) | [`/construction-gantt-simple/`](https://example.rv-grid.com/construction-gantt-simple/) |
 
 The gallery retains detail and demo routes at `/<showcase>/` and
 `/<showcase>/demo/`. Feature live-demo links use the dedicated subdomains.
@@ -127,10 +131,10 @@ then choose the feature you want to run:
 
 ```bash
 pnpm config set @revolist:registry https://trial.rv-grid.com --location=project
-pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.10 @revolist/pivot@npm:@revolist/pivot-trial@2.7.10
-pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.10 @revolist/gantt@npm:@revolist/gantt-trial@2.7.10
-pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.10 @revolist/kanban@npm:@revolist/kanban-trial@2.7.10
-pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.10 @revolist/scheduler@npm:@revolist/scheduler-trial@2.7.10
+pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.13 @revolist/pivot@npm:@revolist/pivot-trial@2.7.13
+pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.13 @revolist/gantt@npm:@revolist/gantt-trial@2.7.13
+pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.13 @revolist/kanban@npm:@revolist/kanban-trial@2.7.13
+pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.13 @revolist/scheduler@npm:@revolist/scheduler-trial@2.7.13
 ```
 
 ### Pro version
@@ -140,16 +144,19 @@ matching production packages instead:
 
 ```bash
 pnpm config delete @revolist:registry --location=project
-pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@2.7.10 @revolist/pivot@2.7.10
-pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@2.7.10 @revolist/gantt@2.7.10
-pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@2.7.10 @revolist/kanban@2.7.10
-pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@2.7.10 @revolist/scheduler@2.7.10
+pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@2.7.13 @revolist/pivot@2.7.13
+pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@2.7.13 @revolist/gantt@2.7.13
+pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@2.7.13 @revolist/kanban@2.7.13
+pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@2.7.13 @revolist/scheduler@2.7.13
 ```
 
 No source imports change between editions. RevoGrid core and framework wrappers
 are pinned to the validated 4.25.1 line. See the [official installation
 guide](https://pro.rv-grid.com/guides/installation-npm-trial/) for current
 package and framework details.
+
+Never commit registry tokens, credentials, proprietary implementation source,
+or commercial license material.
 
 ## Publishing
 
