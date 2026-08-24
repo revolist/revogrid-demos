@@ -77,7 +77,7 @@ importers:
     devDependencies:
       '@angular/build':
         specifier: ^22.1.0
-        version: 22.1.4(@angular/compiler-cli@22.1.2(@angular/compiler@22.1.2)(typescript@6.0.3))(@angular/compiler@22.1.2)(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@5.0.0)(istanbul-lib-instrument@6.0.3)(postcss@8.5.26)(rollup@4.62.4)(sass-embedded@1.102.0)(tslib@2.8.1)(tsx@4.23.12)(typescript@6.0.3)(vitest@4.1.11(jsdom@29.1.1)(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.101.0)(tsx@4.23.12)))
+        version: 22.1.4(@angular/compiler-cli@22.1.2(@angular/compiler@22.1.2)(typescript@6.0.3))(@angular/compiler@22.1.2)(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@5.0.0)(istanbul-lib-instrument@6.0.3)(postcss@8.5.26)(rollup@4.62.4)(sass-embedded@1.102.0)(tslib@2.8.1)(tsx@4.23.12)(typescript@6.0.3)(vitest@4.1.11(jsdom@29.1.1)(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12)))
       '@angular/cli':
         specifier: ^22.1.0
         version: 22.1.4(chokidar@5.0.0)
@@ -92,16 +92,16 @@ importers:
         version: 18.3.7(@types/react@18.3.31)
       '@vitejs/plugin-react':
         specifier: ^4.3.4
-        version: 4.7.0(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.101.0)(tsx@4.23.12))
+        version: 4.7.0(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))
       '@vitejs/plugin-vue':
         specifier: ^5.2.1
-        version: 5.2.4(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.101.0)(tsx@4.23.12))(vue@3.5.41(typescript@6.0.3))
+        version: 5.2.4(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))(vue@3.5.41(typescript@6.0.3))
       typescript:
         specifier: ~6.0.3
         version: 6.0.3
       vite:
         specifier: ^6.3.5
-        version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.101.0)(tsx@4.23.12)
+        version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12)
       vue-tsc:
         specifier: ^2.2.10
         version: 2.2.12(typescript@6.0.3)
@@ -168,7 +168,7 @@ importers:
     devDependencies:
       '@angular/build':
         specifier: ^22.1.0
-        version: 22.1.4(@angular/compiler-cli@22.1.2(@angular/compiler@22.1.2)(typescript@6.0.3))(@angular/compiler@22.1.2)(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@5.0.0)(istanbul-lib-instrument@6.0.3)(postcss@8.5.26)(rollup@4.62.4)(sass-embedded@1.102.0)(tslib@2.8.1)(tsx@4.23.12)(typescript@6.0.3)(vitest@4.1.11(jsdom@29.1.1)(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12)))
+        version: 22.1.4(@angular/compiler-cli@22.1.2(@angular/compiler@22.1.2)(typescript@6.0.3))(@angular/compiler@22.1.2)(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@5.0.0)(istanbul-lib-instrument@6.0.3)(postcss@8.5.26)(rollup@4.62.4)(sass-embedded@1.102.0)(tslib@2.8.1)(tsx@4.23.12)(typescript@6.0.3)(vitest@4.1.11(jsdom@29.1.1)(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.101.0)(tsx@4.23.12)))
       '@angular/cli':
         specifier: ^22.1.0
         version: 22.1.4(chokidar@5.0.0)
@@ -183,16 +183,16 @@ importers:
         version: 18.3.7(@types/react@18.3.31)
       '@vitejs/plugin-react':
         specifier: ^4.3.4
-        version: 4.7.0(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))
+        version: 4.7.0(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.101.0)(tsx@4.23.12))
       '@vitejs/plugin-vue':
         specifier: ^5.2.1
-        version: 5.2.4(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))(vue@3.5.41(typescript@6.0.3))
+        version: 5.2.4(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.101.0)(tsx@4.23.12))(vue@3.5.41(typescript@6.0.3))
       typescript:
         specifier: ~6.0.3
         version: 6.0.3
       vite:
         specifier: ^6.3.5
-        version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12)
+        version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.101.0)(tsx@4.23.12)
       vue-tsc:
         specifier: ^2.2.10
         version: 2.2.12(typescript@6.0.3)
@@ -297,11 +297,11 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/gantt':
-        specifier: npm:@revolist/gantt-trial@2.7.13
-        version: '@revolist/gantt-trial@2.7.13'
+        specifier: npm:@revolist/gantt-trial@2.7.15
+        version: '@revolist/gantt-trial@2.7.15'
       '@revolist/kanban':
-        specifier: npm:@revolist/kanban-trial@2.7.13
-        version: '@revolist/kanban-trial@2.7.13'
+        specifier: npm:@revolist/kanban-trial@2.7.15
+        version: '@revolist/kanban-trial@2.7.15'
       '@revolist/react-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -309,11 +309,11 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
+        specifier: npm:@revolist/rv-pro-trial@2.7.15
+        version: '@revolist/rv-pro-trial@2.7.15'
       '@revolist/scheduler':
-        specifier: npm:@revolist/scheduler-trial@2.7.13
-        version: '@revolist/scheduler-trial@2.7.13'
+        specifier: npm:@revolist/scheduler-trial@2.7.15
+        version: '@revolist/scheduler-trial@2.7.15'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -394,8 +394,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
+        specifier: npm:@revolist/rv-pro-trial@2.7.15
+        version: '@revolist/rv-pro-trial@2.7.15'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -464,8 +464,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
+        specifier: npm:@revolist/rv-pro-trial@2.7.15
+        version: '@revolist/rv-pro-trial@2.7.15'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -509,106 +509,6 @@ importers:
       vite:
         specifier: ^6.3.5
         version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12)
-
-  pro-construction-gantt-simple:
-    dependencies:
-      '@angular/common':
-        specifier: ^22.1.0
-        version: 22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2)
-      '@angular/compiler':
-        specifier: ^22.1.0
-        version: 22.1.2
-      '@angular/core':
-        specifier: ^22.1.0
-        version: 22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1)
-      '@angular/platform-browser':
-        specifier: ^22.1.0
-        version: 22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))
-      '@fortawesome/fontawesome-free':
-        specifier: 7.3.1
-        version: 7.3.1
-      '@revolist/angular-datagrid':
-        specifier: 4.25.1
-        version: 4.25.1
-      '@revolist/gantt':
-        specifier: npm:@revolist/gantt-trial@2.7.13
-        version: '@revolist/gantt-trial@2.7.13'
-      '@revolist/react-datagrid':
-        specifier: 4.25.1
-        version: 4.25.1
-      '@revolist/revogrid':
-        specifier: 4.25.1
-        version: 4.25.1
-      '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
-      '@revolist/vue3-datagrid':
-        specifier: 4.25.1
-        version: 4.25.1
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      rxjs:
-        specifier: ~7.8.0
-        version: 7.8.2
-      tslib:
-        specifier: ^2.4.0
-        version: 2.8.1
-      vue:
-        specifier: ^3.5.21
-        version: 3.5.41(typescript@6.0.3)
-      zone.js:
-        specifier: ~0.15.0
-        version: 0.15.1
-    devDependencies:
-      '@analogjs/vite-plugin-angular':
-        specifier: ^2.6.3
-        version: 2.7.0(@angular/build@22.1.4(@angular/compiler-cli@22.1.2(@angular/compiler@22.1.2)(typescript@6.0.3))(@angular/compiler@22.1.2)(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@5.0.0)(istanbul-lib-instrument@6.0.3)(postcss@8.5.26)(rollup@4.62.4)(sass-embedded@1.102.0)(tslib@2.8.1)(tsx@4.23.12)(typescript@6.0.3)(vitest@4.1.11(jsdom@29.1.1)(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))))(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))
-      '@angular/build':
-        specifier: ^22.1.0
-        version: 22.1.4(@angular/compiler-cli@22.1.2(@angular/compiler@22.1.2)(typescript@6.0.3))(@angular/compiler@22.1.2)(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@5.0.0)(istanbul-lib-instrument@6.0.3)(postcss@8.5.26)(rollup@4.62.4)(sass-embedded@1.102.0)(tslib@2.8.1)(tsx@4.23.12)(typescript@6.0.3)(vitest@4.1.11(jsdom@29.1.1)(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12)))
-      '@angular/cli':
-        specifier: ^22.1.0
-        version: 22.1.4(chokidar@5.0.0)
-      '@angular/compiler-cli':
-        specifier: ^22.1.0
-        version: 22.1.2(@angular/compiler@22.1.2)(typescript@6.0.3)
-      '@playwright/test':
-        specifier: 1.59.1
-        version: 1.59.1
-      '@types/react':
-        specifier: ^18.3.18
-        version: 18.3.31
-      '@types/react-dom':
-        specifier: ^18.3.5
-        version: 18.3.7(@types/react@18.3.31)
-      '@vitejs/plugin-react':
-        specifier: ^4.3.4
-        version: 4.7.0(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))
-      '@vitejs/plugin-vue':
-        specifier: ^5.2.1
-        version: 5.2.4(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))(vue@3.5.41(typescript@6.0.3))
-      jsdom:
-        specifier: ^29.1.1
-        version: 29.1.1
-      sass-embedded:
-        specifier: ^1.83.4
-        version: 1.102.0
-      typescript:
-        specifier: ~6.0.3
-        version: 6.0.3
-      vite:
-        specifier: ^6.3.5
-        version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12)
-      vitest:
-        specifier: ^4.1.10
-        version: 4.1.11(jsdom@29.1.1)(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))
-      vue-tsc:
-        specifier: ^2.2.10
-        version: 2.2.12(typescript@6.0.3)
 
   pro-construction-operations:
     dependencies:
@@ -634,8 +534,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/gantt':
-        specifier: npm:@revolist/gantt-trial@2.7.13
-        version: '@revolist/gantt-trial@2.7.13'
+        specifier: npm:@revolist/gantt-trial@2.7.15
+        version: '@revolist/gantt-trial@2.7.15'
       '@revolist/react-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -643,11 +543,11 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
+        specifier: npm:@revolist/rv-pro-trial@2.7.15
+        version: '@revolist/rv-pro-trial@2.7.15'
       '@revolist/scheduler':
-        specifier: npm:@revolist/scheduler-trial@2.7.13
-        version: '@revolist/scheduler-trial@2.7.13'
+        specifier: npm:@revolist/scheduler-trial@2.7.15
+        version: '@revolist/scheduler-trial@2.7.15'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -743,8 +643,8 @@ importers:
         specifier: ^2.0.25
         version: 2.0.25
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
+        specifier: npm:@revolist/rv-pro-trial@2.7.15
+        version: '@revolist/rv-pro-trial@2.7.15'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -819,8 +719,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
+        specifier: npm:@revolist/rv-pro-trial@2.7.15
+        version: '@revolist/rv-pro-trial@2.7.15'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -895,8 +795,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
+        specifier: npm:@revolist/rv-pro-trial@2.7.15
+        version: '@revolist/rv-pro-trial@2.7.15'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -986,8 +886,8 @@ importers:
         specifier: 2.0.11
         version: 2.0.11
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
+        specifier: npm:@revolist/rv-pro-trial@2.7.15
+        version: '@revolist/rv-pro-trial@2.7.15'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -1062,8 +962,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
+        specifier: npm:@revolist/rv-pro-trial@2.7.15
+        version: '@revolist/rv-pro-trial@2.7.15'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -1141,8 +1041,8 @@ importers:
         specifier: 2.0.11
         version: 2.0.11
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
+        specifier: npm:@revolist/rv-pro-trial@2.7.15
+        version: '@revolist/rv-pro-trial@2.7.15'
       '@revolist/svelte-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -1217,8 +1117,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
+        specifier: npm:@revolist/rv-pro-trial@2.7.15
+        version: '@revolist/rv-pro-trial@2.7.15'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -1287,8 +1187,8 @@ importers:
         specifier: 4.25.1
         version: 4.25.1
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.7.13
-        version: '@revolist/rv-pro-trial@2.7.13'
+        specifier: npm:@revolist/rv-pro-trial@2.7.15
+        version: '@revolist/rv-pro-trial@2.7.15'
       '@revolist/vue3-datagrid':
         specifier: 4.25.1
         version: 4.25.1
@@ -1475,6 +1375,7 @@ packages:
   '@angular/platform-browser-dynamic@22.1.2':
     resolution: {integrity: sha512-nNARbs9zXfoJL72zsTso6GHt1VuIGXWEpyZtzxcC32qQFG1YbzVqGkQTwZ0mZ2/Ctv8dAZ6PPiDo8sbYvAvUDw==}
     engines: {node: ^22.22.3 || ^24.15.0 || >=26.0.0}
+    deprecated: '@angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.'
     peerDependencies:
       '@angular/common': 22.1.2
       '@angular/compiler': 22.1.2
@@ -2740,11 +2641,11 @@ packages:
   '@revolist/angular-datagrid@4.25.1':
     resolution: {integrity: sha512-DlzpER21jNb6zqUmHmcl8RomBIl4cIcodYcGZdqOZBAC8JtaUd9XGqKxpGlIB7tzeutkgi0GIjXLJA52KHSqeQ==}
 
-  '@revolist/gantt-trial@2.7.13':
-    resolution: {integrity: sha512-fEkcH1dzFWGmoW2LKO3bfW411LFRAQTnabSY30ztMpTeHNUoIbatmeyulLTk/cUt/TAuTiwbWvrj1edUDBbBlw==, tarball: https://trial.rv-grid.com/@revolist/gantt-trial/-/6daa7751dc54d294616a44650f5ceafdc48ce008}
+  '@revolist/gantt-trial@2.7.15':
+    resolution: {integrity: sha512-Jq/Nkt7Xf9Tp9tynVzGoN2O+MskupKHk7Ql9Xjnv2x/cMS87QzMMQCkC9TKNL7C36DZ2MCdiuqtJeU+6KtvKqA==, tarball: https://trial.rv-grid.com/@revolist/gantt-trial/-/146a166d873d28bc79a0315922c86e93f7d3d0b2}
 
-  '@revolist/kanban-trial@2.7.13':
-    resolution: {integrity: sha512-owAkgODiT7h9scV0S7e9HQT0znVD/zPRrsscNvV6WjhWBWzCoTcd6Xg0jW25brCHGzqZ908sAh5AjQabbpNhwg==, tarball: https://trial.rv-grid.com/@revolist/kanban-trial/-/53a1e15a7f4f9aaf707fc1cdd8a1c9e11ea57550}
+  '@revolist/kanban-trial@2.7.15':
+    resolution: {integrity: sha512-ChMYV8Plj/8wvSHxwr6i8hasW6VVoePy8RkrC7Rz9mEvbArphusCISCJl+OuO0VJ9oHMKjaTc8kmzfjby3GwqQ==, tarball: https://trial.rv-grid.com/@revolist/kanban-trial/-/308ee3d0eeec53f4201a52f085652e1301ef3523}
 
   '@revolist/react-datagrid@4.25.1':
     resolution: {integrity: sha512-DWLCX80jV0Tq18CexHQIIYMW22Lu/36gzQ0Kt1Q262o8qXXexETt+qgHnjr2ZGwec1TqrptGnKKJQIM+47HDzA==}
@@ -2764,11 +2665,11 @@ packages:
   '@revolist/revogrid@4.25.1':
     resolution: {integrity: sha512-5s5lhJExMRnKu1Z8cANFvfN/S+gvg5aIIQ54ihwuHEZkecbFSfpE1Dod6t6heNBFzSsO9N+LWgLTUpJf/sErYA==}
 
-  '@revolist/rv-pro-trial@2.7.13':
-    resolution: {integrity: sha512-RhcrABKCpcaOygbevmUFNWYt98z07Z0uX60z+4v5/ejr4ed7WJPYzqU0kRLbyU00UeXYH8cTfMuf7+bHP0Pn9A==, tarball: https://trial.rv-grid.com/@revolist/rv-pro-trial/-/58c6dda924f2b65efff170547a5cdbca179a5e0b}
+  '@revolist/rv-pro-trial@2.7.15':
+    resolution: {integrity: sha512-UXvV5TzA+lfrksPfJfL0O0kcetvw5fLKCB3rOajA8tcAgdO0aIodclMNi7v+3pacBQLwVd7yOjS310d6258Aqg==, tarball: https://trial.rv-grid.com/@revolist/rv-pro-trial/-/2dc78acfe4edc99bebad704b93d27f58e155d26a}
 
-  '@revolist/scheduler-trial@2.7.13':
-    resolution: {integrity: sha512-6dQ16f8da2aIsjmmvU8T9+48WkzuMGhjcqb/XmE40thvQSjrGm/9tu9tpyu9nuhhJxK8HGpHfYZP99YwnMQoLQ==, tarball: https://trial.rv-grid.com/@revolist/scheduler-trial/-/5465fa0d7a16f7ea6eda21aa27f28de41a4ede88}
+  '@revolist/scheduler-trial@2.7.15':
+    resolution: {integrity: sha512-9TWwJVexzW7F4mtDZ9oGHJHlsDtfqpirqpQ6HODz3ZiRTs0koFa44vbpjcON7xaO1P3o9VVkk8ENlaXsqc67Cg==, tarball: https://trial.rv-grid.com/@revolist/scheduler-trial/-/484eb2f17e6b24e76f26dc23ee7770fbb0b6f8ad}
 
   '@revolist/svelte-datagrid@4.25.1':
     resolution: {integrity: sha512-AMCCASSplUjrN4E7u6lE379VcN0jE5LB3vb5jqOdBnNiUJf0r4fP5L+PsHMf64FwFc4nqq+z8tBvx9kTHoH7rA==}
@@ -5957,19 +5858,19 @@ snapshots:
       '@stencil/core': 4.44.0
       tslib: 2.8.1
 
-  '@revolist/gantt-trial@2.7.13':
+  '@revolist/gantt-trial@2.7.15':
     dependencies:
       '@fortawesome/fontawesome-free': 7.3.1
       '@revolist/revogrid': 4.25.1
       '@revolist/revogrid-column-date': 2.0.25
       '@revolist/revogrid-column-select': 3.2.2
-      '@revolist/rv-pro-trial': 2.7.13
+      '@revolist/rv-pro-trial': 2.7.15
 
-  '@revolist/kanban-trial@2.7.13':
+  '@revolist/kanban-trial@2.7.15':
     dependencies:
       '@fortawesome/fontawesome-free': 7.3.1
       '@revolist/revogrid': 4.25.1
-      '@revolist/rv-pro-trial': 2.7.13
+      '@revolist/rv-pro-trial': 2.7.15
 
   '@revolist/react-datagrid@4.25.1':
     dependencies:
@@ -5990,17 +5891,17 @@ snapshots:
 
   '@revolist/revogrid@4.25.1': {}
 
-  '@revolist/rv-pro-trial@2.7.13':
+  '@revolist/rv-pro-trial@2.7.15':
     dependencies:
       '@formulajs/formulajs': 4.6.1
       '@revolist/revogrid': 4.25.1
       write-excel-file: 4.1.1
 
-  '@revolist/scheduler-trial@2.7.13':
+  '@revolist/scheduler-trial@2.7.15':
     dependencies:
       '@fortawesome/fontawesome-free': 7.3.1
       '@revolist/revogrid': 4.25.1
-      '@revolist/rv-pro-trial': 2.7.13
+      '@revolist/rv-pro-trial': 2.7.15
 
   '@revolist/svelte-datagrid@4.25.1':
     dependencies:
