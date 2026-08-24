@@ -131,10 +131,10 @@ then choose the feature you want to run:
 
 ```bash
 pnpm config set @revolist:registry https://trial.rv-grid.com --location=project
-pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.13 @revolist/pivot@npm:@revolist/pivot-trial@2.7.13
-pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.13 @revolist/gantt@npm:@revolist/gantt-trial@2.7.13
-pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.13 @revolist/kanban@npm:@revolist/kanban-trial@2.7.13
-pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.13 @revolist/scheduler@npm:@revolist/scheduler-trial@2.7.13
+pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.15 @revolist/pivot@npm:@revolist/pivot-trial@2.7.15
+pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.15 @revolist/gantt@npm:@revolist/gantt-trial@2.7.15
+pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.15 @revolist/kanban@npm:@revolist/kanban-trial@2.7.15
+pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@2.7.15 @revolist/scheduler@npm:@revolist/scheduler-trial@2.7.15
 ```
 
 ### Pro version
@@ -144,10 +144,10 @@ matching production packages instead:
 
 ```bash
 pnpm config delete @revolist:registry --location=project
-pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@2.7.13 @revolist/pivot@2.7.13
-pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@2.7.13 @revolist/gantt@2.7.13
-pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@2.7.13 @revolist/kanban@2.7.13
-pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@2.7.13 @revolist/scheduler@2.7.13
+pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@2.7.15 @revolist/pivot@2.7.15
+pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@2.7.15 @revolist/gantt@2.7.15
+pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@2.7.15 @revolist/kanban@2.7.15
+pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@2.7.15 @revolist/scheduler@2.7.15
 ```
 
 No source imports change between editions. RevoGrid core and framework wrappers
