@@ -1,18 +1,10 @@
 import type {
   ColumnData,
   DataType,
-  GroupingOptions,
   RowHeaders,
 } from '@revolist/revogrid';
-import { badgeRenderer } from '@revolist/revogrid-pro';
 
 export const DATA_GRID_CONTEXT_MENU_ROW_SIZE = 48;
-export const STATUS_BADGE_STYLES = {
-  Active: { backgroundColor: '#dcfce7', color: '#166534' },
-  Review: { backgroundColor: '#fef3c7', color: '#92400e' },
-  Archived: { backgroundColor: '#fee2e2', color: '#991b1b' },
-} as const;
-
 export type TeamRow = DataType & {
   id: number;
   name: string;
@@ -77,6 +69,17 @@ export function createTeamRowForAction(
 }
 
 export function createDataGridFormattingPresets() {
+  const cellDropdowns = TEAM_ROWS.flatMap((_, row) => [
+    {
+      range: { start: { row, column: 3 } },
+      format: { presentation: { id: 'status-dropdown' } },
+    },
+    {
+      range: { start: { row, column: 6 } },
+      format: { presentation: { id: 'boolean' } },
+    },
+  ]);
+
   return {
     columns: [
       {
@@ -89,8 +92,6 @@ export function createDataGridFormattingPresets() {
           appearance: { horizontal: 'right' },
         },
       },
-      { column: 3, format: { presentation: { id: 'badge' } } },
-      { column: 6, format: { presentation: { id: 'thumbs' } } },
       {
         column: 7,
         format: {
@@ -102,10 +103,11 @@ export function createDataGridFormattingPresets() {
       },
       {
         column: 8,
-        format: { value: { preset: 'date', dateStyle: 'medium' } },
+        format: { value: { kind: 'preset', preset: 'date', dateStyle: 'medium' } },
       },
     ],
     cells: [
+      ...cellDropdowns,
       {
         range: { start: { row: 0, column: 4 } },
         format: {
@@ -167,6 +169,17 @@ export function createDataGridFormattingPresets() {
           },
         },
       },
+      {
+        range: { start: { row: 0, column: 8 } },
+        format: {
+          value: { kind: 'preset', preset: 'text' },
+          appearance: {
+            italic: true,
+            textColor: '#1e40af',
+            fillColor: '#dbeafe',
+          },
+        },
+      },
     ],
   } as const;
 }
@@ -187,17 +200,6 @@ export function createContextMenuColumns(): ColumnData {
       name: 'Status',
       size: 135,
       sortable: true,
-      columnType: 'dropdown',
-      cellTemplate: badgeRenderer,
-      badgeStyles: STATUS_BADGE_STYLES,
-      dropdown: {
-        syncCellTemplate: true,
-        source: [
-          ...['Active', 'Review', 'Archived'].map(value => ({ value, label: value })),
-          { value: null, label: 'Not set' },
-        ],
-        placeholder: 'Select status',
-      },
     },
     {
       prop: 'score',
@@ -213,8 +215,6 @@ export function createContextMenuColumns(): ColumnData {
       name: 'Approved',
       size: 110,
       sortable: true,
-      columnType: 'boolean',
-      dropdown: { syncCellTemplate: true },
     },
     { prop: 'schedule', name: 'Schedule', size: 180, sortable: true },
     {
@@ -224,13 +224,6 @@ export function createContextMenuColumns(): ColumnData {
       sortable: true,
     },
   ];
-}
-
-export function createTeamGrouping(): GroupingOptions {
-  return {
-    props: ['team'],
-    expandedAll: true,
-  };
 }
 
 export function createContextMenuRowHeaders(): RowHeaders {

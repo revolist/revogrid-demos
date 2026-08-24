@@ -5,7 +5,6 @@ import {
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
   DialogPlugin,
-  EventManagerPlugin,
   ExportExcelPlugin,
   HistoryPlugin,
   MultiRangeSelectionPlugin,
@@ -15,11 +14,9 @@ import { currentTheme, observeCurrentTheme } from '../../composables/useRandomDa
 import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
-  createDataGridColumnTypes,
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
-  createTeamGrouping,
   createTeamRows,
   getDataGridContextMenuTheme,
   type TeamRow,
@@ -29,9 +26,8 @@ import './data-grid-context-menu.scss';
 defineCustomElements();
 
 const plugins = [
-  EventManagerPlugin,
-  HistoryPlugin,
   DataGridContextMenuPlugin,
+  HistoryPlugin,
   DialogPlugin,
   AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
@@ -54,9 +50,7 @@ export function load(parentSelector: string, rows?: TeamRow[]) {
   grid.theme = getDataGridContextMenuTheme(currentTheme().isDark());
   grid.rowSize = DATA_GRID_CONTEXT_MENU_ROW_SIZE;
   grid.columns = createContextMenuColumns();
-  grid.columnTypes = createDataGridColumnTypes();
   grid.plugins = plugins;
-  grid.grouping = createTeamGrouping();
   grid.dataGridFormatting = createDataGridFormattingPresets();
   grid.dataGridContextMenu = createDataGridContextMenuConfig();
   grid.rowHeaders = createContextMenuRowHeaders();

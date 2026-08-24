@@ -2,8 +2,8 @@
 
 A standalone RevoGrid Pro showcase that combines the predefined,
 spreadsheet-style data-grid context menu with a rich **Format Cells** editor.
-Right-click cells, row headers, synthetic row groups, leaf columns, and grouped
-column headers to explore commands tailored to each surface. From a writable
+Right-click cells, row headers, leaf columns, and grouped column headers to
+explore commands tailored to each surface. From a writable
 cell or column header, open **Format** to apply a quick preset or launch the
 complete formatting dialog.
 
@@ -20,25 +20,27 @@ The example demonstrates the configuration paths applications commonly need:
 - built-in raw cell inspection, including readonly cells;
 - complete row actions, including the danger-styled `row.delete` command;
 - business-oriented application summaries appended with `items`, using the
-  shared Pro dialog for employee, row, team, and column details;
+  shared Pro dialog for employee, row, and column details;
 - replacement of the grouped-column-header surface with `getItems`;
 - selection-aware clipboard commands, including multi-range formats;
-- edit and formatting undo/redo through `EventManagerPlugin` and
-  `HistoryPlugin`, including the standard Ctrl/Cmd+Z keyboard shortcuts;
+- edit and formatting undo/redo through the automatically installed edit
+  manager and `HistoryPlugin`, including the standard Ctrl/Cmd+Z shortcuts;
 - readonly ID cells and conditionally readonly archived scores;
 - predefined progress, heatmap, rating, badge, thumbs, and timeline,
   and date formats bound through the direct `dataGridFormatting` grid
   property in every framework;
-- application-supplied dropdown and date editor references, with the calendar
-  editor resolved only for cells whose effective format is `date`, plus one
-  built-in format disabled and another configured through the advanced registry;
+- ordinary editable columns with column-level visual defaults and explicit
+  cell-level overrides, without dropdown or boolean column-type coercion;
+- an application-supplied date editor resolved only for cells whose effective
+  format is `date`, plus one built-in format disabled and another configured
+  through the advanced registry;
 - optional row pinning and application-owned column schema creation;
-- filtering, column auto-size, grouped columns, row groups, and CSV/XLSX export capabilities.
+- filtering, column auto-size, grouped columns, and CSV/XLSX export capabilities.
 
 The built-in **Inspect cell** and **Inspect column** actions expose technical
 details such as raw values, coordinates, schema, and readonly metadata. The
 custom **View…** actions demonstrate application-owned business UI instead:
-employee profiles, selected-row details, team summaries, column summaries, and
+employee profiles, selected-row details, column summaries, and
 column-group summaries in the shared Pro dialog.
 
 ## Rich formatting editor

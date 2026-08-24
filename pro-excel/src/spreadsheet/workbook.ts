@@ -90,6 +90,7 @@ const PERCENT_FORMATTER = new Intl.NumberFormat('en-US', {
 
 const SPREADSHEET_CURRENCY_FORMAT = {
   value: {
+    kind: 'preset',
     preset: 'currency',
     locale: 'en-US',
     currency: 'USD',

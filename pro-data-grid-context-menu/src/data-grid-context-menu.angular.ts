@@ -6,7 +6,6 @@ import {
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
   DialogPlugin,
-  EventManagerPlugin,
   ExportExcelPlugin,
   HistoryPlugin,
   MultiRangeSelectionPlugin,
@@ -16,11 +15,9 @@ import { currentTheme, observeCurrentTheme } from '../../composables/useRandomDa
 import {
   DATA_GRID_CONTEXT_MENU_ROW_SIZE,
   createContextMenuColumns,
-  createDataGridColumnTypes,
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
-  createTeamGrouping,
   createTeamRows,
   getDataGridContextMenuTheme,
   type TeamRow,
@@ -42,8 +39,6 @@ defineCustomElements();
         [theme]="theme"
         [source]="source"
         [columns]="columns"
-        [columnTypes]="columnTypes"
-        [grouping]="grouping"
         [rowSize]="rowSize"
         [plugins]="plugins"
         [dataGridFormatting]="dataGridFormatting"
@@ -74,14 +69,11 @@ export class DataGridContextMenuGridComponent implements OnDestroy {
     this.theme = getDataGridContextMenuTheme(isDark);
   });
   readonly columns = createContextMenuColumns();
-  readonly columnTypes = createDataGridColumnTypes();
-  readonly grouping = createTeamGrouping();
   readonly rowSize = DATA_GRID_CONTEXT_MENU_ROW_SIZE;
   readonly rowHeaders = createContextMenuRowHeaders();
   readonly plugins = [
-    EventManagerPlugin,
-    HistoryPlugin,
     DataGridContextMenuPlugin,
+    HistoryPlugin,
     DialogPlugin,
     AdvanceFilterPlugin,
     AutoSizeColumnPlugin,

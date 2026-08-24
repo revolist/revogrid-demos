@@ -122,7 +122,7 @@
   {
     "slug": "data-grid-context-menu",
     "title": "Data Grid Context Menu & Formatting",
-    "summary": "A spreadsheet-style command surface for cells, rows, row groups, columns, and grouped headers with selection-aware clipboard, filtering, sizing, schema, and export actions.",
+    "summary": "A spreadsheet-style command surface for flat rows, cells, columns, and grouped headers with selection-aware clipboard, format-driven editors, sizing, schema, and export actions.",
     "edition": "Pro",
     "sourceDir": "pro-data-grid-context-menu",
     "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-data-grid-context-menu",
@@ -130,7 +130,7 @@
     "trialUrl": "https://pro.rv-grid.com/guides/installation-npm-trial/",
     "pricingUrl": "https://rv-grid.com/pricing/",
     "frameworks": ["ts", "react", "vue", "angular"],
-    "highlights": ["Semantic menu surfaces", "Stable item customization", "Readonly-aware clipboard and mutations"],
+    "highlights": ["Cell-over-column formatting", "Format-driven editors", "Readonly-aware clipboard and mutations"],
     "media": { "poster": "assets/pro-data-grid-context-menu-poster.svg" }
   },
   {

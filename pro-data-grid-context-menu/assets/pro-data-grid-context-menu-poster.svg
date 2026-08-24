@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
   <title id="title">RevoGrid Data Grid Context Menu &amp; Formatting</title>
-  <desc id="desc">A grouped data grid with a rich task-oriented context menu.</desc>
+  <desc id="desc">A flat data grid with cell-over-column formatting and a rich task-oriented context menu.</desc>
   <defs>
     <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#eef2ff"/><stop offset="1" stop-color="#dce6f7"/></linearGradient>
     <filter id="shadow"><feDropShadow dy="22" stdDeviation="24" flood-color="#22305e" flood-opacity=".18"/></filter>
@@ -8,14 +8,13 @@
   <rect width="1600" height="900" fill="url(#bg)"/>
   <text x="100" y="118" fill="#4c5fc7" font-family="Arial" font-size="18" font-weight="700" letter-spacing="3">CONTEXT MENU &amp; FORMATTING</text>
   <text x="100" y="176" fill="#182139" font-family="Arial" font-size="52" font-weight="700">Data Grid Context Menu &amp; Formatting</text>
-  <text x="100" y="216" fill="#69748c" font-family="Arial" font-size="21">Cells, rows, groups, columns, clipboard, filtering, sizing, and export.</text>
+  <text x="100" y="216" fill="#69748c" font-family="Arial" font-size="21">Flat rows, format-driven editors, clipboard, sizing, and export.</text>
   <g filter="url(#shadow)">
     <rect x="100" y="270" width="1400" height="530" rx="24" fill="#fff"/>
     <path fill="#f6f8fc" d="M124 270h1352a24 24 0 0 1 24 24v56H100v-56a24 24 0 0 1 24-24Z"/>
     <g fill="#59647b" font-family="Arial" font-size="17" font-weight="700"><text x="145" y="318">ID</text><text x="280" y="318">NAME</text><text x="545" y="318">TEAM</text><text x="760" y="318">STATUS</text><text x="955" y="318">SCORE</text></g>
     <g stroke="#e7eaf1"><path d="M100 350h1400M100 420h1400M100 490h1400M100 560h1400M100 630h1400M100 700h1400"/><path d="M240 270v530M500 270v530M710 270v530M900 270v530M1080 270v530"/></g>
-    <rect x="100" y="350" width="980" height="70" fill="#f1f4fb"/><text x="145" y="394" fill="#34405b" font-family="Arial" font-size="20" font-weight="700">⌄ Platform · 3 rows</text>
-    <g fill="#283249" font-family="Arial" font-size="19"><text x="145" y="465">101</text><text x="280" y="465">Ada Lovelace</text><text x="545" y="465">Platform</text><text x="760" y="465">Active</text><text x="965" y="465">98</text><text x="145" y="535">102</text><text x="280" y="535">Grace Hopper</text><text x="545" y="535">Platform</text><text x="760" y="535">Active</text><text x="965" y="535">95</text><text x="145" y="605">103</text><text x="280" y="605">Margaret Hamilton</text><text x="545" y="605">Platform</text><text x="760" y="605">Review</text><text x="965" y="605">97</text></g>
+    <rect x="100" y="350" width="980" height="70" fill="#f1f4fb"/><g fill="#283249" font-family="Arial" font-size="19"><text x="145" y="395">101</text><text x="280" y="395">Ada Lovelace</text><text x="545" y="395">Platform</text><text x="760" y="395">Active</text><text x="965" y="395">98</text><text x="145" y="465">102</text><text x="280" y="465">Grace Hopper</text><text x="545" y="465">Platform</text><text x="760" y="465">Active</text><text x="965" y="465">95</text><text x="145" y="535">103</text><text x="280" y="535">Margaret Hamilton</text><text x="545" y="535">Platform</text><text x="760" y="535">Review</text><text x="965" y="535">67</text><text x="145" y="605">104</text><text x="280" y="605">Edsger Dijkstra</text><text x="545" y="605">Research</text><text x="760" y="605">Review</text><text x="965" y="605">91</text></g>
     <rect x="1040" y="330" width="400" height="410" rx="18" fill="#1d2330"/>
     <g fill="#f4f6fb" font-family="Arial" font-size="19"><text x="1090" y="382">✎  Edit cell</text><text x="1090" y="432">✂  Cut</text><text x="1090" y="482">▣  Copy</text><text x="1090" y="532">▤  Paste</text><text x="1090" y="582">⌕  Filter</text><text x="1090" y="632">⇳  Rows</text><text x="1090" y="682">⇩  Export</text></g>
     <g stroke="#40495c"><path d="M1070 405h340M1070 505h340M1070 655h340"/></g><path fill="#9ba7bd" d="m1395 573 10 9-10 9Z"/><path fill="#9ba7bd" d="m1395 623 10 9-10 9Z"/>

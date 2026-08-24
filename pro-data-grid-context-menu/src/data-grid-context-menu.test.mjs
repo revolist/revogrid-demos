@@ -8,68 +8,72 @@ import {
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createTeamRowForAction,
-  createTeamGrouping,
   createTeamRows,
 } from './data-grid-context-menu.data.ts';
+import { createDataGridContextMenuFormats } from './data-grid-context-menu.formats.ts';
 import { createContextMenuDetailsSpec } from './data-grid-context-menu.details.ts';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const readSource = file => readFile(join(root, file), 'utf8');
 
-test('showcase data covers grouped, editable, and readonly targets', () => {
+test('showcase data uses flat freely editable columns', () => {
   const rows = createTeamRows();
   const columns = createContextMenuColumns();
   const score = columns.find(column => column.prop === 'score');
+  const team = columns.find(column => column.prop === 'team');
   const status = columns.find(column => column.prop === 'status');
   const approved = columns.find(column => column.prop === 'approved');
 
   assert.equal(rows.length, 9);
   assert.equal(new Set(rows.map(row => row.id)).size, rows.length);
-  assert.equal(createTeamGrouping().props?.[0], 'team');
   assert.equal(columns[0].collapsible, true);
   assert.equal(columns[0].children?.[0].readonly, true);
   const leafColumns = columns.flatMap(column => column.children ?? [column]);
   assert.ok(leafColumns.every(column => column.sortable === true));
   assert.equal(typeof score?.readonly, 'function');
-  assert.deepEqual(status?.dropdown?.source, [
-    { value: 'Active', label: 'Active' },
-    { value: 'Review', label: 'Review' },
-    { value: 'Archived', label: 'Archived' },
-    { value: null, label: 'Not set' },
-  ]);
-  assert.equal(status?.dropdown?.syncCellTemplate, true);
-  assert.equal(typeof status?.cellTemplate, 'function');
-  assert.equal(approved?.columnType, 'boolean');
+  assert.equal(team?.columnType, undefined);
+  assert.equal(team?.dropdown, undefined);
+  assert.equal(team?.editor, undefined);
+  assert.equal(status?.columnType, undefined);
+  assert.equal(status?.dropdown, undefined);
+  assert.equal(status?.cellTemplate, undefined);
+  assert.equal(approved?.columnType, undefined);
+  assert.equal(approved?.dropdown, undefined);
+  assert.equal(approved?.editor, undefined);
   assert.ok(rows.some(row => row.approved === null));
   assert.notStrictEqual(createTeamRows()[0], rows[0]);
 });
 
-test('showcase assigns date formatting and its editor to the Joined column', async () => {
+test('showcase keeps column defaults and coordinate-owned cell overrides', async () => {
   const formatting = createDataGridFormattingPresets();
 
-  assert.equal(formatting.columns.length, 5);
+  assert.equal(formatting.columns.length, 3);
   assert.deepEqual(
     formatting.columns.map(column => column.column),
-    [4, 3, 6, 7, 8],
+    [4, 7, 8],
   );
-  assert.equal(formatting.cells.length, 5);
+  assert.equal(formatting.cells.length, 24);
   assert.equal(
     new Set(formatting.cells.map(cell => (
       `${cell.range.start.row}:${cell.range.start.column}`
     ))).size,
     formatting.cells.length,
   );
+  const authoredOverrides = formatting.cells.filter(cell => ![3, 6]
+    .includes(cell.range.start.column));
   assert.deepEqual(
-    formatting.cells.map(cell => [cell.range.start.row, cell.range.start.column]),
+    authoredOverrides.map(cell => [cell.range.start.row, cell.range.start.column]),
     [
       [0, 4],
       [1, 1],
       [2, 4],
       [4, 4],
       [7, 5],
+      [0, 8],
     ],
   );
   const joined = formatting.columns.find(column => column.column === 8);
+  assert.equal(joined?.format.value?.kind, 'preset');
   assert.equal(joined?.format.value?.preset, 'date');
   const avatar = formatting.cells.find(cell => (
     cell.range.start.row === 1 && cell.range.start.column === 1
@@ -80,10 +84,43 @@ test('showcase assigns date formatting and its editor to the Joined column', asy
   ));
   assert.equal(rating?.format.presentation?.id, 'rating');
   assert.equal(rating?.format.appearance?.horizontal, 'center');
+  const scoreColumn = formatting.columns.find(column => column.column === 4);
+  const firstScore = formatting.cells.find(cell => (
+    cell.range.start.row === 0 && cell.range.start.column === 4
+  ));
+  assert.equal(scoreColumn?.format.presentation?.id, 'progress-line');
+  assert.equal(firstScore?.format.presentation?.id, 'circular-progress');
+  const joinedTextOverride = formatting.cells.find(cell => (
+    cell.range.start.row === 0 && cell.range.start.column === 8
+  ));
+  assert.equal(joinedTextOverride?.format.value?.kind, 'preset');
+  assert.equal(joinedTextOverride?.format.value?.preset, 'text');
+
+  for (let row = 0; row < createTeamRows().length; row += 1) {
+    assert.equal(formatting.cells.find(cell => (
+      cell.range.start.row === row && cell.range.start.column === 3
+    ))?.format.presentation?.id, 'status-dropdown');
+    assert.equal(formatting.cells.find(cell => (
+      cell.range.start.row === row && cell.range.start.column === 6
+    ))?.format.presentation?.id, 'boolean');
+  }
 
   const shared = await readSource('data-grid-context-menu.shared.ts');
   assert.match(shared, /import DateColumnType from '@revolist\/revogrid-column-date'/);
   assert.match(shared, /presetEditors:\s*\{\s*date:\s*dateColumnType\.editor\s*\}/);
+});
+
+test('showcase dropdown formats own their renderers and editors per cell', () => {
+  const formats = createDataGridContextMenuFormats();
+
+  assert.deepEqual(formats.map(format => format.id), ['status-dropdown']);
+  assert.ok(formats.every(format => format.replaceAuthoredEditor === true));
+  assert.ok(formats.every(format => typeof format.cellTemplate === 'function'));
+  assert.ok(formats.every(format => typeof format.editorFactory === 'function'));
+  assert.deepEqual(formats.map(format => format.valueKind), ['text']);
+  assert.equal(formats[0].isCompatible({ value: 'Active' }), true);
+  assert.equal(formats[0].isCompatible({ value: null }), true);
+  assert.equal(formats[0].isCompatible({ value: 'Platform' }), false);
 });
 
 test('insert actions create blank rows while duplicate explicitly clones data', () => {
@@ -202,12 +239,12 @@ test('all framework variants install the same universal menu capabilities', asyn
   const sources = await Promise.all(files.map(readSource));
 
   for (const source of sources) {
-    assert.match(source, /EventManagerPlugin/);
+    assert.doesNotMatch(source, /EventManagerPlugin/);
     assert.match(source, /HistoryPlugin/);
     assert.match(source, /DataGridContextMenuPlugin/);
     assert.match(
       source,
-      /\[\s*EventManagerPlugin,\s*HistoryPlugin,\s*DataGridContextMenuPlugin,/,
+      /\[\s*DataGridContextMenuPlugin,\s*HistoryPlugin,/,
     );
     assert.match(source, /DialogPlugin/);
     assert.match(source, /AdvanceFilterPlugin/);
@@ -217,8 +254,8 @@ test('all framework variants install the same universal menu capabilities', asyn
     assert.match(source, /createDataGridContextMenuConfig/);
     assert.match(source, /dataGridFormatting/);
     assert.match(source, /createDataGridFormattingPresets/);
-    assert.match(source, /createDataGridColumnTypes/);
-    assert.match(source, /createTeamGrouping/);
+    assert.doesNotMatch(source, /createDataGridColumnTypes|columnTypes|column-types/);
+    assert.doesNotMatch(source, /createTeamGrouping|\bgrouping\b/);
   }
 });
 
