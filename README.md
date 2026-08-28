@@ -5,7 +5,7 @@
 **Twenty production-style showcases. Four feature repositories. One polished gallery.**
 
 [![Frameworks](https://img.shields.io/badge/TypeScript%20%7C%20React%20%7C%20Vue%20%7C%20Angular-4f46e5)](#showcases)
-[![RevoGrid](https://img.shields.io/badge/RevoGrid-4.25.1-2563eb)](https://rv-grid.com/)
+[![RevoGrid](https://img.shields.io/badge/RevoGrid-4.27.0-2563eb)](https://rv-grid.com/)
 
 [View gallery](https://example.rv-grid.com/) · [Request trial](https://pro.rv-grid.com/guides/installation-npm-trial/) · [Get Pro Advanced](https://rv-grid.com/pricing/)
 
@@ -151,7 +151,7 @@ pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@2.7.15 @revolist/sche
 ```
 
 No source imports change between editions. RevoGrid core and framework wrappers
-are pinned to the validated 4.25.1 line. See the [official installation
+are pinned to the validated 4.27.0 line. See the [official installation
 guide](https://pro.rv-grid.com/guides/installation-npm-trial/) for current
 package and framework details.
 
