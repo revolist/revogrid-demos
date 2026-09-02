@@ -123,11 +123,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, onBeforeUnmount, nextTick } from 'vue';
 import { VGrid, type ColumnGrouping, type ColumnRegular, BasePlugin, type PluginProviders } from '@revolist/vue3-datagrid';
-import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_OPTIONS } from './sys-data/hr.data';
+import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_COMPANY_OPTIONS, HR_OPTIONS } from './sys-data/hr.data';
 import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE, withHRShortDate } from './sys-data/hr.columns';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
-import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
+import { renderHrColorPill } from './hr-color-select';
+import { renderHrCompanyCell } from './hr-company-avatar';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
 import { getInitialHRTheme, HR_THEME_DEFINITIONS, HR_THEME_OPTIONS } from './hr-themes';
 import {
@@ -200,18 +201,11 @@ const plugins = [
 ];
 
 const columns = computed(() => {
-  const dropdownSource: string[] = Array.from(new Set(rows.value.map(r => r.company))).filter(Boolean);
-  const baseCols = getBaseHRColumns(dropdownSource);
+  const baseCols = getBaseHRColumns(HR_COMPANY_OPTIONS);
 
   // Apply Vue-specific templates
-  const nameCol = (baseCols[0] as ColumnGrouping).children[1] as ColumnRegular;
-  nameCol.cellTemplate = (h, props) =>
-    h('span', { class: 'flex items-center' }, [
-      h('span', { class: 'hr-avatar' }, [
-        h('img', { src: props.model.avatar, alt: props.value, class: 'w-full h-full object-cover' })
-      ]),
-      props.value
-    ]);
+  const companyCol = (baseCols[0] as ColumnGrouping).children[1] as ColumnRegular;
+  companyCol.cellTemplate = renderHrCompanyCell;
 
   const personalGroup = baseCols[1] as ColumnGrouping;
   const ageCol = personalGroup.children[0] as ColumnRegular;
@@ -315,7 +309,7 @@ onMounted(async () => {
     date: withHRShortDate(new DateCol.default()),
     number: new NumeralCol.default(),
     select: new SelectCol.default(),
-    colorSelect: createHRColorSelectColumnType(SelectCol.default)
+    colorSelect: new SelectCol.default()
   };
 
   await nextTick();

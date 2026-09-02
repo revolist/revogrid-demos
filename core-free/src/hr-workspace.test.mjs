@@ -34,7 +34,8 @@ test('loads valid state and safely ignores invalid storage', () => {
 
 test('validates saved row counts against the demo choices', () => {
   assert.equal(getHRWorkspaceRowCount({ rowCount: 1000 }, [100, 1000]), 1000);
-  assert.equal(getHRWorkspaceRowCount({ rowCount: 999 }, [100, 1000]), 100);
+  assert.equal(getHRWorkspaceRowCount({ rowCount: 999 }, [100, 1000, 10_000]), 10_000);
+  assert.equal(getHRWorkspaceRowCount({}, [100, 1000, 10_000]), 10_000);
 });
 
 test('reapplies grouped column order, widths, and sorting without losing groups', () => {

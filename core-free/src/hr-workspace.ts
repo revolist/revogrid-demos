@@ -6,7 +6,7 @@ import type {
 } from '@revolist/revogrid';
 
 export const HR_WORKSPACE_STORAGE_KEY = 'revogrid:grid-at-scale:workspace:v1';
-export const HR_DEFAULT_ROW_COUNT = 100;
+export const HR_DEFAULT_ROW_COUNT = 10_000;
 
 type HRSortColumn = {
   prop: string;

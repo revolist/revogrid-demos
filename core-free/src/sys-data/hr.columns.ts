@@ -1,4 +1,5 @@
 import type { ColumnDataSchemaModel, ColumnGrouping, ColumnRegular, HyperFunc, VNode } from '@revolist/revogrid';
+import { getHRMonthColumns, type HRCompanyOption } from './hr.data';
 
 const SHORT_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
@@ -42,13 +43,23 @@ export const HR_COLOR_BY_AGE = (age: number) => {
   return '#ef4444';
 };
 
-export function getBaseHRColumns(companies: string[]): (ColumnGrouping | ColumnRegular)[] {
+export function getBaseHRColumns(companies: HRCompanyOption[]): (ColumnGrouping | ColumnRegular)[] {
   return [
     {
       name: 'Employee',
       children: [
         { name: 'Name', prop: 'name', size: 210, sortable: true },
-        { name: 'Company', prop: 'company', columnType: 'select', source: companies, size: 150, sortable: true },
+        {
+          name: 'Company',
+          prop: 'company',
+          columnType: 'select',
+          source: companies,
+          labelKey: 'label',
+          valueKey: 'value',
+          syncCellTemplate: true,
+          size: 150,
+          sortable: true,
+        },
       ],
     },
     {
@@ -61,6 +72,7 @@ export function getBaseHRColumns(companies: string[]): (ColumnGrouping | ColumnR
           prop: 'eyeColor',
           columnType: 'colorSelect',
           source: ['#2563eb', '#16a34a', '#92400e', '#64748b'],
+          syncCellTemplate: true,
           size: 120,
           sortable: true,
         },
@@ -71,11 +83,18 @@ export function getBaseHRColumns(companies: string[]): (ColumnGrouping | ColumnR
   ];
 }
 
-export function getExtraHRColumns(count: number): ColumnRegular[] {
-  return Array.from({ length: count }, (_, index) => ({
-    name: `Metric ${index + 1}`,
-    prop: `metric${index + 1}`,
-    size: 110,
-    sortable: true,
-  }));
+export function getExtraHRColumns(count: number): ColumnGrouping[] {
+  const months = getHRMonthColumns(count);
+  return months.length
+    ? [{
+      name: 'Monthly hours',
+      children: months.map(month => ({
+        name: month.label,
+        prop: month.prop,
+        columnType: 'number',
+        size: 100,
+        sortable: true,
+      })),
+    }]
+    : [];
 }
