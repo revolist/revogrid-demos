@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "pnpm dev:ts",
-    "test": "tsx --test src/spreadsheet/simulation.test.ts",
+    "test": "tsx --test tests/unit/spreadsheet/*.test.ts tests/*.test.mjs",
     "dev:ts": "vite --mode ts",
     "dev:react": "vite --mode react",
     "dev:vue": "vite --mode vue",

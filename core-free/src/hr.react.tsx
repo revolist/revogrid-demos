@@ -4,9 +4,10 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { RevoGrid, BasePlugin, type PluginProviders } from '@revolist/react-datagrid';
 import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_COMPANY_OPTIONS, HR_OPTIONS } from './sys-data/hr.data';
 import type { HRGenerationProgress } from './sys-data/hr.data.generator';
-import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE, withHRShortDate } from './sys-data/hr.columns';
+import { getBaseHRColumns, getExtraHRColumns, withHRShortDate } from './sys-data/hr.columns';
 import { renderHrColorPill } from './hr-color-select';
 import { renderHrCompanyCell } from './hr-company-avatar';
+import { renderHrAgeCell } from './hr-age-indicator';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
 import { getInitialHRTheme, HR_THEME_DEFINITIONS, HR_THEME_OPTIONS } from './hr-themes';
 import DateCol from '@revolist/revogrid-column-date';
@@ -168,13 +169,7 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
 
     const personalGroup = baseCols[1] as any;
     const ageCol = personalGroup.children[0];
-    ageCol.cellTemplate = (h: any, props: any) => [
-      h('i', {
-        class: 'hr-circle',
-        style: { borderColor: HR_COLOR_BY_AGE(props.value) },
-      }),
-      props.value,
-    ];
+    ageCol.cellTemplate = renderHrAgeCell;
 
     const eyesCol = personalGroup.children[2];
     eyesCol.cellTemplate = (h: any, props: any) =>

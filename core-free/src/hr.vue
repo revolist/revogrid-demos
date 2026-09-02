@@ -125,10 +125,11 @@ import { ref, onMounted, computed, onBeforeUnmount, nextTick } from 'vue';
 import { VGrid, type ColumnGrouping, type ColumnRegular, BasePlugin, type PluginProviders } from '@revolist/vue3-datagrid';
 import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_COMPANY_OPTIONS, HR_OPTIONS } from './sys-data/hr.data';
 import type { HRGenerationProgress } from './sys-data/hr.data.generator';
-import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE, withHRShortDate } from './sys-data/hr.columns';
+import { getBaseHRColumns, getExtraHRColumns, withHRShortDate } from './sys-data/hr.columns';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import { renderHrColorPill } from './hr-color-select';
 import { renderHrCompanyCell } from './hr-company-avatar';
+import { renderHrAgeCell } from './hr-age-indicator';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
 import { getInitialHRTheme, HR_THEME_DEFINITIONS, HR_THEME_OPTIONS } from './hr-themes';
 import {
@@ -209,13 +210,7 @@ const columns = computed(() => {
 
   const personalGroup = baseCols[1] as ColumnGrouping;
   const ageCol = personalGroup.children[0] as ColumnRegular;
-  ageCol.cellTemplate = (h, props) => [
-    h('i', {
-      class: 'hr-circle',
-      style: { borderColor: HR_COLOR_BY_AGE(props.value) }
-    }),
-    props.value
-  ];
+  ageCol.cellTemplate = renderHrAgeCell;
 
   const eyesCol = personalGroup.children[2] as ColumnRegular;
   eyesCol.cellTemplate = (h, props) =>

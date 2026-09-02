@@ -14,7 +14,7 @@ import {
   StickyCellsPlugin,
   TreeDataPlugin,
 } from '@revolist/revogrid-pro';
-import { createTreeExcelExportOptions } from './tree.excel';
+import { createTreeExcelExportOptions } from './tree.excel.ts';
 
 export type TreeDataRow = {
   id: string;

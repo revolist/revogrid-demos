@@ -6,6 +6,11 @@ export function renderHrCompanyCell(
   { model, value }: ColumnDataSchemaModel,
 ): VNode {
   const label = String(value ?? '');
+
+  if (!label.trim()) {
+    return h('span', { class: 'flex items-center' }, []);
+  }
+
   const avatar = getHRCompanyOption(value)?.companyAvatar
     ?? (model.companyAvatar as HRCompanyAvatar | undefined);
 
