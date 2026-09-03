@@ -1,4 +1,4 @@
-import type { ColumnDataSchemaModel, ColumnGrouping, ColumnRegular, HyperFunc, VNode } from '@revolist/revogrid';
+import type { ColumnDataSchemaModel, ColumnGrouping, ColumnRegular, EditorBase, HyperFunc, VNode } from '@revolist/revogrid';
 import { getHRMonthColumns, type HRCompanyOption } from './hr.data';
 
 const SHORT_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
@@ -25,10 +25,27 @@ export function formatHRShortDate(value: unknown): string {
 }
 
 interface HRDateColumnType {
+  editor: new (...args: any[]) => EditorBase;
   cellTemplate: (h: HyperFunc<VNode>, props: ColumnDataSchemaModel) => VNode | VNode[];
 }
 
 export function withHRShortDate<T extends HRDateColumnType>(columnType: T): T {
+  const StockDateEditor = columnType.editor;
+  columnType.editor = class HRDateEditor extends StockDateEditor {
+    componentDidRender() {
+      const editorHost = this.element?.closest('revogr-edit') as HTMLElement | null;
+      const floatingEditor = this.element?.querySelector(':scope > .revo-float') as HTMLElement | null;
+
+      super.componentDidRender?.();
+
+      if (!editorHost || !floatingEditor) return;
+      const { left, top, width, height } = editorHost.getBoundingClientRect();
+      floatingEditor.style.transform = `translate(${left}px, ${top}px)`;
+      floatingEditor.style.width = `${width}px`;
+      floatingEditor.style.height = `${height}px`;
+    }
+  };
+
   const renderDateColumn = columnType.cellTemplate;
   columnType.cellTemplate = (h, props) => renderDateColumn(h, {
     ...props,
