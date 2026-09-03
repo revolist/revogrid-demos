@@ -33,6 +33,12 @@ test('tree showcase includes hierarchy, interaction, and export plugins', async 
   assert.match(source, /animation: true/);
 });
 
+test('shared tree imports are compatible with the Angular compiler', async () => {
+  const source = await readSource('tree.shared.ts');
+
+  assert.doesNotMatch(source, /from ['"]\.\/[^'"]+\.ts['"]/);
+});
+
 test('all four frameworks expose matching tree controls', async () => {
   const files = ['tree.ts', 'tree.react.tsx', 'tree.vue', 'tree.angular.ts'];
   const sources = await Promise.all(files.map(readSource));
