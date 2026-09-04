@@ -90,7 +90,6 @@ const configuredTypes = new Map([
     granularity: 'day',
     binCap: 32,
     locale: 'en-US',
-    format: { month: 'short', day: 'numeric' },
     chart: {
       type: 'area',
       showPoints: true,

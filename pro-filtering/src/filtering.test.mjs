@@ -173,6 +173,19 @@ test('shared filtering modules stay small and focused', async () => {
   }
 });
 
+test('order explorer fixture keeps 10,000 rows with visible numeric and date gaps', async () => {
+  const data = await readSource('filtering.data.ts');
+
+  assert.match(data, /ORDER_EXPLORER_ROW_COUNT = 10_000/);
+  assert.match(data, /count = ORDER_EXPLORER_ROW_COUNT/);
+  assert.match(data, /const TOTAL_BANDS/);
+  assert.match(data, /\[900, 2_495\],[\s\S]*?\[6_800, 11_400\]/);
+  assert.match(data, /const DATE_WINDOWS/);
+  assert.match(data, /\[38, 18\],[\s\S]*?\[105, 24\]/);
+  assert.match(data, /const dateOffset = getDateOffset\(index\)/);
+  assert.match(data, /Math\.floor\(index \/ TOTAL_BANDS\.length\)/);
+});
+
 test('order columns expose every structured filter through the shared config', async () => {
   const [columns, config, structured] = await Promise.all([
     readSource('filtering.columns.ts'),

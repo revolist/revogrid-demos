@@ -69,6 +69,29 @@ const ORDER_TAG_SETS: readonly OrderExplorerRow['tags'][] = [
 const SKU_REGIONS = ['EU', 'US', 'AP'] as const;
 const ACTIVITY_HOURS = [7, 9, 11, 14, 16, 19, 22] as const;
 
+// Deliberately separated bands keep the histogram brush useful for testing
+// selections across empty numeric ranges.
+const TOTAL_BANDS: ReadonlyArray<readonly [number, number]> = [
+  [45, 280],
+  [900, 2_495],
+  [6_800, 11_400],
+  [22_000, 34_000],
+  [80_000, 140_000],
+];
+
+// Date windows are intentionally discontinuous so the calendar and timeline
+// brushes show gaps instead of one uninterrupted stream of records.
+const DATE_WINDOWS: ReadonlyArray<readonly [startDaysAgo: number, length: number]> = [
+  [0, 12],
+  [38, 18],
+  [105, 24],
+  [205, 32],
+  [340, 28],
+  [530, 45],
+];
+
+export const ORDER_EXPLORER_ROW_COUNT = 10_000;
+
 function createSku(index: number): string {
   const region = SKU_REGIONS[index % SKU_REGIONS.length];
   const firstLetter = String.fromCharCode(65 + (index % 6));
@@ -88,32 +111,55 @@ function localDateString(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+function seededUnit(index: number, salt: number): number {
+  let hash = (index + salt) >>> 0;
+  hash = Math.imul(hash ^ (hash >>> 16), 0x21f0aaad);
+  hash = Math.imul(hash ^ (hash >>> 15), 0x735a2d97);
+  return ((hash ^ (hash >>> 15)) >>> 0) / 0x1_0000_0000;
+}
+
+function createTotal(index: number): number {
+  const [minimum, maximum] = TOTAL_BANDS[index % TOTAL_BANDS.length];
+  return Number((minimum + seededUnit(index, 41) * (maximum - minimum)).toFixed(2));
+}
+
+function getDateOffset(index: number): number {
+  const [startDaysAgo, length] = DATE_WINDOWS[index % DATE_WINDOWS.length];
+  return startDaysAgo + Math.floor(seededUnit(index, 97) * length);
+}
+
 // Deterministic rows make every preset and screenshot repeatable.
-export function createOrderExplorerRows(count = 1000, now = new Date()): OrderExplorerRow[] {
+export function createOrderExplorerRows(count = ORDER_EXPLORER_ROW_COUNT, now = new Date()): OrderExplorerRow[] {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const referenceDate = formatIsoDate(today);
 
   return Array.from({ length: count }, (_, index) => {
     const date = new Date(today);
-    date.setDate(date.getDate() - ((index * 17) % 120));
+    const dateOffset = getDateOffset(index);
+    date.setDate(date.getDate() - dateOffset);
+    const createdDate = addDays(referenceDate, -(dateOffset + Math.floor(seededUnit(index, 151) * 3)));
     return {
       orderNumber: `ORD-${String(100001 + index).padStart(6, '0')}`,
       customer: CUSTOMERS[(index * 7) % CUSTOMERS.length],
       sku: createSku(index),
       email: `customer${index + 1}@revolist.eu`,
       status: ORDER_STATUSES[(index * 3 + Math.floor(index / 11)) % ORDER_STATUSES.length],
-      priority: index % 19 === 0 ? null : ORDER_PRIORITIES[(index * 3) % ORDER_PRIORITIES.length],
+      // Include every priority in each total band so the default high-value
+      // preset remains populated while retaining deterministic variation.
+      priority: index % 19 === 0
+        ? null
+        : ORDER_PRIORITIES[(index * 3 + Math.floor(index / TOTAL_BANDS.length)) % ORDER_PRIORITIES.length],
       region: ORDER_REGIONS[(index * 5 + Math.floor(index / 7)) % ORDER_REGIONS.length],
       city: CITIES[(index * 3 + Math.floor(index / 9)) % CITIES.length],
       category: ORDER_CATEGORIES[(index * 11 + Math.floor(index / 5)) % ORDER_CATEGORIES.length],
       expedited: index % 17 === 0 ? null : index % 4 === 0 || index % 11 === 0,
-      total: Math.round((45 + ((index * 7919) % 245000) / 100) * 100) / 100,
+      total: createTotal(index),
       orderDate: localDateString(date),
       rating: 1 + (index % 9) * 0.5,
       marginDelta: Number((((index * 17) % 43) - 19 + (index % 127 === 0 ? 35 : 0)).toFixed(1)),
       renewalDate: addDays(referenceDate, ((index % 91) - 30)),
       createdAt: createDateTime(
-        addDays(referenceDate, (index % 120) - 119),
+        createdDate,
         8 + (index % 10),
         '30',
       ),
