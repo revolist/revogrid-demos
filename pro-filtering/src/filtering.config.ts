@@ -8,7 +8,8 @@ import {
   FIlTER_SLIDER,
   type AdvancedFilterBadgesOptions,
 } from '@revolist/revogrid-pro';
-import { ORDER_OPTIONS_BY_PROP } from './filtering.data';
+import { ORDER_OPTIONS_BY_PROP, ORDER_STATUSES } from './filtering.data';
+import { orderExplorerStructuredFilterTypes } from './filtering.structured';
 
 export type OrderExplorerPreset = 'high-value-europe' | 'recent-expedited' | 'review-queue';
 
@@ -49,6 +50,12 @@ export function createOrderExplorerPreset(preset: OrderExplorerPreset): MultiFil
           value: { fromValue: 900, toValue: 2495 },
           relation: 'and',
           hidden: true,
+        }],
+        priority: [{
+          id: 103,
+          type: 'chipBadgeSelection' as FilterData['type'],
+          value: { values: ['Critical', 'High'], includeBlanks: false },
+          relation: 'and',
         }],
       };
     case 'recent-expedited':
@@ -97,6 +104,8 @@ export function formatOrderCurrency(value: number): string {
 
 export function createOrderExplorerFilter(multiFilterItems: MultiFilterItem = {}): ColumnFilterConfig {
   return {
+    structuredFilterTypes: orderExplorerStructuredFilterTypes,
+    groupedFilter: {},
     allowDuplicateOperators: true,
     multiFilterItems: cloneOrderExplorerFilterItems(multiFilterItems),
     disableDynamicFiltering: false,
@@ -108,6 +117,20 @@ export function createOrderExplorerFilter(multiFilterItems: MultiFilterItem = {}
     selection: {
       sortDirection: 'asc',
       sourceRowTypes: ['rgRow'],
+      getItems: {
+        status: () => ORDER_STATUSES.map(status => ({
+          value: status,
+          label: status,
+          count: 200,
+        })),
+      },
+      optionProgress: {
+        status: {
+          valueProp: 'count',
+          getMax: ({ values }) => Math.max(1, ...values) / 0.72,
+          formatValue: value => String(value),
+        },
+      },
       cascadeOptions: {
         enabled: true,
         showDependencyNumbers: true,
@@ -118,6 +141,15 @@ export function createOrderExplorerFilter(multiFilterItems: MultiFilterItem = {}
       showRangeInputs: true,
       formatValue: formatOrderCurrency,
       formatInputValue: value => value.toFixed(2),
+    },
+    date: {
+      timezoneMode: 'utc',
+      weekStartsOn: 1,
+    },
+    arrayTags: {
+      columns: {
+        tags: { accessor: value => value },
+      },
     },
   };
 }

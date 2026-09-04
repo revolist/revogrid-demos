@@ -42,6 +42,7 @@ import {
   ECOMMERCE_COLUMNS_TYPES,
   ECOMMERCE_PLUGINS,
 } from './sys-data/ecommerce.columns';
+import { ecommerceSpendNumber, getEcommerceRowId } from './ecommerce.filtering';
 
 export const ecommerceAvatarProfiles = [
   { value: 'FN', label: 'Fiona Nguyen' },
@@ -55,17 +56,18 @@ export const ecommerceAvatarProfiles = [
 ];
 
 const ecommerceAvatarCellTemplate: ColumnRegular['cellTemplate'] = (h, { model, value }) => {
-  const profileIndex = ecommerceAvatarProfiles.findIndex(item => item.value === value);
+  const profileIndex = ecommerceAvatarProfiles.findIndex(item => item.label === value);
   const profile = ecommerceAvatarProfiles[profileIndex];
-  const label = String(model.label ?? profile?.label ?? value ?? '');
+  const label = String(value ?? model.Customer ?? profile?.label ?? '');
+  const initials = String(model.avatar ?? profile?.value ?? '');
   return h('span', { class: 'analytics-avatar-select analytics-avatar-option' }, [
     avatarTemplate(h, {
       className: 'analytics-avatar',
       index: profileIndex,
-      initials: String(value ?? ''),
+      initials,
       label,
       size: 32,
-      value,
+      value: initials,
     }),
     h('span', null, label),
   ]);
@@ -82,6 +84,9 @@ const ecommerceMembershipCellTemplate: ColumnRegular['cellTemplate'] = (h, { val
 };
 
 const ecommerceDiscountCellTemplate: ColumnRegular['cellTemplate'] = (h, { value }) => {
+  if (value === null || value === undefined || value === '') {
+    return h('span', { class: 'analytics-blank' }, '—');
+  }
   const enabled = value === true;
   return h(
     'span',
@@ -161,12 +166,22 @@ export const ecommercePlugins = Array.from(
 );
 
 export const ecommerceFilterConfig = {
+  groupedFilter: {},
   selection: {
     syncCellTemplate: {
-      avatar: true,
+      Customer: true,
       Gender: true,
       'Membership Type': true,
       'Discount Applied': true,
+    },
+  },
+  date: {
+    timezoneMode: 'utc',
+    weekStartsOn: 1,
+  },
+  arrayTags: {
+    columns: {
+      Tags: { accessor: (value: unknown) => value },
     },
   },
 } as unknown as ColumnFilterConfig;
@@ -340,28 +355,11 @@ export function getVisibleEcommerceColumns(
   return visibleColumns;
 }
 
-export function filterEcommerceRows(rows: any[], expression: string) {
-  const query = expression.trim();
-  if (!query) return rows;
-
-  const parsed = parseToolbarExpression(query);
-  if (!parsed.length) {
-    const needle = normalizeSearch(query);
-    return rows.filter((row) =>
-      Object.values(row).some((value) => normalizeSearch(value).includes(needle)),
-    );
-  }
-
-  return rows.filter((row) => evaluateToolbarExpression(row, parsed));
-}
-
 export function formatEcommerceTotalSpend(rows: any[]) {
-  const value = rows.reduce((sum, row) => {
-    const spend = Number.parseFloat(
-      String(row['Total Spend']).replace(/[$,]/g, ''),
-    );
-    return Number.isFinite(spend) ? sum + spend : sum;
-  }, 0);
+  const value = rows.reduce(
+    (sum, row) => sum + ecommerceSpendNumber(row['Total Spend']),
+    0,
+  );
 
   return new Intl.NumberFormat('en-US', {
     notation: 'compact',
@@ -624,14 +622,10 @@ function createDuplicateCustomerId(row: any, rows: any[]) {
   return next;
 }
 
-function getEcommerceRowId(row: any) {
-  return String(row?.['Customer ID'] ?? row?.id ?? '');
-}
-
 function createCustomerClipboardText(row: any) {
   return [
     `Customer ID: ${row['Customer ID'] ?? ''}`,
-    `Customer: ${row.avatar ?? ''}`,
+    `Customer: ${row.Customer ?? ''}`,
     `Gender: ${row.Gender ?? ''}`,
     `City: ${row.City ?? ''}`,
     `Membership: ${row['Membership Type'] ?? ''}`,
@@ -660,7 +654,6 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
       ...column,
       name: 'ID',
       size: 86,
-      filter: ['slider'],
       excelExport: {
         ...excelExport,
         cellProperties: ({ value }) => ({
@@ -676,32 +669,24 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
         h('span', { class: 'analytics-id' }, String(value)),
     };
   }
-  if (column.prop === 'avatar') {
+  if (column.prop === 'Customer') {
     return {
       ...column,
       name: 'Customer',
       size: 112,
-      filter: ['selection'],
-      columnType: 'dropdown',
       cellTemplate: ecommerceAvatarCellTemplate,
       excelExport: {
         ...excelExport,
         cellProperties: ({ value, rowIndex }) => {
-          const profile = ecommerceAvatarProfiles.find(
-            (item) => item.value === value,
-          );
+          const profile = ecommerceAvatarProfiles.find((item) => item.label === value);
           const index = ecommerceAvatarProfiles.findIndex(
-            (item) => item.value === value,
+            (item) => item.label === value,
           );
           return createBadgeExcelCell({
-            value: profile ? `${profile.value} - ${profile.label}` : String(value ?? ''),
+            value: profile ? `${profile.label} (${profile.value})` : String(value ?? ''),
             ...(avatarExcelStyles[Math.max(index, rowIndex, 0) % avatarExcelStyles.length]),
           });
         },
-      },
-      dropdown: {
-        source: ecommerceAvatarProfiles,
-        syncCellTemplate: true,
       },
     };
   }
@@ -709,7 +694,6 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
     return {
       ...column,
       size: 130,
-      filter: ['selection'],
       columnType: 'dropdown',
       cellTemplate: ecommerceGenderCellTemplate,
       excelExport: {
@@ -734,7 +718,11 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
       size: 168,
       excelExport,
       cellTemplate: (h, { value }) =>
-        h('span', { class: 'analytics-city' }, String(value)),
+        h(
+          'span',
+          { class: value == null || value === '' ? 'analytics-blank' : 'analytics-city' },
+          value == null || value === '' ? '—' : String(value),
+        ),
     };
   }
   if (column.prop === 'Membership Type') {
@@ -817,6 +805,9 @@ function enhanceEcommerceColumn(column: ColumnRegular): ColumnRegular {
       excelExport: {
         ...excelExport,
         cellProperties: ({ value }) => {
+          if (value === null || value === undefined || value === '') {
+            return { value: '', type: String, ...EXCEL_TEXT_CELL_STYLE };
+          }
           const label = value === true ? 'Applied' : 'None';
           return createBadgeExcelCell({
             value: label,
@@ -877,6 +868,10 @@ function getEcommerceHeaderType(prop: ColumnRegular['prop']) {
   switch (prop) {
     case 'Customer ID':
       return 'id';
+    case 'Order Date':
+      return 'date';
+    case 'Created At':
+      return 'datetime';
     case 'Age':
       return 'integer';
     case 'Lifetime Value':
@@ -985,6 +980,9 @@ function parseNumber(value: unknown): number | undefined {
 }
 
 function renderAnalyticsStars(h: HyperFunc<VNode>, { value }: any) {
+  if (value === null || value === undefined || value === '') {
+    return h('span', { class: 'analytics-blank' }, '—');
+  }
   const numericValue = Number(value) || 0;
   const filled = Math.round(numericValue);
   return h(
@@ -1034,126 +1032,4 @@ function formatCurrency(value: unknown) {
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(numericValue);
-}
-
-type ParsedFilterToken =
-  | { kind: 'condition'; field: string; operator: string; value: string }
-  | { kind: 'relation'; relation: 'and' | 'or' };
-
-function parseToolbarExpression(expression: string): ParsedFilterToken[] {
-  return expression
-    .split(/\s+(and|or)\s+/i)
-    .filter(Boolean)
-    .map((part) => {
-      const relation = part.trim().toLowerCase();
-      if (relation === 'and' || relation === 'or') {
-        return { kind: 'relation', relation } as ParsedFilterToken;
-      }
-
-      const match = part.match(
-        /^\s*(.+?)\s+(eq|equals|=|neq|not\s+eq|!=|contains|notcontains|not\s+contains|gt|gte|lt|lte|>|>=|<|<=)\s+(.+?)\s*$/i,
-      );
-      if (!match) return null;
-
-      return {
-        kind: 'condition',
-        field: normalizeFieldName(match[1]),
-        operator: match[2].toLowerCase().replace(/\s+/g, ''),
-        value: stripQuotes(match[3]),
-      } as ParsedFilterToken;
-    })
-    .filter((token): token is ParsedFilterToken => Boolean(token));
-}
-
-function evaluateToolbarExpression(row: any, tokens: ParsedFilterToken[]) {
-  let result: boolean | null = null;
-  let relation: 'and' | 'or' = 'and';
-
-  for (const token of tokens) {
-    if (token.kind === 'relation') {
-      relation = token.relation;
-      continue;
-    }
-
-    const next = matchesCondition(row, token);
-    result =
-      result === null ? next : relation === 'or' ? result || next : result && next;
-  }
-
-  return result ?? true;
-}
-
-function matchesCondition(
-  row: any,
-  token: Extract<ParsedFilterToken, { kind: 'condition' }>,
-) {
-  const actual = getFieldValue(row, token.field);
-  const actualText = normalizeSearch(actual);
-  const expectedText = normalizeSearch(token.value);
-  const actualNumber = Number.parseFloat(String(actual).replace(/[$,%\s,]/g, ''));
-  const expectedNumber = Number.parseFloat(
-    String(token.value).replace(/[$,%\s,]/g, ''),
-  );
-
-  switch (token.operator) {
-    case 'eq':
-    case 'equals':
-    case '=':
-      return actualText === expectedText;
-    case 'neq':
-    case 'noteq':
-    case '!=':
-      return actualText !== expectedText;
-    case 'contains':
-      return actualText.includes(expectedText);
-    case 'notcontains':
-      return !actualText.includes(expectedText);
-    case 'gt':
-    case '>':
-      return (
-        Number.isFinite(actualNumber) &&
-        Number.isFinite(expectedNumber) &&
-        actualNumber > expectedNumber
-      );
-    case 'gte':
-    case '>=':
-      return (
-        Number.isFinite(actualNumber) &&
-        Number.isFinite(expectedNumber) &&
-        actualNumber >= expectedNumber
-      );
-    case 'lt':
-    case '<':
-      return (
-        Number.isFinite(actualNumber) &&
-        Number.isFinite(expectedNumber) &&
-        actualNumber < expectedNumber
-      );
-    case 'lte':
-    case '<=':
-      return (
-        Number.isFinite(actualNumber) &&
-        Number.isFinite(expectedNumber) &&
-        actualNumber <= expectedNumber
-      );
-    default:
-      return actualText.includes(expectedText);
-  }
-}
-
-function getFieldValue(row: any, field: string) {
-  const exactKey = Object.keys(row).find((key) => normalizeFieldName(key) === field);
-  return exactKey ? row[exactKey] : '';
-}
-
-function normalizeFieldName(value: unknown) {
-  return String(value).trim().toLowerCase();
-}
-
-function normalizeSearch(value: unknown) {
-  return String(value ?? '').trim().toLowerCase();
-}
-
-function stripQuotes(value: string) {
-  return value.trim().replace(/^["']|["']$/g, '');
 }

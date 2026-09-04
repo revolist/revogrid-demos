@@ -52,6 +52,7 @@ export function load(parentSelector: string, rows?: TeamRow[]) {
   grid.columns = createContextMenuColumns();
   grid.plugins = plugins;
   grid.dataGridFormatting = createDataGridFormattingPresets();
+  grid.dataGridFormattingPanel = true;
   grid.dataGridContextMenu = createDataGridContextMenuConfig();
   grid.rowHeaders = createContextMenuRowHeaders();
   grid.range = true;

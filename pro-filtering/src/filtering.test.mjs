@@ -13,12 +13,13 @@ test('advanced filtering showcase exposes every requested behavior', async () =>
     readSource('filtering.config.ts'),
   ]);
 
-  assert.equal((columns.match(/columnTemplate: columnTypeRenderer/g) ?? []).length, 9);
+  assert.equal((columns.match(/columnTemplate: columnTypeRenderer/g) ?? []).length, 17);
   assert.match(columns, /name: 'Order date',[\s\S]*?size: 180/);
   assert.match(config, /case 'high-value-europe'/);
   assert.match(config, /case 'recent-expedited'/);
   assert.match(config, /case 'review-queue'/);
   assert.match(config, /cascadeOptions:\s*{\s*enabled: true,\s*showDependencyNumbers: true/);
+  assert.match(config, /groupedFilter:\s*{}/);
   assert.match(config, /ORDER_EXPLORER_QUICK_FILTER_EXAMPLE = 'Lisbon pending'/);
   assert.match(config, /quickFilter = \{/);
 });
@@ -28,13 +29,21 @@ test('order explorer uses the requested column order and widths', async () => {
   const expectedColumns = [
     ['Order', 148],
     ['Customer', 175],
+    ['SKU', 150],
     ['Total', 152],
     ['Status', 150],
+    ['Priority', 140],
     ['Region', 170],
     ['City', 150],
     ['Category', 152],
     ['Expedited', 116],
     ['Order date', 180],
+    ['Rating', 124],
+    ['Margin change', 156],
+    ['Renewal date', 180],
+    ['Created at', 190],
+    ['Activity time', 190],
+    ['Tags', 220],
   ];
 
   let previousIndex = -1;
@@ -133,14 +142,18 @@ test('all frameworks configure the default preset with declarative badges', asyn
 });
 
 test('Vite resolves the monorepo-local Pro distribution before trial aliases', async () => {
-  const [config, angular] = await Promise.all([
+  const [config, angular, tsconfig] = await Promise.all([
     readSource('../vite.config.ts'),
     readSource('filtering.angular.ts'),
+    readSource('../tsconfig.app.json'),
   ]);
 
-  assert.match(config, /\.\.\/\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/revogrid-pro\.js/);
-  assert.match(config, /\.\.\/\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/revogrid-pro\.css/);
+  assert.match(config, /\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/revogrid-pro\.js/);
+  assert.match(config, /\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/revogrid-pro\.css/);
+  assert.match(config, /\.\.\/\.\.\/\.\.\/node_modules\/@revolist\/revogrid\/dist\/index\.js/);
   assert.match(config, /existsSync\(localProEntry\)/);
+  assert.match(tsconfig, /\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/index\.d\.ts/);
+  assert.match(tsconfig, /\.\.\/\.\.\/\.\.\/node_modules\/@revolist\/revogrid\/dist\/types\/index\.d\.ts/);
   assert.match(angular, /type AfterViewInit/);
   assert.match(angular, /type OnDestroy/);
 });
@@ -155,9 +168,41 @@ test('shared filtering modules stay small and focused', async () => {
   }
 
   const facade = await readSource('filtering.shared.ts');
-  for (const module of ['columns', 'config', 'data']) {
+  for (const module of ['columns', 'config', 'data', 'structured']) {
     assert.match(facade, new RegExp(`export \\* from './filtering\\.${module}'`));
   }
+});
+
+test('order columns expose every structured filter through the shared config', async () => {
+  const [columns, config, structured] = await Promise.all([
+    readSource('filtering.columns.ts'),
+    readSource('filtering.config.ts'),
+    readSource('filtering.structured.ts'),
+  ]);
+  const filterIds = [
+    'FILTER_TOKEN_LIST',
+    'FILTER_FUZZY',
+    'FILTER_REGEX',
+    'FILTER_CHIP_BADGE_TOGGLES',
+    'FILTER_HISTOGRAM_BRUSH',
+    'FILTER_RATING_PROGRESS_THRESHOLD',
+    'FILTER_STATISTICAL_PRESETS',
+    'FILTER_CALENDAR_RANGE',
+    'FILTER_RELATIVE_WINDOW',
+    'FILTER_TIMELINE_BRUSH',
+    'FILTER_TIME_MATRIX',
+    'FILTER_TRI_STATE_BOOLEAN',
+    'FILTER_ARRAY_TAGS',
+  ];
+
+  for (const id of filterIds) assert.match(columns, new RegExp(id));
+  assert.match(columns, /Status[\s\S]*filter: \[FIlTER_SELECTION\]/);
+  assert.match(config, /optionProgress:[\s\S]*status:/);
+  assert.match(config, /valueProp: 'count'/);
+  assert.match(config, /getMax: \(\{ values \}\)/);
+  assert.match(config, /count: 200/);
+  assert.match(config, /structuredFilterTypes: orderExplorerStructuredFilterTypes/);
+  assert.match(structured, /BUILT_IN_STRUCTURED_FILTER_TYPES\.map/);
 });
 
 test('showcase stays focused on local filtering', async () => {

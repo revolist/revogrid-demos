@@ -8,6 +8,7 @@
       :row-size="DATA_GRID_CONTEXT_MENU_ROW_SIZE"
       :plugins="plugins"
       :data-grid-formatting.prop="dataGridFormatting"
+      :data-grid-formatting-panel.prop="true"
       :data-grid-context-menu.prop="dataGridContextMenu"
       :row-headers="rowHeaders"
       :range="true"

@@ -1,16 +1,18 @@
 # RevoGrid Pro Advanced Filtering
 
 An Order Explorer implemented in Vanilla TypeScript, React, Vue, and Angular.
-It combines Core text and number filters with RevoGrid Pro selection, slider,
-date, expression, header, cascade, and global quick search workflows.
+It combines Core text and number filters with RevoGrid Pro structured filters,
+selection, slider, date, expression, header, cascade, and global quick search.
 
 ## What it features
 
-- Nine typed columns with consistent header icons and a wider Order date column
+- Seventeen typed columns, including one contextual column for each of the
+  fourteen built-in structured filter types
 - Cross-column multi-word quick search (try `Lisbon pending`)
 - Predefined High-value Europe, Recent expedited, and Review queue filters
 - Selection values derived from rows matching filters on the other columns
-- Selection, slider, date, expression, text, and number operators
+- Token, fuzzy, regex, facet, badge, histogram, rating, statistical, calendar,
+  relative, timeline, time-matrix, boolean, and array filter bodies
 - Deterministic 1,000-order dataset and live visible-row count
 - Shared Pro button and pill styles with 500-weight labels
 
@@ -33,5 +35,6 @@ used by the RevoGrid showcase gallery.
 - `src/filtering.react.tsx` — React
 - `src/filtering.vue` — Vue
 - `src/filtering.angular.ts` — Angular
-- `src/filtering.shared.ts` — data, columns, presets, and filters
+- `src/filtering.shared.ts` — stable shared facade for all four frameworks
+- `src/filtering.structured.ts` — structured filter registrations and options
 - `src/filtering.scss` — shared presentation

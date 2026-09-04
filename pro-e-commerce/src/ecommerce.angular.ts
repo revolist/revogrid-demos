@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, Input, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AfterViewInit, Component, ViewEncapsulation, Input, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   RevoGrid,
@@ -7,7 +7,7 @@ import type { ColumnProp } from '@revolist/revogrid';
 import {
   ExportExcelPlugin,
 } from '@revolist/revogrid-pro';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentEcommerceTheme } from './ecommerce.theme';
 import {
   createEcommerceAnalyticsColumns,
   createEcommerceContextMenus,
@@ -16,12 +16,20 @@ import {
   ecommerceColumnTypes,
   ecommerceFilterConfig,
   ecommercePlugins,
-  filterEcommerceRows,
   formatEcommerceTotalSpend,
   getSelectedEcommerceIndexes,
   getVisibleEcommerceColumns,
   normalizeEcommerceRows,
 } from './ecommerce.shared';
+import {
+  ECOMMERCE_FILTER_PRESETS,
+  applyEcommerceFilterPreset,
+  createEcommerceVisibleSourceSync,
+  getEcommerceRowId,
+  setEcommerceQuickFilter,
+  type EcommerceFilterPresetId,
+  type EcommerceVisibleSourceSync,
+} from './ecommerce.filtering';
 
 @Component({
   selector: 'ecommerce-grid',
@@ -36,15 +44,25 @@ import {
             <span>Rows</span>
             <strong>{{ rowsCountLabel }}</strong>
           </span>
-          <label class="ecommerce-filter">
+          <label class="ecommerce-filter" for="customerSearch">
             <span aria-hidden="true">⌕</span>
-          <textarea
-            id="filterExpression"
-            rows="1"
-            placeholder='Gender eq "Female" and City eq "Chicago"'
-            [(ngModel)]="filterExpression"
-            (ngModelChange)="refreshVisibleRows()"
-          ></textarea>
+            <input
+              id="customerSearch"
+              type="search"
+              aria-label="Search customers"
+              placeholder="Search customers"
+              [(ngModel)]="quickSearch"
+              (ngModelChange)="applyQuickSearch($event)"
+            />
+          </label>
+          <label class="ecommerce-preset">
+            <span class="sr-only">Advanced filter example</span>
+            <select aria-label="Advanced filter example" (change)="applyPreset($event)">
+              <option value="">Advanced examples</option>
+              @for (entry of filterPresets; track entry[0]) {
+                <option [value]="entry[0]">{{ entry[1].label }}</option>
+              }
+            </select>
           </label>
         </div>
         <div class="ecommerce-toolbar__aside">
@@ -63,7 +81,7 @@ import {
         [range]="true"
         [theme]="theme"
         [columns]="columns"
-        [source]="visibleRows"
+        [source]="sourceRows"
         [plugins]="plugins"
         [columnTypes]="columnTypes"
         [rowContextMenu]="rowContextMenu"
@@ -74,20 +92,27 @@ import {
         [hideAttribution]="true"
         (rowselected)="handleRowSelected($event)"
       ></revo-grid>
+      @if (visibleRows.length === 0) {
+        <div class="ecommerce-empty" role="status" aria-live="polite">No customers match these filters.</div>
+      }
     </div>
   `,
   styleUrls: ['./ecommerce.scss'],
   encapsulation: ViewEncapsulation.None,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ECommerceGridComponent {
+export class ECommerceGridComponent implements AfterViewInit, OnDestroy {
   @Input() set rows(value: any[]) {
     this.sourceRows = normalizeEcommerceRows(value || []);
-    this.refreshVisibleRows();
+    this.visibleRows = this.sourceRows;
+    if (this.gridRef?.nativeElement) {
+      this.gridRef.nativeElement.source = this.sourceRows;
+      void this.syncVisibleSource?.();
+    }
   }
   @Input() fields: string[] = [];
 
-  @ViewChild('gridRef', { static: true }) gridRef!: ElementRef<HTMLRevoGridElement>;
+  @ViewChild('gridRef', { static: true, read: ElementRef }) gridRef!: ElementRef<HTMLRevoGridElement>;
 
   columnTypes = ecommerceColumnTypes;
   filterConfig = ecommerceFilterConfig;
@@ -95,24 +120,26 @@ export class ECommerceGridComponent {
   allColumns = createEcommerceAnalyticsColumns();
   columns = getVisibleEcommerceColumns(this.allColumns, this.hiddenColumns);
 
-  theme = currentTheme().isDark() ? 'darkMaterial' : 'material';
-  isDark = currentTheme().isDark();
-  filterExpression = '';
+  theme = currentEcommerceTheme().isDark() ? 'darkMaterial' : 'material';
+  isDark = currentEcommerceTheme().isDark();
+  quickSearch = '';
   selectedRowsCount = 0;
   selectedIndexes = new Set<number>();
-  allRowsCount = 0;
   sourceRows: any[] = [];
   visibleRows: any[] = [];
   rowsCountLabel = '0';
   totalSpend = formatEcommerceTotalSpend([]);
+  readonly filterPresets = Object.entries(ECOMMERCE_FILTER_PRESETS);
+  private syncVisibleSource?: EcommerceVisibleSourceSync;
 
   plugins = ecommercePlugins;
   contextMenus = createEcommerceContextMenus({
     getRows: () => this.sourceRows,
     setRows: (rows) => {
       this.sourceRows = rows;
-      this.allRowsCount = rows.length;
-      this.refreshVisibleRows();
+      this.visibleRows = rows;
+      this.gridRef.nativeElement.source = rows;
+      void this.syncVisibleSource?.();
     },
     getColumns: () => this.allColumns,
     setColumns: (nextColumns) => {
@@ -141,8 +168,49 @@ export class ECommerceGridComponent {
     exportPlugin?.export(createEcommerceExcelExportConfig());
   }
 
+  ngAfterViewInit() {
+    this.syncVisibleSource = createEcommerceVisibleSourceSync(
+      this.gridRef.nativeElement,
+      (state) => {
+        this.visibleRows = state.visibleRows;
+        this.selectedRowsCount = state.visibleSelectedIds.size;
+        this.updateRowsCountLabel();
+        this.totalSpend = formatEcommerceTotalSpend(this.visibleRows);
+      },
+      () => new Set([...this.selectedIndexes].map(index =>
+        getEcommerceRowId(this.sourceRows[index]))),
+    );
+    this.gridRef.nativeElement.addEventListener('afterfilterapply', this.syncVisibleSource);
+    this.gridRef.nativeElement.addEventListener('aftertrimmed', this.syncVisibleSource);
+    this.gridRef.nativeElement.addEventListener('aftersourceset', this.syncVisibleSource);
+    void this.syncVisibleSource();
+  }
+
+  ngOnDestroy() {
+    if (this.syncVisibleSource) {
+      this.gridRef?.nativeElement.removeEventListener('afterfilterapply', this.syncVisibleSource);
+      this.gridRef?.nativeElement.removeEventListener('aftertrimmed', this.syncVisibleSource);
+      this.gridRef?.nativeElement.removeEventListener('aftersourceset', this.syncVisibleSource);
+      this.syncVisibleSource.cancel();
+    }
+  }
+
+  applyQuickSearch(text: string) {
+    setEcommerceQuickFilter(this.gridRef.nativeElement, text);
+  }
+
+  async applyPreset(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value;
+    await applyEcommerceFilterPreset(
+      this.gridRef.nativeElement,
+      (value || undefined) as EcommerceFilterPresetId | undefined,
+    );
+    select.value = '';
+  }
+
   refreshVisibleRows() {
-    this.visibleRows = filterEcommerceRows(this.sourceRows, this.filterExpression);
+    void this.syncVisibleSource?.();
     this.updateRowsCountLabel();
     this.totalSpend = formatEcommerceTotalSpend(this.visibleRows);
   }
@@ -150,7 +218,6 @@ export class ECommerceGridComponent {
   handleRowSelected(event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>) {
     this.selectedIndexes = getSelectedEcommerceIndexes(event, this.sourceRows);
     this.selectedRowsCount = event.detail.count;
-    this.allRowsCount = event.detail.allRowsCount || this.sourceRows.length;
     this.updateRowsCountLabel();
   }
 
@@ -162,7 +229,7 @@ export class ECommerceGridComponent {
   }
 
   updateRowsCountLabel() {
-    const totalRowsCount = this.allRowsCount || this.sourceRows.length;
+    const totalRowsCount = this.visibleRows.length;
     this.rowsCountLabel = this.selectedRowsCount === totalRowsCount
       ? String(totalRowsCount)
       : `${this.selectedRowsCount}/${totalRowsCount}`;

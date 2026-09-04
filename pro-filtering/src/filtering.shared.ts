@@ -2,3 +2,4 @@
 export * from './filtering.columns';
 export * from './filtering.config';
 export * from './filtering.data';
+export * from './filtering.structured';

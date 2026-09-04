@@ -5,6 +5,10 @@
     "experimentalDecorators": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "paths": {
+      "@revolist/revogrid": ["../../../node_modules/@revolist/revogrid/dist/types/index.d.ts"],
+      "@revolist/revogrid-pro": ["../../../packages/pro/dist/index.d.ts"]
+    },
     "jsx": "react-jsx",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,

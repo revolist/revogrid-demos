@@ -8,7 +8,7 @@ import {
 } from '@revolist/react-datagrid';
 import type { ColumnProp } from '@revolist/revogrid';
 import { ExportExcelPlugin } from '@revolist/revogrid-pro';
-import { currentTheme } from '../../composables/useRandomData';
+import { currentEcommerceTheme } from './ecommerce.theme';
 import {
   createEcommerceAnalyticsColumns,
   createEcommerceContextMenus,
@@ -17,12 +17,19 @@ import {
   ecommerceColumnTypes,
   ecommerceFilterConfig,
   ecommercePlugins,
-  filterEcommerceRows,
   formatEcommerceTotalSpend,
   getSelectedEcommerceIndexes,
   getVisibleEcommerceColumns,
   normalizeEcommerceRows,
 } from './ecommerce.shared';
+import {
+  ECOMMERCE_FILTER_PRESETS,
+  applyEcommerceFilterPreset,
+  createEcommerceVisibleSourceSync,
+  getEcommerceRowId,
+  setEcommerceQuickFilter,
+  type EcommerceFilterPresetId,
+} from './ecommerce.filtering';
 
 interface ECommerceProps {
   rows?: DataType[];
@@ -31,18 +38,19 @@ interface ECommerceProps {
 
 function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
-  const [filterExpression, setFilterExpression] = useState('');
+  const [quickSearch, setQuickSearch] = useState('');
+  const rowsInputRef = useRef(rows);
   const [hiddenColumns, setHiddenColumns] = useState<ColumnProp[]>([]);
   const [selectedRowsCount, setSelectedRowsCount] = useState(0);
-  const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(() => new Set());
-  const [allRowsCount, setAllRowsCount] = useState(0);
+  const selectedIndexesRef = useRef<Set<number>>(new Set());
 
-  const { isDark } = currentTheme();
+  const { isDark } = currentEcommerceTheme();
 
   const theme = isDark() ? 'darkMaterial' : 'material';
 
   const [columns, setColumns] = useState(createEcommerceAnalyticsColumns);
   const [source, setSource] = useState(() => normalizeEcommerceRows(rows));
+  const [visibleRows, setVisibleRows] = useState(() => normalizeEcommerceRows(rows));
 
   const columnTypes = useMemo(() => ecommerceColumnTypes, []);
   const plugins = useMemo(() => ecommercePlugins, []);
@@ -50,22 +58,53 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
     () => getVisibleEcommerceColumns(columns, hiddenColumns),
     [columns, hiddenColumns],
   );
-  const visibleRows = useMemo(
-    () => filterEcommerceRows(source, filterExpression),
-    [source, filterExpression],
-  );
   const totalSpend = useMemo(
     () => formatEcommerceTotalSpend(visibleRows),
     [visibleRows],
   );
-  const totalRowsCount = allRowsCount || source.length;
+  const totalRowsCount = visibleRows.length;
   const rowsCountLabel = selectedRowsCount === totalRowsCount
     ? String(totalRowsCount)
     : `${selectedRowsCount}/${totalRowsCount}`;
 
   useEffect(() => {
-    setSource(normalizeEcommerceRows(rows));
+    if (rowsInputRef.current === rows) return;
+    rowsInputRef.current = rows;
+    const normalized = normalizeEcommerceRows(rows);
+    setSource(normalized);
+    setVisibleRows(normalized);
   }, [rows]);
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    let active = true;
+    void grid.componentOnReady().then(() => {
+      if (active) grid.plugins = plugins;
+    });
+    return () => {
+      active = false;
+    };
+  }, [plugins]);
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const syncVisibleSource = createEcommerceVisibleSourceSync(grid, (state) => {
+      setVisibleRows(state.visibleRows);
+      setSelectedRowsCount(state.visibleSelectedIds.size);
+    }, () => new Set([...selectedIndexesRef.current].map(index => getEcommerceRowId(source[index]))));
+    grid.addEventListener('afterfilterapply', syncVisibleSource);
+    grid.addEventListener('aftertrimmed', syncVisibleSource);
+    grid.addEventListener('aftersourceset', syncVisibleSource);
+    void syncVisibleSource();
+    return () => {
+      grid.removeEventListener('afterfilterapply', syncVisibleSource);
+      grid.removeEventListener('aftertrimmed', syncVisibleSource);
+      grid.removeEventListener('aftersourceset', syncVisibleSource);
+      syncVisibleSource.cancel();
+    };
+  }, [source]);
 
   const exportToExcel = async () => {
     const grid = gridRef.current;
@@ -79,7 +118,7 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
   };
 
   const resetSelection = useCallback(() => {
-    setSelectedIndexes(new Set());
+    selectedIndexesRef.current = new Set();
     setSelectedRowsCount(0);
     clearEcommerceSelection(gridRef.current);
   }, []);
@@ -88,24 +127,28 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
     getRows: () => source,
     setRows: (nextRows) => {
       setSource(nextRows);
-      setAllRowsCount(nextRows.length);
+      setVisibleRows(nextRows);
     },
     getColumns: () => columns,
     setColumns: (nextColumns) => setColumns(nextColumns),
     getHiddenColumns: () => hiddenColumns,
     setHiddenColumns,
     getGrid: () => gridRef.current,
-    getSelectedIndexes: () => selectedIndexes,
+    getSelectedIndexes: () => selectedIndexesRef.current,
     clearSelection: resetSelection,
     exportExcel: exportToExcel,
-  }), [columns, hiddenColumns, resetSelection, selectedIndexes, source]);
+  }), [columns, hiddenColumns, resetSelection, source]);
 
   const handleRowSelected = (
     event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>,
   ) => {
-    setSelectedIndexes(getSelectedEcommerceIndexes(event, source));
+    selectedIndexesRef.current = getSelectedEcommerceIndexes(event, source);
     setSelectedRowsCount(event.detail.count);
-    setAllRowsCount(event.detail.allRowsCount || source.length);
+  };
+
+  const applyQuickSearch = (text: string) => {
+    setQuickSearch(text);
+    if (gridRef.current) setEcommerceQuickFilter(gridRef.current, text);
   };
 
   return (
@@ -118,13 +161,37 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
           </span>
           <label className="ecommerce-filter">
             <span aria-hidden="true">⌕</span>
-            <textarea
-              id="filterExpression"
-              rows={1}
-              placeholder='Gender eq "Female" and City eq "Chicago"'
-              value={filterExpression}
-              onChange={(e) => setFilterExpression(e.target.value)}
+            <input
+              id="customerSearch"
+              type="search"
+              aria-label="Search customers"
+              placeholder="Search customers"
+              value={quickSearch}
+              onChange={(event) => applyQuickSearch(event.target.value)}
             />
+          </label>
+          <label className="ecommerce-preset">
+            <span className="sr-only">Advanced filter example</span>
+            <select
+              aria-label="Advanced filter example"
+              defaultValue=""
+              onChange={async (event) => {
+                const grid = gridRef.current;
+                if (grid) {
+                  const select = event.currentTarget;
+                  await applyEcommerceFilterPreset(
+                    grid,
+                    (select.value || undefined) as EcommerceFilterPresetId | undefined,
+                  );
+                  select.value = '';
+                }
+              }}
+            >
+              <option value="">Advanced examples</option>
+              {Object.entries(ECOMMERCE_FILTER_PRESETS).map(([id, preset]) => (
+                <option key={id} value={id}>{preset.label}</option>
+              ))}
+            </select>
           </label>
         </div>
         <div className="ecommerce-toolbar__aside">
@@ -146,8 +213,7 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
         range
         ref={gridRef}
         columns={visibleColumns}
-        source={visibleRows}
-        plugins={plugins}
+        source={source}
         columnTypes={columnTypes}
         rowContextMenu={contextMenus.rowContextMenu}
         columnContextMenu={contextMenus.columnContextMenu}
@@ -159,6 +225,9 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
         theme={theme}
         onRowselected={handleRowSelected}
       />
+      {visibleRows.length === 0 && (
+        <div className="ecommerce-empty" role="status" aria-live="polite">No customers match these filters.</div>
+      )}
     </div>
   );
 }

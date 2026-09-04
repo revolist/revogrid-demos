@@ -254,6 +254,7 @@ test('all framework variants install the same universal menu capabilities', asyn
     assert.match(source, /createDataGridContextMenuConfig/);
     assert.match(source, /dataGridFormatting/);
     assert.match(source, /createDataGridFormattingPresets/);
+    assert.match(source, /dataGridFormattingPanel|data-grid-formatting-panel/);
     assert.doesNotMatch(source, /createDataGridColumnTypes|columnTypes|column-types/);
     assert.doesNotMatch(source, /createTeamGrouping|\bgrouping\b/);
   }
@@ -271,15 +272,18 @@ test('framework variants follow standalone demo lifecycle conventions', async ()
   assert.match(typescript, /return \(\) =>/);
   assert.match(react, /const plugins = useMemo/);
   assert.match(react, /dataGridFormatting=\{dataGridFormatting\}/);
+  assert.match(react, /dataGridFormattingPanel/);
   assert.match(react, /dataGridContextMenu=\{dataGridContextMenu\}/);
   assert.doesNotMatch(react, /additionalData/);
   assert.match(vue, /const rows = computed/);
   assert.match(vue, /:data-grid-formatting\.prop="dataGridFormatting"/);
+  assert.match(vue, /:data-grid-formatting-panel\.prop="true"/);
   assert.match(vue, /:data-grid-context-menu\.prop="dataGridContextMenu"/);
   assert.doesNotMatch(vue, /additional-data|additionalData/);
   assert.match(angular, /standalone: true/);
   assert.match(angular, /encapsulation: ViewEncapsulation.None/);
   assert.match(angular, /\[dataGridFormatting\]="dataGridFormatting"/);
+  assert.match(angular, /\[dataGridFormattingPanel\]="true"/);
   assert.match(angular, /\[dataGridContextMenu\]="dataGridContextMenu"/);
   assert.doesNotMatch(angular, /additionalData/);
 });

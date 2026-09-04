@@ -29,6 +29,7 @@ $dark-badges: (
     --ecommerce-text-2: #d5deef;
     --ecommerce-text-3: #9aa8bf;
     --ecommerce-text-4: #75839a;
+    --ecommerce-accent: #60a5fa;
     --ecommerce-menu-shadow: 0 22px 52px rgba(0, 0, 0, 0.5), 0 5px 16px rgba(0, 0, 0, 0.34);
     --ecommerce-avatar-ring: rgba(0, 0, 0, 0.34);
     --ecommerce-star-track: #394154;
@@ -48,6 +49,7 @@ $dark-badges: (
     --ecommerce-text-2: #334155;
     --ecommerce-text-3: #64748b;
     --ecommerce-text-4: #94a3b8;
+    --ecommerce-accent: #2563eb;
     --ecommerce-menu-shadow: 0 18px 42px rgba(15, 23, 42, 0.16), 0 3px 10px rgba(15, 23, 42, 0.08);
     --ecommerce-avatar-ring: rgba(15, 23, 42, 0.12);
     --ecommerce-star-track: #dbe3ef;
@@ -146,6 +148,11 @@ $dark-badges: (
   color: var(--ecommerce-text-3);
   padding: 0 11px;
 
+  &:focus-within {
+    border-color: var(--ecommerce-accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ecommerce-accent) 24%, transparent);
+  }
+
   span {
     flex: 0 0 auto;
     color: var(--ecommerce-text-4);
@@ -153,11 +160,10 @@ $dark-badges: (
     line-height: 1;
   }
 
-  textarea {
+  input {
     width: 100%;
     min-width: 0;
     height: 24px;
-    resize: none;
     border: 0;
     outline: 0;
     background: transparent;
@@ -172,6 +178,56 @@ $dark-badges: (
       color: var(--ecommerce-text-4);
     }
   }
+}
+
+.ecommerce-preset {
+  flex: 0 1 220px;
+
+  select {
+    width: 100%;
+    height: 36px;
+    border: 1px solid var(--ecommerce-border);
+    border-radius: 8px;
+    outline: 0;
+    background: var(--ecommerce-surface);
+    color: var(--ecommerce-text-2);
+    font: inherit;
+    font-size: 13px;
+    padding: 0 30px 0 10px;
+
+    &:focus-visible {
+      border-color: var(--ecommerce-accent);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--ecommerce-accent) 24%, transparent);
+    }
+  }
+}
+
+.analytics-blank {
+  color: var(--ecommerce-text-4);
+}
+
+.ecommerce-empty {
+  display: grid;
+  min-height: 64px;
+  place-items: center;
+  border-top: 1px solid var(--ecommerce-border);
+  background: var(--ecommerce-surface);
+  color: var(--ecommerce-text-3);
+  font-size: 14px;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
 }
 
 .ecommerce-button {

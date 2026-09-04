@@ -42,6 +42,7 @@ defineCustomElements();
         [rowSize]="rowSize"
         [plugins]="plugins"
         [dataGridFormatting]="dataGridFormatting"
+        [dataGridFormattingPanel]="true"
         [dataGridContextMenu]="dataGridContextMenu"
         [rowHeaders]="rowHeaders"
         [range]="true"

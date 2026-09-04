@@ -55,6 +55,7 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
         rowSize={DATA_GRID_CONTEXT_MENU_ROW_SIZE}
         plugins={plugins}
         dataGridFormatting={dataGridFormatting}
+        dataGridFormattingPanel
         dataGridContextMenu={dataGridContextMenu}
         rowHeaders={rowHeaders}
         range

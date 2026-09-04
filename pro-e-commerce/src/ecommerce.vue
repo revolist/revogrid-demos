@@ -8,13 +8,25 @@
           <span>Rows</span>
           <strong>{{ rowsCountLabel }}</strong>
         </span>
-        <label class="ecommerce-filter">
+        <label class="ecommerce-filter" for="customerSearch">
           <span aria-hidden="true">⌕</span>
-          <textarea
-            v-model="filterExpression"
-            rows="1"
-            placeholder='Gender eq "Female" and City eq "Chicago"'
-          ></textarea>
+          <input
+            id="customerSearch"
+            v-model="quickSearch"
+            type="search"
+            aria-label="Search customers"
+            placeholder="Search customers"
+            @input="applyQuickSearch"
+          />
+        </label>
+        <label class="ecommerce-preset">
+          <span class="sr-only">Advanced filter example</span>
+          <select aria-label="Advanced filter example" @change="applyPreset">
+            <option value="">Advanced examples</option>
+            <option v-for="(preset, id) in ECOMMERCE_FILTER_PRESETS" :key="id" :value="id">
+              {{ preset.label }}
+            </option>
+          </select>
         </label>
       </div>
 
@@ -39,7 +51,7 @@
       ref="grid"
       :theme="isDark.value ? 'darkMaterial' : 'material'"
       :columns="visibleColumns"
-      :source="visibleRows"
+      :source="localRows"
       :plugins="plugins"
       :row-context-menu.prop="contextMenus.rowContextMenu"
       :column-context-menu.prop="contextMenus.columnContextMenu"
@@ -51,13 +63,19 @@
       resize
       hide-attribution
       @rowselected="handleRowSelected"
+      @afterfilterapply="syncFilterState"
+      @aftertrimmed="syncFilterState"
+      @aftersourceset="syncFilterState"
     />
+    <div v-if="visibleRows.length === 0" class="ecommerce-empty" role="status" aria-live="polite">
+      No customers match these filters.
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import './ecommerce.scss';
-import { currentThemeVue } from '../../composables/useRandomData';
+import { currentEcommerceThemeVue } from './ecommerce.theme';
 import RevoGrid from '@revolist/vue3-datagrid';
 import type {
   ColumnProp,
@@ -75,13 +93,21 @@ import {
   ecommerceColumnTypes,
   ecommerceFilterConfig,
   ecommercePlugins,
-  filterEcommerceRows,
   formatEcommerceTotalSpend,
   getSelectedEcommerceIndexes,
   getVisibleEcommerceColumns,
   normalizeEcommerceRows,
 } from './ecommerce.shared';
-import { computed, ref, shallowRef, watch } from 'vue';
+import {
+  ECOMMERCE_FILTER_PRESETS,
+  applyEcommerceFilterPreset,
+  createEcommerceVisibleSourceSync,
+  getEcommerceRowId,
+  setEcommerceQuickFilter,
+  type EcommerceFilterPresetId,
+  type EcommerceVisibleSourceSync,
+} from './ecommerce.filtering';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 
 const props = defineProps({
   rows: {
@@ -96,9 +122,10 @@ const columns = ref<(ColumnRegular | ColumnGrouping)[]>(createEcommerceAnalytics
 const plugins = ecommercePlugins;
 const hiddenColumns = ref<ColumnProp[]>([]);
 const localRows = ref<any[]>([]);
+const visibleRows = ref<any[]>([]);
 const selectedIndexes = shallowRef<Set<number>>(new Set());
 
-const { isDark } = currentThemeVue();
+const { isDark } = currentEcommerceThemeVue();
 
 const exportToExcel = async () => {
   if (grid.value) {
@@ -120,7 +147,9 @@ const contextMenus = computed(() => createEcommerceContextMenus({
   getRows: () => localRows.value,
   setRows: (rows) => {
     localRows.value = rows;
-    allRowsCount.value = rows.length;
+    visibleRows.value = rows;
+    if (grid.value?.$el) grid.value.$el.source = rows;
+    void syncVisibleSource?.();
   },
   getColumns: () => columns.value,
   setColumns: (nextColumns) => {
@@ -136,36 +165,66 @@ const contextMenus = computed(() => createEcommerceContextMenus({
   exportExcel: exportToExcel,
 }));
 
-const filterExpression = ref('');
+const quickSearch = ref('');
 
 const selectedRowsCount = ref(0);
-const allRowsCount = ref(0);
-watch(
-  () => props.rows.length,
-  () => {
-    allRowsCount.value = props.rows.length;
-  },
-  { immediate: true },
-);
 
 watch(
   () => props.rows,
   (nextRows) => {
-    localRows.value = normalizeEcommerceRows(nextRows);
+    const normalized = normalizeEcommerceRows(nextRows);
+    localRows.value = normalized;
+    visibleRows.value = normalized;
   },
   { immediate: true },
 );
 
-const visibleRows = computed(() => filterEcommerceRows(localRows.value, filterExpression.value));
-const visibleRowsCount = computed(() => visibleRows.value.length);
 const rowsCountLabel = computed(() =>
-  selectedRowsCount.value === allRowsCount.value
-    ? String(allRowsCount.value)
-    : `${selectedRowsCount.value}/${allRowsCount.value}`,
+  selectedRowsCount.value === visibleRows.value.length
+    ? String(visibleRows.value.length)
+    : `${selectedRowsCount.value}/${visibleRows.value.length}`,
 );
 
 const totalSpend = computed(() => {
   return formatEcommerceTotalSpend(visibleRows.value);
+});
+
+let syncVisibleSource: EcommerceVisibleSourceSync | undefined;
+
+function syncFilterState() {
+  return syncVisibleSource?.();
+}
+
+function applyQuickSearch() {
+  const element = grid.value?.$el;
+  if (element) setEcommerceQuickFilter(element, quickSearch.value);
+}
+
+async function applyPreset(event: Event) {
+  const element = grid.value?.$el;
+  if (!element) return;
+  const select = event.target as HTMLSelectElement;
+  const value = select.value;
+  await applyEcommerceFilterPreset(
+    element,
+    (value || undefined) as EcommerceFilterPresetId | undefined,
+  );
+  select.value = '';
+}
+
+onMounted(() => {
+  const element = grid.value?.$el;
+  if (!element) return;
+  syncVisibleSource = createEcommerceVisibleSourceSync(element, (state) => {
+    visibleRows.value = state.visibleRows;
+    selectedRowsCount.value = state.visibleSelectedIds.size;
+  }, () => new Set([...selectedIndexes.value].map(index =>
+    getEcommerceRowId(localRows.value[index]))));
+  void syncVisibleSource();
+});
+
+onBeforeUnmount(() => {
+  syncVisibleSource?.cancel();
 });
 
 const handleRowSelected = (
@@ -173,7 +232,6 @@ const handleRowSelected = (
 ) => {
   selectedIndexes.value = getSelectedEcommerceIndexes(event, localRows.value);
   selectedRowsCount.value = event.detail.count;
-  allRowsCount.value = event.detail.allRowsCount;
 };
 
 const visibleColumns = computed(() =>

@@ -8,6 +8,7 @@ import type {
 import {
   AdvanceFilterPlugin,
   ColumnGroupPanelPlugin,
+  ExportExcelPlugin,
   FilterHeaderPlugin,
   RowSelectPlugin,
   SummaryChartHeaderPlugin,
@@ -15,6 +16,28 @@ import {
   pieChartRenderer,
   summaryHeaderRenderer,
 } from '@revolist/revogrid-pro';
+
+export const ECOMMERCE_FILTER_BY_PROP: Readonly<Record<string, ColumnRegular['filter']>> = {
+  'Customer ID': ['string'],
+  Customer: ['fuzzy'],
+  Gender: ['selection'],
+  City: ['facetedList'],
+  'Membership Type': ['chipBadgeToggles'],
+  Age: ['slider'],
+  'Lifetime Value': ['histogramBrush'],
+  'Average Rating': ['ratingProgressThreshold'],
+  'Discount Applied': ['triStateBoolean'],
+  'Spend Change (%)': ['statisticalPresets'],
+  'Total Spend': ['histogramBrush'],
+  'Order Date': ['calendarRange'],
+  'Created At': ['timelineBrush'],
+  'Order Status': ['facetedList'],
+  'Product Category': ['selection'],
+  SKU: ['tokenList'],
+  Tags: ['arrayTags'],
+  Country: ['selection'],
+  Currency: ['selection'],
+};
 
 export const ECOMMERCE_COLUMNS: (ColumnRegular | ColumnGrouping)[] = [
   {
@@ -27,11 +50,12 @@ export const ECOMMERCE_COLUMNS: (ColumnRegular | ColumnGrouping)[] = [
         filter: false,
         size: 54,
       },
-      { prop: 'Customer ID', name: 'ID' },
-      { prop: 'avatar', name: 'Customer' },
+      { prop: 'Customer ID', name: 'ID', filter: ECOMMERCE_FILTER_BY_PROP['Customer ID'] },
+      { prop: 'Customer', name: 'Customer', filter: ECOMMERCE_FILTER_BY_PROP.Customer },
       {
         prop: 'Gender',
         name: 'Gender',
+        filter: ECOMMERCE_FILTER_BY_PROP.Gender,
         summaryVNode: (h: HyperFunc<VNode>, summary: Record<string, number>) => {
           const names = Object.keys(summary).sort().filter(Boolean);
           return pieChartRenderer(h, {
@@ -46,24 +70,28 @@ export const ECOMMERCE_COLUMNS: (ColumnRegular | ColumnGrouping)[] = [
       {
         prop: 'Lifetime Value',
         name: 'Lifetime Value',
+        filter: ECOMMERCE_FILTER_BY_PROP['Lifetime Value'],
         summaryVNode: (h: HyperFunc<VNode>, summary: Record<string, number>) =>
           renderDistribution(h, summary, 60, 20),
       },
       {
         prop: 'Age',
         name: 'Age',
+        filter: ECOMMERCE_FILTER_BY_PROP.Age,
         summaryVNode: (h: HyperFunc<VNode>, summary: Record<string, number>) =>
           renderDistribution(h, summary, 40, 10),
       },
       {
         prop: 'City',
         name: 'City',
+        filter: ECOMMERCE_FILTER_BY_PROP.City,
         summaryVNode: (h: HyperFunc<VNode>, summary: Record<string, number>) =>
           summaryHeaderRenderer(h, summary, { maxItems: 1 }),
       },
       {
         prop: 'Membership Type',
         name: 'Membership Type',
+        filter: ECOMMERCE_FILTER_BY_PROP['Membership Type'],
         summaryVNode: (h: HyperFunc<VNode>, summary: Record<string, number>) =>
           summaryHeaderRenderer(h, summary, { maxItems: 1 }),
       },
@@ -75,12 +103,14 @@ export const ECOMMERCE_COLUMNS: (ColumnRegular | ColumnGrouping)[] = [
       {
         prop: 'Average Rating',
         name: 'Average Rating',
+        filter: ECOMMERCE_FILTER_BY_PROP['Average Rating'],
         summaryVNode: (h: HyperFunc<VNode>, summary: Record<string, number>) =>
           renderDistribution(h, summary, 35, 10),
       },
       {
         prop: 'Discount Applied',
         name: 'Discount',
+        filter: ECOMMERCE_FILTER_BY_PROP['Discount Applied'],
         summaryVNode: (h: HyperFunc<VNode>, summary: Record<string, number>) => {
           const names = Object.keys(summary).filter(Boolean);
           return pieChartRenderer(h, {
@@ -91,15 +121,30 @@ export const ECOMMERCE_COLUMNS: (ColumnRegular | ColumnGrouping)[] = [
       {
         prop: 'Spend Change (%)',
         name: 'Spend Change',
+        filter: ECOMMERCE_FILTER_BY_PROP['Spend Change (%)'],
         summaryVNode: (h: HyperFunc<VNode>, summary: Record<string, number>) =>
           renderEcommerceNumericAggregate(h, summary, 'average'),
       },
       {
         prop: 'Total Spend',
         name: 'Total Spend',
+        filter: ECOMMERCE_FILTER_BY_PROP['Total Spend'],
         summaryVNode: (h: HyperFunc<VNode>, summary: Record<string, number>) =>
           renderEcommerceNumericAggregate(h, summary, 'sum'),
       },
+    ],
+  },
+  {
+    name: 'Commerce',
+    children: [
+      { prop: 'Order Date', name: 'Order date', filter: ECOMMERCE_FILTER_BY_PROP['Order Date'] },
+      { prop: 'Created At', name: 'Created at', filter: ECOMMERCE_FILTER_BY_PROP['Created At'] },
+      { prop: 'Order Status', name: 'Status', filter: ECOMMERCE_FILTER_BY_PROP['Order Status'] },
+      { prop: 'Product Category', name: 'Category', filter: ECOMMERCE_FILTER_BY_PROP['Product Category'] },
+      { prop: 'SKU', name: 'SKU', filter: ECOMMERCE_FILTER_BY_PROP.SKU },
+      { prop: 'Tags', name: 'Tags', filter: ECOMMERCE_FILTER_BY_PROP.Tags },
+      { prop: 'Country', name: 'Country', filter: ECOMMERCE_FILTER_BY_PROP.Country },
+      { prop: 'Currency', name: 'Currency', filter: ECOMMERCE_FILTER_BY_PROP.Currency },
     ],
   },
 ];
@@ -159,4 +204,5 @@ export const ECOMMERCE_PLUGINS = [
   AdvanceFilterPlugin,
   SummaryChartHeaderPlugin,
   FilterHeaderPlugin,
+  ExportExcelPlugin,
 ] as (typeof BasePlugin)[];

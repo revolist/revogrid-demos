@@ -92,6 +92,7 @@ test('leaves formula-backed sorting to FormulaPlugin without a stale demo parser
 test('provides built-in badge renderers without a custom status popup class', () => {
   const status = getSpreadsheetLeafColumns(createSpreadsheetColumns([]))
     .find(column => column.prop === 'status') as {
+      badgeStyles?: Record<string, { backgroundColor: string; color?: string }>;
       dropdown?: {
         config?: { popupClassName?: string };
         syncCellTemplate?: boolean;
@@ -106,6 +107,8 @@ test('provides built-in badge renderers without a custom status popup class', ()
   assert.equal(typeof status?.dropdown?.cellTemplate, 'function');
   assert.equal(status?.dropdown?.renderOption, undefined);
   assert.equal(status?.dropdown?.renderSelectedValue, undefined);
+  assert.ok(status?.badgeStyles);
+  assert.ok(Object.values(status.badgeStyles).every(style => style.color === undefined));
 });
 
 test('provides department templates to the dropdown popup and editor value', () => {
