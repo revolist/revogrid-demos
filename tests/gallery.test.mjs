@@ -34,6 +34,14 @@ test('child metadata is complete and remains the source for feature copy', async
   }
 });
 
+test('every catalog source has a build manifest and gallery media', async () => {
+  for (const showcase of await loadCatalog()) {
+    const source = join(root, showcase.sourceDir);
+    await access(join(source, 'package.json'));
+    await access(join(source, 'assets'));
+  }
+});
+
 test('gallery publishes every detail and canonical demo route', async () => {
   const manifest = JSON.parse(await readFile(join(output, 'manifest.json'), 'utf8'));
   assert.equal(manifest.showcases.length, 20);

@@ -25,7 +25,7 @@ async function runBuild() {
   runChildren('build');
   const retained = (await loadCatalog()).filter((showcase) => !featureSlugs.includes(showcase.slug));
   for (const showcase of retained) runPnpm(['build'], join(root, showcase.sourceDir));
-  run('node', ['scripts/build-gallery.mjs']);
+  run(process.execPath, ['scripts/build-gallery.mjs']);
 }
 
 if (action === 'setup') {
@@ -40,7 +40,7 @@ if (action === 'setup') {
 } else if (action === 'test') {
   runChildren('test');
   await runBuild();
-  run('node', ['--test', 'tests/gallery.test.mjs']);
+  run(process.execPath, ['--test', 'tests/gallery.test.mjs', 'tests/package-manager.test.mjs']);
 } else if (action === 'test:e2e') {
   await runBuild();
   runChildren('test:e2e');

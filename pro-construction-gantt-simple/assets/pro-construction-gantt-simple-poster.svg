@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Construction Gantt: Simple Portfolio</title>
+  <desc id="desc">A dark construction planning interface with a project tree and a blue Gantt timeline.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#172554"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#4f46e5"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#020617" flood-opacity=".42"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="675" fill="url(#background)"/>
+  <circle cx="1080" cy="80" r="210" fill="#2563eb" opacity=".12"/>
+  <circle cx="90" cy="620" r="250" fill="#0ea5e9" opacity=".08"/>
+  <text x="72" y="92" fill="#93c5fd" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="3">REVOGRID PRO ADVANCED</text>
+  <text x="72" y="142" fill="#f8fafc" font-family="Inter,Arial,sans-serif" font-size="42" font-weight="750">Construction Gantt</text>
+  <text x="72" y="178" fill="#cbd5e1" font-family="Inter,Arial,sans-serif" font-size="20">One portfolio. One persistent plan. A focused Look-Ahead.</text>
+  <g transform="translate(72 220)" filter="url(#shadow)">
+    <rect width="1056" height="385" rx="22" fill="#f8fafc"/>
+    <rect width="1056" height="58" rx="22" fill="#e2e8f0"/>
+    <rect y="38" width="1056" height="20" fill="#e2e8f0"/>
+    <circle cx="28" cy="28" r="7" fill="#ef4444"/><circle cx="52" cy="28" r="7" fill="#f59e0b"/><circle cx="76" cy="28" r="7" fill="#22c55e"/>
+    <rect x="780" y="14" width="116" height="30" rx="15" fill="#2563eb"/><text x="838" y="34" text-anchor="middle" fill="white" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700">LOOK-AHEAD</text>
+    <rect x="910" y="14" width="126" height="30" rx="8" fill="white"/><text x="973" y="34" text-anchor="middle" fill="#334155" font-family="Inter,Arial,sans-serif" font-size="12">Jun 01 – Jun 21</text>
+    <line x1="390" y1="58" x2="390" y2="385" stroke="#cbd5e1"/>
+    <g fill="#64748b" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="650">
+      <text x="22" y="88">PROJECT / WORK PACKAGE</text><text x="414" y="88">JUN 03</text><text x="585" y="88">JUN 10</text><text x="756" y="88">JUN 17</text><text x="927" y="88">JUN 24</text>
+    </g>
+    <g stroke="#e2e8f0"><line x1="0" y1="104" x2="1056" y2="104"/><line x1="0" y1="158" x2="1056" y2="158"/><line x1="0" y1="212" x2="1056" y2="212"/><line x1="0" y1="266" x2="1056" y2="266"/><line x1="0" y1="320" x2="1056" y2="320"/><line x1="561" y1="58" x2="561" y2="385"/><line x1="732" y1="58" x2="732" y2="385"/><line x1="903" y1="58" x2="903" y2="385"/></g>
+    <g fill="#1e293b" font-family="Inter,Arial,sans-serif" font-size="15"><text x="24" y="137" font-weight="700">▾ Riverside Medical Center</text><text x="48" y="191">Site preparation</text><text x="48" y="245">Structural steel</text><text x="48" y="299">Building envelope</text><text x="48" y="353">MEP rough-in</text></g>
+    <g fill="url(#bar)"><rect x="420" y="121" width="438" height="20" rx="6"/><rect x="430" y="175" width="190" height="20" rx="6"/><rect x="590" y="229" width="236" height="20" rx="6"/><rect x="748" y="283" width="214" height="20" rx="6"/><rect x="854" y="337" width="152" height="20" rx="6"/></g>
+    <g fill="#1d4ed8"><circle cx="620" cy="185" r="5"/><circle cx="826" cy="239" r="5"/><circle cx="962" cy="293" r="5"/></g>
+    <path d="M620 185h-18v54h224M826 239h-18v54h154M962 293h-18v54h62" fill="none" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+</svg>

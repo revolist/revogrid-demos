@@ -510,6 +510,106 @@ importers:
         specifier: ^6.3.5
         version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12)
 
+  pro-construction-gantt-simple:
+    dependencies:
+      '@angular/common':
+        specifier: ^22.1.0
+        version: 22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2)
+      '@angular/compiler':
+        specifier: ^22.1.0
+        version: 22.1.2
+      '@angular/core':
+        specifier: ^22.1.0
+        version: 22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1)
+      '@angular/platform-browser':
+        specifier: ^22.1.0
+        version: 22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))
+      '@fortawesome/fontawesome-free':
+        specifier: 7.3.1
+        version: 7.3.1
+      '@revolist/angular-datagrid':
+        specifier: 4.27.0
+        version: 4.27.0
+      '@revolist/gantt':
+        specifier: npm:@revolist/gantt-trial@2.8.2
+        version: '@revolist/gantt-trial@2.8.2'
+      '@revolist/react-datagrid':
+        specifier: 4.27.0
+        version: 4.27.0
+      '@revolist/revogrid':
+        specifier: 4.27.6
+        version: 4.27.6
+      '@revolist/revogrid-pro':
+        specifier: npm:@revolist/rv-pro-trial@2.8.2
+        version: '@revolist/rv-pro-trial@2.8.2'
+      '@revolist/vue3-datagrid':
+        specifier: 4.27.0
+        version: 4.27.0
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      rxjs:
+        specifier: ~7.8.0
+        version: 7.8.2
+      tslib:
+        specifier: ^2.4.0
+        version: 2.8.1
+      vue:
+        specifier: ^3.5.21
+        version: 3.5.41(typescript@6.0.3)
+      zone.js:
+        specifier: ~0.15.0
+        version: 0.15.1
+    devDependencies:
+      '@analogjs/vite-plugin-angular':
+        specifier: ^2.6.3
+        version: 2.7.0(@angular/build@22.1.4(@angular/compiler-cli@22.1.2(@angular/compiler@22.1.2)(typescript@6.0.3))(@angular/compiler@22.1.2)(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@5.0.0)(istanbul-lib-instrument@6.0.3)(postcss@8.5.26)(rollup@4.62.4)(sass-embedded@1.102.0)(tslib@2.8.1)(tsx@4.23.12)(typescript@6.0.3)(vitest@4.1.11(jsdom@29.1.1)(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))))(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))
+      '@angular/build':
+        specifier: ^22.1.0
+        version: 22.1.4(@angular/compiler-cli@22.1.2(@angular/compiler@22.1.2)(typescript@6.0.3))(@angular/compiler@22.1.2)(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@5.0.0)(istanbul-lib-instrument@6.0.3)(postcss@8.5.26)(rollup@4.62.4)(sass-embedded@1.102.0)(tslib@2.8.1)(tsx@4.23.12)(typescript@6.0.3)(vitest@4.1.11(jsdom@29.1.1)(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12)))
+      '@angular/cli':
+        specifier: ^22.1.0
+        version: 22.1.4(chokidar@5.0.0)
+      '@angular/compiler-cli':
+        specifier: ^22.1.0
+        version: 22.1.2(@angular/compiler@22.1.2)(typescript@6.0.3)
+      '@playwright/test':
+        specifier: 1.59.1
+        version: 1.59.1
+      '@types/react':
+        specifier: ^18.3.18
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.5
+        version: 18.3.7(@types/react@18.3.31)
+      '@vitejs/plugin-react':
+        specifier: ^4.3.4
+        version: 4.7.0(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))
+      '@vitejs/plugin-vue':
+        specifier: ^5.2.1
+        version: 5.2.4(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))(vue@3.5.41(typescript@6.0.3))
+      jsdom:
+        specifier: ^29.1.1
+        version: 29.1.1
+      sass-embedded:
+        specifier: ^1.83.4
+        version: 1.102.0
+      typescript:
+        specifier: ~6.0.3
+        version: 6.0.3
+      vite:
+        specifier: ^6.3.5
+        version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12)
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.11(jsdom@29.1.1)(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.102.0)(sass@1.102.0)(tsx@4.23.12))
+      vue-tsc:
+        specifier: ^2.2.10
+        version: 2.2.12(typescript@6.0.3)
+
   pro-construction-operations:
     dependencies:
       '@angular/common':
