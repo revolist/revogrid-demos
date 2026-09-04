@@ -24,6 +24,20 @@ export function formatHRShortDate(value: unknown): string {
     : String(value ?? '');
 }
 
+const HR_DATE_ADAPTER = {
+  format: formatHRShortDate,
+  parse(value: string, createDate: (year: string, month: string, day: string) => Date | undefined) {
+    const match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(value.trim());
+    if (!match) return;
+    const [, month, day, year] = match;
+    const date = createDate(year, month, day);
+    // Reject overflow dates such as February 30 instead of silently changing months.
+    if (date?.getFullYear() === Number(year)
+      && date.getMonth() + 1 === Number(month)
+      && date.getDate() === Number(day)) return date;
+  },
+};
+
 interface HRDateColumnType {
   editor: new (...args: any[]) => EditorBase;
   cellTemplate: (h: HyperFunc<VNode>, props: ColumnDataSchemaModel) => VNode | VNode[];
@@ -32,6 +46,22 @@ interface HRDateColumnType {
 export function withHRShortDate<T extends HRDateColumnType>(columnType: T): T {
   const StockDateEditor = columnType.editor;
   columnType.editor = class HRDateEditor extends StockDateEditor {
+    render(h: HyperFunc<VNode>) {
+      return super.render((tag: any, props?: any, children?: any) => {
+        if (tag === 'duet-date-picker') {
+          const stockRef = props.ref;
+          props = {
+            ...props,
+            ref: (picker: (HTMLElement & { localization: Record<string, unknown> }) | null) => {
+              stockRef?.(picker);
+              if (picker) picker.localization = { ...picker.localization, placeholder: 'M/D/YYYY' };
+            },
+          };
+        }
+        return h(tag, props, children);
+      });
+    }
+
     componentDidRender() {
       const editorHost = this.element?.closest('revogr-edit') as HTMLElement | null;
       const floatingEditor = this.element?.querySelector(':scope > .revo-float') as HTMLElement | null;
@@ -95,7 +125,7 @@ export function getBaseHRColumns(companies: HRCompanyOption[]): (ColumnGrouping 
         },
       ],
     },
-    { name: 'Joined', prop: 'joined', columnType: 'date', size: 130, sortable: true },
+    { name: 'Joined', prop: 'joined', columnType: 'date', dateAdapter: HR_DATE_ADAPTER, size: 130, sortable: true },
     { name: 'Salary', prop: 'salary', columnType: 'number', size: 130, sortable: true },
   ];
 }

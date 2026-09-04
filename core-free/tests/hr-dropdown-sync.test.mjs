@@ -121,3 +121,14 @@ test('clearing a company value removes its stale row avatar', () => {
 
   assert.deepEqual(cell.children, []);
 });
+
+test('Joined calendar adapter uses the grid format and rejects invalid dates', () => {
+  const { dateAdapter } = getBaseHRColumns([]).find(column => column.prop === 'joined');
+  const createDate = (year, month, day) => new Date(Number(year), Number(month) - 1, Number(day));
+  for (const [input, expected] of [['3/3/2020', '3/3/2020'], ['12/25/2021', '12/25/2021'], ['02/29/2024', '2/29/2024']]) {
+    assert.equal(dateAdapter.format(dateAdapter.parse(input, createDate)), expected);
+  }
+  for (const input of ['', '2/30/2024', '2/29/2023', '13/1/2024', '0/1/2024', '3/0/2024', '2020-03-03', 'invalid']) {
+    assert.equal(dateAdapter.parse(input, createDate), undefined, input);
+  }
+});
