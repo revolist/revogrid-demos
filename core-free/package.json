@@ -29,7 +29,7 @@
     "@angular/platform-browser-dynamic": "^22.1.0",
     "@revolist/angular-datagrid": "4.27.0",
     "@revolist/react-datagrid": "4.27.0",
-    "@revolist/revogrid": "4.27.0",
+    "@revolist/revogrid": "4.27.6",
     "@revolist/revogrid-column-date": "^2.0.25",
     "@revolist/revogrid-column-numeral": "^2.0.11",
     "@revolist/revogrid-column-select": "^3.1.20",

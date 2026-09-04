@@ -34,7 +34,7 @@
     "@revolist/angular-datagrid": "4.27.0",
     "@revolist/gantt": "npm:@revolist/gantt-trial@2.8.2",
     "@revolist/react-datagrid": "4.27.0",
-    "@revolist/revogrid": "4.27.0",
+    "@revolist/revogrid": "4.27.6",
     "@revolist/revogrid-pro": "npm:@revolist/rv-pro-trial@2.8.2",
     "@revolist/scheduler": "npm:@revolist/scheduler-trial@2.8.2",
     "@revolist/vue3-datagrid": "4.27.0",
