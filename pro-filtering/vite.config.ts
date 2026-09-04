@@ -11,21 +11,19 @@ const localProCss = fileURLToPath(new URL('../../../packages/pro/dist/revogrid-p
 const localCoreEntry = fileURLToPath(new URL('../../../node_modules/@revolist/revogrid/dist/index.js', import.meta.url));
 const localCoreLoader = fileURLToPath(new URL('../../../node_modules/@revolist/revogrid/loader/index.js', import.meta.url));
 
-const proAliases = existsSync(localProEntry)
-  ? {
-      '@revolist/revogrid-pro/dist/revogrid-pro.css': localProCss,
-      '@revolist/revogrid-pro': localProEntry,
-    }
-  : trialCssAliases;
+const aliases = existsSync(localProEntry)
+  ? [
+      { find: '@revolist/revogrid/loader', replacement: localCoreLoader },
+      { find: '@revolist/revogrid', replacement: localCoreEntry },
+      { find: '@revolist/revogrid-pro/dist/revogrid-pro.css', replacement: localProCss },
+      { find: '@revolist/revogrid-pro', replacement: localProEntry },
+    ]
+  : Object.entries(trialCssAliases).map(([find, replacement]) => ({ find, replacement }));
 
 export default defineConfig(({ mode }) => ({
   base: './',
   resolve: {
-    alias: [
-      { find: '@revolist/revogrid/loader', replacement: localCoreLoader },
-      { find: '@revolist/revogrid', replacement: localCoreEntry },
-      ...Object.entries(proAliases).map(([find, replacement]) => ({ find, replacement })),
-    ],
+    alias: aliases,
     dedupe: ['@revolist/revogrid'],
     ...(mode === 'angular' ? { mainFields: ['module'] } : {}),
   },

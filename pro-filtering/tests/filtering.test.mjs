@@ -141,7 +141,7 @@ test('all frameworks configure the default preset with declarative badges', asyn
   }
 });
 
-test('Vite resolves the monorepo-local Pro distribution before trial aliases', async () => {
+test('Vite uses monorepo-local Core and Pro aliases only when the parent workspace exists', async () => {
   const [config, angular, tsconfig] = await Promise.all([
     readSource('../vite.config.ts'),
     readSource('filtering.angular.ts'),
@@ -151,7 +151,11 @@ test('Vite resolves the monorepo-local Pro distribution before trial aliases', a
   assert.match(config, /\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/revogrid-pro\.js/);
   assert.match(config, /\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/revogrid-pro\.css/);
   assert.match(config, /\.\.\/\.\.\/\.\.\/node_modules\/@revolist\/revogrid\/dist\/index\.js/);
-  assert.match(config, /existsSync\(localProEntry\)/);
+  assert.match(
+    config,
+    /const aliases = existsSync\(localProEntry\)[\s\S]*?\? \[[\s\S]*?localCoreLoader[\s\S]*?localCoreEntry[\s\S]*?localProCss[\s\S]*?localProEntry[\s\S]*?: Object\.entries\(trialCssAliases\)/,
+  );
+  assert.match(config, /alias: aliases/);
   assert.match(tsconfig, /\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/index\.d\.ts/);
   assert.match(tsconfig, /\.\.\/\.\.\/\.\.\/node_modules\/@revolist\/revogrid\/dist\/types\/index\.d\.ts/);
   assert.match(angular, /type AfterViewInit/);
