@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { featureDirectory, featureSlugs, root } from './catalog.mjs';
+import { resolvePnpmCommand } from './package-manager.mjs';
 
 const script = process.argv[2];
 const args = process.argv.slice(3);
@@ -14,7 +15,8 @@ if (!featureSlugs.includes(feature)) {
   process.exit(2);
 }
 
-const result = spawnSync('pnpm', [script], {
+const invocation = resolvePnpmCommand([script]);
+const result = spawnSync(invocation.command, invocation.args, {
   cwd: join(root, featureDirectory(feature)),
   env: process.env,
   stdio: 'inherit',
