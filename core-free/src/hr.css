@@ -8,17 +8,10 @@
   overflow: hidden;
   border-radius: 50%;
   margin-right: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
   vertical-align: middle;
-}
-
-.hr-avatar img {
-  display: block;
-  width: 24px;
-  height: 24px;
-  max-width: 24px;
-  max-height: 24px;
-  object-fit: cover;
-  border-radius: inherit;
 }
 
 .hr-bubble {
@@ -33,10 +26,6 @@
   font-weight: 500;
   line-height: 24px;
   white-space: nowrap;
-}
-
-.hr-color-select-pill {
-  max-width: 100%;
 }
 
 .hr-scale-grid {
@@ -98,24 +87,6 @@ hr-demo-grid {
   -webkit-text-fill-color: currentColor;
 }
 
-.hr-demo revogr-edit revo-dropdown.hr-color-dropdown-editor input.filter-box,
-.hr-scale-grid revogr-edit revo-dropdown.hr-color-dropdown-editor input.filter-box {
-  flex: 0 1 auto;
-  width: auto;
-  min-width: 0;
-  max-width: calc(100% - 18px);
-  height: 24px;
-  padding: 0 10px;
-  border-radius: 12px;
-  background: var(--hr-selected-color);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 24px;
-  text-align: center;
-  -webkit-text-fill-color: #fff;
-}
-
 .hr-demo revogr-edit revo-dropdown .actions,
 .hr-scale-grid revogr-edit revo-dropdown .actions {
   color: inherit;
@@ -131,7 +102,7 @@ hr-demo-grid {
 }
 
 [data-theme='dark'] .hr-select {
-  background: var(--showcase-surface-2, #1a1a20);
+  background-color: var(--showcase-surface-2, #1a1a20);
   border-color: var(--showcase-border-strong, #3a3a45);
   color: var(--showcase-text-1, #f4f4f6);
 }
@@ -178,8 +149,12 @@ revo-grid .rgCell.disabled.drag-icon {
 }
 
 .hr-button {
-  min-height: 34px;
-  padding: 7px 12px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 3px 12px;
   border: 1px solid #2563eb;
   border-radius: 8px;
   background: #2563eb;
@@ -187,6 +162,8 @@ revo-grid .rgCell.disabled.drag-icon {
   cursor: pointer;
   font-size: 13px;
   font-weight: 650;
+  line-height: 20px;
+  text-align: center;
 }
 
 .hr-button:hover {
@@ -210,13 +187,24 @@ revo-grid .rgCell.disabled.drag-icon {
 }
 
 .hr-select {
-  padding: 8px 12px;
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 3px 30px 3px 12px;
   border-radius: 8px;
-  background: #fff;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='m1 1 4 4 4-4' fill='none' stroke='%2364748b' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  background-size: 9px 6px;
   border: 1px solid #e2e8f0;
   font-size: 14px;
   color: #1e293b;
   cursor: pointer;
+  line-height: 20px;
+  text-align: left;
+  text-align-last: left;
 }
 
 .hr-grid-wrapper {

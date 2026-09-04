@@ -48,6 +48,6 @@ export default defineConfig(async ({ command, mode }) => {
       react(),
       vue({ template: { compilerOptions: { isCustomElement: (tag) => tag.startsWith('revo-') || tag.startsWith('revogr-') } } }),
     ],
-    test: { environment: 'jsdom', include: ['src/**/*.test.ts'] },
+    test: { environment: 'jsdom', include: ['tests/unit/**/*.test.ts'] },
   };
 });

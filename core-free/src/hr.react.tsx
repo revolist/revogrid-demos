@@ -2,10 +2,12 @@ import './hr.css';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { RevoGrid, BasePlugin, type PluginProviders } from '@revolist/react-datagrid';
-import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_OPTIONS } from './sys-data/hr.data';
+import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_COMPANY_OPTIONS, HR_OPTIONS } from './sys-data/hr.data';
 import type { HRGenerationProgress } from './sys-data/hr.data.generator';
-import { getBaseHRColumns, getExtraHRColumns, HR_COLOR_BY_AGE, withHRShortDate } from './sys-data/hr.columns';
-import { createHRColorSelectColumnType, renderHrColorPill } from './hr-color-select';
+import { getBaseHRColumns, getExtraHRColumns, withHRShortDate } from './sys-data/hr.columns';
+import { renderHrColorPill } from './hr-color-select';
+import { renderHrCompanyCell } from './hr-company-avatar';
+import { renderHrAgeCell } from './hr-age-indicator';
 import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
 import { getInitialHRTheme, HR_THEME_DEFINITIONS, HR_THEME_OPTIONS } from './hr-themes';
 import DateCol from '@revolist/revogrid-column-date';
@@ -137,7 +139,7 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
         date: withHRShortDate(new DateCol()),
         number: new NumeralCol(),
         select: new SelectCol(),
-        colorSelect: createHRColorSelectColumnType(SelectCol)
+        colorSelect: new SelectCol()
       });
       
       loadData(currentSize);
@@ -159,32 +161,15 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
   }, [isDark, workspaceState.theme]);
 
   const columns = useMemo(() => {
-    const dropdownSource = Array.from(new Set(rows.map(r => r.company))).filter(Boolean) as string[];
-    const baseCols = getBaseHRColumns(dropdownSource);
+    const baseCols = getBaseHRColumns(HR_COMPANY_OPTIONS);
 
     // RevoGrid cell templates must return Stencil/RevoGrid VNodes via `h`.
-    const nameCol = (baseCols[0] as any).children[1];
-    nameCol.cellTemplate = (h: any, props: any) =>
-      h('div', { class: 'flex items-center' }, [
-        h('div', { class: 'hr-avatar' }, [
-          h('img', {
-            src: props.model.avatar,
-            alt: props.value,
-            class: 'w-full h-full object-cover',
-          }),
-        ]),
-        props.value,
-      ]);
+    const companyCol = (baseCols[0] as any).children[1];
+    companyCol.cellTemplate = renderHrCompanyCell;
 
     const personalGroup = baseCols[1] as any;
     const ageCol = personalGroup.children[0];
-    ageCol.cellTemplate = (h: any, props: any) => [
-      h('i', {
-        class: 'hr-circle',
-        style: { borderColor: HR_COLOR_BY_AGE(props.value) },
-      }),
-      props.value,
-    ];
+    ageCol.cellTemplate = renderHrAgeCell;
 
     const eyesCol = personalGroup.children[2];
     eyesCol.cellTemplate = (h: any, props: any) =>
@@ -194,7 +179,7 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
       [...baseCols, ...getExtraHRColumns(getHRColumnsCount(currentSize))],
       workspaceState,
     );
-  }, [rows, currentSize, workspaceState]);
+  }, [currentSize, workspaceState]);
 
   const onSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const nextSize = parseInt(e.target.value, 10);

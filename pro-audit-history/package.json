@@ -18,7 +18,7 @@
     "build:react": "vite build --mode react",
     "build:vue": "vite build --mode vue",
     "build:angular": "vite build --mode angular",
-    "test": "node --test src/audit-history.test.mjs"
+    "test": "node --test tests/audit-history.test.mjs"
   },
   "dependencies": {
     "@angular/common": "^22.1.0",
