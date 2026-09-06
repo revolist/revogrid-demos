@@ -25,9 +25,9 @@ test('calculates frame rate from animation frame timestamps', () => {
   assert.equal(calculateFrameRate([]), null);
 });
 
-test('normalizes high-refresh animation frames to the 60 FPS comparison ceiling', () => {
+test('preserves high-refresh animation frame rates', () => {
   const fps = calculateFrameRate([0, 8.33, 16.66, 24.99, 33.32]);
-  assert.equal(fps, 60);
+  assert.ok(Math.abs(fps - 120) < 0.1);
 });
 
 test('formats unsupported and measured values without overstating precision', () => {
@@ -52,9 +52,87 @@ test('defines calculation and meaning help for every displayed metric', () => {
     assert.ok(metric.description.length > 80);
     assert.equal(getHRMetricTooltipId(key), `hr-metric-${key}-tooltip`);
   }
-  assert.match(HR_PERFORMANCE_METRICS.scroll.description, /60 FPS ceiling/);
+  assert.match(HR_PERFORMANCE_METRICS.scroll.description, /display refresh rate/);
   assert.match(HR_PERFORMANCE_METRICS.memory.description, /entire page/);
   assert.match(HR_PERFORMANCE_METRICS.dataset.description, /virtualizes/);
+});
+
+test('measures only a sufficiently long visible grid scroll and retains the result through idle and hidden states', () => {
+  const originalWindow = globalThis.window;
+  const originalDocument = globalThis.document;
+  const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+  const originalCancelAnimationFrame = globalThis.cancelAnimationFrame;
+  const originalNow = globalThis.performance.now;
+  let now = 0;
+  let nextFrame = 1;
+  const frames = new Map();
+  const visibility = new EventTarget();
+  Object.defineProperty(visibility, 'visibilityState', { configurable: true, value: 'visible', writable: true });
+  globalThis.document = visibility;
+  globalThis.window = {
+    setInterval: () => 0,
+    clearInterval: () => {},
+    setTimeout: () => 0,
+    clearTimeout: () => {},
+  };
+  globalThis.requestAnimationFrame = callback => {
+    const id = nextFrame++;
+    frames.set(id, callback);
+    return id;
+  };
+  globalThis.cancelAnimationFrame = id => frames.delete(id);
+  Object.defineProperty(globalThis.performance, 'now', { configurable: true, value: () => now });
+
+  const renderFrame = timestamp => {
+    const [id, callback] = frames.entries().next().value;
+    frames.delete(id);
+    callback(timestamp);
+  };
+
+  try {
+    const states = [];
+    const grid = new EventTarget();
+    const monitor = createHRPerformanceMonitor(grid, state => states.push(state));
+    assert.equal(states.at(-1).scrollFps, null);
+
+    grid.dispatchEvent(new Event('viewportscroll'));
+    renderFrame(0);
+    now = 100;
+    grid.dispatchEvent(new Event('viewportscroll'));
+    renderFrame(100);
+    now = 200;
+    grid.dispatchEvent(new Event('viewportscroll'));
+    renderFrame(200);
+    now = 300;
+    grid.dispatchEvent(new Event('viewportscroll'));
+    renderFrame(300);
+    now = 500;
+    renderFrame(500);
+    assert.equal(states.at(-1).scrollFps, 10);
+
+    visibility.visibilityState = 'hidden';
+    visibility.dispatchEvent(new Event('visibilitychange'));
+    assert.equal(states.at(-1).scrollFps, 10);
+    assert.equal(frames.size, 0);
+
+    visibility.visibilityState = 'visible';
+    visibility.dispatchEvent(new Event('visibilitychange'));
+    now = 600;
+    grid.dispatchEvent(new Event('viewportscroll'));
+    renderFrame(600);
+    now = 650;
+    visibility.visibilityState = 'hidden';
+    visibility.dispatchEvent(new Event('visibilitychange'));
+    assert.equal(states.at(-1).scrollFps, 10);
+
+    monitor.destroy();
+  } finally {
+    globalThis.window = originalWindow;
+    globalThis.document = originalDocument;
+    globalThis.requestAnimationFrame = originalRequestAnimationFrame;
+    globalThis.cancelAnimationFrame = originalCancelAnimationFrame;
+    Object.defineProperty(globalThis.performance, 'now', { configurable: true, value: originalNow });
+  }
 });
 
 test('polls heap while visible, pauses while hidden, and cleans up', () => {

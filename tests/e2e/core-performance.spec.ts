@@ -11,9 +11,13 @@ test('core demo separates preparation, grid paint, and scroll measurements', asy
 
   const metrics = page.getByRole('region', { name: 'Browser performance metrics' });
   await expect(metrics).toBeVisible({ timeout: 15_000 });
+  await page.getByRole('button', { name: 'Reset view' }).click();
+  await expect(page.locator('.hr-select').first()).toHaveValue('10000');
   await expect(metrics.locator('.hr-performance-metric', { hasText: 'Data preparation' }).locator('strong')).not.toHaveText('N/A');
   await expect(metrics.locator('.hr-performance-metric', { hasText: 'Grid apply to paint' }).locator('strong')).not.toHaveText('N/A');
-  await expect(metrics.locator('.hr-performance-metric', { hasText: 'Dataset' }).locator('strong')).toHaveText('100 × 7');
+  await expect(metrics.locator('.hr-performance-metric', { hasText: 'Dataset' }).locator('strong')).toHaveText('10,000 × 100');
+  const scrollMetric = metrics.locator('.hr-performance-metric', { hasText: 'Scroll' }).locator('strong');
+  await expect(scrollMetric).toHaveText('Scroll to measure');
 
   const metricHelp = metrics.getByRole('button', { name: /^About / });
   await expect(metricHelp).toHaveCount(5);
@@ -21,7 +25,7 @@ test('core demo separates preparation, grid paint, and scroll measurements', asy
   await expect(metrics.getByRole('tooltip').first()).toBeVisible();
 
   await page.locator('.hr-select').first().selectOption('1000');
-  await expect(metrics.locator('.hr-performance-metric', { hasText: 'Dataset' }).locator('strong')).toHaveText('1,000 × 11');
+  await expect(metrics.locator('.hr-performance-metric', { hasText: 'Dataset' }).locator('strong')).toHaveText('1,000 × 100');
 
   await page.getByRole('button', { name: 'Save view' }).click();
   await expect(page.getByText('Saved locally')).toBeVisible();
@@ -31,11 +35,17 @@ test('core demo separates preparation, grid paint, and scroll measurements', asy
 
   const grid = page.locator('revo-grid').first();
   await grid.hover();
-  await page.mouse.wheel(0, 800);
-  await expect(metrics.locator('.hr-performance-metric', { hasText: 'Scroll' }).locator('strong')).toContainText('FPS');
+  for (let i = 0; i < 6; i += 1) {
+    await page.mouse.wheel(0, 200);
+    await page.waitForTimeout(50);
+  }
+  await expect(scrollMetric).toContainText('FPS');
+  const measuredScrollFps = await scrollMetric.textContent();
+  await page.waitForTimeout(300);
+  await expect(scrollMetric).toHaveText(measuredScrollFps ?? '');
 
   await page.getByRole('button', { name: 'Reset view' }).click();
-  await expect(page.locator('.hr-select').first()).toHaveValue('100');
+  await expect(page.locator('.hr-select').first()).toHaveValue('10000');
   await expect(page.getByText('View reset')).toBeVisible();
   expect(errors).toEqual([]);
 });

@@ -28,8 +28,8 @@ export const HR_PERFORMANCE_METRICS = {
     description: 'Time from assigning the new source and columns until RevoGrid finishes rendering and the browser reaches the next animation frame. Lower means the update became visible sooner.',
   },
   scroll: {
-    label: 'Scroll (60 FPS max)',
-    description: 'Animation frames delivered while the grid viewport is scrolling, normalized to a 60 FPS ceiling. 60 FPS meets the smoothness baseline; lower values indicate delayed or dropped frames. Results depend on the browser, device, and page workload.',
+    label: 'Scroll FPS',
+    description: 'Animation frames delivered during a sufficiently long, active grid viewport scroll. The maximum depends on the display refresh rate and browser; lower values are reported as measured and can indicate delayed or dropped frames. Results depend on the device and page workload.',
   },
   memory: {
     label: 'Page JS heap',
@@ -59,17 +59,15 @@ export function createInitialHRPerformanceState(): HRPerformanceState {
 }
 
 const SCROLL_IDLE_MS = 180;
+const MIN_SCROLL_SAMPLE_MS = 250;
 const FPS_PUBLISH_INTERVAL_MS = 500;
 const GRID_RENDER_TIMEOUT_MS = 10_000;
-const SCROLL_FPS_COMPARISON_CEILING = 60;
 const MEMORY_POLL_INTERVAL_MS = 1_000;
 
 export function calculateFrameRate(timestamps: number[]) {
   if (timestamps.length < 2) return null;
   const duration = timestamps[timestamps.length - 1] - timestamps[0];
-  return duration > 0
-    ? Math.min(((timestamps.length - 1) * 1_000) / duration, SCROLL_FPS_COMPARISON_CEILING)
-    : null;
+  return duration > 0 ? ((timestamps.length - 1) * 1_000) / duration : null;
 }
 
 export function formatDuration(duration: number | null) {
@@ -115,15 +113,32 @@ export function createHRPerformanceMonitor(
   };
 
   const publishFrameRate = () => {
+    if (frameTimestamps.length < 2) return false;
+    const duration = frameTimestamps.at(-1)! - frameTimestamps[0];
+    if (duration < MIN_SCROLL_SAMPLE_MS) return false;
     const fps = calculateFrameRate(frameTimestamps);
     if (fps !== null) {
       state.scrollFps = fps;
       notify();
+      return true;
     }
+    return false;
+  };
+
+  const stopScrollSampling = () => {
+    scrollActive = false;
+    frameTimestamps = [];
+    if (scrollFrame) cancelAnimationFrame(scrollFrame);
+    scrollFrame = 0;
   };
 
   const sampleScrollFrames = (timestamp: number) => {
-    if (!scrollActive || destroyed) return;
+    if (!scrollActive || destroyed || document.visibilityState !== 'visible') return;
+    if (performance.now() - lastScrollAt >= SCROLL_IDLE_MS) {
+      publishFrameRate();
+      stopScrollSampling();
+      return;
+    }
     frameTimestamps.push(timestamp);
 
     if (timestamp - lastFpsPublishedAt >= FPS_PUBLISH_INTERVAL_MS) {
@@ -131,17 +146,11 @@ export function createHRPerformanceMonitor(
       frameTimestamps = [timestamp];
       lastFpsPublishedAt = timestamp;
     }
-
-    if (performance.now() - lastScrollAt >= SCROLL_IDLE_MS) {
-      publishFrameRate();
-      scrollActive = false;
-      scrollFrame = 0;
-      return;
-    }
     scrollFrame = requestAnimationFrame(sampleScrollFrames);
   };
 
   const onViewportScroll = () => {
+    if (destroyed || document.visibilityState !== 'visible') return;
     lastScrollAt = performance.now();
     if (scrollActive) return;
     scrollActive = true;
@@ -177,6 +186,7 @@ export function createHRPerformanceMonitor(
       startMemoryPolling();
     } else {
       stopMemoryPolling();
+      stopScrollSampling();
     }
   };
 
@@ -242,7 +252,7 @@ export function createHRPerformanceMonitor(
       grid.removeEventListener('viewportscroll', onViewportScroll);
       document.removeEventListener('visibilitychange', onVisibilityChange);
       stopMemoryPolling();
-      if (scrollFrame) cancelAnimationFrame(scrollFrame);
+      stopScrollSampling();
     },
   };
 }
