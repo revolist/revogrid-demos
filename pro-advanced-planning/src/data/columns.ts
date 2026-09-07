@@ -1,5 +1,5 @@
 import type { ColumnRegular } from '@revolist/revogrid';
-import { avatarWithTextRenderer } from '@revolist/revogrid-pro';
+import { avatarWithTextRenderer, FIlTER_SELECTION } from '@revolist/revogrid-pro';
 import {
   createDefaultTaskTableColumn,
 } from '@revolist/gantt';
@@ -34,13 +34,14 @@ const workflowStatusColumn = createDefaultTaskTableColumn('workflowStatus');
 const percentDoneColumn = createDefaultTaskTableColumn('percentDone');
 
 export const gridColumns: ColumnRegular[] = [
-  { prop: '_selected', name: '', size: 36, pin: 'colPinStart', rowSelect: true, readonly: true },
-  { prop: 'name', name: 'Task', size: 220, sortable: true },
+  { prop: '_selected', name: '', size: 36, pin: 'colPinStart', rowSelect: true, readonly: true, filter: false },
+  { prop: 'name', name: 'Task', size: 220, sortable: true, filter: false },
   {
     prop: 'owner',
     name: 'Owner',
     size: 120,
     sortable: true,
+    filter: false,
     avatarProp: 'ownerAvatar',
     avatarLabelProp: 'owner',
     avatarSize: 20,
@@ -51,10 +52,11 @@ export const gridColumns: ColumnRegular[] = [
     name: 'Status',
     size: 132,
     sortable: true,
+    filter: [FIlTER_SELECTION],
     cellTemplate: workflowCellTemplate,
   },
   {
-    prop: 'priority', name: 'Priority', size: 88, readonly: true, sortable: true, cellTemplate: priorityCellTemplate,
+    prop: 'priority', name: 'Priority', size: 88, readonly: true, sortable: true, filter: [FIlTER_SELECTION], cellTemplate: priorityCellTemplate,
   },
   {
     prop: 'endDate',
@@ -62,6 +64,7 @@ export const gridColumns: ColumnRegular[] = [
     size: 100,
     readonly: true,
     sortable: true,
+    filter: false,
     cellTemplate: dateCellTemplate,
   },
   {
@@ -69,8 +72,9 @@ export const gridColumns: ColumnRegular[] = [
     name: 'Progress',
     size: 116,
     sortable: true,
+    filter: false,
   },
-  { prop: 'budget', name: 'Budget', size: 96, readonly: true, sortable: true,
+  { prop: 'budget', name: 'Budget', size: 96, readonly: true, sortable: true, filter: false,
     cellTemplate: (_h, { value }) => `$${Number(value ?? 0).toLocaleString('en-US')}` },
 ];
 
