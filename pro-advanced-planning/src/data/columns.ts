@@ -107,7 +107,7 @@ export const gridColumns: ColumnRegular[] = [
   {
     prop: 'endDate',
     name: 'Due date',
-    size: 100,
+    size: 130,
     readonly: true,
     sortable: true,
     filter: [FILTER_CALENDAR_RANGE],
