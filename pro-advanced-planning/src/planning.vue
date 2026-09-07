@@ -1,5 +1,5 @@
 <template>
-  <section ref="rootRef" class="planning-demo" @keydown.esc="closePopovers">
+  <section ref="rootRef" class="planning-demo planning-demo--filter-toolbar" @keydown.esc="closePopovers">
     <div class="planning-demo__topbar">
       <nav class="planning-demo__switch" role="tablist" aria-label="Planning view">
         <button v-for="view in views" :key="view" type="button" :class="{ on: activeView === view }" role="tab" :aria-selected="activeView === view" @click="activeView = view">
@@ -9,11 +9,6 @@
       <div class="planning-demo__actions"><button type="button" @click="openSource"><FontAwesomeSvgIcon class="planning-demo__action-icon" name="code"/>Code</button><a href="/gantt/"><FontAwesomeSvgIcon class="planning-demo__action-icon" name="bookOpen"/>Docs</a><details ref="moreMenuRef"><summary><FontAwesomeSvgIcon class="planning-demo__action-icon" name="ellipsis"/>More</summary><div><button type="button" @click="resetWorkspace">Reset</button><button type="button" @click="toggleFullscreen">Full screen</button></div></details></div>
     </div>
     <p class="planning-demo__hint">{{ activeView === 'kanban' ? 'Change a status to move a task.' : 'Change a status, then open Kanban.' }}</p>
-    <div class="planning-demo__toolbar">
-      <label class="planning-demo__search"><span class="sr-only">Quick search tasks</span><input v-model="quickSearch" type="search" placeholder="Quick search tasks…" /></label>
-      <span class="planning-demo__filter-help">Use each column menu to filter the matching task data.</span>
-      <span class="planning-demo__count" aria-live="polite">{{ visibleTasks.length }} of {{ tasks.length }} tasks</span>
-    </div>
     <RevoGrid v-if="activeView === 'grid'" ref="gridRef" :key="`grid-${resetKey}`" class="planning-demo__grid" hide-attribution :theme="theme" :plugins="gridPlugins" :source="tasks" :columns="gridColumns" :filter.prop="planningFilterConfig" :row-size="40" range resize can-move-columns :row-select.prop="rowSelect" :quick-filter.prop="quickFilter" :filter-badges.prop="filterBadgeOptions" @afteredit="handleGridEdit" @rowselected="handleRowSelected" @afterfilterapply="syncVisibleTasks" @afterquickfilterapply="syncVisibleTasks" />
     <RevoGrid v-else-if="activeView === 'kanban'" key="kanban" class="planning-demo__grid planning-demo__grid--kanban" hide-attribution :theme="theme" :plugins="kanbanPlugins" :source="visibleTasks" :columns="gridColumns" :kanban.prop="kanbanConfig" @kanbancardmove="handleKanbanMove" @kanbancardcreate="handleKanbanCreate" @kanbancardupdate="handleKanbanUpdate" @kanbancarddelete="handleKanbanDelete" />
     <RevoGrid v-else-if="activeView === 'gantt'" key="gantt" class="planning-demo__grid" hide-attribution :theme="theme" :plugins="ganttPlugins" :source="visibleTasks" :columns="ganttColumns" :gantt.prop="ganttConfig" :gantt-resources.prop="ganttResources" :gantt-assignments.prop="ganttAssignments" @gantt-before-task-change="handleGanttEdit" @gantt-before-assignment-change="handleGanttAssignmentEdit" />

@@ -54,13 +54,6 @@ const gridPlugins = [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin];
 const ganttPlugins = [GanttPlugin];
 const kanbanPlugins = [KanbanPlugin];
 const schedulerPlugins = [EventSchedulerPlugin];
-const filterBadgeOptions = {
-  className: 'planning-demo__filter-badges',
-  badgeClassName: 'planning-demo__filter-badge',
-  emptyClassName: 'planning-demo__filter-badges--empty',
-  renderEmpty: () => null,
-} satisfies AdvancedFilterBadgesOptions;
-
 export function usePlanningWorkspace() {
   const rootRef = ref<HTMLElement>();
   const moreMenuRef = ref<HTMLDetailsElement>();
@@ -71,6 +64,26 @@ export function usePlanningWorkspace() {
   const visibleTaskIds = ref<string[] | undefined>();
   const resetKey = ref(0);
   const selectedCount = ref(0);
+  const filterBadgeOptions = {
+    className: 'planning-demo__filter-badges',
+    badgeClassName: 'planning-demo__filter-badge',
+    emptyClassName: 'planning-demo__filter-badges--empty',
+    renderEmpty: () => null,
+    slots: {
+      start: () => {
+        const input = document.createElement('input');
+        input.className = 'planning-demo__filter-search';
+        input.type = 'search';
+        input.placeholder = 'Quick search tasks…';
+        input.ariaLabel = 'Quick search tasks';
+        input.value = quickSearch.value;
+        input.addEventListener('input', () => {
+          quickSearch.value = input.value;
+        });
+        return input;
+      },
+    },
+  } satisfies AdvancedFilterBadgesOptions;
   const isDark = ref(currentTheme().isDark());
   const theme = computed(() => isDark.value ? 'darkCompact' : 'compact');
   const quickFilter = computed(() => ({

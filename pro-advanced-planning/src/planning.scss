@@ -5,6 +5,7 @@
 
 /* Project workspace visual system */
 .planning-demo{grid-template-rows:auto auto auto minmax(0,1fr) auto}
+.planning-demo--filter-toolbar{grid-template-rows:auto auto minmax(0,1fr) auto}.planning-demo--filter-toolbar .planning-demo__grid,.planning-demo--filter-toolbar .planning-demo__empty{grid-row:3}.planning-demo--filter-toolbar .planning-demo__footer{grid-row:4}
 .planning-demo{--planning-accent:#138a5b;--planning-accent-strong:#08764b;--planning-surface:var(--rv-ui-surface,#fff);--planning-surface-soft:var(--rv-ui-surface-muted,#f7f8fa);--planning-border:var(--rv-ui-border,#e2e6ea);--planning-text:var(--rv-ui-text,currentColor);--planning-muted:var(--rv-ui-text-muted,currentColor);padding:0 0 8px;gap:0;background:var(--planning-surface)}
 .planning-demo__topbar{min-height:52px;padding:0 2px;border-bottom:1px solid var(--planning-border)}
 .planning-demo__switch{height:52px;align-items:stretch;gap:4px}
@@ -34,6 +35,7 @@
 .planning-demo__filter-help{color:var(--planning-muted);font-size:11px;white-space:nowrap}
 .planning-demo__filter-badges{display:flex;flex-wrap:wrap;gap:6px;padding:5px 8px;border-bottom:1px solid var(--planning-border);background:var(--planning-surface)}
 .planning-demo__filter-badges--empty{display:none}
+.planning-demo__filter-search{width:min(280px,32vw);height:30px;padding:0 10px;border:1px solid var(--planning-border);border-radius:5px;outline:0;background:var(--planning-surface);color:inherit;font:inherit}.planning-demo__filter-search:focus{border-color:color-mix(in srgb,var(--planning-accent) 68%,var(--planning-border));box-shadow:0 0 0 3px color-mix(in srgb,var(--planning-accent) 12%,transparent)}.planning-demo__filter-search::placeholder{color:var(--planning-muted)}
 .planning-demo__filter-badge{display:inline-flex;align-items:center;gap:4px;min-height:24px;border:1px solid color-mix(in srgb,var(--planning-accent) 30%,var(--planning-border));border-radius:999px;padding:2px 8px;background:color-mix(in srgb,var(--planning-accent) 8%,var(--planning-surface));color:var(--planning-text);font:500 11px/1 Geist,Inter,system-ui,sans-serif}
 .planning-demo__filter-badge button{border:0;background:transparent;color:inherit;cursor:pointer}
 .planning-demo__filter-popover{top:41px;border-color:var(--planning-border);background:var(--planning-surface);box-shadow:0 18px 46px rgb(15 23 42/16%)}
