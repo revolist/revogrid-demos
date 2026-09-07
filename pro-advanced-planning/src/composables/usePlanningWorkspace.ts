@@ -131,12 +131,6 @@ export function usePlanningWorkspace() {
     visibleTaskIds.value = (await grid.getVisibleSource()).map((task: PlanningTask) => task.id);
   }
 
-  function openSource(event: MouseEvent) {
-    (event.currentTarget as HTMLElement).dispatchEvent(
-      new CustomEvent('demo-open-source', { bubbles: true }),
-    );
-  }
-
   function resetWorkspace() {
     tasks.value = createTasks();
     quickSearch.value = '';
@@ -222,7 +216,6 @@ export function usePlanningWorkspace() {
     kanbanConfig,
     kanbanPlugins,
     moreMenuRef,
-    openSource,
     planningFilterConfig,
     quickFilter,
     quickSearch,

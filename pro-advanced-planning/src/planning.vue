@@ -6,7 +6,7 @@
           {{ view }}<span class="planning-demo__pro">Pro</span>
         </button>
       </nav>
-      <div class="planning-demo__actions"><button type="button" @click="openSource"><FontAwesomeSvgIcon class="planning-demo__action-icon" name="code"/>Code</button><a href="/gantt/"><FontAwesomeSvgIcon class="planning-demo__action-icon" name="bookOpen"/>Docs</a><details ref="moreMenuRef"><summary><FontAwesomeSvgIcon class="planning-demo__action-icon" name="ellipsis"/>More</summary><div><button type="button" @click="resetWorkspace">Reset</button><button type="button" @click="toggleFullscreen">Full screen</button></div></details></div>
+      <div class="planning-demo__actions"><details ref="moreMenuRef"><summary><FontAwesomeSvgIcon class="planning-demo__action-icon" name="ellipsis"/>More</summary><div><button type="button" @click="resetWorkspace">Reset</button><button type="button" @click="toggleFullscreen">Full screen</button></div></details></div>
     </div>
     <RevoGrid v-if="activeView === 'grid'" ref="gridRef" :key="`grid-${resetKey}`" class="planning-demo__grid" hide-attribution :theme="theme" :plugins="gridPlugins" :source="tasks" :columns="gridColumns" :column-types="gridColumnTypes" :data-grid-context-menu.prop="planningDataGridContextMenu" :data-grid-formatting.prop="planningDataGridFormatting" :filter.prop="planningFilterConfig" :row-size="40" stretch="all" range resize can-move-columns :row-select.prop="rowSelect" :quick-filter.prop="quickFilter" :filter-badges.prop="filterBadgeOptions" @afteredit="handleGridEdit" @rowselected="handleRowSelected" @afterfilterapply="syncVisibleTasks" @afterquickfilterapply="syncVisibleTasks" />
     <RevoGrid v-else-if="activeView === 'kanban'" key="kanban" class="planning-demo__grid planning-demo__grid--kanban" hide-attribution :theme="theme" :plugins="kanbanPlugins" :source="visibleTasks" :columns="gridColumns" :kanban.prop="kanbanConfig" @kanbancardmove="handleKanbanMove" @kanbancardcreate="handleKanbanCreate" @kanbancardupdate="handleKanbanUpdate" @kanbancarddelete="handleKanbanDelete" />
@@ -28,7 +28,7 @@ const {
   gridRef, handleGanttAssignmentEdit, handleGanttEdit, handleGridEdit,
   handleKanbanCreate, handleKanbanDelete, handleKanbanMove, handleKanbanUpdate,
   handleRowSelected, handleSchedulerEdit, kanbanConfig, kanbanPlugins, moreMenuRef,
-  openSource, planningDataGridContextMenu, planningDataGridFormatting, planningFilterConfig, quickFilter, quickSearch, resetKey, resetWorkspace,
+  planningDataGridContextMenu, planningDataGridFormatting, planningFilterConfig, quickFilter, quickSearch, resetKey, resetWorkspace,
   rootRef, rowSelect, schedulerConfig, schedulerEvents, schedulerPlugins,
   schedulerResources, selectedCount, syncVisibleTasks, tasks, theme, toggleFullscreen,
   visibleTasks, views,
