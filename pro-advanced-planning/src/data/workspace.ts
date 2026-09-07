@@ -1,5 +1,5 @@
 import type { PlanningFilters, PlanningProjectId, PlanningTask } from './types';
-import { getOwnerAvatar } from './fixtures';
+import { getOwnerAvatar, getOwnerAvatarIndex } from './fixtures';
 
 export const planningProjects: ReadonlyArray<{ id: PlanningProjectId; label: string }> = [
   { id: 'customer-portal', label: 'Customer portal' },
@@ -44,6 +44,7 @@ export function applyPlanningGridEdit(
       [prop]: value,
       ...(prop === 'owner' ? {
         ownerAvatar: getOwnerAvatar(String(value)),
+        ownerAvatarIndex: getOwnerAvatarIndex(String(value)),
         owners: [String(value)],
         ownerAvatars: [getOwnerAvatar(String(value))],
       } : {}),

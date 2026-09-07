@@ -8,6 +8,7 @@ export type PlanningTask = GanttTaskSourceRow & {
   color?: string;
   owner: string;
   ownerAvatar: string;
+  ownerAvatarIndex: number;
   owners: string[];
   ownerAvatars: string[];
   startDate: string;

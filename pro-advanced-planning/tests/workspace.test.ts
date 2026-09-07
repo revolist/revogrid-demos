@@ -35,6 +35,7 @@ test('uses declarative data-grid formats for every planning value type', () => {
   assert.match(formattingSource, /id:\s*'workflow-status-badge'/)
   assert.match(formattingSource, /workflowStatusBadgeStyles[\s\S]*?backgroundColor: color, color/)
   assert.match(columnsSource, /prop: 'workflowStatus'[\s\S]*?badgeStyles: workflowStatusBadgeStyles/)
+  assert.match(columnsSource, /prop: 'owner'[\s\S]*?avatarIndexProp: 'ownerAvatarIndex'[\s\S]*?avatarLabelProp: 'owner'/)
   assert.match(formattingSource, /customFormats:\s*\[workflowStatusBadgeFormat\]/)
   assert.match(formattingSource, /preset:\s*'date'[\s\S]*?timeZone:\s*'UTC'/)
   assert.match(formattingSource, /preset:\s*'number'[\s\S]*?id:\s*'progress-line'/)
@@ -106,6 +107,7 @@ test('uses deterministic local avatars for every shared owner', () => {
   const tasks = createTasks()
   assert.equal(planningPeople.every(person => Boolean(person.color)), true)
   assert.equal(tasks.every(task => task.ownerAvatar.startsWith('data:image/svg+xml,')), true)
+  assert.equal(tasks.every(task => task.ownerAvatarIndex >= 1), true)
   assert.equal(tasks.some(task => task.ownerAvatar.startsWith('http')), false)
 })
 

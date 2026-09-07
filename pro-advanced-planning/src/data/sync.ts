@@ -9,7 +9,7 @@ import type {
   KanbanCardUpdateDetail,
 } from '@revolist/kanban';
 import type { EventSchedulerEventChangedDetail } from '@revolist/scheduler';
-import { getOwnerAvatar } from './fixtures';
+import { getOwnerAvatar, getOwnerAvatarIndex } from './fixtures';
 import { applyPlanningGridEdit } from './workspace';
 import type { PlanningTask } from './types';
 
@@ -147,6 +147,7 @@ export function updateFromGanttAssignment(
         ...task,
         owner,
         ownerAvatar: getOwnerAvatar(owner),
+        ownerAvatarIndex: getOwnerAvatarIndex(owner),
         owners,
         ownerAvatars: owners.map(getOwnerAvatar),
       }
@@ -171,6 +172,7 @@ export function updateFromScheduler(
       name: event.title ?? task.name,
       owner,
       ownerAvatar: getOwnerAvatar(owner),
+      ownerAvatarIndex: getOwnerAvatarIndex(owner),
       owners: owner ? [owner] : [],
       ownerAvatars: owner ? [getOwnerAvatar(owner)] : [],
       startDate: event.startDateTime,

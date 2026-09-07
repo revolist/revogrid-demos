@@ -21,6 +21,12 @@ export function getOwnerAvatar(owner: string): string {
   return person.avatarUrl ?? createAvatarDataUrl(person.name, person.color ?? '#64748b');
 }
 
+/** A stable native-avatar color index for grid cells and selection filters. */
+export function getOwnerAvatarIndex(owner: string): number {
+  const index = planningPeople.findIndex(({ id }) => id === owner);
+  return index >= 0 ? index + 1 : 1;
+}
+
 export function createTasks(): PlanningTask[] {
   const names = [
     'Define requirements', 'Design system', 'API integration', 'Authentication', 'Invoice templates',
@@ -69,6 +75,6 @@ export function createTasks(): PlanningTask[] {
     // Cycle independently of ownership so each owner has a representative mix.
     const workflowStatus = statuses[(index + Math.floor(index / owners.length)) % statuses.length];
     const percentDone = workflowStatus === 'done' ? 100 : workflowStatus === 'not-started' ? 0 : 20 + ((index * 15) % 75);
-    return { id: `task-${String(index + 1).padStart(3, '0')}`, name, owner, ownerAvatar: getOwnerAvatar(owner), owners: [owner], ownerAvatars: [getOwnerAvatar(owner)], startDate, endDate, activityAt, duration: `${durationDays}d`, percentDone, order: (index + 1) * 1000, workflowStatus, priority: [500, 700, 900][index % 3], projectId: projects[projectIndex], budget: 1800 + index * 200 } as PlanningTask;
+    return { id: `task-${String(index + 1).padStart(3, '0')}`, name, owner, ownerAvatar: getOwnerAvatar(owner), ownerAvatarIndex: getOwnerAvatarIndex(owner), owners: [owner], ownerAvatars: [getOwnerAvatar(owner)], startDate, endDate, activityAt, duration: `${durationDays}d`, percentDone, order: (index + 1) * 1000, workflowStatus, priority: [500, 700, 900][index % 3], projectId: projects[projectIndex], budget: 1800 + index * 200 } as PlanningTask;
   });
 }
