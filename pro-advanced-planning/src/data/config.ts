@@ -61,6 +61,8 @@ export const ganttConfig: GanttPluginConfig = {
   statusDate: '2026-09-07',
   zoomPreset: 'day-week',
   timelinePrecision: 'day',
+  weekStartsOn: 1,
+  timelineRange: { startDate: '2026-09-07', endDate: '2026-09-30' },
   allowTaskCreate: false,
   contextMenu: {},
   dateFormats: {

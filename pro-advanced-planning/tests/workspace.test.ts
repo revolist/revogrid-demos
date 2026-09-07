@@ -37,6 +37,11 @@ test('keeps scheduler and calendar events free of conflict validation outlines',
   assert.match(configSource, /conflicts: \{ enabled: false \}/)
 })
 
+test('aligns the Gantt timeline with the planning fixture window', () => {
+  assert.match(configSource, /weekStartsOn: 1/)
+  assert.match(configSource, /timelineRange: \{ startDate: '2026-09-07', endDate: '2026-09-30' \}/)
+})
+
 test('uses declarative data-grid formats for every planning value type', () => {
   assert.match(formattingSource, /name:\s*text/)
   assert.match(formattingSource, /id:\s*'avatar-with-text'/)
