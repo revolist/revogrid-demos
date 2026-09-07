@@ -55,8 +55,6 @@
 .planning-card__meta{align-self:end;color:var(--planning-muted);font-size:11px;line-height:16px}
 .planning-card__progress{height:4px;background:color-mix(in srgb,var(--planning-border) 75%,transparent)}
 .planning-card__progress span{background:var(--planning-accent)}
-.planning-demo__grid .row-select-checkbox{width:16px;height:16px;appearance:auto;accent-color:var(--planning-accent);color-scheme:light dark;border:initial;background:initial;box-shadow:none}
-.planning-demo__grid .row-select-checkbox:checked:after,.planning-demo__grid .row-select-checkbox:indeterminate:after{display:none}
 .planning-demo__filter-popover input[type=checkbox]{display:inline-grid;width:16px;height:16px;flex:0 0 16px;place-content:center;margin:0;appearance:none;border:1.5px solid color-mix(in srgb,var(--planning-muted) 82%,transparent);border-radius:4px;background:var(--planning-surface);color:#fff;cursor:pointer}
 .planning-demo__filter-popover input[type=checkbox]:after{width:4px;height:8px;border:solid currentColor;border-width:0 2px 2px 0;content:"";transform:translateY(-1px) rotate(45deg) scale(0)}
 .planning-demo__filter-popover input[type=checkbox]:checked{border-color:var(--planning-accent);background:var(--planning-accent)}
