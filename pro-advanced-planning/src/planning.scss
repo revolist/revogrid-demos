@@ -14,6 +14,7 @@
 .planning-demo__switch button.on:after{background:var(--planning-accent)}
 .planning-demo__pro{margin-left:1px;padding:2px 4px;border-radius:4px;background:color-mix(in srgb,var(--planning-accent) 9%,var(--planning-surface));color:var(--planning-accent-strong);font-size:9px;font-weight:600;line-height:14px}
 .planning-demo__actions{height:52px;align-items:center;gap:2px}
+.planning-demo__action-icon{width:13px!important;height:13px!important}
 .planning-demo__actions>button,.planning-demo__actions>a,.planning-demo__actions summary{height:32px;padding:0 9px;border-radius:6px;color:var(--planning-muted);font-size:12px;font-weight:520}
 .planning-demo__actions>button:hover,.planning-demo__actions>a:hover,.planning-demo__actions summary:hover{background:var(--planning-surface-soft);color:var(--planning-text)}
 .planning-demo__actions details>div{top:37px;width:142px;padding:5px;border-color:var(--planning-border);background:var(--planning-surface);box-shadow:0 12px 28px rgb(15 23 42/12%)}

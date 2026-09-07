@@ -204,7 +204,7 @@ export function load(parentSelector: string): (() => void) | undefined {
     button.className = 'rv-segmented-switch-item';
     button.setAttribute('role', 'tab');
     button.dataset.view = view;
-    button.textContent = view;
+    button.append(document.createTextNode(view), Object.assign(document.createElement('span'), { className: 'planning-demo__pro', textContent: 'Pro' }));
     button.addEventListener('click', () => render(view));
     switcher.appendChild(button);
   }

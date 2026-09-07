@@ -116,7 +116,7 @@ export default function PlanningViews() {
             aria-selected={activeView === view}
             onClick={() => setActiveView(view)}
           >
-            {view}
+            {view}<span className="planning-demo__pro">Pro</span>
           </button>
         ))}
       </nav>

@@ -3,10 +3,10 @@
     <div class="planning-demo__topbar">
       <nav class="planning-demo__switch" role="tablist" aria-label="Planning view">
         <button v-for="view in views" :key="view" type="button" :class="{ on: activeView === view }" role="tab" :aria-selected="activeView === view" @click="activeView = view">
-          {{ view }}<span v-if="view !== 'grid' && view !== 'kanban'" class="planning-demo__pro">Pro</span>
+          {{ view }}<span class="planning-demo__pro">Pro</span>
         </button>
       </nav>
-      <div class="planning-demo__actions"><button type="button" @click="openSource">Code</button><a href="/gantt/">Docs</a><details ref="moreMenuRef"><summary>More</summary><div><button type="button" @click="resetWorkspace">Reset</button><button type="button" @click="toggleFullscreen">Full screen</button></div></details></div>
+      <div class="planning-demo__actions"><button type="button" @click="openSource"><FontAwesomeSvgIcon class="planning-demo__action-icon" name="code"/>Code</button><a href="/gantt/"><FontAwesomeSvgIcon class="planning-demo__action-icon" name="bookOpen"/>Docs</a><details ref="moreMenuRef"><summary><FontAwesomeSvgIcon class="planning-demo__action-icon" name="ellipsis"/>More</summary><div><button type="button" @click="resetWorkspace">Reset</button><button type="button" @click="toggleFullscreen">Full screen</button></div></details></div>
     </div>
     <p class="planning-demo__hint">{{ activeView === 'kanban' ? 'Change a status to move a task.' : 'Change a status, then open Kanban.' }}</p>
     <div class="planning-demo__toolbar">
@@ -39,6 +39,7 @@ import { RowSelectPlugin, type RowSelectConfig } from '@revolist/revogrid-pro';
 import { GanttPlugin, type GanttBeforeAssignmentChangeDetail, type GanttBeforeTaskChangeDetail } from '@revolist/gantt';
 import { KanbanPlugin, type KanbanCardCreateDetail, type KanbanCardDeleteDetail, type KanbanCardMoveDetail, type KanbanCardUpdateDetail } from '@revolist/kanban';
 import { EventSchedulerPlugin, type EventSchedulerEventChangedDetail } from '@revolist/scheduler';
+import FontAwesomeSvgIcon from '../../../.vitepress/theme/home-v2/FontAwesomeSvgIcon.vue';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import { calendarConfig, createTasks, defaultPlanningFilters, filterPlanningTasks, ganttColumns, ganttConfig, ganttResources, gridColumns, kanbanConfig, mergeVisibleTasks, planningProjects, schedulerConfig, schedulerResources, selectedPlanningTaskIds, toggleVisiblePlanningRows, toGanttAssignments, toSchedulerEvents, updateFromGantt, updateFromGanttAssignment, updateFromGrid, updateFromKanban, updateFromKanbanCreate, updateFromKanbanUpdate, updateFromScheduler, views, type PlanningView, type PlanningTask } from './data';
 import './planning.scss';

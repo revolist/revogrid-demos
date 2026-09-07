@@ -65,7 +65,7 @@ import {
           [attr.aria-selected]="activeView === 'grid'"
           (click)="activeView = 'grid'"
         >
-          Grid
+          Grid<span class="planning-demo__pro">Pro</span>
         </button>
         <button
           type="button"
@@ -75,7 +75,7 @@ import {
           [attr.aria-selected]="activeView === 'kanban'"
           (click)="activeView = 'kanban'"
         >
-          Kanban
+          Kanban<span class="planning-demo__pro">Pro</span>
         </button>
         <button
           type="button"
@@ -85,7 +85,7 @@ import {
           [attr.aria-selected]="activeView === 'gantt'"
           (click)="activeView = 'gantt'"
         >
-          Gantt
+          Gantt<span class="planning-demo__pro">Pro</span>
         </button>
         <button
           type="button"
@@ -95,7 +95,7 @@ import {
           [attr.aria-selected]="activeView === 'scheduler'"
           (click)="activeView = 'scheduler'"
         >
-          Scheduler
+          Scheduler<span class="planning-demo__pro">Pro</span>
         </button>
         <button
           type="button"
@@ -105,7 +105,7 @@ import {
           [attr.aria-selected]="activeView === 'calendar'"
           (click)="activeView = 'calendar'"
         >
-          Calendar
+          Calendar<span class="planning-demo__pro">Pro</span>
         </button>
       </nav>
 
