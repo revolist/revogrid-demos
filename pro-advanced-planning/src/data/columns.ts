@@ -37,12 +37,6 @@ const workflowEditorOptions = Object.entries(workflowLabels).map(([value, label]
   label,
 }));
 
-const priorityCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (h, { value }) => {
-  const priority = Number(value);
-  const label = priority >= 900 ? 'Critical' : priority >= 700 ? 'High' : 'Normal';
-  return h('span', { class: `planning-priority planning-priority--${label.toLowerCase()}` }, label);
-};
-
 const paddedCellProperties: NonNullable<ColumnRegular['cellProperties']> = () => ({
   style: { padding: '0 16px' },
 });
@@ -109,7 +103,7 @@ export const gridColumns: ColumnRegular[] = [
     dataGridFormat: planningGridFormats.workflowStatus,
   },
   {
-    prop: 'priority', name: 'Priority', size: 88, readonly: true, sortable: true, filter: [FIlTER_SELECTION], filterPlaceholder: 'All priorities', cellTemplate: priorityCellTemplate, dataGridFormat: planningGridFormats.priority,
+    prop: 'priority', name: 'Priority', size: 110, readonly: true, sortable: true, filter: [FIlTER_SELECTION], filterPlaceholder: 'All priorities', cellProperties: paddedCellProperties, dataGridFormat: planningGridFormats.priority,
   },
   {
     prop: 'endDate',

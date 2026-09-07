@@ -15,6 +15,13 @@ const workflowLabels: Record<string, string> = {
   done: 'Done',
 };
 
+const priorityPresentation = (value: unknown) => {
+  const priority = Number(value);
+  if (priority >= 900) return { label: 'Critical', color: '#e5484d' };
+  if (priority >= 700) return { label: 'High', color: '#f59e0b' };
+  return { label: 'Normal', color: '#10b981' };
+};
+
 /** Reuse the filter badge palette for the status format in every grid view. */
 export const workflowStatusBadgeStyles = Object.fromEntries(
   Object.values(workflowBadges).map(({ label, color }) => [
@@ -44,17 +51,49 @@ const workflowStatusBadgeFormat = {
   replaceAuthoredTemplate: true,
 } as const satisfies DataGridAdvancedFormatDefinition;
 
+const priorityIndicatorRenderer = markDataGridFormatRenderer(
+  ((h, props) => {
+    const { label, color } = priorityPresentation(props.value);
+    return h('span', {
+      style: {
+        alignItems: 'center',
+        color: 'var(--planning-priority-label-color, var(--rg-theme-text, var(--revo-grid-text, #475569)))',
+        display: 'inline-flex',
+        fontWeight: '600',
+        gap: '8px',
+      },
+    }, [
+      h('span', {
+        'aria-hidden': 'true',
+        style: { backgroundColor: `var(--planning-priority-color, ${color})`, borderRadius: '50%', height: '8px', width: '8px' },
+      }),
+      label,
+    ]);
+  }) as CellTemplate,
+  'planning-priority-indicator',
+);
+
+const priorityIndicatorFormat = {
+  id: 'planning-priority-indicator',
+  label: 'Priority indicator',
+  group: 'Planning',
+  valueKind: 'number',
+  cellTemplate: priorityIndicatorRenderer,
+  replaceAuthoredTemplate: true,
+  appearanceSections: {
+    colors: true,
+    colorVariables: {
+      fill: '--planning-priority-color',
+      text: '--planning-priority-label-color',
+    },
+  },
+} as const satisfies DataGridAdvancedFormatDefinition;
+
 const text = {
   value: {
     kind: 'preset',
     preset: 'text',
   },
-  appearance: {
-    horizontal: 'left',
-  },
-} as const satisfies DataGridCellFormat;
-
-const visual = {
   appearance: {
     horizontal: 'left',
   },
@@ -73,7 +112,11 @@ export const planningGridFormats = {
       id: 'workflow-status-badge',
     },
   },
-  priority: visual,
+  priority: {
+    presentation: {
+      id: 'planning-priority-indicator',
+    },
+  },
   endDate: {
     value: {
       kind: 'preset',
@@ -122,7 +165,7 @@ export const planningDataGridFormatting = {} as const satisfies DataGridFormatti
 export const planningDataGridContextMenu = {
   formatting: {
     advancedFormats: {
-      customFormats: [workflowStatusBadgeFormat],
+      customFormats: [workflowStatusBadgeFormat, priorityIndicatorFormat],
     },
   },
 } as const satisfies DataGridContextMenuConfig;
