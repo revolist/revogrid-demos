@@ -4,6 +4,14 @@ import {
   createDefaultTaskTableColumn,
 } from '@revolist/gantt';
 import { getOwnerAvatar, planningPeople } from './fixtures';
+import {
+  FILTER_CALENDAR_RANGE,
+  FILTER_CHIP_BADGE_TOGGLES,
+  FILTER_HISTOGRAM_BRUSH,
+  FILTER_RATING_PROGRESS_THRESHOLD,
+  FILTER_TIME_MATRIX,
+  planningStructuredFilterTypes,
+} from './planning.structured';
 
 const ownerEditorOptions = planningPeople.map(({ id, name }) => ({
   value: id,
@@ -19,6 +27,16 @@ const dateCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (
   const date = new Date(String(value ?? ''));
   return Number.isNaN(date.valueOf()) ? '' : new Intl.DateTimeFormat('en-US', {
     month: 'short', day: 'numeric', timeZone: 'UTC',
+  }).format(date);
+};
+
+const activityTimeCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (
+  _h,
+  { value },
+) => {
+  const date = new Date(String(value ?? ''));
+  return Number.isNaN(date.valueOf()) ? '' : new Intl.DateTimeFormat('en-US', {
+    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC',
   }).format(date);
 };
 
@@ -39,9 +57,10 @@ const priorityCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (h, { v
 };
 
 export const planningFilterConfig = {
+  structuredFilterTypes: planningStructuredFilterTypes,
   selection: {
     syncCellTemplate: {
-      workflowStatus: true,
+      owner: true,
       priority: true,
     },
   },
@@ -58,7 +77,7 @@ export const gridColumns: ColumnRegular[] = [
     name: 'Owner',
     size: 120,
     sortable: true,
-    filter: false,
+    filter: [FIlTER_SELECTION],
     columnType: 'dropdown',
     dropdown: {
       source: ownerEditorOptions,
@@ -74,7 +93,7 @@ export const gridColumns: ColumnRegular[] = [
     name: 'Status',
     size: 132,
     sortable: true,
-    filter: [FIlTER_SELECTION],
+    filter: [FILTER_CHIP_BADGE_TOGGLES],
     filterPlaceholder: 'All statuses',
     cellTemplate: workflowCellTemplate,
   },
@@ -87,7 +106,7 @@ export const gridColumns: ColumnRegular[] = [
     size: 100,
     readonly: true,
     sortable: true,
-    filter: false,
+    filter: [FILTER_CALENDAR_RANGE],
     cellTemplate: dateCellTemplate,
   },
   {
@@ -95,10 +114,12 @@ export const gridColumns: ColumnRegular[] = [
     name: 'Progress',
     size: 116,
     sortable: true,
-    filter: false,
+    filter: [FILTER_RATING_PROGRESS_THRESHOLD],
   },
-  { prop: 'budget', name: 'Budget', size: 96, readonly: true, sortable: true, filter: false,
+  { prop: 'budget', name: 'Budget', size: 96, readonly: true, sortable: true, filter: [FILTER_HISTOGRAM_BRUSH],
     cellTemplate: (_h, { value }) => `$${Number(value ?? 0).toLocaleString('en-US')}` },
+  { prop: 'activityAt', name: 'Activity time', size: 144, readonly: true, sortable: true, filter: [FILTER_TIME_MATRIX],
+    cellTemplate: activityTimeCellTemplate },
 ];
 
 export const ganttColumns = [

@@ -16,6 +16,8 @@ export type PlanningTask = GanttTaskSourceRow & {
   order: number;
   projectId: PlanningProjectId;
   budget: number;
+  /** A deterministic UTC activity timestamp used by the Time Matrix filter. */
+  activityAt: string;
 };
 
 export type PlanningProjectId = 'customer-portal' | 'billing-platform' | 'internal-tools';

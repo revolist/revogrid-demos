@@ -45,10 +45,19 @@ export function createTasks(): PlanningTask[] {
     const durationDays = [4, 3, 6, 2, 5][(index + projectIndex) % 5];
     const start = new Date(Date.UTC(2026, 8, 7 + startOffset, 8 + projectIndex));
     const end = new Date(Date.UTC(2026, 8, 7 + startOffset + durationDays - 1, 17));
+    // Spread activity across the fixture weeks, weekdays, and working hours so
+    // the Time Matrix has meaningful, deterministic groups to filter.
+    const activityAt = new Date(Date.UTC(
+      2026,
+      8,
+      7 + ((index * 3) % 21),
+      [8, 9, 10, 11, 13, 14, 15, 16, 17][index % 9],
+      [0, 15, 30, 45][index % 4],
+    )).toISOString();
     const startDate = start.toISOString();
     const endDate = end.toISOString();
     const workflowStatus = statuses[index % statuses.length];
     const percentDone = workflowStatus === 'done' ? 100 : workflowStatus === 'not-started' ? 0 : 20 + ((index * 15) % 75);
-    return { id: `task-${String(index + 1).padStart(2, '0')}`, name, owner, ownerAvatar: getOwnerAvatar(owner), owners: [owner], ownerAvatars: [getOwnerAvatar(owner)], startDate, endDate, duration: `${durationDays}d`, percentDone, order: (index + 1) * 1000, workflowStatus, priority: [500, 700, 900][index % 3], projectId: projects[projectIndex], budget: 1800 + index * 200 } as PlanningTask;
+    return { id: `task-${String(index + 1).padStart(2, '0')}`, name, owner, ownerAvatar: getOwnerAvatar(owner), owners: [owner], ownerAvatars: [getOwnerAvatar(owner)], startDate, endDate, activityAt, duration: `${durationDays}d`, percentDone, order: (index + 1) * 1000, workflowStatus, priority: [500, 700, 900][index % 3], projectId: projects[projectIndex], budget: 1800 + index * 200 } as PlanningTask;
   });
 }

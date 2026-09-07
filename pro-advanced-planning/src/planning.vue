@@ -11,7 +11,7 @@
     <p class="planning-demo__hint">{{ activeView === 'kanban' ? 'Change a status to move a task.' : 'Change a status, then open Kanban.' }}</p>
     <div class="planning-demo__toolbar">
       <label class="planning-demo__search"><span class="sr-only">Quick search tasks</span><input v-model="quickSearch" type="search" placeholder="Quick search tasks…" /></label>
-      <span class="planning-demo__filter-help">Use the Status or Priority column menu to filter.</span>
+      <span class="planning-demo__filter-help">Use each column menu to filter the matching task data.</span>
       <span class="planning-demo__count" aria-live="polite">{{ visibleTasks.length }} of {{ tasks.length }} tasks</span>
     </div>
     <RevoGrid v-if="activeView === 'grid'" ref="gridRef" :key="`grid-${resetKey}`" class="planning-demo__grid" hide-attribution :theme="theme" :plugins="gridPlugins" :source="tasks" :columns="gridColumns" :filter.prop="planningFilterConfig" :row-size="40" range resize can-move-columns :row-select.prop="rowSelect" :quick-filter.prop="quickFilter" :filter-badges.prop="filterBadgeOptions" @afteredit="handleGridEdit" @rowselected="handleRowSelected" @afterfilterapply="syncVisibleTasks" @afterquickfilterapply="syncVisibleTasks" />

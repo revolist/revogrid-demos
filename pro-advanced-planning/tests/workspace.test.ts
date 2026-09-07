@@ -18,6 +18,8 @@ test('provides a stable 50-task fixture across three projects', () => {
   assert.ok(new Set(tasks.map(({ startDate }) => startDate.slice(0, 10))).size < tasks.length)
   assert.ok(tasks.some((task, index) => index > 0 && task.startDate < tasks[index - 1].startDate))
   assert.ok(tasks.every(({ startDate, endDate }) => Date.parse(endDate) - Date.parse(startDate) >= 30 * 60 * 60 * 1000))
+  assert.ok(tasks.every(({ activityAt }) => activityAt.startsWith('2026-09-')))
+  assert.ok(new Set(tasks.map(({ activityAt }) => activityAt.slice(11, 16))).size > 5)
 })
 
 test('uses deterministic local avatars for every shared owner', () => {

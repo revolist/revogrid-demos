@@ -15,7 +15,7 @@ import {
   EventSchedulerPlugin,
   type EventSchedulerEventChangedDetail,
 } from '@revolist/scheduler';
-import { RowSelectPlugin } from '@revolist/revogrid-pro';
+import { AdvanceFilterPlugin, FilterHeaderPlugin, RowSelectPlugin } from '@revolist/revogrid-pro';
 import {
   currentTheme,
   observeCurrentTheme,
@@ -31,6 +31,7 @@ import {
   gridColumns,
   kanbanConfig,
   planningProjects,
+  planningFilterConfig,
   schedulerConfig,
   schedulerResources,
   selectedPlanningTaskIds,
@@ -54,6 +55,7 @@ import './planning.scss';
 defineCustomElements();
 
 type PlanningGridElement = HTMLRevoGridElement & {
+  filter?: typeof planningFilterConfig;
   gantt?: typeof ganttConfig;
   ganttResources?: typeof ganttResources;
   ganttAssignments?: ReturnType<typeof toGanttAssignments>;
@@ -108,8 +110,9 @@ export function load(parentSelector: string): (() => void) | undefined {
     grid.theme = currentTheme().isDark() ? 'darkCompact' : 'compact';
 
     if (view === 'grid') {
-      grid.plugins = [RowSelectPlugin];
+      grid.plugins = [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin];
       grid.columns = gridColumns;
+      grid.filter = planningFilterConfig;
       grid.range = true;
       grid.resize = true;
       grid.canMoveColumns = true;

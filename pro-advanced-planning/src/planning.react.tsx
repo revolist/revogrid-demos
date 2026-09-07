@@ -16,7 +16,7 @@ import {
   EventSchedulerPlugin,
   type EventSchedulerEventChangedDetail,
 } from '@revolist/scheduler';
-import { RowSelectPlugin } from '@revolist/revogrid-pro';
+import { AdvanceFilterPlugin, FilterHeaderPlugin, RowSelectPlugin } from '@revolist/revogrid-pro';
 import {
   currentTheme,
   observeCurrentTheme,
@@ -32,6 +32,7 @@ import {
   gridColumns,
   kanbanConfig,
   planningProjects,
+  planningFilterConfig,
   schedulerConfig,
   schedulerResources,
   selectedPlanningTaskIds,
@@ -61,6 +62,7 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
   eventSchedulerEvents?: ReturnType<typeof toSchedulerEvents>;
   kanban?: typeof kanbanConfig;
   rowSelect?: { rowOrder: boolean };
+  filter?: typeof planningFilterConfig;
   onRowselected?: (event: CustomEvent<{ selected: Map<string, Set<number>> }>) => void;
   'onGantt-before-task-change'?: (
     event: CustomEvent<GanttBeforeTaskChangeDetail>,
@@ -96,7 +98,7 @@ export default function PlanningViews() {
   const ganttPlugins = useMemo(() => [GanttPlugin], []);
   const kanbanPlugins = useMemo(() => [KanbanPlugin], []);
   const schedulerPlugins = useMemo(() => [EventSchedulerPlugin], []);
-  const gridPlugins = useMemo(() => [RowSelectPlugin], []);
+  const gridPlugins = useMemo(() => [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin], []);
   const visibleTasks = useMemo(() => filterPlanningTasks(tasks, filters), [tasks, filters]);
   const visibleIds = useMemo(() => new Set(visibleTasks.map(({ id }) => id)), [visibleTasks]);
   const ganttAssignments = useMemo(() => toGanttAssignments(tasks).filter(({ taskId }) => visibleIds.has(String(taskId))), [tasks, visibleIds]);
@@ -148,6 +150,7 @@ export default function PlanningViews() {
           canMoveColumns
           rowSize={40}
           rowSelect={{ rowOrder: false }}
+          filter={planningFilterConfig}
           onRowselected={(event: CustomEvent<{ selected: Map<string, Set<number>> }>) => setSelectedIds(selectedPlanningTaskIds(visibleTasks, event.detail.selected))}
           onAfteredit={(event) =>
             setTasks((current) =>
