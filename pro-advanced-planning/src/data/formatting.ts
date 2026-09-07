@@ -34,7 +34,7 @@ export const workflowStatusBadgeStyles = Object.fromEntries(
  * Keep workflow values canonical for filtering and planning engines while the
  * native badge presentation renders the label a person expects to read.
  */
-const workflowStatusBadgeRenderer = markDataGridFormatRenderer(
+export const workflowStatusBadgeRenderer = markDataGridFormatRenderer(
   ((h, props) => badgeRenderer!(h, {
     ...props,
     value: workflowLabels[String(props.value)] ?? String(props.value ?? ''),
