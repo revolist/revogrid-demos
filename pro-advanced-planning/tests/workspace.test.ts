@@ -20,8 +20,8 @@ test('uses the Pro dropdown editor with canonical owner and status values', () =
   assert.match(vueSource, /:column-types="gridColumnTypes"/)
 })
 
-test('pins selection and task identity while grid detail columns scroll', () => {
-  assert.match(columnsSource, /prop: '_selected'[\s\S]*?pin: 'colPinStart'/)
+test('pins selection and task identity with space for native checkboxes', () => {
+  assert.match(columnsSource, /prop: '_selected', name: '', size: 48, pin: 'colPinStart', rowSelect: true/)
   assert.match(columnsSource, /prop: 'name', name: 'Task', size: 220, pin: 'colPinStart'/)
 })
 
