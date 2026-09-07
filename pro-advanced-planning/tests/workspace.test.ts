@@ -7,6 +7,7 @@ import { updateFromKanban } from '../src/data/sync'
 const configSource = readFileSync(new URL('../src/data/config.ts', import.meta.url), 'utf8')
 const columnsSource = readFileSync(new URL('../src/data/columns.ts', import.meta.url), 'utf8')
 const formattingSource = readFileSync(new URL('../src/data/formatting.ts', import.meta.url), 'utf8')
+const stylesSource = readFileSync(new URL('../src/planning.scss', import.meta.url), 'utf8')
 const vueSource = readFileSync(new URL('../src/planning.vue', import.meta.url), 'utf8')
 
 test('uses the Pro dropdown editor with canonical owner and status values', () => {
@@ -29,6 +30,10 @@ test('uses declarative data-grid formats for every planning value type', () => {
     assert.match(columnsSource, new RegExp(`dataGridFormat: planningGridFormats\\.${prop}`))
   }
   assert.match(vueSource, /:data-grid-formatting\.prop="planningDataGridFormatting"/)
+})
+
+test('inherits the site font family instead of overriding it in the workspace', () => {
+  assert.doesNotMatch(stylesSource, /font(?:-family)?:[^;}]*Geist/)
 })
 
 test('provides a stable 50-task fixture across three projects', () => {
