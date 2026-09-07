@@ -102,6 +102,10 @@ test('uses a direct fullscreen icon without a custom actions menu', () => {
   assert.doesNotMatch(workspaceSource, /moreMenuRef|closePopovers|resetWorkspace|resetKey/)
 })
 
+test('keeps the normal page surface and text color in fullscreen mode', () => {
+  assert.match(stylesSource, /\.planning-demo:fullscreen\{[^}]*background:var\(--vp-c-bg\)[^}]*color:var\(--vp-c-text-1\)/)
+})
+
 test('keeps native grid internals unstyled and uses compact owner avatars', () => {
   assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revogr-/)
   assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revo-grid/)
