@@ -72,3 +72,33 @@
 .dark .planning-priority--high{color:#dfbd72}
 .planning-demo__grid .gantt-bar--task{min-width:12px;border-radius:4px}
 @media(max-width:900px){.planning-demo__switch button{padding-inline:9px}.planning-demo__pro{display:none}.planning-demo__actions>a{display:none}.planning-demo__footer{padding-right:2px}}
+
+/* Contrast pass: keep the grid quiet while making its hierarchy unmistakable. */
+.planning-demo{--planning-surface:#fff;--planning-surface-soft:#f1f4f3;--planning-border:#cfd6d3;--planning-border-strong:#b8c2be;--planning-text:#17211d;--planning-muted:#52605a}
+.planning-demo__topbar{border-color:var(--planning-border-strong)}
+.planning-demo__switch button{color:var(--planning-muted);font-weight:560}
+.planning-demo__switch button.on{color:#006f43}
+.planning-demo__switch button.on:after{height:3px;background:#008b55}
+.planning-demo__pro{border:1px solid #bdd9cb;background:#e5f3ec;color:#096942}
+.planning-demo__actions>button,.planning-demo__actions>a,.planning-demo__actions summary{color:#44514b}
+.planning-demo__search,.planning-demo__select,.planning-demo__filter-wrap>button{border-color:var(--planning-border-strong);box-shadow:0 1px 2px rgb(15 23 42/6%)}
+.planning-demo__filter-wrap>button{font-weight:550}
+.planning-demo__count,.planning-demo__footer{color:#56635d}
+.planning-demo__grid{--revo-grid-border:var(--planning-border-strong);--revo-grid-cell-border:#d8dddb;--revo-grid-header-bg:#edf1ef;--revo-grid-header-color:#26332d;--revo-grid-header-border:var(--planning-border-strong);--revo-grid-row-hover:#eef8f3;--revo-grid-row-headers-bg:#edf1ef;--revo-grid-row-headers-color:#26332d;border-color:var(--planning-border-strong);box-shadow:0 1px 3px rgb(15 23 42/7%)}
+.planning-demo__grid revogr-header .rgHeaderCell{border-color:#c5ceca;background:#edf1ef;color:#26332d;font-weight:650}
+.planning-status{border:1px solid transparent;font-weight:600}
+.planning-status--done{border-color:#a9d6bf;background:#e2f3ea;color:#096b42}
+.planning-status--in-progress{border-color:#bbc6ee;background:#e9ecfa;color:#34499f}
+.planning-status--blocked{border-color:#e5b9b4;background:#f9e8e5;color:#9b332a}
+.planning-status--not-started{border-color:#cbd1ce;background:#eef0ef;color:#36413c}
+.planning-priority--critical{color:#9f2f26;font-weight:600}.planning-priority--high{color:#815100;font-weight:600}
+.planning-demo__grid--kanban{--kanban-board-background:#edf1ef;--kanban-surface:#edf1ef;--kanban-border:var(--planning-border-strong);background:#edf1ef}
+.planning-demo__grid--kanban .kanban-card{border-color:#c4ccc8;box-shadow:0 1px 3px rgb(15 23 42/10%)}
+.dark .planning-demo{--planning-surface:#191c1b;--planning-surface-soft:#242927;--planning-border:#3d4642;--planning-border-strong:#505b56;--planning-text:#f3f6f4;--planning-muted:#b2bcb7}
+.dark .planning-demo__switch button.on{color:#67d49e}.dark .planning-demo__switch button.on:after{background:#36b77b}
+.dark .planning-demo__pro{border-color:#35644f;background:#203b2f;color:#8de0b5}
+.dark .planning-demo__actions>button,.dark .planning-demo__actions>a,.dark .planning-demo__actions summary{color:#c1c9c5}
+.dark .planning-demo__count,.dark .planning-demo__footer{color:#aeb8b3}
+.dark .planning-demo__grid{--revo-grid-cell-border:#353c39;--revo-grid-header-bg:#292f2c;--revo-grid-header-color:#eef3f0;--revo-grid-row-hover:#21392e;--revo-grid-row-headers-bg:#292f2c;--revo-grid-row-headers-color:#eef3f0;box-shadow:0 1px 3px rgb(0 0 0/32%)}
+.dark .planning-demo__grid revogr-header .rgHeaderCell{border-color:#46504b;background:#292f2c;color:#eef3f0}
+.dark .planning-demo__grid--kanban{--kanban-board-background:#242927;--kanban-surface:#242927;background:#242927}
