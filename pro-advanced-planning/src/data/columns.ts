@@ -69,7 +69,7 @@ export const gridColumnTypes = {
 
 export const gridColumns: ColumnRegular[] = [
   { prop: '_selected', name: '', size: 36, pin: 'colPinStart', rowSelect: true, readonly: true, filter: false },
-  { prop: 'name', name: 'Task', size: 220, sortable: true, filter: true, filterPlaceholder: 'Filter tasks', dataGridFormat: planningGridFormats.name },
+  { prop: 'name', name: 'Task', size: 220, pin: 'colPinStart', sortable: true, filter: true, filterPlaceholder: 'Filter tasks', dataGridFormat: planningGridFormats.name },
   {
     prop: 'owner',
     name: 'Owner',

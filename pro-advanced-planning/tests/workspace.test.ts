@@ -20,6 +20,11 @@ test('uses the Pro dropdown editor with canonical owner and status values', () =
   assert.match(vueSource, /:column-types="gridColumnTypes"/)
 })
 
+test('pins selection and task identity while grid detail columns scroll', () => {
+  assert.match(columnsSource, /prop: '_selected'[\s\S]*?pin: 'colPinStart'/)
+  assert.match(columnsSource, /prop: 'name', name: 'Task', size: 220, pin: 'colPinStart'/)
+})
+
 test('uses declarative data-grid formats for every planning value type', () => {
   assert.match(formattingSource, /name:\s*text/)
   assert.match(formattingSource, /id:\s*'avatar-with-text'/)
