@@ -88,6 +88,13 @@ test('matches view badges to the Pro Advanced plan badge', () => {
   assert.match(stylesSource, /planning-demo__pro\{[\s\S]*?border-radius:999px[\s\S]*?background:color-mix\(in srgb,var\(--vp-c-brand-1\) 14%,transparent\)[\s\S]*?font-size:\.72rem/)
 })
 
+test('uses a direct fullscreen icon without a custom actions menu', () => {
+  const workspaceSource = readFileSync(new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url), 'utf8')
+  assert.match(vueSource, /class="planning-demo__fullscreen"[\s\S]*?aria-label="Full screen"[\s\S]*?name="expand"/)
+  assert.doesNotMatch(vueSource, /<details|resetWorkspace|More/)
+  assert.doesNotMatch(workspaceSource, /moreMenuRef|closePopovers|resetWorkspace|resetKey/)
+})
+
 test('keeps native grid internals unstyled and uses compact owner avatars', () => {
   assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revogr-/)
   assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revo-grid/)

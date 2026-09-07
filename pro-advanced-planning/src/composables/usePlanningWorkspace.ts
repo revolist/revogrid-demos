@@ -61,13 +61,11 @@ const kanbanPlugins = [KanbanPlugin];
 const schedulerPlugins = [EventSchedulerPlugin];
 export function usePlanningWorkspace() {
   const rootRef = ref<HTMLElement>();
-  const moreMenuRef = ref<HTMLDetailsElement>();
   const gridRef = ref<any>();
   const activeView = ref<PlanningView>('grid');
   const tasks = ref(createTasks());
   const quickSearch = ref('');
   const visibleTaskIds = ref<string[] | undefined>();
-  const resetKey = ref(0);
   const selectedCount = ref(0);
   const filterBadgeOptions = {
     className: 'planning-demo__filter-badges',
@@ -117,10 +115,6 @@ export function usePlanningWorkspace() {
     isDark.value = value;
   });
 
-  function closePopovers() {
-    if (moreMenuRef.value) moreMenuRef.value.open = false;
-  }
-
   onBeforeUnmount(() => {
     disconnectTheme();
   });
@@ -131,18 +125,8 @@ export function usePlanningWorkspace() {
     visibleTaskIds.value = (await grid.getVisibleSource()).map((task: PlanningTask) => task.id);
   }
 
-  function resetWorkspace() {
-    tasks.value = createTasks();
-    quickSearch.value = '';
-    visibleTaskIds.value = undefined;
-    selectedCount.value = 0;
-    resetKey.value += 1;
-    closePopovers();
-  }
-
   async function toggleFullscreen() {
     if (!rootRef.value) return;
-    closePopovers();
     if (document.fullscreenElement) await document.exitFullscreen();
     else await rootRef.value.requestFullscreen();
   }
@@ -191,7 +175,6 @@ export function usePlanningWorkspace() {
   return {
     activeView,
     calendarConfig,
-    closePopovers,
     filterBadgeOptions,
     ganttAssignments,
     ganttColumns,
@@ -215,12 +198,9 @@ export function usePlanningWorkspace() {
     handleSchedulerEdit,
     kanbanConfig,
     kanbanPlugins,
-    moreMenuRef,
     planningFilterConfig,
     quickFilter,
     quickSearch,
-    resetKey,
-    resetWorkspace,
     rootRef,
     rowSelect,
     schedulerConfig,
