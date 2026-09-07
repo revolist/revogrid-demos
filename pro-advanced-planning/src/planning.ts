@@ -15,6 +15,7 @@ import {
   EventSchedulerPlugin,
   type EventSchedulerEventChangedDetail,
 } from '@revolist/scheduler';
+import { RowSelectPlugin } from '@revolist/revogrid-pro';
 import {
   currentTheme,
   observeCurrentTheme,
@@ -22,25 +23,29 @@ import {
 import {
   calendarConfig,
   createTasks,
+  defaultPlanningFilters,
+  filterPlanningTasks,
   ganttColumns,
   ganttConfig,
   ganttResources,
   gridColumns,
   kanbanConfig,
+  planningProjects,
   schedulerConfig,
   schedulerResources,
+  selectedPlanningTaskIds,
   toGanttAssignments,
   toSchedulerEvents,
   updateFromGantt,
   updateFromGanttAssignment,
   updateFromGrid,
   updateFromKanban,
-  updateFromKanbanCreate,
   updateFromKanbanDelete,
   updateFromKanbanUpdate,
   updateFromScheduler,
   views,
   type PlanningTask,
+  type PlanningFilters,
   type PlanningView,
 } from './data';
 import './planning.scss';
@@ -54,7 +59,6 @@ type PlanningGridElement = HTMLRevoGridElement & {
   eventScheduler?: typeof schedulerConfig;
   eventSchedulerResources?: typeof schedulerResources;
   eventSchedulerEvents?: ReturnType<typeof toSchedulerEvents>;
-  kanban?: typeof kanbanConfig;
 };
 
 export function load(parentSelector: string): (() => void) | undefined {
@@ -63,63 +67,83 @@ export function load(parentSelector: string): (() => void) | undefined {
 
   let tasks = createTasks();
   let activeView: PlanningView = 'grid';
+  let filters: PlanningFilters = defaultPlanningFilters();
+  let selectedIds = new Set<string>();
   const root = document.createElement('section');
   const switcher = document.createElement('nav');
   const panel = document.createElement('article');
+  const toolbar = document.createElement('div');
+  const search = document.createElement('input');
+  const project = document.createElement('select');
+  const status = document.createElement('select');
+  const priority = document.createElement('select');
+  const count = document.createElement('span');
+  const reset = document.createElement('button');
 
   root.className = 'planning-demo';
   switcher.className = 'planning-demo__switch rv-segmented-switch';
   switcher.setAttribute('role', 'tablist');
   switcher.ariaLabel = 'Planning view';
   panel.className = 'planning-demo__grid';
-  root.append(switcher, panel);
+  toolbar.className = 'planning-demo__toolbar'; search.type = 'search'; search.placeholder = 'Search tasks…'; search.ariaLabel = 'Search tasks';
+  project.ariaLabel = 'Project'; project.innerHTML = `<option value="all">All projects</option>${planningProjects.map(item => `<option value="${item.id}">${item.label}</option>`).join('')}`;
+  status.ariaLabel = 'Status'; status.innerHTML = '<option value="">All statuses</option><option value="not-started">Planned</option><option value="in-progress">In progress</option><option value="blocked">Blocked</option><option value="done">Done</option>';
+  priority.ariaLabel = 'Priority'; priority.innerHTML = '<option value="">All priorities</option><option value="500">Normal</option><option value="700">High</option><option value="900">Critical</option>';
+  reset.type = 'button'; reset.textContent = 'Reset';
+  count.className = 'planning-demo__count'; toolbar.append(search, project, status, priority, reset, count);
+  root.append(switcher, toolbar, panel);
   parent.appendChild(root);
 
   function render(view: PlanningView) {
     activeView = view;
+    const visibleTasks = filterPlanningTasks(tasks, filters);
+    const visibleIds = new Set(visibleTasks.map(({ id }) => id));
+    count.textContent = `${visibleTasks.length} of ${tasks.length} tasks${selectedIds.size ? ` · ${selectedIds.size} selected` : ''}`;
     const grid = document.createElement('revo-grid') as PlanningGridElement;
     grid.hideAttribution = true;
     grid.theme = currentTheme().isDark() ? 'darkCompact' : 'compact';
 
     if (view === 'grid') {
+      grid.plugins = [RowSelectPlugin];
       grid.columns = gridColumns;
       grid.range = true;
       grid.resize = true;
-      grid.rowHeaders = true;
-      grid.filter = true;
       grid.canMoveColumns = true;
+      grid.rowSize = 40;
+      grid.rowSelect = { rowOrder: false };
       grid.addEventListener('afteredit', (event) => {
         tasks = updateFromGrid(
           tasks,
           event.detail as Parameters<typeof updateFromGrid>[1],
         );
       });
+      grid.addEventListener('rowselected', (event) => {
+        selectedIds = selectedPlanningTaskIds(visibleTasks, (event as CustomEvent<HTMLRevoGridElementEventMap['rowselected']>).detail.selected);
+        count.textContent = `${visibleTasks.length} of ${tasks.length} tasks${selectedIds.size ? ` · ${selectedIds.size} selected` : ''}`;
+      });
     } else if (view === 'kanban') {
       grid.plugins = [KanbanPlugin];
       grid.columns = gridColumns;
-      grid.kanban = kanbanConfig;
+      (grid as unknown as { kanban: typeof kanbanConfig }).kanban = kanbanConfig;
       grid.addEventListener('kanbancardmove', (event) => {
         tasks = updateFromKanban(
           tasks,
-          (event as CustomEvent<KanbanCardMoveDetail<PlanningTask>>).detail,
+          (event as unknown as CustomEvent<KanbanCardMoveDetail<PlanningTask>>).detail,
         );
       });
       grid.addEventListener('kanbancardcreate', (event) => {
-        tasks = updateFromKanbanCreate(
-          tasks,
-          (event as CustomEvent<KanbanCardCreateDetail<PlanningTask>>).detail,
-        );
+        tasks = [...tasks, (event as unknown as CustomEvent<KanbanCardCreateDetail<PlanningTask>>).detail.card];
       });
       grid.addEventListener('kanbancardupdate', (event) => {
         tasks = updateFromKanbanUpdate(
           tasks,
-          (event as CustomEvent<KanbanCardUpdateDetail<PlanningTask>>).detail,
+          (event as unknown as CustomEvent<KanbanCardUpdateDetail<PlanningTask>>).detail,
         );
       });
       grid.addEventListener('kanbancarddelete', (event) => {
         tasks = updateFromKanbanDelete(
           tasks,
-          (event as CustomEvent<KanbanCardDeleteDetail<PlanningTask>>).detail,
+          (event as unknown as CustomEvent<KanbanCardDeleteDetail<PlanningTask>>).detail,
         );
       });
     } else if (view === 'gantt') {
@@ -127,7 +151,7 @@ export function load(parentSelector: string): (() => void) | undefined {
       grid.columns = ganttColumns;
       grid.gantt = ganttConfig;
       grid.ganttResources = ganttResources;
-      grid.ganttAssignments = toGanttAssignments(tasks);
+      grid.ganttAssignments = toGanttAssignments(tasks).filter(({ taskId }) => visibleIds.has(String(taskId)));
       grid.addEventListener('gantt-before-task-change', (event) => {
         tasks = updateFromGantt(
           tasks,
@@ -144,10 +168,9 @@ export function load(parentSelector: string): (() => void) | undefined {
       grid.plugins = [EventSchedulerPlugin];
       grid.columns = [];
       grid.resize = true;
-      grid.filter = true;
       grid.eventScheduler = view === 'calendar' ? calendarConfig : schedulerConfig;
       grid.eventSchedulerResources = schedulerResources;
-      grid.eventSchedulerEvents = toSchedulerEvents(tasks);
+      grid.eventSchedulerEvents = toSchedulerEvents(visibleTasks);
       grid.addEventListener('event-scheduler-event-changed', (event) => {
         tasks = updateFromScheduler(
           tasks,
@@ -157,13 +180,19 @@ export function load(parentSelector: string): (() => void) | undefined {
     }
 
     panel.replaceChildren(grid);
-    grid.source = view === 'scheduler' || view === 'calendar' ? [] : tasks;
+    grid.source = view === 'scheduler' || view === 'calendar' ? [] : visibleTasks;
     switcher.querySelectorAll('button').forEach((button) => {
       const selected = button.dataset.view === activeView;
       button.classList.toggle('on', selected);
       button.ariaSelected = String(selected);
     });
   }
+
+  search.addEventListener('input', () => { filters = { ...filters, query: search.value }; render(activeView); });
+  project.addEventListener('change', () => { filters = { ...filters, projectId: project.value as PlanningFilters['projectId'] }; render(activeView); });
+  status.addEventListener('change', () => { filters = { ...filters, statuses: status.value ? [status.value] : [] }; render(activeView); });
+  priority.addEventListener('change', () => { filters = { ...filters, priorities: priority.value ? [Number(priority.value)] : [] }; render(activeView); });
+  reset.addEventListener('click', () => { tasks = createTasks(); filters = defaultPlanningFilters(); selectedIds = new Set(); search.value = ''; project.value = 'all'; status.value = ''; priority.value = ''; render(activeView); });
 
   for (const view of views) {
     const button = document.createElement('button');

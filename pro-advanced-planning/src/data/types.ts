@@ -14,6 +14,17 @@ export type PlanningTask = GanttTaskSourceRow & {
   endDate: string;
   percentDone: number;
   order: number;
+  projectId: PlanningProjectId;
+  budget: number;
+};
+
+export type PlanningProjectId = 'customer-portal' | 'billing-platform' | 'internal-tools';
+
+export type PlanningFilters = {
+  query: string;
+  projectId: PlanningProjectId | 'all';
+  statuses: string[];
+  priorities: number[];
 };
 
 export const views: PlanningView[] = ['grid', 'kanban', 'gantt', 'scheduler', 'calendar'];

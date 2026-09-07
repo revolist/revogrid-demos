@@ -23,3 +23,5 @@ export {
   updateFromScheduler,
 } from './sync';
 export { views, type PlanningTask, type PlanningView } from './types';
+export { applyPlanningGridEdit, defaultPlanningFilters, filterPlanningTasks, mergeVisibleTasks, planningProjects, selectedPlanningTaskIds } from './workspace';
+export type { PlanningFilters, PlanningProjectId } from './types';

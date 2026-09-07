@@ -1,15 +1,16 @@
-import {
-  type GanttBeforeAssignmentChangeDetail,
-  type GanttBeforeTaskChangeDetail,
+import type {
+  GanttBeforeAssignmentChangeDetail,
+  GanttBeforeTaskChangeDetail,
 } from '@revolist/gantt';
-import {
-  type KanbanCardCreateDetail,
-  type KanbanCardDeleteDetail,
-  type KanbanCardMoveDetail,
-  type KanbanCardUpdateDetail,
+import type {
+  KanbanCardCreateDetail,
+  KanbanCardDeleteDetail,
+  KanbanCardMoveDetail,
+  KanbanCardUpdateDetail,
 } from '@revolist/kanban';
 import type { EventSchedulerEventChangedDetail } from '@revolist/scheduler';
-import { getOwnerAvatar } from './source';
+import { getOwnerAvatar } from './fixtures';
+import { applyPlanningGridEdit } from './workspace';
 import type { PlanningTask } from './types';
 
 export function updateFromGrid(
@@ -21,27 +22,7 @@ export function updateFromGrid(
     val?: unknown;
   },
 ): PlanningTask[] {
-  const prop = String(detail.prop ?? '');
-  if (!['name', 'owner', 'percentDone'].includes(prop)) return tasks;
-
-  return tasks.map((task, index) => {
-    if (task.id !== detail.model?.id && index !== detail.rowIndex) return task;
-    const value =
-      prop === 'percentDone'
-        ? Math.max(0, Math.min(100, Number(detail.val ?? 0)))
-        : String(detail.val ?? '');
-    return {
-      ...task,
-      [prop]: value,
-      ...(prop === 'owner'
-        ? {
-          ownerAvatar: getOwnerAvatar(String(value)),
-          owners: [String(value)],
-          ownerAvatars: [getOwnerAvatar(String(value))],
-        }
-        : {}),
-    };
-  });
+  return applyPlanningGridEdit(tasks, detail);
 }
 
 export function updateFromKanban(

@@ -16,6 +16,7 @@ import {
   EventSchedulerPlugin,
   type EventSchedulerEventChangedDetail,
 } from '@revolist/scheduler';
+import { RowSelectPlugin } from '@revolist/revogrid-pro';
 import {
   currentTheme,
   observeCurrentTheme,
@@ -23,26 +24,30 @@ import {
 import {
   calendarConfig,
   createTasks,
+  defaultPlanningFilters,
+  filterPlanningTasks,
   ganttColumns,
   ganttConfig,
   ganttResources,
   gridColumns,
   kanbanConfig,
+  planningProjects,
   schedulerConfig,
   schedulerResources,
+  selectedPlanningTaskIds,
   toGanttAssignments,
   toSchedulerEvents,
   updateFromGantt,
   updateFromGanttAssignment,
   updateFromGrid,
   updateFromKanban,
-  updateFromKanbanCreate,
   updateFromKanbanDelete,
   updateFromKanbanUpdate,
   updateFromScheduler,
   views,
   type PlanningView,
   type PlanningTask,
+  type PlanningFilters,
 } from './data';
 import './planning.scss';
 
@@ -54,6 +59,8 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
   eventSchedulerResources?: typeof schedulerResources;
   eventSchedulerEvents?: ReturnType<typeof toSchedulerEvents>;
   kanban?: typeof kanbanConfig;
+  rowSelect?: { rowOrder: boolean };
+  onRowselected?: (event: CustomEvent<{ selected: Map<string, Set<number>> }>) => void;
   'onGantt-before-task-change'?: (
     event: CustomEvent<GanttBeforeTaskChangeDetail>,
   ) => void;
@@ -82,12 +89,17 @@ const PlanningGrid = RevoGrid as React.ComponentType<PlanningGridProps>;
 export default function PlanningViews() {
   const [activeView, setActiveView] = useState<PlanningView>('grid');
   const [tasks, setTasks] = useState(createTasks);
+  const [filters, setFilters] = useState<PlanningFilters>(defaultPlanningFilters);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [isDark, setIsDark] = useState(() => currentTheme().isDark());
   const ganttPlugins = useMemo(() => [GanttPlugin], []);
   const kanbanPlugins = useMemo(() => [KanbanPlugin], []);
   const schedulerPlugins = useMemo(() => [EventSchedulerPlugin], []);
-  const ganttAssignments = useMemo(() => toGanttAssignments(tasks), [tasks]);
-  const schedulerEvents = useMemo(() => toSchedulerEvents(tasks), [tasks]);
+  const gridPlugins = useMemo(() => [RowSelectPlugin], []);
+  const visibleTasks = useMemo(() => filterPlanningTasks(tasks, filters), [tasks, filters]);
+  const visibleIds = useMemo(() => new Set(visibleTasks.map(({ id }) => id)), [visibleTasks]);
+  const ganttAssignments = useMemo(() => toGanttAssignments(tasks).filter(({ taskId }) => visibleIds.has(String(taskId))), [tasks, visibleIds]);
+  const schedulerEvents = useMemo(() => toSchedulerEvents(visibleTasks), [visibleTasks]);
 
   useEffect(() => observeCurrentTheme(setIsDark), []);
 
@@ -108,19 +120,34 @@ export default function PlanningViews() {
         ))}
       </nav>
 
-      {activeView === 'grid' && (
+      <div className="planning-demo__toolbar">
+        <label className="planning-demo__search"><span aria-hidden="true">⌕</span><input aria-label="Search tasks" type="search" placeholder="Search tasks…" value={filters.query} onChange={(event) => setFilters(current => ({ ...current, query: event.target.value }))} /></label>
+        <label className="planning-demo__select"><select aria-label="Project" value={filters.projectId} onChange={(event) => setFilters(current => ({ ...current, projectId: event.target.value as PlanningFilters['projectId'] }))}><option value="all">All projects</option>{planningProjects.map(project => <option key={project.id} value={project.id}>{project.label}</option>)}</select></label>
+        <details className="planning-demo__filter-wrap"><summary>Filter · {filters.statuses.length + filters.priorities.length}</summary><div className="planning-demo__filter-popover">
+          <fieldset><legend>Status</legend>{([['not-started','Planned'],['in-progress','In progress'],['blocked','Blocked'],['done','Done']] as const).map(([value,label]) => <label key={value}><input type="checkbox" checked={filters.statuses.includes(value)} onChange={() => setFilters(current => ({ ...current, statuses: current.statuses.includes(value) ? current.statuses.filter(item => item !== value) : [...current.statuses, value] }))}/>{label}</label>)}</fieldset>
+          <fieldset><legend>Priority</legend>{[[500,'Normal'],[700,'High'],[900,'Critical']].map(([value,label]) => <label key={value}><input type="checkbox" checked={filters.priorities.includes(Number(value))} onChange={() => setFilters(current => ({ ...current, priorities: current.priorities.includes(Number(value)) ? current.priorities.filter(item => item !== Number(value)) : [...current.priorities, Number(value)] }))}/>{label}</label>)}</fieldset>
+          <button type="button" className="planning-demo__clear" onClick={() => setFilters(defaultPlanningFilters())}>Clear filters</button>
+        </div></details>
+        <button type="button" onClick={() => { setTasks(createTasks()); setFilters(defaultPlanningFilters()); setSelectedIds(new Set()); }}>Reset</button>
+        <span className="planning-demo__count">{visibleTasks.length} of {tasks.length} tasks · {selectedIds.size} selected</span>
+      </div>
+
+      {!visibleTasks.length && <div className="planning-demo__empty"><strong>No tasks match your filters</strong><button type="button" onClick={() => setFilters(defaultPlanningFilters())}>Clear filters</button></div>}
+      {!!visibleTasks.length && activeView === 'grid' && (
         <PlanningGrid
           key="grid"
           className="planning-demo__grid"
           theme={isDark ? 'darkCompact' : 'compact'}
           hideAttribution
-          source={tasks}
+          plugins={gridPlugins}
+          source={visibleTasks}
           columns={gridColumns}
           range
           resize
-          rowHeaders
-          filter
           canMoveColumns
+          rowSize={40}
+          rowSelect={{ rowOrder: false }}
+          onRowselected={(event: CustomEvent<{ selected: Map<string, Set<number>> }>) => setSelectedIds(selectedPlanningTaskIds(visibleTasks, event.detail.selected))}
           onAfteredit={(event) =>
             setTasks((current) =>
               updateFromGrid(
@@ -131,14 +158,14 @@ export default function PlanningViews() {
           }
         />
       )}
-      {activeView === 'gantt' && (
+      {!!visibleTasks.length && activeView === 'gantt' && (
         <PlanningGrid
           key="gantt"
           className="planning-demo__grid"
           theme={isDark ? 'darkCompact' : 'compact'}
           hideAttribution
           plugins={ganttPlugins}
-          source={tasks}
+          source={visibleTasks}
           columns={ganttColumns}
           gantt={ganttConfig}
           ganttResources={ganttResources}
@@ -155,21 +182,21 @@ export default function PlanningViews() {
           }
         />
       )}
-      {activeView === 'kanban' && (
+      {!!visibleTasks.length && activeView === 'kanban' && (
         <PlanningGrid
           key="kanban"
           className="planning-demo__grid"
           theme={isDark ? 'darkCompact' : 'compact'}
           hideAttribution
           plugins={kanbanPlugins}
-          source={tasks}
+          source={visibleTasks}
           columns={gridColumns}
           kanban={kanbanConfig}
           onKanbancardmove={(event) =>
             setTasks((current) => updateFromKanban(current, event.detail))
           }
           onKanbancardcreate={(event) =>
-            setTasks((current) => updateFromKanbanCreate(current, event.detail))
+            setTasks((current) => [...current, event.detail.card])
           }
           onKanbancardupdate={(event) =>
             setTasks((current) => updateFromKanbanUpdate(current, event.detail))
@@ -179,7 +206,7 @@ export default function PlanningViews() {
           }
         />
       )}
-      {(activeView === 'scheduler' || activeView === 'calendar') && (
+      {!!visibleTasks.length && (activeView === 'scheduler' || activeView === 'calendar') && (
         <PlanningGrid
           key={activeView}
           className="planning-demo__grid"
@@ -189,7 +216,6 @@ export default function PlanningViews() {
           source={[]}
           columns={[]}
           resize
-          filter
           eventScheduler={activeView === 'calendar' ? calendarConfig : schedulerConfig}
           eventSchedulerResources={schedulerResources}
           eventSchedulerEvents={schedulerEvents}

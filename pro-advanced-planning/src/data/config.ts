@@ -6,9 +6,10 @@ import type { PlanningTask } from './types';
 
 export const kanbanConfig: KanbanConfig<PlanningTask> = {
   columns: [
-    { prop: 'not-started', name: 'Not Started' },
-    { prop: 'in-progress', name: 'In Progress' },
-    { prop: 'done', name: 'Done' },
+    { prop: 'not-started', name: 'Planned', size: 228, minSize: 216 },
+    { prop: 'in-progress', name: 'In progress', size: 228, minSize: 216 },
+    { prop: 'blocked', name: 'Blocked', size: 228, minSize: 216 },
+    { prop: 'done', name: 'Done', size: 228, minSize: 216 },
   ],
   columnField: 'workflowStatus',
   orderField: 'order',
@@ -23,7 +24,19 @@ export const kanbanConfig: KanbanConfig<PlanningTask> = {
     assigneeField: 'owners',
     assigneeAvatarField: 'ownerAvatars',
   },
-  cardRowHeight: 168,
+  customization: {
+    cardContent: (h, { card }) => h('div', { class: 'planning-card' }, [
+      h('strong', { class: 'planning-card__title', title: card.name }, card.name),
+      h('div', { class: 'planning-card__meta' }, [
+        h('span', {}, card.owner),
+        h('span', {}, `$${Number(card.budget).toLocaleString('en-US')}`),
+      ]),
+      h('div', { class: 'planning-card__progress', title: `${card.percentDone}% complete` }, [
+        h('span', { style: { width: `${card.percentDone}%` } }),
+      ]),
+    ]),
+  },
+  cardRowHeight: 120,
 };
 
 export const ganttConfig: GanttPluginConfig = {
@@ -33,10 +46,10 @@ export const ganttConfig: GanttPluginConfig = {
   currency: 'USD',
   timeZone: 'UTC',
   primaryCalendarId: planningCalendarId,
-  updatedAt: '2026-07-28T00:00:00Z',
-  statusDate: '2026-07-28',
-  zoomPreset: 'hour-day',
-  timelinePrecision: 'hour',
+  updatedAt: '2026-09-07T00:00:00Z',
+  statusDate: '2026-09-07',
+  zoomPreset: 'day-week',
+  timelinePrecision: 'day',
   allowTaskCreate: false,
   contextMenu: {},
   dateFormats: {
@@ -59,8 +72,8 @@ export const ganttConfig: GanttPluginConfig = {
 
 export const schedulerConfig: EventSchedulerConfig = {
   view: 'resourceTimeline',
-  weekStartDate: '2026-07-28',
-  dateRange: { start: '2026-07-28', end: '2026-07-28' },
+  weekStartDate: '2026-09-07',
+  dateRange: { start: '2026-09-07', end: '2026-09-28' },
   locale: 'en-US',
   timeZone: 'UTC',
   slotMinutes: 60,
@@ -73,7 +86,7 @@ export const schedulerConfig: EventSchedulerConfig = {
   allowMove: true,
   allowResize: true,
   allowDelete: false,
-  eventEditorStatusOptions: ['not-started', 'in-progress', 'done'],
+  eventEditorStatusOptions: ['not-started', 'in-progress', 'blocked', 'done'],
   keyboardShortcuts: false,
   currentTimeMarker: false,
   contextMenu: true,
@@ -81,8 +94,8 @@ export const schedulerConfig: EventSchedulerConfig = {
 
 export const calendarConfig: EventSchedulerConfig = {
   ...schedulerConfig,
-  view: 'day',
-  dateRange: undefined,
+  view: 'month',
+  dateRange: { start: '2026-09-01', end: '2026-09-30' },
   dayColumnSize: 160,
   timeColumnSize: 72,
 };

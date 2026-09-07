@@ -16,28 +16,33 @@ import {
   EventSchedulerPlugin,
   type EventSchedulerEventChangedDetail,
 } from '@revolist/scheduler';
+import { RowSelectPlugin } from '@revolist/revogrid-pro';
 import { currentTheme } from '../../composables/useRandomData';
 import {
   calendarConfig,
   createTasks,
+  defaultPlanningFilters,
+  filterPlanningTasks,
   ganttColumns,
   ganttConfig,
   ganttResources,
   gridColumns,
   kanbanConfig,
+  planningProjects,
   schedulerConfig,
   schedulerResources,
+  selectedPlanningTaskIds,
   toGanttAssignments,
   toSchedulerEvents,
   updateFromGantt,
   updateFromGanttAssignment,
   updateFromGrid,
   updateFromKanban,
-  updateFromKanbanCreate,
   updateFromKanbanDelete,
   updateFromKanbanUpdate,
   updateFromScheduler,
   type PlanningTask,
+  type PlanningFilters,
   type PlanningView,
 } from './data';
 
@@ -103,20 +108,31 @@ import {
         </button>
       </nav>
 
+      <div class="planning-demo__toolbar">
+        <label class="planning-demo__search"><span aria-hidden="true">⌕</span><input aria-label="Search tasks" type="search" placeholder="Search tasks…" [value]="filters.query" (input)="setQuery($event)" /></label>
+        <label class="planning-demo__select"><select aria-label="Project" [value]="filters.projectId" (change)="setProject($event)"><option value="all">All projects</option>@for (project of planningProjects; track project.id) {<option [value]="project.id">{{ project.label }}</option>}</select></label>
+        <label class="planning-demo__select"><select aria-label="Status" [value]="filters.statuses[0] || ''" (change)="setStatus($event)"><option value="">All statuses</option><option value="not-started">Planned</option><option value="in-progress">In progress</option><option value="blocked">Blocked</option><option value="done">Done</option></select></label>
+        <label class="planning-demo__select"><select aria-label="Priority" [value]="filters.priorities[0] || ''" (change)="setPriority($event)"><option value="">All priorities</option><option value="500">Normal</option><option value="700">High</option><option value="900">Critical</option></select></label>
+        <button type="button" (click)="resetWorkspace()">Reset</button>
+        <span class="planning-demo__count">{{ visibleTasks.length }} of {{ tasks.length }} tasks @if (selectedIds.size) { · {{ selectedIds.size }} selected }</span>
+      </div>
+
       @switch (activeView) {
         @case ('grid') {
           <revo-grid
             class="planning-demo__grid"
             [hideAttribution]="true"
             [theme]="theme"
-            [source]="tasks"
+            [plugins]="gridPlugins"
+            [source]="visibleTasks"
             [columns]="gridColumns"
             [range]="true"
             [resize]="true"
-            [rowHeaders]="true"
-            [filter]="true"
             [canMoveColumns]="true"
+            [rowSize]="40"
+            [rowSelect]="rowSelect"
             (afteredit)="handleGridEdit($event)"
+            (rowselected)="handleRowSelected($event)"
           ></revo-grid>
         }
         @case ('gantt') {
@@ -125,7 +141,7 @@ import {
             [hideAttribution]="true"
             [theme]="theme"
             [plugins]="ganttPlugins"
-            [source]="tasks"
+            [source]="visibleTasks"
             [columns]="ganttColumns"
             [gantt]="ganttConfig"
             [ganttResources]="ganttResources"
@@ -140,7 +156,7 @@ import {
             [hideAttribution]="true"
             [theme]="theme"
             [plugins]="kanbanPlugins"
-            [source]="tasks"
+            [source]="visibleTasks"
             [columns]="gridColumns"
             [kanban]="kanbanConfig"
             (kanbancardmove)="handleKanbanMove($event)"
@@ -158,7 +174,6 @@ import {
             [source]="empty"
             [columns]="empty"
             [resize]="true"
-            [filter]="true"
             [eventScheduler]="schedulerConfig"
             [eventSchedulerResources]="schedulerResources"
             [eventSchedulerEvents]="schedulerEvents"
@@ -174,7 +189,6 @@ import {
             [source]="empty"
             [columns]="empty"
             [resize]="true"
-            [filter]="true"
             [eventScheduler]="calendarConfig"
             [eventSchedulerResources]="schedulerResources"
             [eventSchedulerEvents]="schedulerEvents"
@@ -189,8 +203,9 @@ export class PlanningViewsGridComponent {
   theme = currentTheme().isDark() ? 'darkCompact' : 'compact';
   activeView: PlanningView = 'grid';
   tasks = createTasks();
-  ganttAssignments = toGanttAssignments(this.tasks);
-  schedulerEvents = toSchedulerEvents(this.tasks);
+  filters: PlanningFilters = defaultPlanningFilters();
+  selectedIds = new Set<string>();
+  readonly planningProjects = planningProjects;
   readonly gridColumns = gridColumns;
   readonly ganttColumns = ganttColumns;
   readonly ganttConfig = ganttConfig;
@@ -200,12 +215,30 @@ export class PlanningViewsGridComponent {
   readonly calendarConfig = calendarConfig;
   readonly schedulerResources = schedulerResources;
   readonly ganttPlugins = [GanttPlugin];
+  readonly gridPlugins = [RowSelectPlugin];
+  readonly rowSelect = { rowOrder: false };
   readonly kanbanPlugins = [KanbanPlugin];
   readonly schedulerPlugins = [EventSchedulerPlugin];
   readonly empty: never[] = [];
 
+  get visibleTasks() { return filterPlanningTasks(this.tasks, this.filters); }
+  get ganttAssignments() {
+    const ids = new Set(this.visibleTasks.map(({ id }) => id));
+    return toGanttAssignments(this.tasks).filter(({ taskId }) => ids.has(String(taskId)));
+  }
+  get schedulerEvents() { return toSchedulerEvents(this.visibleTasks); }
+  setQuery(event: Event) { this.filters = { ...this.filters, query: (event.target as HTMLInputElement).value }; }
+  setProject(event: Event) { this.filters = { ...this.filters, projectId: (event.target as HTMLSelectElement).value as PlanningFilters['projectId'] }; }
+  setStatus(event: Event) { const value = (event.target as HTMLSelectElement).value; this.filters = { ...this.filters, statuses: value ? [value] : [] }; }
+  setPriority(event: Event) { const value = (event.target as HTMLSelectElement).value; this.filters = { ...this.filters, priorities: value ? [Number(value)] : [] }; }
+  resetWorkspace() { this.tasks = createTasks(); this.filters = defaultPlanningFilters(); this.selectedIds = new Set(); }
+
   handleGridEdit(event: CustomEvent) {
     this.setTasks(updateFromGrid(this.tasks, event.detail));
+  }
+
+  handleRowSelected(event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>) {
+    this.selectedIds = selectedPlanningTaskIds(this.visibleTasks, event.detail.selected);
   }
 
   handleKanbanMove(event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>) {
@@ -213,7 +246,7 @@ export class PlanningViewsGridComponent {
   }
 
   handleKanbanCreate(event: CustomEvent<KanbanCardCreateDetail<PlanningTask>>) {
-    this.setTasks(updateFromKanbanCreate(this.tasks, event.detail));
+    this.setTasks([...this.tasks, event.detail.card]);
   }
 
   handleKanbanUpdate(event: CustomEvent<KanbanCardUpdateDetail<PlanningTask>>) {
@@ -240,7 +273,5 @@ export class PlanningViewsGridComponent {
 
   private setTasks(tasks: PlanningTask[]) {
     this.tasks = tasks;
-    this.ganttAssignments = toGanttAssignments(tasks);
-    this.schedulerEvents = toSchedulerEvents(tasks);
   }
 }
