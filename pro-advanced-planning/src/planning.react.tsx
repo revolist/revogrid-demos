@@ -29,6 +29,7 @@ import {
   ganttColumns,
   ganttConfig,
   ganttResources,
+  gridColumnTypes,
   gridColumns,
   kanbanConfig,
   planningProjects,
@@ -143,6 +144,7 @@ export default function PlanningViews() {
           plugins={gridPlugins}
           source={visibleTasks}
           columns={gridColumns}
+          columnTypes={gridColumnTypes}
           range
           resize
           canMoveColumns

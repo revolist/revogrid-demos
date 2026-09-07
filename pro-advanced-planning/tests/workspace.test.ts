@@ -5,6 +5,18 @@ import { createTasks, planningPeople } from '../src/data/fixtures'
 import { applyPlanningGridEdit, defaultPlanningFilters, filterPlanningTasks, mergeVisibleTasks } from '../src/data/workspace'
 import { updateFromKanban } from '../src/data/sync'
 const configSource = readFileSync(new URL('../src/data/config.ts', import.meta.url), 'utf8')
+const columnsSource = readFileSync(new URL('../src/data/columns.ts', import.meta.url), 'utf8')
+const vueSource = readFileSync(new URL('../src/planning.vue', import.meta.url), 'utf8')
+
+test('uses the Pro dropdown editor with canonical owner and status values', () => {
+  assert.match(columnsSource, /gridColumnTypes\s*=\s*\{\s*dropdown:\s*ColumnDropdown/)
+  assert.match(columnsSource, /prop:\s*'workflowStatus'[\s\S]*?columnType:\s*'dropdown'[\s\S]*?source:\s*workflowEditorOptions[\s\S]*?syncCellTemplate:\s*true/)
+  assert.match(columnsSource, /'not-started':\s*'Planned'/)
+  assert.match(columnsSource, /'in-progress':\s*'In progress'/)
+  assert.match(columnsSource, /blocked:\s*'Blocked'/)
+  assert.match(columnsSource, /done:\s*'Done'/)
+  assert.match(vueSource, /:column-types="gridColumnTypes"/)
+})
 
 test('provides a stable 50-task fixture across three projects', () => {
   const tasks = createTasks()

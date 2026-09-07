@@ -1,5 +1,9 @@
 import type { ColumnFilterConfig, ColumnRegular } from '@revolist/revogrid';
-import { avatarWithTextRenderer, FIlTER_SELECTION } from '@revolist/revogrid-pro';
+import {
+  avatarWithTextRenderer,
+  ColumnDropdown,
+  FIlTER_SELECTION,
+} from '@revolist/revogrid-pro';
 import {
   createDefaultTaskTableColumn,
 } from '@revolist/gantt';
@@ -47,6 +51,11 @@ const workflowLabels: Record<string, string> = {
   done: 'Done',
 };
 
+const workflowEditorOptions = Object.entries(workflowLabels).map(([value, label]) => ({
+  value,
+  label,
+}));
+
 const workflowCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (h, { value }) =>
   h('span', { class: `planning-status planning-status--${String(value)}` }, workflowLabels[String(value)] ?? String(value));
 
@@ -66,8 +75,11 @@ export const planningFilterConfig = {
   },
 } satisfies ColumnFilterConfig;
 
-const workflowStatusColumn = createDefaultTaskTableColumn('workflowStatus');
 const percentDoneColumn = createDefaultTaskTableColumn('percentDone');
+
+export const gridColumnTypes = {
+  dropdown: ColumnDropdown,
+};
 
 export const gridColumns: ColumnRegular[] = [
   { prop: '_selected', name: '', size: 36, pin: 'colPinStart', rowSelect: true, readonly: true, filter: false },
@@ -89,12 +101,17 @@ export const gridColumns: ColumnRegular[] = [
     cellTemplate: avatarWithTextRenderer,
   },
   {
-    ...workflowStatusColumn,
+    prop: 'workflowStatus',
     name: 'Status',
     size: 132,
     sortable: true,
     filter: [FILTER_CHIP_BADGE_TOGGLES],
     filterPlaceholder: 'All statuses',
+    columnType: 'dropdown',
+    dropdown: {
+      source: workflowEditorOptions,
+      syncCellTemplate: true,
+    },
     cellTemplate: workflowCellTemplate,
   },
   {

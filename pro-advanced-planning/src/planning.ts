@@ -28,6 +28,7 @@ import {
   ganttColumns,
   ganttConfig,
   ganttResources,
+  gridColumnTypes,
   gridColumns,
   kanbanConfig,
   planningProjects,
@@ -106,6 +107,7 @@ export function load(parentSelector: string): (() => void) | undefined {
 
     if (view === 'grid') {
       grid.plugins = [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin];
+      grid.columnTypes = gridColumnTypes;
       grid.columns = gridColumns;
       grid.filter = planningFilterConfig;
       grid.range = true;

@@ -26,6 +26,7 @@ import {
   ganttColumns,
   ganttConfig,
   ganttResources,
+  gridColumnTypes,
   gridColumns,
   kanbanConfig,
   planningProjects,
@@ -126,6 +127,7 @@ import {
             [plugins]="gridPlugins"
             [source]="visibleTasks"
             [columns]="gridColumns"
+            [columnTypes]="gridColumnTypes"
             [filter]="planningFilterConfig"
             [range]="true"
             [resize]="true"
@@ -208,6 +210,7 @@ export class PlanningViewsGridComponent {
   selectedCount = 0;
   readonly planningProjects = planningProjects;
   readonly gridColumns = gridColumns;
+  readonly gridColumnTypes = gridColumnTypes;
   readonly planningFilterConfig = planningFilterConfig;
   readonly ganttColumns = ganttColumns;
   readonly ganttConfig = ganttConfig;

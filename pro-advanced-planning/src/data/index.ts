@@ -1,4 +1,4 @@
-export { ganttColumns, gridColumns, planningFilterConfig } from './columns';
+export { ganttColumns, gridColumns, gridColumnTypes, planningFilterConfig } from './columns';
 export { planningStructuredFilterTypes } from './planning.structured';
 export {
   calendarConfig,
