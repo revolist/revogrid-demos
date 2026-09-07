@@ -16,6 +16,7 @@ import {
   FILTER_TIME_MATRIX,
   planningStructuredFilterTypes,
 } from './planning.structured';
+import { planningGridFormats } from './formatting';
 
 const ownerEditorOptions = planningPeople.map(({ id, name }) => ({
   value: id,
@@ -23,26 +24,6 @@ const ownerEditorOptions = planningPeople.map(({ id, name }) => ({
   owner: name,
   ownerAvatar: getOwnerAvatar(id),
 }));
-
-const dateCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (
-  _h,
-  { value },
-) => {
-  const date = new Date(String(value ?? ''));
-  return Number.isNaN(date.valueOf()) ? '' : new Intl.DateTimeFormat('en-US', {
-    month: 'short', day: 'numeric', timeZone: 'UTC',
-  }).format(date);
-};
-
-const activityTimeCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (
-  _h,
-  { value },
-) => {
-  const date = new Date(String(value ?? ''));
-  return Number.isNaN(date.valueOf()) ? '' : new Intl.DateTimeFormat('en-US', {
-    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC',
-  }).format(date);
-};
 
 const workflowLabels: Record<string, string> = {
   'not-started': 'Planned',
@@ -83,7 +64,7 @@ export const gridColumnTypes = {
 
 export const gridColumns: ColumnRegular[] = [
   { prop: '_selected', name: '', size: 36, pin: 'colPinStart', rowSelect: true, readonly: true, filter: false },
-  { prop: 'name', name: 'Task', size: 220, sortable: true, filter: true, filterPlaceholder: 'Filter tasks' },
+  { prop: 'name', name: 'Task', size: 220, sortable: true, filter: true, filterPlaceholder: 'Filter tasks', dataGridFormat: planningGridFormats.name },
   {
     prop: 'owner',
     name: 'Owner',
@@ -99,6 +80,7 @@ export const gridColumns: ColumnRegular[] = [
     avatarLabelProp: 'owner',
     avatarSize: 20,
     cellTemplate: avatarWithTextRenderer,
+    dataGridFormat: planningGridFormats.owner,
   },
   {
     prop: 'workflowStatus',
@@ -113,9 +95,10 @@ export const gridColumns: ColumnRegular[] = [
       syncCellTemplate: true,
     },
     cellTemplate: workflowCellTemplate,
+    dataGridFormat: planningGridFormats.workflowStatus,
   },
   {
-    prop: 'priority', name: 'Priority', size: 88, readonly: true, sortable: true, filter: [FIlTER_SELECTION], filterPlaceholder: 'All priorities', cellTemplate: priorityCellTemplate,
+    prop: 'priority', name: 'Priority', size: 88, readonly: true, sortable: true, filter: [FIlTER_SELECTION], filterPlaceholder: 'All priorities', cellTemplate: priorityCellTemplate, dataGridFormat: planningGridFormats.priority,
   },
   {
     prop: 'endDate',
@@ -124,7 +107,7 @@ export const gridColumns: ColumnRegular[] = [
     readonly: true,
     sortable: true,
     filter: [FILTER_CALENDAR_RANGE],
-    cellTemplate: dateCellTemplate,
+    dataGridFormat: planningGridFormats.endDate,
   },
   {
     ...percentDoneColumn,
@@ -132,11 +115,10 @@ export const gridColumns: ColumnRegular[] = [
     size: 116,
     sortable: true,
     filter: [FILTER_RATING_PROGRESS_THRESHOLD],
+    dataGridFormat: planningGridFormats.percentDone,
   },
-  { prop: 'budget', name: 'Budget', size: 96, readonly: true, sortable: true, filter: [FILTER_HISTOGRAM_BRUSH],
-    cellTemplate: (_h, { value }) => `$${Number(value ?? 0).toLocaleString('en-US')}` },
-  { prop: 'activityAt', name: 'Activity time', size: 144, readonly: true, sortable: true, filter: [FILTER_TIME_MATRIX],
-    cellTemplate: activityTimeCellTemplate },
+  { prop: 'budget', name: 'Budget', size: 96, readonly: true, sortable: true, filter: [FILTER_HISTOGRAM_BRUSH], dataGridFormat: planningGridFormats.budget },
+  { prop: 'activityAt', name: 'Activity time', size: 144, readonly: true, sortable: true, filter: [FILTER_TIME_MATRIX], dataGridFormat: planningGridFormats.activityAt },
 ];
 
 export const ganttColumns = [

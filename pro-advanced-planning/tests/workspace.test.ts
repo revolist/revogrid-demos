@@ -6,6 +6,7 @@ import { applyPlanningGridEdit, defaultPlanningFilters, filterPlanningTasks, mer
 import { updateFromKanban } from '../src/data/sync'
 const configSource = readFileSync(new URL('../src/data/config.ts', import.meta.url), 'utf8')
 const columnsSource = readFileSync(new URL('../src/data/columns.ts', import.meta.url), 'utf8')
+const formattingSource = readFileSync(new URL('../src/data/formatting.ts', import.meta.url), 'utf8')
 const vueSource = readFileSync(new URL('../src/planning.vue', import.meta.url), 'utf8')
 
 test('uses the Pro dropdown editor with canonical owner and status values', () => {
@@ -16,6 +17,18 @@ test('uses the Pro dropdown editor with canonical owner and status values', () =
   assert.match(columnsSource, /blocked:\s*'Blocked'/)
   assert.match(columnsSource, /done:\s*'Done'/)
   assert.match(vueSource, /:column-types="gridColumnTypes"/)
+})
+
+test('uses declarative data-grid formats for every planning value type', () => {
+  assert.match(formattingSource, /name:\s*text/)
+  assert.match(formattingSource, /preset:\s*'date'[\s\S]*?timeZone:\s*'UTC'/)
+  assert.match(formattingSource, /id:\s*'progress-line'/)
+  assert.match(formattingSource, /preset:\s*'currency'[\s\S]*?currency:\s*'USD'/)
+  assert.match(formattingSource, /preset:\s*'datetime'[\s\S]*?timeZone:\s*'UTC'/)
+  for (const prop of ['name', 'owner', 'workflowStatus', 'priority', 'endDate', 'percentDone', 'budget', 'activityAt']) {
+    assert.match(columnsSource, new RegExp(`dataGridFormat: planningGridFormats\\.${prop}`))
+  }
+  assert.match(vueSource, /:data-grid-formatting\.prop="planningDataGridFormatting"/)
 })
 
 test('provides a stable 50-task fixture across three projects', () => {

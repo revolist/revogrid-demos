@@ -16,7 +16,7 @@ import {
   EventSchedulerPlugin,
   type EventSchedulerEventChangedDetail,
 } from '@revolist/scheduler';
-import { AdvanceFilterPlugin, FilterHeaderPlugin, RowSelectPlugin } from '@revolist/revogrid-pro';
+import { AdvanceFilterPlugin, DataGridFormattingPlugin, FilterHeaderPlugin, RowSelectPlugin } from '@revolist/revogrid-pro';
 import { currentTheme } from '../../composables/useRandomData';
 import {
   calendarConfig,
@@ -31,6 +31,7 @@ import {
   kanbanConfig,
   planningProjects,
   planningFilterConfig,
+  planningDataGridFormatting,
   schedulerConfig,
   schedulerResources,
   toGanttAssignments,
@@ -128,6 +129,7 @@ import {
             [source]="visibleTasks"
             [columns]="gridColumns"
             [columnTypes]="gridColumnTypes"
+            [dataGridFormatting]="planningDataGridFormatting"
             [filter]="planningFilterConfig"
             [range]="true"
             [resize]="true"
@@ -212,6 +214,7 @@ export class PlanningViewsGridComponent {
   readonly gridColumns = gridColumns;
   readonly gridColumnTypes = gridColumnTypes;
   readonly planningFilterConfig = planningFilterConfig;
+  readonly planningDataGridFormatting = planningDataGridFormatting;
   readonly ganttColumns = ganttColumns;
   readonly ganttConfig = ganttConfig;
   readonly kanbanConfig = kanbanConfig;
@@ -220,7 +223,7 @@ export class PlanningViewsGridComponent {
   readonly calendarConfig = calendarConfig;
   readonly schedulerResources = schedulerResources;
   readonly ganttPlugins = [GanttPlugin];
-  readonly gridPlugins = [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin];
+  readonly gridPlugins = [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin, DataGridFormattingPlugin];
   readonly rowSelect = { rowOrder: false };
   readonly kanbanPlugins = [KanbanPlugin];
   readonly schedulerPlugins = [EventSchedulerPlugin];

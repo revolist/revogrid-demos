@@ -16,7 +16,7 @@ import {
   EventSchedulerPlugin,
   type EventSchedulerEventChangedDetail,
 } from '@revolist/scheduler';
-import { AdvanceFilterPlugin, FilterHeaderPlugin, RowSelectPlugin } from '@revolist/revogrid-pro';
+import { AdvanceFilterPlugin, DataGridFormattingPlugin, FilterHeaderPlugin, RowSelectPlugin } from '@revolist/revogrid-pro';
 import {
   currentTheme,
   observeCurrentTheme,
@@ -34,6 +34,7 @@ import {
   kanbanConfig,
   planningProjects,
   planningFilterConfig,
+  planningDataGridFormatting,
   schedulerConfig,
   schedulerResources,
   toGanttAssignments,
@@ -97,7 +98,8 @@ export default function PlanningViews() {
   const ganttPlugins = useMemo(() => [GanttPlugin], []);
   const kanbanPlugins = useMemo(() => [KanbanPlugin], []);
   const schedulerPlugins = useMemo(() => [EventSchedulerPlugin], []);
-  const gridPlugins = useMemo(() => [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin], []);
+  const gridPlugins = useMemo(() => [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin, DataGridFormattingPlugin], []);
+  const dataGridFormatting = useMemo(() => planningDataGridFormatting, []);
   const visibleTasks = useMemo(() => filterPlanningTasks(tasks, filters), [tasks, filters]);
   const visibleIds = useMemo(() => new Set(visibleTasks.map(({ id }) => id)), [visibleTasks]);
   const ganttAssignments = useMemo(() => toGanttAssignments(tasks).filter(({ taskId }) => visibleIds.has(String(taskId))), [tasks, visibleIds]);
@@ -145,6 +147,7 @@ export default function PlanningViews() {
           source={visibleTasks}
           columns={gridColumns}
           columnTypes={gridColumnTypes}
+          dataGridFormatting={dataGridFormatting}
           range
           resize
           canMoveColumns

@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, ref } from 'vue';
 import {
   AdvanceFilterPlugin,
+  DataGridFormattingPlugin,
   FilterHeaderPlugin,
   RowSelectPlugin,
   type AdvancedFilterBadgesOptions,
@@ -29,6 +30,7 @@ import {
   ganttColumns,
   ganttConfig,
   ganttResources,
+  planningDataGridFormatting,
   gridColumnTypes,
   gridColumns,
   kanbanConfig,
@@ -51,7 +53,7 @@ import {
 } from '../data';
 
 const rowSelect: RowSelectConfig = { rowOrder: false };
-const gridPlugins = [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin];
+const gridPlugins = [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin, DataGridFormattingPlugin];
 const ganttPlugins = [GanttPlugin];
 const kanbanPlugins = [KanbanPlugin];
 const schedulerPlugins = [EventSchedulerPlugin];
@@ -197,6 +199,7 @@ export function usePlanningWorkspace() {
     ganttConfig,
     ganttPlugins,
     ganttResources,
+    planningDataGridFormatting,
     gridColumnTypes,
     gridColumns,
     gridPlugins,
