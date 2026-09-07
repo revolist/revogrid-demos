@@ -10,14 +10,21 @@ const localProCss = fileURLToPath(new URL(
   '../../../packages/pro/dist/revogrid-pro.css',
   import.meta.url,
 ));
-const cssAliases = existsSync(localProCss)
-  ? { '@revolist/revogrid-pro/dist/revogrid-pro.css': localProCss }
+const localProEntry = fileURLToPath(new URL(
+  '../../../packages/pro/dist/revogrid-pro.js',
+  import.meta.url,
+));
+const proAliases = existsSync(localProEntry)
+  ? {
+      '@revolist/revogrid-pro/dist/revogrid-pro.css': localProCss,
+      '@revolist/revogrid-pro': localProEntry,
+    }
   : trialCssAliases;
 
 export default defineConfig(({ mode }) => ({
   base: './',
   resolve: {
-    alias: cssAliases,
+    alias: Object.entries(proAliases).map(([find, replacement]) => ({ find, replacement })),
     ...(mode === 'angular' ? { mainFields: ['module'] } : {}),
   },
   plugins: [

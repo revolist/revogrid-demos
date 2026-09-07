@@ -7,6 +7,7 @@ import {
   DialogPlugin,
   ExportExcelPlugin,
   HistoryPlugin,
+  GridNotesPlugin,
   MultiRangeSelectionPlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
@@ -17,6 +18,7 @@ import {
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
+  createGridNotesConfig,
   createTeamRows,
   getDataGridContextMenuTheme,
   type TeamRow,
@@ -35,6 +37,7 @@ const plugins = [
   ColumnCollapsePlugin,
   MultiRangeSelectionPlugin,
   ExportExcelPlugin,
+  GridNotesPlugin,
 ];
 
 export function load(parentSelector: string, rows?: TeamRow[]) {
@@ -54,6 +57,7 @@ export function load(parentSelector: string, rows?: TeamRow[]) {
   grid.dataGridFormatting = createDataGridFormattingPresets();
   grid.dataGridFormattingPanel = true;
   grid.dataGridContextMenu = createDataGridContextMenuConfig();
+  grid.gridNotes = createGridNotesConfig();
   grid.rowHeaders = createContextMenuRowHeaders();
   grid.range = true;
   grid.resize = true;

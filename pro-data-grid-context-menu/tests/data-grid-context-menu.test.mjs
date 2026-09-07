@@ -251,6 +251,9 @@ test('all framework variants install the same universal menu capabilities', asyn
     assert.match(source, /ColumnCollapsePlugin/);
     assert.match(source, /MultiRangeSelectionPlugin/);
     assert.match(source, /ExportExcelPlugin/);
+    assert.match(source, /GridNotesPlugin/);
+    assert.match(source, /createGridNotesConfig/);
+    assert.match(source, /gridNotes|grid-notes/);
     assert.match(source, /createDataGridContextMenuConfig/);
     assert.match(source, /dataGridFormatting/);
     assert.match(source, /createDataGridFormattingPresets/);
@@ -258,6 +261,16 @@ test('all framework variants install the same universal menu capabilities', asyn
     assert.doesNotMatch(source, /createDataGridColumnTypes|columnTypes|column-types/);
     assert.doesNotMatch(source, /createTeamGrouping|\bgrouping\b/);
   }
+});
+
+test('showcase seeds stable-id cell and row notes with mentions and XLSX export', async () => {
+  const source = await readSource('data-grid-context-menu.shared.ts');
+  assert.match(source, /new InMemoryGridNoteAdapter/);
+  assert.match(source, /kind: 'cell'/);
+  assert.match(source, /kind: 'row'/);
+  assert.match(source, /getRowId: row => row\.id/);
+  assert.match(source, /mentions:\s*\{/);
+  assert.match(source, /includeNotesSheet: true/);
 });
 
 test('framework variants follow standalone demo lifecycle conventions', async () => {

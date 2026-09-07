@@ -8,6 +8,7 @@ import {
   DialogPlugin,
   ExportExcelPlugin,
   HistoryPlugin,
+  GridNotesPlugin,
   MultiRangeSelectionPlugin,
   RowSelectPlugin,
 } from '@revolist/revogrid-pro';
@@ -18,6 +19,7 @@ import {
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
+  createGridNotesConfig,
   createTeamRows,
   getDataGridContextMenuTheme,
   type TeamRow,
@@ -44,6 +46,7 @@ defineCustomElements();
         [dataGridFormatting]="dataGridFormatting"
         [dataGridFormattingPanel]="true"
         [dataGridContextMenu]="dataGridContextMenu"
+        [gridNotes]="gridNotes"
         [rowHeaders]="rowHeaders"
         [range]="true"
         [resize]="true"
@@ -82,9 +85,11 @@ export class DataGridContextMenuGridComponent implements OnDestroy {
     ColumnCollapsePlugin,
     MultiRangeSelectionPlugin,
     ExportExcelPlugin,
+    GridNotesPlugin,
   ];
   readonly dataGridFormatting = createDataGridFormattingPresets();
   readonly dataGridContextMenu = createDataGridContextMenuConfig();
+  readonly gridNotes = createGridNotesConfig();
   source = createTeamRows();
 
   ngOnDestroy() {
