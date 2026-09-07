@@ -22,7 +22,11 @@ test('uses the Pro dropdown editor with canonical owner and status values', () =
 
 test('uses declarative data-grid formats for every planning value type', () => {
   assert.match(formattingSource, /name:\s*text/)
+  assert.match(formattingSource, /id:\s*'avatar-with-text'/)
+  assert.match(formattingSource, /id:\s*'workflow-status-badge'/)
+  assert.match(formattingSource, /customFormats:\s*\[workflowStatusBadgeFormat\]/)
   assert.match(formattingSource, /preset:\s*'date'[\s\S]*?timeZone:\s*'UTC'/)
+  assert.match(formattingSource, /preset:\s*'number'[\s\S]*?id:\s*'progress-line'/)
   assert.match(formattingSource, /id:\s*'progress-line'/)
   assert.match(formattingSource, /preset:\s*'currency'[\s\S]*?currency:\s*'USD'/)
   assert.match(formattingSource, /preset:\s*'datetime'[\s\S]*?timeZone:\s*'UTC'/)
@@ -30,6 +34,7 @@ test('uses declarative data-grid formats for every planning value type', () => {
     assert.match(columnsSource, new RegExp(`dataGridFormat: planningGridFormats\\.${prop}`))
   }
   assert.match(vueSource, /:data-grid-formatting\.prop="planningDataGridFormatting"/)
+  assert.match(vueSource, /:data-grid-context-menu\.prop="planningDataGridContextMenu"/)
 })
 
 test('adds a search affordance to the quick-search filter slot', () => {

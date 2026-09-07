@@ -34,6 +34,7 @@ import {
   kanbanConfig,
   planningProjects,
   planningFilterConfig,
+  planningDataGridContextMenu,
   planningDataGridFormatting,
   schedulerConfig,
   schedulerResources,
@@ -147,6 +148,7 @@ export default function PlanningViews() {
           source={visibleTasks}
           columns={gridColumns}
           columnTypes={gridColumnTypes}
+          dataGridContextMenu={planningDataGridContextMenu}
           dataGridFormatting={dataGridFormatting}
           range
           resize

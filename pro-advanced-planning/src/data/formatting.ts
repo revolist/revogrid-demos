@@ -1,7 +1,39 @@
+import type { CellTemplate } from '@revolist/revogrid';
 import type {
   DataGridCellFormat,
+  DataGridAdvancedFormatDefinition,
+  DataGridContextMenuConfig,
   DataGridFormattingPresetState,
 } from '@revolist/revogrid-pro';
+import { badgeRenderer, markDataGridFormatRenderer } from '@revolist/revogrid-pro';
+
+const workflowLabels: Record<string, string> = {
+  'not-started': 'Planned',
+  'in-progress': 'In progress',
+  blocked: 'Blocked',
+  done: 'Done',
+};
+
+/**
+ * Keep workflow values canonical for filtering and planning engines while the
+ * native badge presentation renders the label a person expects to read.
+ */
+const workflowStatusBadgeRenderer = markDataGridFormatRenderer(
+  ((h, props) => badgeRenderer!(h, {
+    ...props,
+    value: workflowLabels[String(props.value)] ?? String(props.value ?? ''),
+  })) as CellTemplate,
+  'workflow-status-badge',
+);
+
+const workflowStatusBadgeFormat = {
+  id: 'workflow-status-badge',
+  label: 'Workflow status badge',
+  group: 'Planning',
+  valueKind: 'text',
+  cellTemplate: workflowStatusBadgeRenderer,
+  replaceAuthoredTemplate: true,
+} as const satisfies DataGridAdvancedFormatDefinition;
 
 const text = {
   value: {
@@ -21,8 +53,17 @@ const visual = {
 
 export const planningGridFormats = {
   name: text,
-  owner: visual,
-  workflowStatus: visual,
+  owner: {
+    presentation: {
+      id: 'avatar-with-text',
+      options: { avatarSize: 20, rectangular: false },
+    },
+  },
+  workflowStatus: {
+    presentation: {
+      id: 'workflow-status-badge',
+    },
+  },
   priority: visual,
   endDate: {
     value: {
@@ -34,6 +75,11 @@ export const planningGridFormats = {
     },
   },
   percentDone: {
+    value: {
+      kind: 'preset',
+      preset: 'number',
+      locale: 'en-US',
+    },
     presentation: {
       id: 'progress-line',
       options: { minValue: 0, maxValue: 100 },
@@ -62,3 +108,12 @@ export const planningGridFormats = {
 
 /** Application-owned formatting state; column formats remain the stable defaults. */
 export const planningDataGridFormatting = {} as const satisfies DataGridFormattingPresetState;
+
+/** One declarative registration shared by every framework implementation. */
+export const planningDataGridContextMenu = {
+  formatting: {
+    advancedFormats: {
+      customFormats: [workflowStatusBadgeFormat],
+    },
+  },
+} as const satisfies DataGridContextMenuConfig;

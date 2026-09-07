@@ -33,6 +33,7 @@ import {
   kanbanConfig,
   planningProjects,
   planningFilterConfig,
+  planningDataGridContextMenu,
   planningDataGridFormatting,
   schedulerConfig,
   schedulerResources,
@@ -110,6 +111,7 @@ export function load(parentSelector: string): (() => void) | undefined {
       grid.plugins = [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin, DataGridFormattingPlugin, ColumnStretchPlugin];
       grid.columnTypes = gridColumnTypes;
       grid.columns = gridColumns;
+      grid.dataGridContextMenu = planningDataGridContextMenu;
       grid.dataGridFormatting = planningDataGridFormatting;
   grid.stretch = 'all';
       grid.filter = planningFilterConfig;

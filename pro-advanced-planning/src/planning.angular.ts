@@ -31,6 +31,7 @@ import {
   kanbanConfig,
   planningProjects,
   planningFilterConfig,
+  planningDataGridContextMenu,
   planningDataGridFormatting,
   schedulerConfig,
   schedulerResources,
@@ -129,6 +130,7 @@ import {
             [source]="visibleTasks"
             [columns]="gridColumns"
             [columnTypes]="gridColumnTypes"
+            [dataGridContextMenu]="planningDataGridContextMenu"
             [dataGridFormatting]="planningDataGridFormatting"
             [stretch]="'all'"
             [filter]="planningFilterConfig"
@@ -215,6 +217,7 @@ export class PlanningViewsGridComponent {
   readonly gridColumns = gridColumns;
   readonly gridColumnTypes = gridColumnTypes;
   readonly planningFilterConfig = planningFilterConfig;
+  readonly planningDataGridContextMenu = planningDataGridContextMenu;
   readonly planningDataGridFormatting = planningDataGridFormatting;
   readonly ganttColumns = ganttColumns;
   readonly ganttConfig = ganttConfig;

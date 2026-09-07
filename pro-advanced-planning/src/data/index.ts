@@ -1,5 +1,9 @@
 export { ganttColumns, gridColumns, gridColumnTypes, planningFilterConfig } from './columns';
-export { planningDataGridFormatting, planningGridFormats } from './formatting';
+export {
+  planningDataGridContextMenu,
+  planningDataGridFormatting,
+  planningGridFormats,
+} from './formatting';
 export { planningStructuredFilterTypes } from './planning.structured';
 export {
   calendarConfig,
