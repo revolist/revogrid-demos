@@ -19,7 +19,7 @@ const workflowLabels: Record<string, string> = {
 export const workflowStatusBadgeStyles = Object.fromEntries(
   Object.values(workflowBadges).map(({ label, color }) => [
     label,
-    { backgroundColor: color, color },
+    { backgroundColor: color, color: '#ffffff' },
   ]),
 );
 
@@ -108,7 +108,7 @@ export const planningGridFormats = {
       kind: 'preset',
       preset: 'datetime',
       locale: 'en-US',
-      dateStyle: 'medium',
+      dateStyle: 'short',
       timeStyle: 'short',
       timeZone: 'UTC',
     },

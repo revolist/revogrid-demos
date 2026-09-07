@@ -3,7 +3,7 @@
     <div class="planning-demo__topbar">
       <nav class="planning-demo__switch" role="tablist" aria-label="Planning view">
         <button v-for="view in views" :key="view" type="button" :class="{ on: activeView === view }" role="tab" :aria-selected="activeView === view" @click="activeView = view">
-          {{ view }}<span class="planning-demo__pro">Pro</span>
+          {{ view }}
         </button>
       </nav>
       <div class="planning-demo__actions"><button class="planning-demo__fullscreen" type="button" aria-label="Full screen" title="Full screen" @click="toggleFullscreen"><FontAwesomeSvgIcon name="expand"/></button></div>
@@ -12,7 +12,7 @@
     <RevoGrid v-else-if="activeView === 'kanban'" key="kanban" class="planning-demo__grid planning-demo__grid--kanban" hide-attribution :theme="theme" :plugins="kanbanPlugins" :source="visibleTasks" :columns="gridColumns" :kanban.prop="kanbanConfig" @kanbancardmove="handleKanbanMove" @kanbancardcreate="handleKanbanCreate" @kanbancardupdate="handleKanbanUpdate" @kanbancarddelete="handleKanbanDelete" />
     <RevoGrid v-else-if="activeView === 'gantt'" key="gantt" class="planning-demo__grid" hide-attribution :theme="theme" :plugins="ganttPlugins" :source="visibleTasks" :columns="ganttColumns" :gantt.prop="ganttConfig" :gantt-resources.prop="ganttResources" :gantt-assignments.prop="ganttAssignments" @gantt-before-task-change="handleGanttEdit" @gantt-before-assignment-change="handleGanttAssignmentEdit" />
     <RevoGrid v-else :key="activeView" class="planning-demo__grid" hide-attribution :theme="theme" :plugins="schedulerPlugins" :source="[]" :columns="[]" resize :event-scheduler.prop="activeView === 'calendar' ? calendarConfig : schedulerConfig" :event-scheduler-resources.prop="schedulerResources" :event-scheduler-events.prop="schedulerEvents" @event-scheduler-event-changed="handleSchedulerEdit" />
-    <footer class="planning-demo__footer"><span>{{ visibleTasks.length }} matching tasks<template v-if="selectedCount"> · {{ selectedCount }} selected</template></span><span>Changes stay in this demo</span></footer>
+    <footer class="planning-demo__footer"><span>{{ visibleTasks.length }} of {{ tasks.length }} tasks<template v-if="selectedCount"> · {{ selectedCount }} selected</template></span><span>Changes stay in this demo</span></footer>
   </section>
 </template>
 

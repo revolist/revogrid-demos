@@ -46,7 +46,7 @@ test('uses declarative data-grid formats for every planning value type', () => {
   assert.match(formattingSource, /name:\s*text/)
   assert.match(formattingSource, /id:\s*'avatar-with-text'/)
   assert.match(formattingSource, /id:\s*'workflow-status-badge'/)
-  assert.match(formattingSource, /workflowStatusBadgeStyles[\s\S]*?backgroundColor: color, color/)
+  assert.match(formattingSource, /workflowStatusBadgeStyles[\s\S]*?backgroundColor: color, color: '#ffffff'/)
   assert.match(columnsSource, /prop: 'workflowStatus'[\s\S]*?badgeStyles: workflowStatusBadgeStyles/)
   assert.match(columnsSource, /prop: 'owner'[\s\S]*?avatarIndexProp: 'ownerAvatarIndex'[\s\S]*?avatarLabelProp: 'owner'/)
   assert.match(formattingSource, /customFormats:\s*\[workflowStatusBadgeFormat\]/)
@@ -54,7 +54,7 @@ test('uses declarative data-grid formats for every planning value type', () => {
   assert.match(formattingSource, /preset:\s*'number'[\s\S]*?id:\s*'progress-line'/)
   assert.match(formattingSource, /id:\s*'progress-line'/)
   assert.match(formattingSource, /preset:\s*'currency'[\s\S]*?currency:\s*'USD'/)
-  assert.match(formattingSource, /preset:\s*'datetime'[\s\S]*?timeZone:\s*'UTC'/)
+  assert.match(formattingSource, /preset:\s*'datetime'[\s\S]*?dateStyle:\s*'short'[\s\S]*?timeZone:\s*'UTC'/)
   for (const prop of ['name', 'owner', 'workflowStatus', 'priority', 'endDate', 'percentDone', 'budget', 'activityAt']) {
     assert.match(columnsSource, new RegExp(`dataGridFormat: planningGridFormats\\.${prop}`))
   }
@@ -89,8 +89,8 @@ test('inherits the site font family instead of overriding it in the workspace', 
   assert.doesNotMatch(stylesSource, /font(?:-family)?:[^;}]*Geist/)
 })
 
-test('matches view badges to the Pro Advanced plan badge', () => {
-  assert.match(stylesSource, /planning-demo__pro\{[\s\S]*?border-radius:999px[\s\S]*?background:color-mix\(in srgb,var\(--vp-c-brand-1\) 14%,transparent\)[\s\S]*?font-size:\.72rem/)
+test('keeps plan labeling at page level instead of repeating it in view tabs', () => {
+  assert.doesNotMatch(stylesSource, /planning-demo__pro/)
 })
 
 test('uses a direct fullscreen icon without a custom actions menu', () => {
