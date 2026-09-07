@@ -32,6 +32,13 @@ test('uses declarative data-grid formats for every planning value type', () => {
   assert.match(vueSource, /:data-grid-formatting\.prop="planningDataGridFormatting"/)
 })
 
+test('adds a search affordance to the quick-search filter slot', () => {
+  const workspaceSource = readFileSync(new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url), 'utf8')
+  assert.match(workspaceSource, /field\.className = 'planning-demo__filter-search'/)
+  assert.match(stylesSource, /planning-demo__filter-search:before/)
+  assert.match(stylesSource, /planning-demo__filter-search:after/)
+})
+
 test('inherits the site font family instead of overriding it in the workspace', () => {
   assert.doesNotMatch(stylesSource, /font(?:-family)?:[^;}]*Geist/)
 })

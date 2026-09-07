@@ -74,8 +74,10 @@ export function usePlanningWorkspace() {
     renderEmpty: () => null,
     slots: {
       start: () => {
+        const field = document.createElement('label');
+        field.className = 'planning-demo__filter-search';
+        field.ariaLabel = 'Quick search tasks';
         const input = document.createElement('input');
-        input.className = 'planning-demo__filter-search';
         input.type = 'search';
         input.placeholder = 'Quick search tasks…';
         input.ariaLabel = 'Quick search tasks';
@@ -83,7 +85,8 @@ export function usePlanningWorkspace() {
         input.addEventListener('input', () => {
           quickSearch.value = input.value;
         });
-        return input;
+        field.append(input);
+        return field;
       },
     },
   } satisfies AdvancedFilterBadgesOptions;
