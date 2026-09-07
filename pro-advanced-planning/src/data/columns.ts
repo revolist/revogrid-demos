@@ -43,6 +43,10 @@ const priorityCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (h, { v
   return h('span', { class: `planning-priority planning-priority--${label.toLowerCase()}` }, label);
 };
 
+const paddedCellProperties: NonNullable<ColumnRegular['cellProperties']> = () => ({
+  style: { padding: '0 16px' },
+});
+
 export const planningFilterConfig = {
   structuredFilterTypes: planningStructuredFilterTypes,
   multiFilterItems: {
@@ -85,6 +89,7 @@ export const gridColumns: ColumnRegular[] = [
     avatarLabelProp: 'owner',
     avatarSize: 16,
     cellTemplate: avatarWithTextRenderer,
+    cellProperties: paddedCellProperties,
     dataGridFormat: planningGridFormats.owner,
   },
   {
@@ -100,6 +105,7 @@ export const gridColumns: ColumnRegular[] = [
       syncCellTemplate: true,
     },
     badgeStyles: workflowStatusBadgeStyles,
+    cellProperties: paddedCellProperties,
     dataGridFormat: planningGridFormats.workflowStatus,
   },
   {

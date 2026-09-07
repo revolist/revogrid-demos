@@ -64,6 +64,12 @@ test('uses declarative data-grid formats for every planning value type', () => {
   assert.match(vueSource, /:data-grid-context-menu\.prop="planningDataGridContextMenu"/)
 })
 
+test('pads owner and status cell content without changing global grid styles', () => {
+  assert.match(columnsSource, /const paddedCellProperties[\s\S]*?padding: '0 16px'/)
+  assert.match(columnsSource, /prop: 'owner'[\s\S]*?cellProperties: paddedCellProperties/)
+  assert.match(columnsSource, /prop: 'workflowStatus'[\s\S]*?cellProperties: paddedCellProperties/)
+})
+
 test('adds a search affordance to the quick-search filter slot', () => {
   const workspaceSource = readFileSync(new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url), 'utf8')
   assert.match(workspaceSource, /field\.className = 'planning-demo__filter-search'/)
