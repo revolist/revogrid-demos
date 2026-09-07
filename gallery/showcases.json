@@ -13,7 +13,7 @@
   },
   {
     "slug": "core-project-portfolio",
-    "title": "Project Portfolio — Core Row Grouping",
+    "title": "Row Grouping",
     "summary": "A practical delivery portfolio with two-level Core row grouping, progress indicators, status views, and expand or collapse controls.",
     "edition": "Core",
     "sourceDir": "core-project-portfolio",
