@@ -1,6 +1,7 @@
 import {
   type AfterViewInit,
   Component,
+  Input,
   NO_ERRORS_SCHEMA,
   type OnDestroy,
   ViewChild,
@@ -24,14 +25,18 @@ import {
   type OrderExplorerPreset,
 } from './filtering.shared';
 
+import { FirstEntryComponent } from './first-entry.angular';
+import type { FirstEntryMode } from './first-entry.data';
+
 @Component({
   selector: 'filtering-grid',
   standalone: true,
-  imports: [RevoGrid],
+  imports: [RevoGrid, FirstEntryComponent],
   schemas: [NO_ERRORS_SCHEMA],
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./filtering.scss'],
   template: `
+    @if (mode === 'first-entry') { <order-first-entry /> } @else {
     <section class="order-explorer" aria-label="Advanced Filtering: Order Explorer">
       <div class="order-explorer__toolbar">
         <div class="order-explorer__presets" aria-label="Filter presets">
@@ -76,9 +81,12 @@ import {
         ></revo-grid>
       </div>
     </section>
+    }
   `,
 })
 export class FilteringGridComponent implements AfterViewInit, OnDestroy {
+  // <filtering-grid mode="first-entry" /> enables the guided workflow.
+  @Input() mode: FirstEntryMode = 'explorer';
   @ViewChild('gridRef') gridRef?: any;
 
   theme: HTMLRevoGridElement['theme'] = currentTheme().isDark() ? 'darkMaterial' : 'material';

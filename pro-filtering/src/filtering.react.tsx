@@ -18,8 +18,14 @@ import {
   type OrderExplorerRow,
 } from './filtering.shared';
 import './filtering.scss';
+import FirstEntry from './first-entry.react';
+import type { FirstEntryMode } from './first-entry.data';
 
-export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
+// <Filtering mode="first-entry" /> enables the guided order workflow.
+export default function Filtering({ rows, mode = 'explorer' }: { rows?: OrderExplorerRow[], mode?: FirstEntryMode }) {
+  return mode === 'first-entry' ? <FirstEntry /> : <OrderExplorer rows={rows} />;
+}
+function OrderExplorer({ rows }: { rows?: OrderExplorerRow[] }) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
   const source = useMemo(() => rows?.length ? rows : createOrderExplorerRows(), [rows]);
   const [columns, setColumns] = useState(() => createOrderExplorerColumns());

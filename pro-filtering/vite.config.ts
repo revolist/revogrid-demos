@@ -6,10 +6,10 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { trialCssAliases } from '../vite.trial-aliases';
 
-const localProEntry = fileURLToPath(new URL('../../../packages/pro/dist/revogrid-pro.js', import.meta.url));
-const localProCss = fileURLToPath(new URL('../../../packages/pro/dist/revogrid-pro.css', import.meta.url));
-const localCoreEntry = fileURLToPath(new URL('../../../node_modules/@revolist/revogrid/dist/index.js', import.meta.url));
-const localCoreLoader = fileURLToPath(new URL('../../../node_modules/@revolist/revogrid/loader/index.js', import.meta.url));
+const localProEntry = fileURLToPath(new URL('../../../../packages/pro/dist/revogrid-pro.js', import.meta.url));
+const localProCss = fileURLToPath(new URL('../../../../packages/pro/dist/revogrid-pro.css', import.meta.url));
+const localCoreEntry = fileURLToPath(new URL('../../../../node_modules/@revolist/revogrid/dist/index.js', import.meta.url));
+const localCoreLoader = fileURLToPath(new URL('../../../../node_modules/@revolist/revogrid/loader/index.js', import.meta.url));
 
 const aliases = existsSync(localProEntry)
   ? [

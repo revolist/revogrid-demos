@@ -148,9 +148,9 @@ test('Vite uses monorepo-local Core and Pro aliases only when the parent workspa
     readSource('../tsconfig.app.json'),
   ]);
 
-  assert.match(config, /\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/revogrid-pro\.js/);
-  assert.match(config, /\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/revogrid-pro\.css/);
-  assert.match(config, /\.\.\/\.\.\/\.\.\/node_modules\/@revolist\/revogrid\/dist\/index\.js/);
+  assert.match(config, /\.\.\/\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/revogrid-pro\.js/);
+  assert.match(config, /\.\.\/\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/revogrid-pro\.css/);
+  assert.match(config, /\.\.\/\.\.\/\.\.\/\.\.\/node_modules\/@revolist\/revogrid\/dist\/index\.js/);
   assert.match(
     config,
     /const aliases = existsSync\(localProEntry\)[\s\S]*?\? \[[\s\S]*?localCoreLoader[\s\S]*?localCoreEntry[\s\S]*?localProCss[\s\S]*?localProEntry[\s\S]*?: Object\.entries\(trialCssAliases\)/,

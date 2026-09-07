@@ -17,6 +17,8 @@ import {
   type OrderExplorerRow,
 } from './filtering.shared';
 import './filtering.scss';
+import { loadFirstEntry } from './first-entry';
+import type { FirstEntryMode } from './first-entry.data';
 
 defineCustomElements();
 
@@ -29,9 +31,12 @@ function createButton(label: string, onClick: () => void, className = 'rv-btn') 
   return button;
 }
 
-export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
+// load('#app', undefined, { mode: 'first-entry' }) enables the guided workflow.
+export function load(parentSelector: string, rows?: OrderExplorerRow[], options: { mode?: FirstEntryMode } = {}) {
   const parent = document.querySelector(parentSelector);
   if (!parent) return () => undefined;
+
+  if (options.mode === 'first-entry') return loadFirstEntry(parent);
 
   const source = rows?.length ? rows : createOrderExplorerRows();
   const container = document.createElement('section');

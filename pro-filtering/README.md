@@ -38,3 +38,33 @@ used by the RevoGrid showcase gallery.
 - `src/filtering.shared.ts` — stable shared facade for all four frameworks
 - `src/filtering.structured.ts` — structured filter registrations and options
 - `src/filtering.scss` — shared presentation
+
+## Guided first entry
+
+Open any of the four standalone runners with `?mode=first-entry`.
+The documentation entry is `/demo/`. The explicit
+`/demo/?experiment_variant=order-first-entry` URL remains supported for existing links.
+
+Embed the same mode with:
+
+- Vue: `<Filtering mode="first-entry" />`
+- React: `<Filtering mode="first-entry" />`
+- Angular: `<filtering-grid mode="first-entry" />`
+- TypeScript: `load('#app', undefined, { mode: 'first-entry' })`
+
+Choose **Review queue**, search **Northstar**, then select **Total ≥ $1,000**:
+120 → 24 → 6 → 2 orders. Status is an alternative refinement. Each condition
+can be removed separately. **Reset demo** restores the full snapshot, table
+layout, sorting, scroll, search, filters, and guide progress, including pending search.
+The fixed August 2026 dataset uses USD and consistent customer locations.
+
+`first-entry.controller.ts` shares the public grid lifecycle and filter operations;
+framework-specific `first-entry` views own their controls and subscriptions.
+The `order-explorer-action` event reports only confirmed progress and result count;
+`order-explorer-reset` clears the host guide. Neither includes search text.
+
+The docs scenario navigation and trial context use the commercial catalog.
+The full catalogue and Performance remain available at `/demo/?scenario=performance`.
+Performance within the focused scenario navigation uses
+`/demo/?experiment_variant=order-first-entry&scenario=performance`.
+Trial retains the selected demo and experiment only, never the filter state.

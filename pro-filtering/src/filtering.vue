@@ -1,5 +1,6 @@
 <template>
-  <section class="order-explorer" aria-label="Advanced Filtering: Order Explorer">
+  <FirstEntry v-if="mode === 'first-entry'" />
+  <section v-else class="order-explorer" aria-label="Advanced Filtering: Order Explorer">
     <div class="order-explorer__toolbar">
       <div class="order-explorer__presets" aria-label="Filter presets">
         <p class="order-explorer__eyebrow">Presets</p>
@@ -66,10 +67,14 @@ import {
   type OrderExplorerPreset,
 } from './filtering.shared';
 import './filtering.scss';
+import FirstEntry from './first-entry.vue';
+import type { FirstEntryMode } from './first-entry.data';
+// Embed the guided example with <Filtering mode="first-entry" />.
+const props = withDefaults(defineProps<{ mode?: FirstEntryMode }>(), { mode: 'explorer' });
 
 const isDark = ref(currentTheme().isDark());
 const gridRef = ref<any>(null);
-const source = ref(createOrderExplorerRows());
+const source = ref(props.mode === 'first-entry' ? [] : createOrderExplorerRows());
 const columns = ref(createOrderExplorerColumns());
 const filter = ref<ColumnFilterConfig>(
   createOrderExplorerFilter(createOrderExplorerInitialFilters()),
