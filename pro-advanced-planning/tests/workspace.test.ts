@@ -4,7 +4,9 @@ import test from 'node:test'
 import { createTasks, planningPeople } from '../src/data/fixtures'
 import { applyPlanningGridEdit, defaultPlanningFilters, filterPlanningTasks, mergeVisibleTasks } from '../src/data/workspace'
 import { updateFromKanban } from '../src/data/sync'
-const configSource = readFileSync(new URL('../src/data/config.ts', import.meta.url), 'utf8')
+const ganttConfigSource = readFileSync(new URL('../src/data/gantt.config.ts', import.meta.url), 'utf8')
+const kanbanConfigSource = readFileSync(new URL('../src/data/kanban.config.ts', import.meta.url), 'utf8')
+const schedulerConfigSource = readFileSync(new URL('../src/data/scheduler.config.ts', import.meta.url), 'utf8')
 const columnsSource = readFileSync(new URL('../src/data/columns.ts', import.meta.url), 'utf8')
 const formattingSource = readFileSync(new URL('../src/data/formatting.ts', import.meta.url), 'utf8')
 const stylesSource = readFileSync(new URL('../src/planning.scss', import.meta.url), 'utf8')
@@ -34,12 +36,12 @@ test('allocates enough width for formatted activity times', () => {
 })
 
 test('keeps scheduler and calendar events free of conflict validation outlines', () => {
-  assert.match(configSource, /conflicts: \{ enabled: false \}/)
+  assert.match(schedulerConfigSource, /conflicts: \{ enabled: false \}/)
 })
 
 test('aligns the Gantt timeline with the planning fixture window', () => {
-  assert.match(configSource, /weekStartsOn: 1/)
-  assert.match(configSource, /timelineRange: \{ startDate: '2026-09-07', endDate: '2026-09-30' \}/)
+  assert.match(ganttConfigSource, /weekStartsOn: 1/)
+  assert.match(ganttConfigSource, /timelineRange: \{ startDate: '2026-09-07', endDate: '2026-09-30' \}/)
 })
 
 test('uses declarative data-grid formats for every planning value type', () => {
@@ -73,7 +75,7 @@ test('adds a search affordance to the quick-search filter slot', () => {
 test('stretches grid columns through the public Pro plugin in every framework', () => {
   const workspaceSource = readFileSync(new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url), 'utf8')
   assert.match(workspaceSource, /ColumnStretchPlugin/)
-  assert.match(vueSource, /stretch="all"/)
+  assert.match(vueSource, /:stretch="1"/)
   const frameworkSources = [
     readFileSync(new URL('../src/planning.ts', import.meta.url), 'utf8'),
     readFileSync(new URL('../src/planning.react.tsx', import.meta.url), 'utf8'),
@@ -81,7 +83,7 @@ test('stretches grid columns through the public Pro plugin in every framework', 
   ]
   for (const source of frameworkSources) {
     assert.match(source, /ColumnStretchPlugin/)
-    assert.match(source, /stretch[^\n]{0,16}all/)
+    assert.match(source, /stretch[^\n]{0,16}1/)
   }
 })
 
@@ -204,22 +206,22 @@ test('reset fixtures and filters restore deterministic defaults', () => {
 })
 
 test('opens timeline views on the fixed fixture window', () => {
-  assert.match(configSource, /zoomPreset:\s*'day-week'/)
-  assert.match(configSource, /timelinePrecision:\s*'day'/)
-  assert.match(configSource, /view:\s*'month'/)
-  assert.match(configSource, /dateRange:\s*\{ start: '2026-09-01', end: '2026-09-30' \}/)
+  assert.match(ganttConfigSource, /zoomPreset:\s*'day-week'/)
+  assert.match(ganttConfigSource, /timelinePrecision:\s*'day'/)
+  assert.match(schedulerConfigSource, /view:\s*'month'/)
+  assert.match(schedulerConfigSource, /dateRange:\s*\{ start: '2026-09-01', end: '2026-09-30' \}/)
 })
 
 test('keeps all four Kanban columns compact enough for the workspace', () => {
-  const columns = [...configSource.matchAll(/name:\s*'[^']+',\s*size:\s*(\d+),\s*minSize:\s*(\d+)/g)]
+  const columns = [...kanbanConfigSource.matchAll(/name:\s*'[^']+',\s*size:\s*(\d+),\s*minSize:\s*(\d+)/g)]
   assert.equal(columns.length, 4)
   assert.equal(columns.every(([, size, minSize]) => Number(size) >= Number(minSize) && Number(minSize) === 216), true)
   assert.equal(columns.reduce((total, [, size]) => total + Number(size), 0), 912)
 })
 
 test('renders Kanban resources with their native avatar data', () => {
-  assert.match(configSource, /import \{ avatarTemplate \} from '@revolist\/revogrid-pro'/)
-  assert.match(configSource, /planning-card__avatar-stack/)
-  assert.match(configSource, /value: card\.ownerAvatars\[index\] \?\? owner/)
+  assert.match(kanbanConfigSource, /import \{ avatarTemplate \} from '@revolist\/revogrid-pro'/)
+  assert.match(kanbanConfigSource, /planning-card__avatar-stack/)
+  assert.match(kanbanConfigSource, /value: card\.ownerAvatars\[index\] \?\? owner/)
   assert.match(stylesSource, /planning-card__avatar-stack/)
 })

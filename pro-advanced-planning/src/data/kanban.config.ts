@@ -1,8 +1,5 @@
-import type { GanttPluginConfig } from '@revolist/gantt';
 import type { KanbanConfig } from '@revolist/kanban';
-import type { EventSchedulerConfig } from '@revolist/scheduler';
 import { avatarTemplate } from '@revolist/revogrid-pro';
-import { planningCalendarId } from './source';
 import type { PlanningTask } from './types';
 
 export const kanbanConfig: KanbanConfig<PlanningTask> = {
@@ -48,68 +45,4 @@ export const kanbanConfig: KanbanConfig<PlanningTask> = {
     ]),
   },
   cardRowHeight: 120,
-};
-
-export const ganttConfig: GanttPluginConfig = {
-  id: 'launch',
-  name: 'Launch day',
-  version: '1',
-  currency: 'USD',
-  timeZone: 'UTC',
-  primaryCalendarId: planningCalendarId,
-  updatedAt: '2026-09-07T00:00:00Z',
-  statusDate: '2026-09-07',
-  zoomPreset: 'day-week',
-  timelinePrecision: 'day',
-  weekStartsOn: 1,
-  timelineRange: { startDate: '2026-09-07', endDate: '2026-09-30' },
-  allowTaskCreate: false,
-  contextMenu: {},
-  dateFormats: {
-    locale: 'en-US',
-    timeZone: 'UTC',
-    table: { dateStyle: 'medium', timeStyle: 'short' },
-  },
-  calendars: [
-    {
-      id: planningCalendarId,
-      name: 'Launch day',
-      timeZone: 'UTC',
-      workingDays: [1, 2, 3, 4, 5],
-      workingHours: { start: '08:00', end: '18:00' },
-      holidays: [],
-      hoursPerDay: 10,
-    },
-  ],
-};
-
-export const schedulerConfig: EventSchedulerConfig = {
-  view: 'resourceTimeline',
-  weekStartDate: '2026-09-07',
-  dateRange: { start: '2026-09-07', end: '2026-09-30' },
-  locale: 'en-US',
-  timeZone: 'UTC',
-  slotMinutes: 60,
-  timeRange: { start: '08:00', end: '18:00' },
-  rowSize: 50,
-  resourceColumnSize: 150,
-  timelineColumnSize: 80,
-  editable: true,
-  allowCreate: false,
-  allowMove: true,
-  allowResize: true,
-  allowDelete: false,
-  conflicts: { enabled: false },
-  eventEditorStatusOptions: ['not-started', 'in-progress', 'blocked', 'done'],
-  keyboardShortcuts: false,
-  currentTimeMarker: false,
-  contextMenu: true,
-};
-
-export const calendarConfig: EventSchedulerConfig = {
-  ...schedulerConfig,
-  view: 'month',
-  dateRange: { start: '2026-09-01', end: '2026-09-30' },
-  dayColumnSize: 160,
-  timeColumnSize: 72,
 };

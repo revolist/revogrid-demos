@@ -5,12 +5,9 @@ export {
   planningGridFormats,
 } from './formatting';
 export { planningStructuredFilterTypes } from './planning.structured';
-export {
-  calendarConfig,
-  ganttConfig,
-  kanbanConfig,
-  schedulerConfig,
-} from './config';
+export { ganttConfig } from './gantt.config';
+export { kanbanConfig } from './kanban.config';
+export { calendarConfig, schedulerConfig } from './scheduler.config';
 export {
   createTasks,
   ganttResources,
