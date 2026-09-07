@@ -110,12 +110,26 @@ test('provides a stable 100-task fixture across three projects', () => {
     'billing-platform', 'customer-portal', 'internal-tools',
   ])
   assert.ok(tasks.every(({ startDate }) => startDate.startsWith('2026-09-')))
-  assert.ok(new Set(tasks.map(({ duration }) => duration)).size >= 5)
   assert.ok(new Set(tasks.map(({ startDate }) => startDate.slice(0, 10))).size < tasks.length)
-  assert.ok(tasks.some((task, index) => index > 0 && task.startDate < tasks[index - 1].startDate))
-  assert.ok(tasks.every(({ startDate, endDate }) => Date.parse(endDate) - Date.parse(startDate) >= 30 * 60 * 60 * 1000))
+  assert.ok(new Set(tasks.map(({ startDate }) => startDate)).size > 15)
+  assert.ok(tasks.every(({ startDate, endDate }) => Date.parse(endDate) - Date.parse(startDate) >= 4 * 60 * 60 * 1000))
   assert.ok(tasks.every(({ activityAt }) => activityAt.startsWith('2026-09-')))
   assert.ok(new Set(tasks.map(({ activityAt }) => activityAt.slice(11, 16))).size > 5)
+})
+
+test('schedules each resource without overlapping task assignments', () => {
+  const tasks = createTasks()
+  const tasksByOwner = Map.groupBy(tasks, ({ owner }) => owner)
+
+  for (const ownerTasks of tasksByOwner.values()) {
+    const scheduled = [...ownerTasks].sort((left, right) => Date.parse(left.startDate) - Date.parse(right.startDate))
+    assert.ok(scheduled.every(({ startDate, endDate }) => {
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+      return start.getUTCDay() > 0 && start.getUTCDay() < 6 && start.getUTCHours() >= 8 && end.getUTCHours() <= 17
+    }))
+    assert.ok(scheduled.slice(1).every((task, index) => Date.parse(task.startDate) >= Date.parse(scheduled[index].endDate)))
+  }
 })
 
 test('uses deterministic local avatars for every shared owner', () => {

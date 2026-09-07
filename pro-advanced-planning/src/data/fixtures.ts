@@ -27,6 +27,20 @@ export function getOwnerAvatarIndex(owner: string): number {
   return index >= 0 ? index + 1 : 1;
 }
 
+const workdayOffsets = [0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 15, 16, 17, 18, 21, 22, 23] as const;
+
+function getTaskSlot(ownerTaskIndex: number) {
+  const isFirstSplitDay = ownerTaskIndex === 8 || ownerTaskIndex === 9;
+  const isLastSplitDay = ownerTaskIndex === 18 || ownerTaskIndex === 19;
+  const workdayIndex = isFirstSplitDay ? 8 : isLastSplitDay ? 17 : ownerTaskIndex < 8 ? ownerTaskIndex : ownerTaskIndex - 1;
+  const afternoon = ownerTaskIndex === 9 || ownerTaskIndex === 19;
+  return {
+    dayOffset: workdayOffsets[workdayIndex],
+    startHour: isFirstSplitDay || isLastSplitDay ? afternoon ? 13 : 8 : 8,
+    endHour: isFirstSplitDay || isLastSplitDay ? afternoon ? 17 : 12 : 17,
+  };
+}
+
 export function createTasks(): PlanningTask[] {
   const names = [
     'Define requirements', 'Design system', 'API integration', 'Authentication', 'Invoice templates',
@@ -53,14 +67,12 @@ export function createTasks(): PlanningTask[] {
   const owners = ['Maya', 'Ava', 'Noah', 'Nina', 'Leo'] as const;
   const projects = ['customer-portal', 'billing-platform', 'internal-tools'] as const;
   const statuses = ['done', 'done', 'in-progress', 'blocked', 'not-started'] as const;
-  const startPattern = [0, 0, 1, 0, 2, 2, 3, 1, 4, 3] as const;
   return names.map((name, index) => {
     const owner = owners[index % owners.length];
     const projectIndex = index % projects.length;
-    const startOffset = Math.floor(index / startPattern.length) + startPattern[index % startPattern.length];
-    const durationDays = [4, 3, 6, 2, 5][(index + projectIndex) % 5];
-    const start = new Date(Date.UTC(2026, 8, 7 + startOffset, 8 + projectIndex));
-    const end = new Date(Date.UTC(2026, 8, 7 + startOffset + durationDays - 1, 17));
+    const { dayOffset, startHour, endHour } = getTaskSlot(Math.floor(index / owners.length));
+    const start = new Date(Date.UTC(2026, 8, 7 + dayOffset, startHour));
+    const end = new Date(Date.UTC(2026, 8, 7 + dayOffset, endHour));
     // Spread activity across the fixture weeks, weekdays, and working hours so
     // the Time Matrix has meaningful, deterministic groups to filter.
     const activityAt = new Date(Date.UTC(
@@ -75,6 +87,6 @@ export function createTasks(): PlanningTask[] {
     // Cycle independently of ownership so each owner has a representative mix.
     const workflowStatus = statuses[(index + Math.floor(index / owners.length)) % statuses.length];
     const percentDone = workflowStatus === 'done' ? 100 : workflowStatus === 'not-started' ? 0 : 20 + ((index * 15) % 75);
-    return { id: `task-${String(index + 1).padStart(3, '0')}`, name, owner, ownerAvatar: getOwnerAvatar(owner), ownerAvatarIndex: getOwnerAvatarIndex(owner), owners: [owner], ownerAvatars: [getOwnerAvatar(owner)], startDate, endDate, activityAt, duration: `${durationDays}d`, percentDone, order: (index + 1) * 1000, workflowStatus, priority: [500, 700, 900][index % 3], projectId: projects[projectIndex], budget: 1800 + index * 200 } as PlanningTask;
+    return { id: `task-${String(index + 1).padStart(3, '0')}`, name, owner, ownerAvatar: getOwnerAvatar(owner), ownerAvatarIndex: getOwnerAvatarIndex(owner), owners: [owner], ownerAvatars: [getOwnerAvatar(owner)], startDate, endDate, activityAt, duration: `${(endHour - startHour)}h`, percentDone, order: (index + 1) * 1000, workflowStatus, priority: [500, 700, 900][index % 3], projectId: projects[projectIndex], budget: 1800 + index * 200 } as PlanningTask;
   });
 }
