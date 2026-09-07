@@ -25,6 +25,27 @@ export function updateFromGrid(
   return applyPlanningGridEdit(tasks, detail);
 }
 
+/**
+ * Resolves direct cell-editor events that carry a row index but no model.
+ * `getVisibleSource()` preserves the grid's current filtered and sorted order,
+ * letting the workspace update its canonical task by stable ID.
+ */
+export function updateFromGridSource(
+  tasks: PlanningTask[],
+  detail: {
+    model?: { id?: unknown };
+    prop?: unknown;
+    rowIndex?: number;
+    val?: unknown;
+  },
+  visibleTasks: readonly PlanningTask[],
+): PlanningTask[] {
+  const model = detail.model?.id === undefined && typeof detail.rowIndex === 'number'
+    ? visibleTasks[detail.rowIndex]
+    : detail.model;
+  return applyPlanningGridEdit(tasks, { ...detail, model });
+}
+
 export function updateFromKanban(
   tasks: PlanningTask[],
   detail: KanbanCardMoveDetail<PlanningTask>,

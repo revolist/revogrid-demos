@@ -42,6 +42,7 @@ import {
   updateFromGantt,
   updateFromGanttAssignment,
   updateFromGrid,
+  updateFromGridSource,
   updateFromKanban,
   updateFromKanbanDelete,
   updateFromKanbanUpdate,
@@ -122,10 +123,11 @@ export function load(parentSelector: string): (() => void) | undefined {
       grid.rowSize = 40;
       grid.rowSelect = { rowOrder: false };
       grid.addEventListener('afteredit', (event) => {
-        tasks = updateFromGrid(
-          tasks,
-          event.detail as Parameters<typeof updateFromGrid>[1],
-        );
+        const detail = event.detail as Parameters<typeof updateFromGrid>[1];
+        tasks = updateFromGrid(tasks, detail);
+        void grid.getVisibleSource().then((visible: PlanningTask[]) => {
+          tasks = updateFromGridSource(tasks, detail, visible);
+        });
       });
       grid.addEventListener('rowselected', (event) => {
         selectedCount = (event as CustomEvent<HTMLRevoGridElementEventMap['rowselected']>).detail.count;

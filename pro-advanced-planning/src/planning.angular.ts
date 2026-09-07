@@ -40,6 +40,7 @@ import {
   updateFromGantt,
   updateFromGanttAssignment,
   updateFromGrid,
+  updateFromGridSource,
   updateFromKanban,
   updateFromKanbanDelete,
   updateFromKanbanUpdate,
@@ -245,8 +246,11 @@ export class PlanningViewsGridComponent {
   setPriority(event: Event) { const value = (event.target as HTMLSelectElement).value; this.filters = { ...this.filters, priorities: value ? [Number(value)] : [] }; }
   resetWorkspace() { this.tasks = createTasks(); this.filters = defaultPlanningFilters(); this.selectedCount = 0; }
 
-  handleGridEdit(event: CustomEvent) {
+  async handleGridEdit(event: CustomEvent) {
     this.setTasks(updateFromGrid(this.tasks, event.detail));
+    const grid = event.currentTarget as HTMLRevoGridElement;
+    const visible = await grid.getVisibleSource() as PlanningTask[];
+    this.setTasks(updateFromGridSource(this.tasks, event.detail, visible));
   }
 
   handleRowSelected(event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>) {

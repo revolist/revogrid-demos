@@ -43,6 +43,7 @@ import {
   updateFromGantt,
   updateFromGanttAssignment,
   updateFromGrid,
+  updateFromGridSource,
   updateFromKanban,
   updateFromKanbanDelete,
   updateFromKanbanUpdate,
@@ -158,14 +159,14 @@ export default function PlanningViews() {
           rowSelect={{ rowOrder: false }}
           filter={planningFilterConfig}
           onRowselected={(event: CustomEvent<{ count: number }>) => setSelectedCount(event.detail.count)}
-          onAfteredit={(event) =>
-            setTasks((current) =>
-              updateFromGrid(
-                current,
-                event.detail as Parameters<typeof updateFromGrid>[1],
-              ),
-            )
-          }
+          onAfteredit={(event) => {
+            const detail = event.detail as Parameters<typeof updateFromGrid>[1];
+            setTasks(current => updateFromGrid(current, detail));
+            const grid = event.currentTarget as unknown as HTMLRevoGridElement;
+            void grid.getVisibleSource().then((visible: PlanningTask[]) => {
+              setTasks(current => updateFromGridSource(current, detail, visible));
+            });
+          }}
         />
       )}
       {!!visibleTasks.length && activeView === 'gantt' && (

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { createTasks, planningPeople } from '../src/data/fixtures'
 import { applyPlanningGridEdit, defaultPlanningFilters, filterPlanningTasks, mergeVisibleTasks } from '../src/data/workspace'
-import { updateFromKanban } from '../src/data/sync'
+import { updateFromGridSource, updateFromKanban } from '../src/data/sync'
 const ganttConfigSource = readFileSync(new URL('../src/data/gantt.config.ts', import.meta.url), 'utf8')
 const kanbanConfigSource = readFileSync(new URL('../src/data/kanban.config.ts', import.meta.url), 'utf8')
 const schedulerConfigSource = readFileSync(new URL('../src/data/scheduler.config.ts', import.meta.url), 'utf8')
@@ -217,6 +217,28 @@ test('synchronizes a grid status edit into the Kanban source', () => {
   const tasks = createTasks()
   const edited = applyPlanningGridEdit(tasks, { model: tasks[4], prop: 'workflowStatus', val: 'blocked' })
   assert.equal(edited.find(task => task.id === tasks[4].id)?.workflowStatus, 'blocked')
+})
+
+test('synchronizes a dropdown owner edit without a model into the Gantt assignment source', () => {
+  const tasks = createTasks()
+  const rowIndex = 2
+  const edited = updateFromGridSource(tasks, {
+    rowIndex,
+    prop: 'owner',
+    val: 'Ava',
+  }, tasks)
+
+  const task = edited.find(({ id }) => id === tasks[rowIndex].id)
+  assert.equal(task?.owner, 'Ava')
+  assert.deepEqual(task?.owners, ['Ava'])
+})
+
+test('uses the visible source fallback for direct grid editors in every framework', () => {
+  const workspaceSource = readFileSync(new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url), 'utf8')
+  for (const source of [workspaceSource, vanillaSource, reactSource, angularSource]) {
+    assert.match(source, /updateFromGridSource/)
+    assert.match(source, /getVisibleSource\(\)/)
+  }
 })
 
 test('reconciles a filtered Kanban move into canonical tasks', () => {

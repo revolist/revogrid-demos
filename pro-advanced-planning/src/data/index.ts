@@ -19,6 +19,7 @@ export {
   updateFromGantt,
   updateFromGanttAssignment,
   updateFromGrid,
+  updateFromGridSource,
   updateFromKanban,
   updateFromKanbanCreate,
   updateFromKanbanDelete,

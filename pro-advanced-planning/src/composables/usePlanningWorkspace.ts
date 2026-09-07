@@ -45,6 +45,7 @@ import {
   updateFromGantt,
   updateFromGanttAssignment,
   updateFromGrid,
+  updateFromGridSource,
   updateFromKanban,
   updateFromKanbanCreate,
   updateFromKanbanUpdate,
@@ -135,8 +136,13 @@ export function usePlanningWorkspace() {
     tasks.value = mergeVisibleTasks(tasks.value, next);
   }
 
-  function handleGridEdit(event: CustomEvent) {
+  async function handleGridEdit(event: CustomEvent) {
     tasks.value = updateFromGrid(tasks.value, event.detail);
+    const grid = gridRef.value?.$el ?? gridRef.value;
+    if (!grid) return;
+    const visible = await grid.getVisibleSource() as PlanningTask[];
+    tasks.value = updateFromGridSource(tasks.value, event.detail, visible);
+    visibleTaskIds.value = visible.map((task) => task.id);
   }
 
   function handleRowSelected(event: CustomEvent<{ count: number }>) {
