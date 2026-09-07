@@ -83,7 +83,7 @@ export const gridColumns: ColumnRegular[] = [
     },
     avatarProp: 'ownerAvatar',
     avatarLabelProp: 'owner',
-    avatarSize: 20,
+    avatarSize: 16,
     cellTemplate: avatarWithTextRenderer,
     dataGridFormat: planningGridFormats.owner,
   },

@@ -68,6 +68,13 @@ test('inherits the site font family instead of overriding it in the workspace', 
   assert.doesNotMatch(stylesSource, /font(?:-family)?:[^;}]*Geist/)
 })
 
+test('keeps native grid internals unstyled and uses compact owner avatars', () => {
+  assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revogr-/)
+  assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revo-grid/)
+  assert.match(columnsSource, /avatarSize: 16/)
+  assert.match(formattingSource, /options: \{ avatarSize: 16, rectangular: false \}/)
+})
+
 test('provides a stable 100-task fixture across three projects', () => {
   const tasks = createTasks()
   assert.equal(tasks.length, 100)
