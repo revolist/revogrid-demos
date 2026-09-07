@@ -51,6 +51,7 @@ test('adds a search affordance to the quick-search filter slot', () => {
   assert.match(workspaceSource, /field\.className = 'planning-demo__filter-search'/)
   assert.match(stylesSource, /planning-demo__filter-search:before/)
   assert.match(stylesSource, /planning-demo__filter-search:after/)
+  assert.match(stylesSource, /planning-demo__filter-badges\{margin-bottom:5px\}/)
 })
 
 test('stretches grid columns through the public Pro plugin in every framework', () => {
