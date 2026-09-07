@@ -20,7 +20,7 @@ export {
   FILTER_TIME_MATRIX,
 };
 
-const workflowBadges: Readonly<Record<string, { label: string; color: string }>> = {
+export const workflowBadges: Readonly<Record<string, { label: string; color: string }>> = {
   'not-started': { label: 'Planned', color: '#64748b' },
   'in-progress': { label: 'In progress', color: '#4f46e5' },
   blocked: { label: 'Blocked', color: '#dc2626' },

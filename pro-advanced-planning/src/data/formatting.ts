@@ -6,6 +6,7 @@ import type {
   DataGridFormattingPresetState,
 } from '@revolist/revogrid-pro';
 import { badgeRenderer, markDataGridFormatRenderer } from '@revolist/revogrid-pro';
+import { workflowBadges } from './planning.structured';
 
 const workflowLabels: Record<string, string> = {
   'not-started': 'Planned',
@@ -13,6 +14,14 @@ const workflowLabels: Record<string, string> = {
   blocked: 'Blocked',
   done: 'Done',
 };
+
+/** Reuse the filter badge palette for the status format in every grid view. */
+export const workflowStatusBadgeStyles = Object.fromEntries(
+  Object.values(workflowBadges).map(({ label, color }) => [
+    label,
+    { backgroundColor: color, color },
+  ]),
+);
 
 /**
  * Keep workflow values canonical for filtering and planning engines while the
