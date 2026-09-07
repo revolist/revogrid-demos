@@ -37,14 +37,18 @@ export function createTasks(): PlanningTask[] {
   const owners = ['Maya', 'Ava', 'Noah', 'Nina', 'Leo'] as const;
   const projects = ['customer-portal', 'billing-platform', 'internal-tools'] as const;
   const statuses = ['done', 'done', 'in-progress', 'blocked', 'not-started'] as const;
+  const startPattern = [0, 0, 1, 0, 2, 2, 3, 1, 4, 3] as const;
   return names.map((name, index) => {
     const owner = owners[index % owners.length];
-    const day = 7 + (index % 22);
-    const startHour = 8 + (index % 5);
-    const startDate = `2026-09-${String(day).padStart(2, '0')}T${String(startHour).padStart(2, '0')}:00:00.000Z`;
-    const endDate = `2026-09-${String(day).padStart(2, '0')}T${String(startHour + 2).padStart(2, '0')}:00:00.000Z`;
+    const projectIndex = index % projects.length;
+    const startOffset = Math.floor(index / startPattern.length) * 4 + startPattern[index % startPattern.length];
+    const durationDays = [4, 3, 6, 2, 5][(index + projectIndex) % 5];
+    const start = new Date(Date.UTC(2026, 8, 7 + startOffset, 8 + projectIndex));
+    const end = new Date(Date.UTC(2026, 8, 7 + startOffset + durationDays - 1, 17));
+    const startDate = start.toISOString();
+    const endDate = end.toISOString();
     const workflowStatus = statuses[index % statuses.length];
     const percentDone = workflowStatus === 'done' ? 100 : workflowStatus === 'not-started' ? 0 : 20 + ((index * 15) % 75);
-    return { id: `task-${String(index + 1).padStart(2, '0')}`, name, owner, ownerAvatar: getOwnerAvatar(owner), owners: [owner], ownerAvatars: [getOwnerAvatar(owner)], startDate, endDate, duration: '2h', percentDone, order: (index + 1) * 1000, workflowStatus, priority: [500, 700, 900][index % 3], projectId: projects[index % projects.length], budget: 1800 + index * 200 } as PlanningTask;
+    return { id: `task-${String(index + 1).padStart(2, '0')}`, name, owner, ownerAvatar: getOwnerAvatar(owner), owners: [owner], ownerAvatars: [getOwnerAvatar(owner)], startDate, endDate, duration: `${durationDays}d`, percentDone, order: (index + 1) * 1000, workflowStatus, priority: [500, 700, 900][index % 3], projectId: projects[projectIndex], budget: 1800 + index * 200 } as PlanningTask;
   });
 }

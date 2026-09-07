@@ -14,6 +14,10 @@ test('provides a stable 50-task fixture across three projects', () => {
     'billing-platform', 'customer-portal', 'internal-tools',
   ])
   assert.ok(tasks.every(({ startDate }) => startDate.startsWith('2026-09-')))
+  assert.ok(new Set(tasks.map(({ duration }) => duration)).size >= 5)
+  assert.ok(new Set(tasks.map(({ startDate }) => startDate.slice(0, 10))).size < tasks.length)
+  assert.ok(tasks.some((task, index) => index > 0 && task.startDate < tasks[index - 1].startDate))
+  assert.ok(tasks.every(({ startDate, endDate }) => Date.parse(endDate) - Date.parse(startDate) >= 30 * 60 * 60 * 1000))
 })
 
 test('uses deterministic local avatars for every shared owner', () => {
