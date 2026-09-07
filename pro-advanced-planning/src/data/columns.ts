@@ -123,7 +123,7 @@ export const gridColumns: ColumnRegular[] = [
     dataGridFormat: planningGridFormats.percentDone,
   },
   { prop: 'budget', name: 'Budget', size: 96, readonly: true, sortable: true, filter: [FILTER_HISTOGRAM_BRUSH], dataGridFormat: planningGridFormats.budget },
-  { prop: 'activityAt', name: 'Activity time', size: 144, readonly: true, sortable: true, filter: [FILTER_TIME_MATRIX], dataGridFormat: planningGridFormats.activityAt },
+  { prop: 'activityAt', name: 'Activity time', size: 173, readonly: true, sortable: true, filter: [FILTER_TIME_MATRIX], dataGridFormat: planningGridFormats.activityAt },
 ];
 
 export const ganttColumns = [

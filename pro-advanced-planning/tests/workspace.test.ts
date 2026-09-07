@@ -29,6 +29,10 @@ test('allocates enough width for formatted due dates', () => {
   assert.match(columnsSource, /prop: 'endDate',[\s\S]*?name: 'Due date',[\s\S]*?size: 130/)
 })
 
+test('allocates enough width for formatted activity times', () => {
+  assert.match(columnsSource, /prop: 'activityAt', name: 'Activity time', size: 173/)
+})
+
 test('uses declarative data-grid formats for every planning value type', () => {
   assert.match(formattingSource, /name:\s*text/)
   assert.match(formattingSource, /id:\s*'avatar-with-text'/)
