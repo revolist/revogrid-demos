@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, ref } from 'vue';
 import {
   AdvanceFilterPlugin,
+  ColumnStretchPlugin,
   DataGridFormattingPlugin,
   FilterHeaderPlugin,
   RowSelectPlugin,
@@ -53,7 +54,7 @@ import {
 } from '../data';
 
 const rowSelect: RowSelectConfig = { rowOrder: false };
-const gridPlugins = [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin, DataGridFormattingPlugin];
+const gridPlugins = [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin, DataGridFormattingPlugin, ColumnStretchPlugin];
 const ganttPlugins = [GanttPlugin];
 const kanbanPlugins = [KanbanPlugin];
 const schedulerPlugins = [EventSchedulerPlugin];

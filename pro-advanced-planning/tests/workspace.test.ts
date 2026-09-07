@@ -39,6 +39,21 @@ test('adds a search affordance to the quick-search filter slot', () => {
   assert.match(stylesSource, /planning-demo__filter-search:after/)
 })
 
+test('stretches grid columns through the public Pro plugin in every framework', () => {
+  const workspaceSource = readFileSync(new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url), 'utf8')
+  assert.match(workspaceSource, /ColumnStretchPlugin/)
+  assert.match(vueSource, /stretch="all"/)
+  const frameworkSources = [
+    readFileSync(new URL('../src/planning.ts', import.meta.url), 'utf8'),
+    readFileSync(new URL('../src/planning.react.tsx', import.meta.url), 'utf8'),
+    readFileSync(new URL('../src/planning.angular.ts', import.meta.url), 'utf8'),
+  ]
+  for (const source of frameworkSources) {
+    assert.match(source, /ColumnStretchPlugin/)
+    assert.match(source, /stretch[^\n]{0,16}all/)
+  }
+})
+
 test('inherits the site font family instead of overriding it in the workspace', () => {
   assert.doesNotMatch(stylesSource, /font(?:-family)?:[^;}]*Geist/)
 })

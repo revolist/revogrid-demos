@@ -16,7 +16,7 @@ import {
   EventSchedulerPlugin,
   type EventSchedulerEventChangedDetail,
 } from '@revolist/scheduler';
-import { AdvanceFilterPlugin, DataGridFormattingPlugin, FilterHeaderPlugin, RowSelectPlugin } from '@revolist/revogrid-pro';
+import { AdvanceFilterPlugin, ColumnStretchPlugin, DataGridFormattingPlugin, FilterHeaderPlugin, RowSelectPlugin } from '@revolist/revogrid-pro';
 import {
   currentTheme,
   observeCurrentTheme,
@@ -98,7 +98,7 @@ export default function PlanningViews() {
   const ganttPlugins = useMemo(() => [GanttPlugin], []);
   const kanbanPlugins = useMemo(() => [KanbanPlugin], []);
   const schedulerPlugins = useMemo(() => [EventSchedulerPlugin], []);
-  const gridPlugins = useMemo(() => [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin, DataGridFormattingPlugin], []);
+  const gridPlugins = useMemo(() => [RowSelectPlugin, AdvanceFilterPlugin, FilterHeaderPlugin, DataGridFormattingPlugin, ColumnStretchPlugin], []);
   const dataGridFormatting = useMemo(() => planningDataGridFormatting, []);
   const visibleTasks = useMemo(() => filterPlanningTasks(tasks, filters), [tasks, filters]);
   const visibleIds = useMemo(() => new Set(visibleTasks.map(({ id }) => id)), [visibleTasks]);
@@ -152,6 +152,7 @@ export default function PlanningViews() {
           resize
           canMoveColumns
           rowSize={40}
+          stretch="all"
           rowSelect={{ rowOrder: false }}
           filter={planningFilterConfig}
           onRowselected={(event: CustomEvent<{ count: number }>) => setSelectedCount(event.detail.count)}
