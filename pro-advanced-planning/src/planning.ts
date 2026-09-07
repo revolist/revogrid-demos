@@ -100,6 +100,7 @@ export function load(parentSelector: string): (() => void) | undefined {
 
   function render(view: PlanningView) {
     activeView = view;
+    panel.classList.toggle('planning-demo__grid--timeline', view === 'gantt' || view === 'scheduler' || view === 'calendar');
     const visibleTasks = filterPlanningTasks(tasks, filters);
     const visibleIds = new Set(visibleTasks.map(({ id }) => id));
     count.textContent = `${visibleTasks.length} of ${tasks.length} tasks${selectedCount ? ` · ${selectedCount} selected` : ''}`;

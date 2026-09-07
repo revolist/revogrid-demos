@@ -145,7 +145,7 @@ import {
         }
         @case ('gantt') {
           <revo-grid
-            class="planning-demo__grid"
+            class="planning-demo__grid planning-demo__grid--timeline"
             [hideAttribution]="true"
             [theme]="theme"
             [plugins]="ganttPlugins"
@@ -175,7 +175,7 @@ import {
         }
         @case ('scheduler') {
           <revo-grid
-            class="planning-demo__grid"
+            class="planning-demo__grid planning-demo__grid--timeline"
             [hideAttribution]="true"
             [theme]="theme"
             [plugins]="schedulerPlugins"
@@ -190,7 +190,7 @@ import {
         }
         @case ('calendar') {
           <revo-grid
-            class="planning-demo__grid"
+            class="planning-demo__grid planning-demo__grid--timeline"
             [hideAttribution]="true"
             [theme]="theme"
             [plugins]="schedulerPlugins"

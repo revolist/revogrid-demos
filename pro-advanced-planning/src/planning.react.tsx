@@ -171,7 +171,7 @@ export default function PlanningViews() {
       {!!visibleTasks.length && activeView === 'gantt' && (
         <PlanningGrid
           key="gantt"
-          className="planning-demo__grid"
+          className="planning-demo__grid planning-demo__grid--timeline"
           theme={isDark ? 'darkCompact' : 'compact'}
           hideAttribution
           plugins={ganttPlugins}
@@ -219,7 +219,7 @@ export default function PlanningViews() {
       {!!visibleTasks.length && (activeView === 'scheduler' || activeView === 'calendar') && (
         <PlanningGrid
           key={activeView}
-          className="planning-demo__grid"
+          className="planning-demo__grid planning-demo__grid--timeline"
           theme={isDark ? 'darkCompact' : 'compact'}
           hideAttribution
           plugins={schedulerPlugins}

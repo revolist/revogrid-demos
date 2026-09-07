@@ -11,6 +11,9 @@ const columnsSource = readFileSync(new URL('../src/data/columns.ts', import.meta
 const formattingSource = readFileSync(new URL('../src/data/formatting.ts', import.meta.url), 'utf8')
 const stylesSource = readFileSync(new URL('../src/planning.scss', import.meta.url), 'utf8')
 const vueSource = readFileSync(new URL('../src/planning.vue', import.meta.url), 'utf8')
+const vanillaSource = readFileSync(new URL('../src/planning.ts', import.meta.url), 'utf8')
+const reactSource = readFileSync(new URL('../src/planning.react.tsx', import.meta.url), 'utf8')
+const angularSource = readFileSync(new URL('../src/planning.angular.ts', import.meta.url), 'utf8')
 
 test('uses the Pro dropdown editor with canonical owner and status values', () => {
   assert.match(columnsSource, /gridColumnTypes\s*=\s*\{\s*dropdown:\s*ColumnDropdown/)
@@ -33,6 +36,18 @@ test('allocates enough width for formatted due dates', () => {
 
 test('allocates enough width for formatted activity times', () => {
   assert.match(columnsSource, /prop: 'activityAt', name: 'Activity time', size: 173/)
+})
+
+test('removes the tab-to-content gap for timeline views only', () => {
+  assert.match(stylesSource, /planning-demo__grid--timeline\{margin-top:-8px\}/)
+  assert.match(vueSource, /activeView === 'gantt'[\s\S]*?planning-demo__grid--timeline/)
+  assert.match(vueSource, /:key="activeView" class="planning-demo__grid planning-demo__grid--timeline"/)
+  assert.match(vanillaSource, /panel\.classList\.toggle\('planning-demo__grid--timeline', view === 'gantt' \|\| view === 'scheduler' \|\| view === 'calendar'\)/)
+  assert.match(reactSource, /key="gantt"[\s\S]*?planning-demo__grid--timeline/)
+  assert.match(reactSource, /key=\{activeView\}[\s\S]*?planning-demo__grid--timeline/)
+  assert.match(angularSource, /@case \('gantt'\)[\s\S]*?planning-demo__grid--timeline/)
+  assert.match(angularSource, /@case \('scheduler'\)[\s\S]*?planning-demo__grid--timeline/)
+  assert.match(angularSource, /@case \('calendar'\)[\s\S]*?planning-demo__grid--timeline/)
 })
 
 test('keeps scheduler and calendar events free of conflict validation outlines', () => {
