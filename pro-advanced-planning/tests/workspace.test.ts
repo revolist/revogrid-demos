@@ -33,6 +33,10 @@ test('allocates enough width for formatted activity times', () => {
   assert.match(columnsSource, /prop: 'activityAt', name: 'Activity time', size: 173/)
 })
 
+test('keeps scheduler and calendar events free of conflict validation outlines', () => {
+  assert.match(configSource, /conflicts: \{ enabled: false \}/)
+})
+
 test('uses declarative data-grid formats for every planning value type', () => {
   assert.match(formattingSource, /name:\s*text/)
   assert.match(formattingSource, /id:\s*'avatar-with-text'/)

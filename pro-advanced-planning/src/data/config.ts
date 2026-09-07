@@ -97,6 +97,7 @@ export const schedulerConfig: EventSchedulerConfig = {
   allowMove: true,
   allowResize: true,
   allowDelete: false,
+  conflicts: { enabled: false },
   eventEditorStatusOptions: ['not-started', 'in-progress', 'blocked', 'done'],
   keyboardShortcuts: false,
   currentTimeMarker: false,
