@@ -73,6 +73,10 @@ test('inherits the site font family instead of overriding it in the workspace', 
   assert.doesNotMatch(stylesSource, /font(?:-family)?:[^;}]*Geist/)
 })
 
+test('matches view badges to the Pro Advanced plan badge', () => {
+  assert.match(stylesSource, /planning-demo__pro\{[\s\S]*?border-radius:999px[\s\S]*?background:color-mix\(in srgb,var\(--vp-c-brand-1\) 14%,transparent\)[\s\S]*?font-size:\.72rem/)
+})
+
 test('keeps native grid internals unstyled and uses compact owner avatars', () => {
   assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revogr-/)
   assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revo-grid/)
