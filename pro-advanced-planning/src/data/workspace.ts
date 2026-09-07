@@ -8,7 +8,7 @@ export const planningProjects: ReadonlyArray<{ id: PlanningProjectId; label: str
 ];
 
 export const defaultPlanningFilters = (): PlanningFilters => ({
-  query: '', projectId: 'all', statuses: [], priorities: [],
+  query: '', projectId: 'all', statuses: ['in-progress', 'blocked', 'not-started'], priorities: [],
 });
 
 export function filterPlanningTasks(tasks: readonly PlanningTask[], filters: PlanningFilters): PlanningTask[] {

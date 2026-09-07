@@ -36,10 +36,10 @@ test('inherits the site font family instead of overriding it in the workspace', 
   assert.doesNotMatch(stylesSource, /font(?:-family)?:[^;}]*Geist/)
 })
 
-test('provides a stable 50-task fixture across three projects', () => {
+test('provides a stable 100-task fixture across three projects', () => {
   const tasks = createTasks()
-  assert.equal(tasks.length, 50)
-  assert.equal(new Set(tasks.map(({ id }) => id)).size, 50)
+  assert.equal(tasks.length, 100)
+  assert.equal(new Set(tasks.map(({ id }) => id)).size, 100)
   assert.deepEqual([...new Set(tasks.map(({ projectId }) => projectId))].sort(), [
     'billing-platform', 'customer-portal', 'internal-tools',
   ])
@@ -69,7 +69,7 @@ test('combines search, project, status and priority filters', () => {
   })
   assert.ok(matching.length > 0)
   assert.ok(matching.every(task => task.owner === 'Maya' && task.projectId === 'customer-portal' && task.workflowStatus === 'done' && task.priority === 500))
-  assert.deepEqual(filterPlanningTasks(tasks, defaultPlanningFilters()), tasks)
+  assert.equal(filterPlanningTasks(tasks, defaultPlanningFilters()).length, 60)
 })
 
 test('applies filtered and sorted edits only by stable task ID', () => {
@@ -89,7 +89,7 @@ test('merges visible Kanban changes without removing hidden tasks', () => {
   const movedCard = { ...visible[0], workflowStatus: 'done' }
   const moved = visible.map(task => task.id === movedCard.id ? movedCard : task)
   const merged = mergeVisibleTasks(tasks, moved)
-  assert.equal(merged.length, 50)
+  assert.equal(merged.length, 100)
   assert.equal(merged.find(({ id }) => id === movedCard.id)?.workflowStatus, 'done')
   assert.deepEqual(merged.filter(({ projectId }) => projectId !== 'internal-tools'), tasks.filter(({ projectId }) => projectId !== 'internal-tools'))
 })
@@ -114,7 +114,7 @@ test('reset fixtures and filters restore deterministic defaults', () => {
   const edited = applyPlanningGridEdit(initial, { model: initial[0], prop: 'name', val: 'Changed' })
   assert.notDeepEqual(edited, initial)
   assert.deepEqual(createTasks(), initial)
-  assert.deepEqual(defaultPlanningFilters(), { query: '', projectId: 'all', statuses: [], priorities: [] })
+  assert.deepEqual(defaultPlanningFilters(), { query: '', projectId: 'all', statuses: ['in-progress', 'blocked', 'not-started'], priorities: [] })
 })
 
 test('opens timeline views on the fixed fixture window', () => {

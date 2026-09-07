@@ -48,6 +48,14 @@ const priorityCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (h, { v
 
 export const planningFilterConfig = {
   structuredFilterTypes: planningStructuredFilterTypes,
+  multiFilterItems: {
+    workflowStatus: [{
+      id: 0,
+      type: 'chipBadgeSelection',
+      value: { values: ['in-progress', 'blocked', 'not-started'], includeBlanks: false },
+      relation: 'and',
+    }],
+  },
   selection: {
     syncCellTemplate: {
       owner: true,

@@ -33,6 +33,16 @@ export function createTasks(): PlanningTask[] {
     'Credit notes', 'Revenue metrics', 'Usage limits', 'User directory', 'Activity feed',
     'Backup policy', 'Data retention', 'Approval workflow', 'Document storage', 'Release checklist',
     'QA automation', 'API documentation', 'Staging rollout', 'Security review', 'Launch readiness',
+    'Customer research', 'Journey mapping', 'Design QA', 'Component library', 'Mobile navigation',
+    'Search relevance', 'Account provisioning', 'Permissions audit', 'SSO configuration', 'Data migration',
+    'Invoice reconciliation', 'Payment retries', 'Tax calculation', 'Revenue recognition', 'Subscription pause',
+    'Usage alerts', 'Cost allocation', 'Forecast model', 'Monthly close', 'Finance dashboard',
+    'Incident runbook', 'Load testing', 'Observability setup', 'Database indexing', 'Cache strategy',
+    'Accessibility testing', 'Localization review', 'Content migration', 'Legal review', 'Privacy controls',
+    'Release notes', 'Feature flags', 'Beta program', 'Support training', 'Launch communications',
+    'Post-launch review', 'Customer feedback', 'Roadmap planning', 'Operations handoff', 'Quarterly planning',
+    'Design retrospective', 'Architecture review', 'Data quality audit', 'Workflow automation', 'Partner integration',
+    'Mobile performance', 'Knowledge base', 'Customer success review', 'Platform hardening', 'Release readiness',
   ];
   const owners = ['Maya', 'Ava', 'Noah', 'Nina', 'Leo'] as const;
   const projects = ['customer-portal', 'billing-platform', 'internal-tools'] as const;
@@ -41,7 +51,7 @@ export function createTasks(): PlanningTask[] {
   return names.map((name, index) => {
     const owner = owners[index % owners.length];
     const projectIndex = index % projects.length;
-    const startOffset = Math.floor(index / startPattern.length) * 4 + startPattern[index % startPattern.length];
+    const startOffset = Math.floor(index / startPattern.length) + startPattern[index % startPattern.length];
     const durationDays = [4, 3, 6, 2, 5][(index + projectIndex) % 5];
     const start = new Date(Date.UTC(2026, 8, 7 + startOffset, 8 + projectIndex));
     const end = new Date(Date.UTC(2026, 8, 7 + startOffset + durationDays - 1, 17));
@@ -56,8 +66,9 @@ export function createTasks(): PlanningTask[] {
     )).toISOString();
     const startDate = start.toISOString();
     const endDate = end.toISOString();
-    const workflowStatus = statuses[index % statuses.length];
+    // Cycle independently of ownership so each owner has a representative mix.
+    const workflowStatus = statuses[(index + Math.floor(index / owners.length)) % statuses.length];
     const percentDone = workflowStatus === 'done' ? 100 : workflowStatus === 'not-started' ? 0 : 20 + ((index * 15) % 75);
-    return { id: `task-${String(index + 1).padStart(2, '0')}`, name, owner, ownerAvatar: getOwnerAvatar(owner), owners: [owner], ownerAvatars: [getOwnerAvatar(owner)], startDate, endDate, activityAt, duration: `${durationDays}d`, percentDone, order: (index + 1) * 1000, workflowStatus, priority: [500, 700, 900][index % 3], projectId: projects[projectIndex], budget: 1800 + index * 200 } as PlanningTask;
+    return { id: `task-${String(index + 1).padStart(3, '0')}`, name, owner, ownerAvatar: getOwnerAvatar(owner), owners: [owner], ownerAvatars: [getOwnerAvatar(owner)], startDate, endDate, activityAt, duration: `${durationDays}d`, percentDone, order: (index + 1) * 1000, workflowStatus, priority: [500, 700, 900][index % 3], projectId: projects[projectIndex], budget: 1800 + index * 200 } as PlanningTask;
   });
 }
