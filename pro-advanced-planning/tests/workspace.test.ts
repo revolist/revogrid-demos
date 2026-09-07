@@ -157,3 +157,10 @@ test('keeps all four Kanban columns compact enough for the workspace', () => {
   assert.equal(columns.every(([, size, minSize]) => Number(size) >= Number(minSize) && Number(minSize) === 216), true)
   assert.equal(columns.reduce((total, [, size]) => total + Number(size), 0), 912)
 })
+
+test('renders Kanban resources with their native avatar data', () => {
+  assert.match(configSource, /import \{ avatarTemplate \} from '@revolist\/revogrid-pro'/)
+  assert.match(configSource, /planning-card__avatar-stack/)
+  assert.match(configSource, /value: card\.ownerAvatars\[index\] \?\? owner/)
+  assert.match(stylesSource, /planning-card__avatar-stack/)
+})

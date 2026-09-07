@@ -1,6 +1,7 @@
 import type { GanttPluginConfig } from '@revolist/gantt';
 import type { KanbanConfig } from '@revolist/kanban';
 import type { EventSchedulerConfig } from '@revolist/scheduler';
+import { avatarTemplate } from '@revolist/revogrid-pro';
 import { planningCalendarId } from './source';
 import type { PlanningTask } from './types';
 
@@ -28,7 +29,17 @@ export const kanbanConfig: KanbanConfig<PlanningTask> = {
     cardContent: (h, { card }) => h('div', { class: 'planning-card' }, [
       h('strong', { class: 'planning-card__title', title: card.name }, card.name),
       h('div', { class: 'planning-card__meta' }, [
-        h('span', {}, card.owner),
+        h('span', { class: 'planning-card__owner', title: card.owners.join(', ') }, [
+          h('span', { class: 'planning-card__avatar-stack' }, card.owners.map((owner, index) => avatarTemplate(h, {
+            ariaLabel: owner,
+            className: 'planning-card__avatar',
+            index,
+            label: owner,
+            size: 20,
+            value: card.ownerAvatars[index] ?? owner,
+          }))),
+          h('span', { class: 'planning-card__owner-label' }, card.owners.join(', ')),
+        ]),
         h('span', {}, `$${Number(card.budget).toLocaleString('en-US')}`),
       ]),
       h('div', { class: 'planning-card__progress', title: `${card.percentDone}% complete` }, [
