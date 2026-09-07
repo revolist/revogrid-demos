@@ -1,8 +1,16 @@
-import type { ColumnRegular } from '@revolist/revogrid';
+import type { ColumnFilterConfig, ColumnRegular } from '@revolist/revogrid';
 import { avatarWithTextRenderer, FIlTER_SELECTION } from '@revolist/revogrid-pro';
 import {
   createDefaultTaskTableColumn,
 } from '@revolist/gantt';
+import { getOwnerAvatar, planningPeople } from './fixtures';
+
+const ownerEditorOptions = planningPeople.map(({ id, name }) => ({
+  value: id,
+  label: name,
+  owner: name,
+  ownerAvatar: getOwnerAvatar(id),
+}));
 
 const dateCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (
   _h,
@@ -30,6 +38,15 @@ const priorityCellTemplate: NonNullable<ColumnRegular['cellTemplate']> = (h, { v
   return h('span', { class: `planning-priority planning-priority--${label.toLowerCase()}` }, label);
 };
 
+export const planningFilterConfig = {
+  selection: {
+    syncCellTemplate: {
+      workflowStatus: true,
+      priority: true,
+    },
+  },
+} satisfies ColumnFilterConfig;
+
 const workflowStatusColumn = createDefaultTaskTableColumn('workflowStatus');
 const percentDoneColumn = createDefaultTaskTableColumn('percentDone');
 
@@ -42,6 +59,11 @@ export const gridColumns: ColumnRegular[] = [
     size: 120,
     sortable: true,
     filter: false,
+    columnType: 'dropdown',
+    dropdown: {
+      source: ownerEditorOptions,
+      syncCellTemplate: true,
+    },
     avatarProp: 'ownerAvatar',
     avatarLabelProp: 'owner',
     avatarSize: 20,
@@ -53,10 +75,11 @@ export const gridColumns: ColumnRegular[] = [
     size: 132,
     sortable: true,
     filter: [FIlTER_SELECTION],
+    filterPlaceholder: 'All statuses',
     cellTemplate: workflowCellTemplate,
   },
   {
-    prop: 'priority', name: 'Priority', size: 88, readonly: true, sortable: true, filter: [FIlTER_SELECTION], cellTemplate: priorityCellTemplate,
+    prop: 'priority', name: 'Priority', size: 88, readonly: true, sortable: true, filter: [FIlTER_SELECTION], filterPlaceholder: 'All priorities', cellTemplate: priorityCellTemplate,
   },
   {
     prop: 'endDate',
