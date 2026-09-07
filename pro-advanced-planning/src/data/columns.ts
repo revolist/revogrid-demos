@@ -71,7 +71,7 @@ const percentDoneColumn = createDefaultTaskTableColumn('percentDone');
 
 export const gridColumns: ColumnRegular[] = [
   { prop: '_selected', name: '', size: 36, pin: 'colPinStart', rowSelect: true, readonly: true, filter: false },
-  { prop: 'name', name: 'Task', size: 220, sortable: true, filter: false },
+  { prop: 'name', name: 'Task', size: 220, sortable: true, filter: true, filterPlaceholder: 'Filter tasks' },
   {
     prop: 'owner',
     name: 'Owner',
