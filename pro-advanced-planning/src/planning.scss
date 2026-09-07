@@ -4,7 +4,7 @@
 .planning-demo__switch button{text-transform:capitalize}
 
 /* Project workspace visual system */
-.planning-demo{--planning-accent:#138a5b;--planning-accent-strong:#08764b;--planning-surface:var(--rv-ui-surface,#fff);--planning-surface-soft:var(--rv-ui-surface-muted,#f7f8fa);--planning-border:var(--rv-ui-border,#e2e6ea);--planning-text:var(--rv-ui-text,#1d2730);--planning-muted:var(--rv-ui-text-muted,#68717b);padding:0 16px 8px;gap:0;background:var(--planning-surface);color:var(--planning-text)}
+.planning-demo{--planning-accent:#138a5b;--planning-accent-strong:#08764b;--planning-surface:var(--rv-ui-surface,#fff);--planning-surface-soft:var(--rv-ui-surface-muted,#f7f8fa);--planning-border:var(--rv-ui-border,#e2e6ea);--planning-text:var(--rv-ui-text,#1d2730);--planning-muted:var(--rv-ui-text-muted,#68717b);padding:0 0 8px;gap:0;background:var(--planning-surface);color:var(--planning-text)}
 .planning-demo__topbar{min-height:52px;padding:0 2px;border-bottom:1px solid var(--planning-border)}
 .planning-demo__switch{height:52px;align-items:stretch;gap:4px}
 .planning-demo__switch button{position:relative;height:52px;padding:0 12px;border:0;color:var(--planning-muted);font-size:13px;font-weight:520}
@@ -101,3 +101,12 @@
 .dark .planning-demo__grid revogr-header .rgHeaderCell{border-color:#46504b;background:#292f2c;color:#eef3f0}
 .dark .planning-demo__grid--kanban{--kanban-board-background:#242927;--kanban-surface:#242927;background:#242927}
 .planning-demo__grid .gantt-header-flag-cap--today{transform:translateX(-15px)}
+
+/* Let the docs canvas flow through every workspace surface. */
+.planning-demo{background:transparent}
+.planning-demo__grid{--revo-grid-background:transparent;--revo-grid-foreground:transparent;--revo-grid-header-bg:transparent;--revo-grid-row-headers-bg:transparent;background:transparent;box-shadow:none}
+.planning-demo__grid revogr-header .rgHeaderCell{background:transparent}
+.planning-demo__grid--kanban{--kanban-board-background:transparent;--kanban-surface:transparent;background:transparent}
+.dark .planning-demo__grid{--revo-grid-background:transparent;--revo-grid-foreground:transparent;--revo-grid-header-bg:transparent;--revo-grid-row-headers-bg:transparent;box-shadow:none}
+.dark .planning-demo__grid revogr-header .rgHeaderCell{background:transparent}
+.dark .planning-demo__grid--kanban{--kanban-board-background:transparent;--kanban-surface:transparent;background:transparent}
