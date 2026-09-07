@@ -18,7 +18,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px 22px;
+  padding: 12px 0;
   box-sizing: border-box;
 }
 
@@ -163,7 +163,7 @@
 .portfolio-demo.is-dark .portfolio-progress-track { background: #424242; }
 
 @media (max-width: 640px) {
-  .portfolio-toolbar { min-height: 58px; padding: 10px 14px; }
+  .portfolio-toolbar { min-height: 58px; padding: 10px 0; }
   .portfolio-grouping { gap: 7px; }
   .portfolio-grouping strong { max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
 }
