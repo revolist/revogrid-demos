@@ -154,7 +154,7 @@ export default function PlanningViews() {
           resize
           canMoveColumns
           rowSize={40}
-          stretch="all"
+          stretch={1}
           rowSelect={{ rowOrder: false }}
           filter={planningFilterConfig}
           onRowselected={(event: CustomEvent<{ count: number }>) => setSelectedCount(event.detail.count)}

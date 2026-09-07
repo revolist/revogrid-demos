@@ -132,7 +132,7 @@ import {
             [columnTypes]="gridColumnTypes"
             [dataGridContextMenu]="planningDataGridContextMenu"
             [dataGridFormatting]="planningDataGridFormatting"
-            [stretch]="'all'"
+            [stretch]="1"
             [filter]="planningFilterConfig"
             [range]="true"
             [resize]="true"
