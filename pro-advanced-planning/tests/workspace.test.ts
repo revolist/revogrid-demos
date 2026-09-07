@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { createTasks, planningPeople } from '../src/data/fixtures'
-import { applyPlanningGridEdit, defaultPlanningFilters, filterPlanningTasks, mergeVisibleTasks, selectedPlanningTaskIds } from '../src/data/workspace'
+import { applyPlanningGridEdit, defaultPlanningFilters, filterPlanningTasks, mergeVisibleTasks } from '../src/data/workspace'
 import { updateFromKanban } from '../src/data/sync'
 const configSource = readFileSync(new URL('../src/data/config.ts', import.meta.url), 'utf8')
 
@@ -62,15 +62,6 @@ test('merges visible Kanban changes without removing hidden tasks', () => {
   assert.equal(merged.length, 50)
   assert.equal(merged.find(({ id }) => id === movedCard.id)?.workflowStatus, 'done')
   assert.deepEqual(merged.filter(({ projectId }) => projectId !== 'internal-tools'), tasks.filter(({ projectId }) => projectId !== 'internal-tools'))
-})
-
-test('maps filtered row selection to stable task IDs', () => {
-  const tasks = createTasks()
-  const visible = filterPlanningTasks(tasks, { ...defaultPlanningFilters(), projectId: 'customer-portal' })
-  assert.deepEqual(
-    [...selectedPlanningTaskIds(visible, [new Set([0, 3])])],
-    [visible[0].id, visible[3].id],
-  )
 })
 
 test('synchronizes a grid status edit into the Kanban source', () => {

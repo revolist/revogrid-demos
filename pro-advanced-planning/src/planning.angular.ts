@@ -32,8 +32,6 @@ import {
   planningFilterConfig,
   schedulerConfig,
   schedulerResources,
-  selectedPlanningTaskIds,
-  toggleVisiblePlanningRows,
   toGanttAssignments,
   toSchedulerEvents,
   updateFromGantt,
@@ -56,7 +54,7 @@ import {
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./planning.scss'],
   template: `
-    <section class="planning-demo" (click.capture)="handleGridHeaderSelectAllClick($event)">
+    <section class="planning-demo">
       <nav class="planning-demo__switch rv-segmented-switch" role="tablist" aria-label="Planning view">
         <button
           type="button"
@@ -116,7 +114,7 @@ import {
         <label class="planning-demo__select"><select aria-label="Status" [value]="filters.statuses[0] || ''" (change)="setStatus($event)"><option value="">All statuses</option><option value="not-started">Planned</option><option value="in-progress">In progress</option><option value="blocked">Blocked</option><option value="done">Done</option></select></label>
         <label class="planning-demo__select"><select aria-label="Priority" [value]="filters.priorities[0] || ''" (change)="setPriority($event)"><option value="">All priorities</option><option value="500">Normal</option><option value="700">High</option><option value="900">Critical</option></select></label>
         <button type="button" (click)="resetWorkspace()">Reset</button>
-        <span class="planning-demo__count">{{ visibleTasks.length }} of {{ tasks.length }} tasks @if (selectedIds.size) { · {{ selectedIds.size }} selected }</span>
+        <span class="planning-demo__count">{{ visibleTasks.length }} of {{ tasks.length }} tasks @if (selectedCount) { · {{ selectedCount }} selected }</span>
       </div>
 
       @switch (activeView) {
@@ -207,7 +205,7 @@ export class PlanningViewsGridComponent {
   activeView: PlanningView = 'grid';
   tasks = createTasks();
   filters: PlanningFilters = defaultPlanningFilters();
-  selectedIds = new Set<string>();
+  selectedCount = 0;
   readonly planningProjects = planningProjects;
   readonly gridColumns = gridColumns;
   readonly planningFilterConfig = planningFilterConfig;
@@ -235,18 +233,14 @@ export class PlanningViewsGridComponent {
   setProject(event: Event) { this.filters = { ...this.filters, projectId: (event.target as HTMLSelectElement).value as PlanningFilters['projectId'] }; }
   setStatus(event: Event) { const value = (event.target as HTMLSelectElement).value; this.filters = { ...this.filters, statuses: value ? [value] : [] }; }
   setPriority(event: Event) { const value = (event.target as HTMLSelectElement).value; this.filters = { ...this.filters, priorities: value ? [Number(value)] : [] }; }
-  resetWorkspace() { this.tasks = createTasks(); this.filters = defaultPlanningFilters(); this.selectedIds = new Set(); }
+  resetWorkspace() { this.tasks = createTasks(); this.filters = defaultPlanningFilters(); this.selectedCount = 0; }
 
   handleGridEdit(event: CustomEvent) {
     this.setTasks(updateFromGrid(this.tasks, event.detail));
   }
 
   handleRowSelected(event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>) {
-    this.selectedIds = selectedPlanningTaskIds(this.visibleTasks, event.detail.selected);
-  }
-
-  handleGridHeaderSelectAllClick(event: MouseEvent) {
-    void toggleVisiblePlanningRows(event, this.selectedIds.size, this.visibleTasks.length);
+    this.selectedCount = event.detail.count;
   }
 
   handleKanbanMove(event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>) {

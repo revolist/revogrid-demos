@@ -35,8 +35,6 @@ import {
   planningFilterConfig,
   schedulerConfig,
   schedulerResources,
-  selectedPlanningTaskIds,
-  toggleVisiblePlanningRows,
   toGanttAssignments,
   toSchedulerEvents,
   updateFromGantt,
@@ -63,7 +61,7 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
   kanban?: typeof kanbanConfig;
   rowSelect?: { rowOrder: boolean };
   filter?: typeof planningFilterConfig;
-  onRowselected?: (event: CustomEvent<{ selected: Map<string, Set<number>> }>) => void;
+  onRowselected?: (event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>) => void;
   'onGantt-before-task-change'?: (
     event: CustomEvent<GanttBeforeTaskChangeDetail>,
   ) => void;
@@ -93,7 +91,7 @@ export default function PlanningViews() {
   const [activeView, setActiveView] = useState<PlanningView>('grid');
   const [tasks, setTasks] = useState(createTasks);
   const [filters, setFilters] = useState<PlanningFilters>(defaultPlanningFilters);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [selectedCount, setSelectedCount] = useState(0);
   const [isDark, setIsDark] = useState(() => currentTheme().isDark());
   const ganttPlugins = useMemo(() => [GanttPlugin], []);
   const kanbanPlugins = useMemo(() => [KanbanPlugin], []);
@@ -107,7 +105,7 @@ export default function PlanningViews() {
   useEffect(() => observeCurrentTheme(setIsDark), []);
 
   return (
-    <section className="planning-demo" onClickCapture={(event) => { void toggleVisiblePlanningRows(event.nativeEvent, selectedIds.size, visibleTasks.length); }}>
+    <section className="planning-demo">
       <nav className="planning-demo__switch rv-segmented-switch" role="tablist" aria-label="Planning view">
         {views.map((view) => (
           <button
@@ -131,8 +129,8 @@ export default function PlanningViews() {
           <fieldset><legend>Priority</legend>{[[500,'Normal'],[700,'High'],[900,'Critical']].map(([value,label]) => <label key={value}><input type="checkbox" checked={filters.priorities.includes(Number(value))} onChange={() => setFilters(current => ({ ...current, priorities: current.priorities.includes(Number(value)) ? current.priorities.filter(item => item !== Number(value)) : [...current.priorities, Number(value)] }))}/>{label}</label>)}</fieldset>
           <button type="button" className="planning-demo__clear" onClick={() => setFilters(defaultPlanningFilters())}>Clear filters</button>
         </div></details>
-        <button type="button" onClick={() => { setTasks(createTasks()); setFilters(defaultPlanningFilters()); setSelectedIds(new Set()); }}>Reset</button>
-        <span className="planning-demo__count">{visibleTasks.length} of {tasks.length} tasks · {selectedIds.size} selected</span>
+        <button type="button" onClick={() => { setTasks(createTasks()); setFilters(defaultPlanningFilters()); setSelectedCount(0); }}>Reset</button>
+        <span className="planning-demo__count">{visibleTasks.length} of {tasks.length} tasks · {selectedCount} selected</span>
       </div>
 
       {!visibleTasks.length && <div className="planning-demo__empty"><strong>No tasks match your filters</strong><button type="button" onClick={() => setFilters(defaultPlanningFilters())}>Clear filters</button></div>}
@@ -151,7 +149,7 @@ export default function PlanningViews() {
           rowSize={40}
           rowSelect={{ rowOrder: false }}
           filter={planningFilterConfig}
-          onRowselected={(event: CustomEvent<{ selected: Map<string, Set<number>> }>) => setSelectedIds(selectedPlanningTaskIds(visibleTasks, event.detail.selected))}
+          onRowselected={(event: CustomEvent<{ count: number }>) => setSelectedCount(event.detail.count)}
           onAfteredit={(event) =>
             setTasks((current) =>
               updateFromGrid(

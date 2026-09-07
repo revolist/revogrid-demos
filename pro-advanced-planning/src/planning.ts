@@ -34,8 +34,6 @@ import {
   planningFilterConfig,
   schedulerConfig,
   schedulerResources,
-  selectedPlanningTaskIds,
-  toggleVisiblePlanningRows,
   toGanttAssignments,
   toSchedulerEvents,
   updateFromGantt,
@@ -71,7 +69,7 @@ export function load(parentSelector: string): (() => void) | undefined {
   let tasks = createTasks();
   let activeView: PlanningView = 'grid';
   let filters: PlanningFilters = defaultPlanningFilters();
-  let selectedIds = new Set<string>();
+  let selectedCount = 0;
   const root = document.createElement('section');
   const switcher = document.createElement('nav');
   const panel = document.createElement('article');
@@ -84,9 +82,6 @@ export function load(parentSelector: string): (() => void) | undefined {
   const reset = document.createElement('button');
 
   root.className = 'planning-demo';
-  root.addEventListener('click', (event) => {
-    void toggleVisiblePlanningRows(event, selectedIds.size, filterPlanningTasks(tasks, filters).length);
-  }, true);
   switcher.className = 'planning-demo__switch rv-segmented-switch';
   switcher.setAttribute('role', 'tablist');
   switcher.ariaLabel = 'Planning view';
@@ -104,7 +99,7 @@ export function load(parentSelector: string): (() => void) | undefined {
     activeView = view;
     const visibleTasks = filterPlanningTasks(tasks, filters);
     const visibleIds = new Set(visibleTasks.map(({ id }) => id));
-    count.textContent = `${visibleTasks.length} of ${tasks.length} tasks${selectedIds.size ? ` · ${selectedIds.size} selected` : ''}`;
+    count.textContent = `${visibleTasks.length} of ${tasks.length} tasks${selectedCount ? ` · ${selectedCount} selected` : ''}`;
     const grid = document.createElement('revo-grid') as PlanningGridElement;
     grid.hideAttribution = true;
     grid.theme = currentTheme().isDark() ? 'darkCompact' : 'compact';
@@ -125,8 +120,8 @@ export function load(parentSelector: string): (() => void) | undefined {
         );
       });
       grid.addEventListener('rowselected', (event) => {
-        selectedIds = selectedPlanningTaskIds(visibleTasks, (event as CustomEvent<HTMLRevoGridElementEventMap['rowselected']>).detail.selected);
-        count.textContent = `${visibleTasks.length} of ${tasks.length} tasks${selectedIds.size ? ` · ${selectedIds.size} selected` : ''}`;
+        selectedCount = (event as CustomEvent<HTMLRevoGridElementEventMap['rowselected']>).detail.count;
+        count.textContent = `${visibleTasks.length} of ${tasks.length} tasks${selectedCount ? ` · ${selectedCount} selected` : ''}`;
       });
     } else if (view === 'kanban') {
       grid.plugins = [KanbanPlugin];
@@ -199,7 +194,7 @@ export function load(parentSelector: string): (() => void) | undefined {
   project.addEventListener('change', () => { filters = { ...filters, projectId: project.value as PlanningFilters['projectId'] }; render(activeView); });
   status.addEventListener('change', () => { filters = { ...filters, statuses: status.value ? [status.value] : [] }; render(activeView); });
   priority.addEventListener('change', () => { filters = { ...filters, priorities: priority.value ? [Number(priority.value)] : [] }; render(activeView); });
-  reset.addEventListener('click', () => { tasks = createTasks(); filters = defaultPlanningFilters(); selectedIds = new Set(); search.value = ''; project.value = 'all'; status.value = ''; priority.value = ''; render(activeView); });
+  reset.addEventListener('click', () => { tasks = createTasks(); filters = defaultPlanningFilters(); selectedCount = 0; search.value = ''; project.value = 'all'; status.value = ''; priority.value = ''; render(activeView); });
 
   for (const view of views) {
     const button = document.createElement('button');
