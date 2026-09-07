@@ -223,5 +223,6 @@ test('renders Kanban resources with their native avatar data', () => {
   assert.match(kanbanConfigSource, /import \{ avatarTemplate \} from '@revolist\/revogrid-pro'/)
   assert.match(kanbanConfigSource, /planning-card__avatar-stack/)
   assert.match(kanbanConfigSource, /value: card\.ownerAvatars\[index\] \?\? owner/)
+  assert.match(stylesSource, /planning-card__title\{[^}]*line-height:20px/)
   assert.match(stylesSource, /planning-card__avatar-stack/)
 })
