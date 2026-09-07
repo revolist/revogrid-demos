@@ -1,5 +1,5 @@
 <template>
-  <section ref="rootRef" class="planning-demo" @keydown.esc="closePopovers">
+  <section ref="rootRef" class="planning-demo" @click.capture="handleGridHeaderSelectAllClick" @keydown.esc="closePopovers">
     <div class="planning-demo__topbar">
       <nav class="planning-demo__switch" role="tablist" aria-label="Planning view">
         <button v-for="view in views" :key="view" type="button" :class="{ on: activeView === view }" role="tab" :aria-selected="activeView === view" @click="activeView = view">
@@ -40,7 +40,7 @@ import { GanttPlugin, type GanttBeforeAssignmentChangeDetail, type GanttBeforeTa
 import { KanbanPlugin, type KanbanCardCreateDetail, type KanbanCardDeleteDetail, type KanbanCardMoveDetail, type KanbanCardUpdateDetail } from '@revolist/kanban';
 import { EventSchedulerPlugin, type EventSchedulerEventChangedDetail } from '@revolist/scheduler';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
-import { calendarConfig, createTasks, defaultPlanningFilters, filterPlanningTasks, ganttColumns, ganttConfig, ganttResources, gridColumns, kanbanConfig, mergeVisibleTasks, planningProjects, schedulerConfig, schedulerResources, selectedPlanningTaskIds, toGanttAssignments, toSchedulerEvents, updateFromGantt, updateFromGanttAssignment, updateFromGrid, updateFromKanban, updateFromKanbanCreate, updateFromKanbanUpdate, updateFromScheduler, views, type PlanningView, type PlanningTask } from './data';
+import { calendarConfig, createTasks, defaultPlanningFilters, filterPlanningTasks, ganttColumns, ganttConfig, ganttResources, gridColumns, kanbanConfig, mergeVisibleTasks, planningProjects, schedulerConfig, schedulerResources, selectedPlanningTaskIds, toggleVisiblePlanningRows, toGanttAssignments, toSchedulerEvents, updateFromGantt, updateFromGanttAssignment, updateFromGrid, updateFromKanban, updateFromKanbanCreate, updateFromKanbanUpdate, updateFromScheduler, views, type PlanningView, type PlanningTask } from './data';
 import './planning.scss';
 
 const rootRef = ref<HTMLElement>(); const moreMenuRef = ref<HTMLDetailsElement>(); const filterWrapRef = ref<HTMLElement>(); const activeView = ref<PlanningView>('grid'); const tasks = ref(createTasks()); const filters = ref(defaultPlanningFilters()); const filterOpen = ref(false); const resetKey = ref(0); const selectedIds = ref(new Set<string>()); const isDark = ref(currentTheme().isDark());
@@ -60,6 +60,9 @@ function resetWorkspace() { tasks.value = createTasks(); selectedIds.value = new
 async function toggleFullscreen() { if (!rootRef.value) return; closePopovers(); if (document.fullscreenElement) await document.exitFullscreen(); else await rootRef.value.requestFullscreen(); }
 function merge(next: PlanningTask[]) { tasks.value = mergeVisibleTasks(tasks.value, next); }
 function handleGridEdit(event: CustomEvent) { tasks.value = updateFromGrid(tasks.value, event.detail); }
+async function handleGridHeaderSelectAllClick(event: MouseEvent) {
+  await toggleVisiblePlanningRows(event, selectedIds.value.size, visibleTasks.value.length);
+}
 function handleRowSelected(event: CustomEvent<{ selected: { forEach(callback: (indexes: Iterable<number>) => void): void } }>) { selectedIds.value = selectedPlanningTaskIds(visibleTasks.value, event.detail.selected); }
 function handleKanbanMove(event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>) { merge(updateFromKanban(visibleTasks.value, event.detail)); }
 function handleKanbanCreate(event: CustomEvent<KanbanCardCreateDetail<PlanningTask>>) { tasks.value = [...tasks.value, ...updateFromKanbanCreate([], event.detail)]; }

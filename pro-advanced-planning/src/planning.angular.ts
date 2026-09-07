@@ -32,6 +32,7 @@ import {
   schedulerConfig,
   schedulerResources,
   selectedPlanningTaskIds,
+  toggleVisiblePlanningRows,
   toGanttAssignments,
   toSchedulerEvents,
   updateFromGantt,
@@ -54,7 +55,7 @@ import {
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./planning.scss'],
   template: `
-    <section class="planning-demo">
+    <section class="planning-demo" (click.capture)="handleGridHeaderSelectAllClick($event)">
       <nav class="planning-demo__switch rv-segmented-switch" role="tablist" aria-label="Planning view">
         <button
           type="button"
@@ -239,6 +240,10 @@ export class PlanningViewsGridComponent {
 
   handleRowSelected(event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>) {
     this.selectedIds = selectedPlanningTaskIds(this.visibleTasks, event.detail.selected);
+  }
+
+  handleGridHeaderSelectAllClick(event: MouseEvent) {
+    void toggleVisiblePlanningRows(event, this.selectedIds.size, this.visibleTasks.length);
   }
 
   handleKanbanMove(event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>) {

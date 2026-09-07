@@ -40,6 +40,31 @@ export function selectedPlanningTaskIds(
   return ids;
 }
 
+export async function toggleVisiblePlanningRows(
+  event: MouseEvent,
+  selectedCount: number,
+  visibleCount: number,
+): Promise<boolean> {
+  const path = event.composedPath();
+  if (!path.some(node => node instanceof Element && node.matches('.rgHeaderCell.cell-checkbox'))) return false;
+  const grid = path.find(node => node instanceof HTMLElement && node.tagName === 'REVO-GRID') as HTMLRevoGridElement | undefined;
+  if (!grid) return false;
+
+  event.preventDefault();
+  event.stopPropagation();
+  const plugins = await grid.getPlugins();
+  const rowSelection = plugins.find(plugin => 'setSelectedIndexes' in plugin) as {
+    setSelectedIndexes(type: 'rgRow', indexes: Iterable<number>): void;
+  } | undefined;
+  if (!rowSelection) return false;
+
+  rowSelection.setSelectedIndexes(
+    'rgRow',
+    selectedCount < visibleCount ? Array.from({ length: visibleCount }, (_, index) => index) : [],
+  );
+  return true;
+}
+
 export function applyPlanningGridEdit(
   tasks: PlanningTask[],
   detail: { model?: { id?: unknown }; prop?: unknown; val?: unknown },

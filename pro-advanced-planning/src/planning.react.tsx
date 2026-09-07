@@ -35,6 +35,7 @@ import {
   schedulerConfig,
   schedulerResources,
   selectedPlanningTaskIds,
+  toggleVisiblePlanningRows,
   toGanttAssignments,
   toSchedulerEvents,
   updateFromGantt,
@@ -104,7 +105,7 @@ export default function PlanningViews() {
   useEffect(() => observeCurrentTheme(setIsDark), []);
 
   return (
-    <section className="planning-demo">
+    <section className="planning-demo" onClickCapture={(event) => { void toggleVisiblePlanningRows(event.nativeEvent, selectedIds.size, visibleTasks.length); }}>
       <nav className="planning-demo__switch rv-segmented-switch" role="tablist" aria-label="Planning view">
         {views.map((view) => (
           <button

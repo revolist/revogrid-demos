@@ -34,6 +34,7 @@ import {
   schedulerConfig,
   schedulerResources,
   selectedPlanningTaskIds,
+  toggleVisiblePlanningRows,
   toGanttAssignments,
   toSchedulerEvents,
   updateFromGantt,
@@ -81,6 +82,9 @@ export function load(parentSelector: string): (() => void) | undefined {
   const reset = document.createElement('button');
 
   root.className = 'planning-demo';
+  root.addEventListener('click', (event) => {
+    void toggleVisiblePlanningRows(event, selectedIds.size, filterPlanningTasks(tasks, filters).length);
+  }, true);
   switcher.className = 'planning-demo__switch rv-segmented-switch';
   switcher.setAttribute('role', 'tablist');
   switcher.ariaLabel = 'Planning view';

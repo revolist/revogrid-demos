@@ -38,6 +38,10 @@
 .planning-demo__grid revogr-header .rgHeaderCell{font-size:12px;letter-spacing:.01em}
 .planning-demo__grid revogr-data .rgCell{display:flex;align-items:center;overflow:hidden;font-size:13px;font-variant-numeric:tabular-nums}
 .planning-demo__grid .cell-checkbox{padding-right:0!important;padding-left:0!important}
+.planning-demo__grid revogr-header .rgHeaderCell.cell-checkbox .header-controls{display:none}
+.planning-demo__grid revogr-header .rgHeaderCell.cell-checkbox .header-content{right:0!important;width:100%!important;margin-right:0!important;padding:0!important;overflow:visible}
+.planning-demo__grid revogr-header .rgHeaderCell.cell-checkbox .cell-wrapper{width:100%!important;justify-content:center}
+.planning-demo__grid revogr-header .rgHeaderCell.cell-checkbox .cell-header-checkbox-container{position:relative;z-index:2;pointer-events:auto}
 .planning-demo__grid revogr-data .rgCell.disabled{background:transparent;color:inherit}
 .planning-demo__grid .avatar-cell__image{display:block;width:100%;height:100%;margin:0;object-fit:cover}
 .planning-status{max-width:calc(100% - 14px);height:24px;margin-left:7px;padding:0 8px;border:0;border-radius:5px;background:var(--planning-surface-soft);font-size:11px;font-weight:550;line-height:1;white-space:nowrap}
