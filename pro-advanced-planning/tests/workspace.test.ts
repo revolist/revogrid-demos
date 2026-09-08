@@ -19,6 +19,7 @@ import {
     updateFromGridSource,
     updateFromKanban,
 } from '../src/data/sync'
+import { toSchedulerEvents } from '../src/data/source'
 const ganttConfigSource = readFileSync(
     new URL('../src/data/gantt.config.ts', import.meta.url),
     'utf8'
@@ -374,6 +375,19 @@ test('keeps native Grid filters mounted across planning view switches', () => {
         workspaceSource,
         /gridPlugins\.filter\(\(plugin\) => plugin !== FilterHeaderPlugin\)/
     )
+})
+
+test('projects zero-duration Gantt milestones as valid scheduler events', () => {
+    const tasks = createTasks()
+    const schedulerEvents = toSchedulerEvents(tasks)
+
+    assert.equal(schedulerEvents.length, tasks.length)
+    for (const event of schedulerEvents) {
+        assert.ok(
+            Date.parse(event.endDateTime) > Date.parse(event.startDateTime),
+            `${event.id} must end after it starts`
+        )
+    }
 })
 
 test('keeps the normal page surface and text color in fullscreen mode', () => {

@@ -1,11 +1,11 @@
-import {
-    type AssignmentEntity,
-    type DependencyEntity,
-    type ResourceEntity,
+import type {
+    AssignmentEntity,
+    DependencyEntity,
+    ResourceEntity,
 } from '@revolist/gantt'
-import {
-    type EventSchedulerEventEntity,
-    type EventSchedulerResourceEntity,
+import type {
+    EventSchedulerEventEntity,
+    EventSchedulerResourceEntity,
 } from '@revolist/scheduler'
 import { planningPeople } from './fixtures'
 import type { PlanningTask } from './types'
@@ -62,13 +62,22 @@ export function toGanttAssignments(tasks: PlanningTask[]): AssignmentEntity[] {
 export function toSchedulerEvents(
     tasks: PlanningTask[]
 ): EventSchedulerEventEntity[] {
-    return tasks.map((task) => ({
-        id: task.id,
-        resourceId: task.owner || undefined,
-        title: task.name,
-        startDateTime: task.startDate,
-        endDateTime: task.endDate,
-        status: task.workflowStatus,
-        color: task.color,
-    }))
+    return tasks.map((task) => {
+        const start = Date.parse(task.startDate)
+        const end = Date.parse(task.endDate)
+
+        return {
+            id: task.id,
+            resourceId: task.owner || undefined,
+            title: task.name,
+            startDateTime: task.startDate,
+            // Gantt milestones have no duration. Give them a visible scheduler slot.
+            endDateTime:
+                end > start
+                    ? task.endDate
+                    : new Date(start + 3_600_000).toISOString(),
+            status: task.workflowStatus,
+            color: task.color,
+        }
+    })
 }
