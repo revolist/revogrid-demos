@@ -427,15 +427,15 @@ test('schedules each resource without overlapping task assignments', () => {
     }
 })
 
-test('uses deterministic local avatars for every shared owner', () => {
+test('uses local portrait assets for every shared owner', () => {
     const tasks = createTasks()
     assert.equal(
         planningPeople.every((person) => Boolean(person.color)),
         true
     )
     assert.equal(
-        tasks.every((task) =>
-            task.ownerAvatar.startsWith('data:image/svg+xml,')
+        planningPeople.every((person) =>
+            person.avatarUrl?.includes('/assets/avatars/')
         ),
         true
     )
@@ -444,8 +444,8 @@ test('uses deterministic local avatars for every shared owner', () => {
         true
     )
     assert.equal(
-        tasks.some((task) => task.ownerAvatar.startsWith('http')),
-        false
+        tasks.every((task) => task.ownerAvatar.endsWith('.webp')),
+        true
     )
 })
 
@@ -746,7 +746,7 @@ test('keeps all four Kanban columns compact enough for the workspace', () => {
     )
 })
 
-test('renders Kanban ownership from the canonical owner and native avatar index', () => {
+test('renders Kanban ownership from the canonical owner and local portrait', () => {
     assert.match(
         kanbanConfigSource,
         /import \{ avatarTemplate \} from '@revolist\/revogrid-pro'/
@@ -758,7 +758,10 @@ test('renders Kanban ownership from the canonical owner and native avatar index'
         kanbanConfigSource,
         /index:\s*Math\.max\(\s*getOwnerAvatarIndex\(card\.owner\) - 1,\s*0\s*\)/
     )
-    assert.match(kanbanConfigSource, /value:\s*card\.owner/)
+    assert.match(
+        kanbanConfigSource,
+        /value:\s*getOwnerAvatar\(card\.owner\)/
+    )
     assert.doesNotMatch(kanbanConfigSource, /card\.owners/)
     assert.doesNotMatch(kanbanConfigSource, /card\.ownerAvatarIndex/)
     assert.match(planningSource, /task\.owner\s*\?\s*\[/)

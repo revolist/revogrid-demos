@@ -5,7 +5,11 @@ import {
     FIlTER_SELECTION,
 } from '@revolist/revogrid-pro'
 import { createDefaultTaskTableColumn } from '@revolist/gantt'
-import { getOwnerAvatarIndex, planningPeople } from './fixtures'
+import {
+    getOwnerAvatar,
+    getOwnerAvatarIndex,
+    planningPeople,
+} from './fixtures'
 import {
     FILTER_CALENDAR_RANGE,
     FILTER_CHIP_BADGE_TOGGLES,
@@ -29,7 +33,7 @@ const ownerEditorOptions = planningPeople.map(({ id, name }) => ({
 
 /**
  * The dropdown updates the owner value before its surrounding row is replaced.
- * Resolve the avatar from that value so its color cannot lag behind the label.
+ * Resolve the avatar from that value so its photo cannot lag behind the label.
  */
 const ownerAvatarWithTextRenderer: ColumnRegular['cellTemplate'] = (
     h,
@@ -38,10 +42,16 @@ const ownerAvatarWithTextRenderer: ColumnRegular['cellTemplate'] = (
     const owner = String(value ?? '')
     return avatarWithTextRenderer(h, {
         value: owner,
-        column,
+        column: {
+            ...column,
+            avatarProp: 'ownerAvatar',
+            avatarIndexProp: 'ownerAvatarIndex',
+            avatarLabelProp: 'owner',
+        },
         model: {
             ...model,
             owner,
+            ownerAvatar: getOwnerAvatar(owner),
             ownerAvatarIndex: getOwnerAvatarIndex(owner),
         },
     })

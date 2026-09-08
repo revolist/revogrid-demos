@@ -7,27 +7,56 @@ export type PlanningPerson = {
     readonly avatarUrl?: string
     readonly color?: string
 }
-export const planningPeople: readonly PlanningPerson[] = [
-    { id: 'Ava', name: 'Ava', role: 'Design', color: '#4f46e5' },
-    { id: 'Noah', name: 'Noah', role: 'Engineering', color: '#0891b2' },
-    { id: 'Leo', name: 'Leo', role: 'QA', color: '#16a34a' },
-    { id: 'Maya', name: 'Maya', role: 'Product', color: '#008b55' },
-    { id: 'Nina', name: 'Nina', role: 'Security', color: '#7c3aed' },
-]
 
-function createAvatarDataUrl(name: string, color: string): string {
-    const initial = name.trim().slice(0, 1).toUpperCase()
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="${color}"/><text x="32" y="34" fill="white" font-family="Arial,sans-serif" font-size="26" font-weight="600" text-anchor="middle" dominant-baseline="middle">${initial}</text></svg>`
-    return `data:image/svg+xml,${encodeURIComponent(svg)}`
-}
+const avatarUrls = {
+    Ava: new URL('../assets/avatars/ava.webp', import.meta.url).href,
+    Noah: new URL('../assets/avatars/noah.webp', import.meta.url).href,
+    Leo: new URL('../assets/avatars/leo.webp', import.meta.url).href,
+    Maya: new URL('../assets/avatars/maya.webp', import.meta.url).href,
+    Nina: new URL('../assets/avatars/nina.webp', import.meta.url).href,
+} as const
+
+export const planningPeople: readonly PlanningPerson[] = [
+    {
+        id: 'Ava',
+        name: 'Ava',
+        role: 'Design',
+        color: '#4f46e5',
+        avatarUrl: avatarUrls.Ava,
+    },
+    {
+        id: 'Noah',
+        name: 'Noah',
+        role: 'Engineering',
+        color: '#0891b2',
+        avatarUrl: avatarUrls.Noah,
+    },
+    {
+        id: 'Leo',
+        name: 'Leo',
+        role: 'QA',
+        color: '#16a34a',
+        avatarUrl: avatarUrls.Leo,
+    },
+    {
+        id: 'Maya',
+        name: 'Maya',
+        role: 'Product',
+        color: '#008b55',
+        avatarUrl: avatarUrls.Maya,
+    },
+    {
+        id: 'Nina',
+        name: 'Nina',
+        role: 'Security',
+        color: '#7c3aed',
+        avatarUrl: avatarUrls.Nina,
+    },
+]
 
 export function getOwnerAvatar(owner: string): string {
     const person = planningPeople.find(({ id }) => id === owner)
-    if (!person) return owner
-    return (
-        person.avatarUrl ??
-        createAvatarDataUrl(person.name, person.color ?? '#64748b')
-    )
+    return person?.avatarUrl ?? owner
 }
 
 /** A stable native-avatar color index for grid cells and selection filters. */
