@@ -34,6 +34,7 @@ import {
     activePlanningFilterConfig,
     activePlanningFilters,
     calendarConfig,
+    clearPlanningRowSelection,
     createPlanningDataGridContextMenu,
     createTasks,
     deletePlanningTasks,
@@ -99,10 +100,18 @@ export function usePlanningWorkspace() {
         columns: ['name', 'owner'],
         debounceMs: 150,
     }))
-    const dataGridContextMenu = createPlanningDataGridContextMenu((taskIds) => {
+    const gridElement = () =>
+        (gridRef.value?.$el ?? gridRef.value) as
+            | HTMLRevoGridElement
+            | undefined
+    const deleteSelectedTasks = (taskIds: readonly string[]) => {
         tasks.value = deletePlanningTasks(tasks.value, taskIds)
         selectedCount.value = 0
-    })
+        void clearPlanningRowSelection(gridElement())
+    }
+    const dataGridContextMenu = createPlanningDataGridContextMenu(
+        deleteSelectedTasks
+    )
     const filterBadgeOptions = {
         className: 'planning-demo__filter-badges',
         badgeClassName: 'planning-demo__filter-badge',
@@ -140,7 +149,7 @@ export function usePlanningWorkspace() {
     })
 
     async function syncVisibleTasks() {
-        const grid = gridRef.value?.$el ?? gridRef.value
+        const grid = gridElement()
         if (!grid) return
         visibleTaskIds.value = (await grid.getVisibleSource()).map(
             (task: PlanningTask) => task.id
@@ -182,7 +191,7 @@ export function usePlanningWorkspace() {
 
     async function handleGridEdit(event: CustomEvent) {
         tasks.value = updateFromGrid(tasks.value, event.detail)
-        const grid = gridRef.value?.$el ?? gridRef.value
+        const grid = gridElement()
         if (!grid) return
         const visible = (await grid.getVisibleSource()) as PlanningTask[]
         tasks.value = updateFromGridSource(tasks.value, event.detail, visible)

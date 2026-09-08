@@ -14,6 +14,7 @@ import {
     filterPlanningTasks,
     mergeVisibleTasks,
 } from '../src/data/workspace'
+import { clearPlanningRowSelection } from '../src/data/selection'
 import {
     updateFromGrid,
     updateFromGridSource,
@@ -629,6 +630,26 @@ test('deletes every selected task from the canonical workspace', () => {
     assert.equal(remaining.some(({ id }) => deleted.includes(id)), false)
 })
 
+test('clears checkbox selection after deleting rows', async () => {
+    let selectedType = ''
+    let selectedIndexes: number[] | undefined
+    const grid = {
+        getPlugins: async () => [
+            {
+                setSelectedIndexes(type: string, indexes: Iterable<number>) {
+                    selectedType = type
+                    selectedIndexes = [...indexes]
+                },
+            },
+        ],
+    } as unknown as HTMLRevoGridElement
+
+    await clearPlanningRowSelection(grid)
+
+    assert.equal(selectedType, 'rgRow')
+    assert.deepEqual(selectedIndexes, [])
+})
+
 test('synchronizes a grid status edit into the Kanban source', () => {
     const tasks = createTasks()
     const edited = applyPlanningGridEdit(tasks, {
@@ -731,6 +752,7 @@ test('routes context-menu row deletion through the shared task source', () => {
     ]) {
         assert.match(source, /createPlanningDataGridContextMenu/)
         assert.match(source, /deletePlanningTasks/)
+        assert.match(source, /clearPlanningRowSelection/)
     }
 })
 

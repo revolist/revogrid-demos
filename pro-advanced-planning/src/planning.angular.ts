@@ -27,6 +27,7 @@ import { currentTheme } from '../../composables/useRandomData'
 import {
     activePlanningFilters,
     calendarConfig,
+    clearPlanningRowSelection,
     createPlanningDataGridContextMenu,
     createTasks,
     deletePlanningTasks,
@@ -286,6 +287,7 @@ export class PlanningViewsGridComponent {
     tasks = createTasks()
     filters: PlanningFilters = defaultPlanningFilters()
     selectedCount = 0
+    private grid?: HTMLRevoGridElement
     readonly planningProjects = planningProjects
     readonly gridColumns = gridColumns
     readonly gridColumnTypes = gridColumnTypes
@@ -364,6 +366,7 @@ export class PlanningViewsGridComponent {
     deleteSelectedTasks(taskIds: readonly string[]) {
         this.tasks = deletePlanningTasks(this.tasks, taskIds)
         this.selectedCount = 0
+        void clearPlanningRowSelection(this.grid)
     }
 
     async handleGridEdit(event: CustomEvent) {
@@ -376,6 +379,7 @@ export class PlanningViewsGridComponent {
     handleRowSelected(
         event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>
     ) {
+        this.grid = event.currentTarget as HTMLRevoGridElement
         this.selectedCount = event.detail.count
     }
 

@@ -29,6 +29,7 @@ import {
 import {
     activePlanningFilters,
     calendarConfig,
+    clearPlanningRowSelection,
     createPlanningDataGridContextMenu,
     createTasks,
     deletePlanningTasks,
@@ -149,7 +150,9 @@ export function load(parentSelector: string): (() => void) | undefined {
                 (taskIds) => {
                     tasks = deletePlanningTasks(tasks, taskIds)
                     selectedCount = 0
-                    render(activeView)
+                    void clearPlanningRowSelection(grid).then(() =>
+                        render(activeView)
+                    )
                 }
             )
             grid.dataGridFormatting = planningDataGridFormatting

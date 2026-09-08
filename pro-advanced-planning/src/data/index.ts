@@ -15,6 +15,7 @@ export { planningStructuredFilterTypes } from './planning.structured'
 export { ganttConfig } from './gantt.config'
 export { kanbanConfig } from './kanban.config'
 export { calendarConfig, schedulerConfig } from './scheduler.config'
+export { clearPlanningRowSelection } from './selection'
 export {
     createTasks,
     ganttDependencies,

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { RevoGrid } from '@revolist/react-datagrid'
 import {
     GanttPlugin,
@@ -30,6 +30,7 @@ import {
 import {
     activePlanningFilters,
     calendarConfig,
+    clearPlanningRowSelection,
     createPlanningDataGridContextMenu,
     createTasks,
     deletePlanningTasks,
@@ -110,6 +111,7 @@ export default function PlanningViews() {
         defaultPlanningFilters
     )
     const [selectedCount, setSelectedCount] = useState(0)
+    const gridRef = useRef<HTMLRevoGridElement>(null)
     const [isDark, setIsDark] = useState(() => currentTheme().isDark())
     const ganttPlugins = useMemo(() => [GanttPlugin], [])
     const kanbanPlugins = useMemo(() => [KanbanPlugin], [])
@@ -130,6 +132,7 @@ export default function PlanningViews() {
             createPlanningDataGridContextMenu((taskIds) => {
                 setTasks((current) => deletePlanningTasks(current, taskIds))
                 setSelectedCount(0)
+                void clearPlanningRowSelection(gridRef.current)
             }),
         []
     )
@@ -337,6 +340,7 @@ export default function PlanningViews() {
             {!!visibleTasks.length && activeView === 'grid' && (
                 <PlanningGrid
                     key="grid"
+                    ref={gridRef}
                     className="planning-demo__grid"
                     theme={isDark ? 'darkCompact' : 'compact'}
                     hideAttribution
