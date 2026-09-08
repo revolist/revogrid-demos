@@ -414,6 +414,14 @@ test('uses one compact owner renderer for Grid cells and dropdown options', () =
     )
 })
 
+test('renders Progress as an inline slider filter', () => {
+    assert.match(
+        columnsSource,
+        /\.\.\.percentDoneColumn[\s\S]*?filter: \[FIlTER_SLIDER\][\s\S]*?min: 0[\s\S]*?max: 100[\s\S]*?step: 5/
+    )
+    assert.doesNotMatch(columnsSource, /FILTER_RATING_PROGRESS_THRESHOLD/)
+})
+
 test('provides a stable 100-task fixture across three projects', () => {
     const tasks = createTasks()
     assert.equal(tasks.length, 100)

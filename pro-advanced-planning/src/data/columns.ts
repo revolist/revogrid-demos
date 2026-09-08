@@ -3,6 +3,7 @@ import {
     avatarWithTextRenderer,
     ColumnDropdown,
     FIlTER_SELECTION,
+    FIlTER_SLIDER,
 } from '@revolist/revogrid-pro'
 import { createDefaultTaskTableColumn } from '@revolist/gantt'
 import { getOwnerAvatar, getOwnerAvatarIndex, planningPeople } from './fixtures'
@@ -10,7 +11,6 @@ import {
     FILTER_CALENDAR_RANGE,
     FILTER_CHIP_BADGE_TOGGLES,
     FILTER_HISTOGRAM_BRUSH,
-    FILTER_RATING_PROGRESS_THRESHOLD,
     FILTER_TIME_MATRIX,
     planningStructuredFilterTypes,
 } from './planning.structured'
@@ -195,7 +195,10 @@ export const gridColumns: ColumnRegular[] = [
         name: 'Progress',
         size: 116,
         sortable: true,
-        filter: [FILTER_RATING_PROGRESS_THRESHOLD],
+        filter: [FIlTER_SLIDER],
+        min: 0,
+        max: 100,
+        step: 5,
         dataGridFormat: planningGridFormats.percentDone,
     },
     {

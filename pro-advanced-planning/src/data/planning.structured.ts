@@ -3,12 +3,10 @@ import {
     FILTER_CALENDAR_RANGE,
     FILTER_CHIP_BADGE_TOGGLES,
     FILTER_HISTOGRAM_BRUSH,
-    FILTER_RATING_PROGRESS_THRESHOLD,
     FILTER_TIME_MATRIX,
     createCalendarRangeStructuredFilterType,
     createChipBadgeStructuredFilterType,
     createHistogramBrushStructuredFilterType,
-    createRatingProgressThresholdStructuredFilterType,
     createTimeMatrixStructuredFilterType,
 } from '@revolist/revogrid-pro'
 
@@ -16,7 +14,6 @@ export {
     FILTER_CALENDAR_RANGE,
     FILTER_CHIP_BADGE_TOGGLES,
     FILTER_HISTOGRAM_BRUSH,
-    FILTER_RATING_PROGRESS_THRESHOLD,
     FILTER_TIME_MATRIX,
 }
 
@@ -46,14 +43,6 @@ const configuredTypes = new Map([
         createCalendarRangeStructuredFilterType({
             locale: 'en-US',
             weekStartsOn: 1,
-        }),
-    ],
-    [
-        FILTER_RATING_PROGRESS_THRESHOLD,
-        createRatingProgressThresholdStructuredFilterType({
-            unit: 'percent',
-            max: 100,
-            step: 5,
         }),
     ],
     [
