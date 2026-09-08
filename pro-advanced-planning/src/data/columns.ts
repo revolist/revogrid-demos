@@ -78,6 +78,12 @@ const paddedCellProperties: NonNullable<
 
 export const planningFilterConfig = {
     structuredFilterTypes: planningStructuredFilterTypes,
+    localization: {
+        captions: {
+            timeMatrixBadgeSummaryOne: '1 hr',
+            timeMatrixBadgeSummaryMany: '{hours} hrs',
+        },
+    },
     multiFilterItems: {},
     selection: {
         getItems: {
@@ -157,10 +163,10 @@ export const gridColumns: ColumnRegular[] = [
     {
         prop: 'workflowStatus',
         name: 'Status',
-        size: 132,
+        size: 145,
         sortable: true,
         filter: [FILTER_CHIP_BADGE_TOGGLES],
-        filterPlaceholder: 'All statuses',
+        filterPlaceholder: 'All',
         columnType: 'dropdown',
         dropdown: {
             source: workflowEditorOptions,
@@ -187,6 +193,7 @@ export const gridColumns: ColumnRegular[] = [
         readonly: true,
         sortable: true,
         filter: [FILTER_CALENDAR_RANGE],
+        filterPlaceholder: 'Due date',
         dataGridFormat: planningGridFormats.endDate,
     },
     {
@@ -203,7 +210,7 @@ export const gridColumns: ColumnRegular[] = [
     {
         prop: 'budget',
     name: 'Budget',
-    size: 96,
+    size: 106,
     readonly: true,
     sortable: true,
     filter: [FILTER_HISTOGRAM_BRUSH],
@@ -216,6 +223,7 @@ export const gridColumns: ColumnRegular[] = [
         readonly: true,
         sortable: true,
         filter: [FILTER_TIME_MATRIX],
+        filterPlaceholder: 'Time',
         dataGridFormat: planningGridFormats.activityAt,
     },
 ]

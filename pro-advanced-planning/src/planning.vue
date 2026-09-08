@@ -20,16 +20,6 @@
                 </button>
             </nav>
             <div class="planning-demo__actions">
-                <span v-if="showHint" class="planning-demo__hint">
-                    Double-click a cell to edit
-                    <button
-                        type="button"
-                        aria-label="Dismiss editing hint"
-                        @click="showHint = false"
-                    >
-                        ×
-                    </button>
-                </span>
                 <button
                     type="button"
                     data-demo-action="apply_active_tasks"
@@ -203,7 +193,6 @@ const {
     schedulerPlugins,
     schedulerResources,
     selectedCount,
-    showHint,
     syncVisibleTasks,
     tasks,
     theme,

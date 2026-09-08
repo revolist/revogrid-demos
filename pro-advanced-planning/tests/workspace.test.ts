@@ -130,6 +130,29 @@ test('allocates enough width for formatted activity times', () => {
     )
 })
 
+test('uses concise Project workspace filter-header labels', () => {
+    assert.match(
+        columnsSource,
+        /prop: 'workflowStatus',[\s\S]*?size: 145,[\s\S]*?filterPlaceholder: 'All'/
+    )
+    assert.match(
+        columnsSource,
+        /prop: 'endDate',[\s\S]*?filterPlaceholder: 'Due date'/
+    )
+    assert.match(
+        columnsSource,
+        /prop: 'activityAt',[\s\S]*?filterPlaceholder: 'Time'/
+    )
+})
+
+test('uses compact Activity time selection summaries', () => {
+    assert.match(columnsSource, /timeMatrixBadgeSummaryOne: '1 hr'/)
+    assert.match(
+        columnsSource,
+        /timeMatrixBadgeSummaryMany: '\{hours\} hrs'/
+    )
+})
+
 test('removes the tab-to-content gap for timeline views only', () => {
     assert.match(
         stylesSource,
@@ -408,7 +431,9 @@ test('uses direct workspace actions without a custom actions menu', () => {
     assert.doesNotMatch(vueSource, /<details|More/)
     assert.match(vueSource, />\s*Active tasks\s*</)
     assert.match(vueSource, />\s*Reset\s*</)
-    assert.match(vueSource, /Double-click a cell to edit/)
+    assert.doesNotMatch(vueSource, /Double-click a cell to edit|showHint/)
+    assert.doesNotMatch(workspaceSource, /showHint/)
+    assert.doesNotMatch(stylesSource, /planning-demo__hint/)
     assert.doesNotMatch(
         workspaceSource,
         /moreMenuRef|closePopovers|resetKey/
@@ -485,7 +510,7 @@ test('renders Progress as a slider and Budget as a histogram brush', () => {
     )
     assert.match(
         columnsSource,
-        /prop: 'budget',[\s\S]*?filter: \[FILTER_HISTOGRAM_BRUSH\][\s\S]*?dataGridFormat: planningGridFormats\.budget/
+        /prop: 'budget',[\s\S]*?name: 'Budget',[\s\S]*?size: 106,[\s\S]*?filter: \[FILTER_HISTOGRAM_BRUSH\][\s\S]*?dataGridFormat: planningGridFormats\.budget/
     )
     assert.doesNotMatch(columnsSource, /FILTER_RATING_PROGRESS_THRESHOLD/)
 })

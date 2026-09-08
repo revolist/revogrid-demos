@@ -89,7 +89,6 @@ export function usePlanningWorkspace() {
     const quickSearch = ref('')
     const visibleTaskIds = ref<string[] | undefined>()
     const selectedCount = ref(0)
-    const showHint = ref(true)
     const gridKey = ref(0)
     const gridFilterConfig = ref<ColumnFilterConfig>(planningFilterConfig)
     const quickFilter = computed(() => ({
@@ -301,7 +300,6 @@ export function usePlanningWorkspace() {
         schedulerPlugins,
         schedulerResources,
         selectedCount,
-        showHint,
         syncVisibleTasks,
         tasks,
         theme,

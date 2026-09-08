@@ -78,25 +78,6 @@
     font: 500 11px/1 inherit;
     cursor: pointer;
 }
-.planning-demo__hint {
-    display: inline-flex;
-    height: 26px;
-    align-items: center;
-    gap: 4px;
-    padding-left: 8px;
-    border-radius: 999px;
-    background: var(--rv-ui-surface);
-    color: var(--vp-c-text-2, inherit);
-    font-size: 10px;
-}
-.planning-demo__hint button {
-    width: 24px;
-    height: 24px;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-}
 .planning-demo__fullscreen {
     display: inline-flex;
     width: 32px;
@@ -306,9 +287,6 @@
     }
     .planning-demo__footer {
         padding-right: 2px;
-    }
-    .planning-demo__hint {
-        display: none;
     }
 }
 @media (max-width: 700px) {
