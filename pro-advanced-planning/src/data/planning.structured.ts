@@ -23,10 +23,10 @@ export {
 export const workflowBadges: Readonly<
     Record<string, { label: string; color: string }>
 > = {
-    'not-started': { label: 'Planned', color: '#475569' },
-    'in-progress': { label: 'In progress', color: '#4338ca' },
-    blocked: { label: 'Blocked', color: '#c62828' },
-    done: { label: 'Done', color: '#087443' },
+    'not-started': { label: 'Planned', color: '#59697c' },
+    'in-progress': { label: 'In progress', color: '#5864b8' },
+    blocked: { label: 'Blocked', color: '#a84f4f' },
+    done: { label: 'Done', color: '#467a62' },
 }
 
 const configuredTypes = new Map([

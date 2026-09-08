@@ -11,9 +11,9 @@ import type { PlanningTask } from './types'
 
 const priorityPresentation = (value: unknown) => {
     const priority = Number(value)
-    if (priority >= 900) return { label: 'Critical', color: '#e5484d' }
-    if (priority >= 700) return { label: 'High', color: '#f59e0b' }
-    return { label: 'Normal', color: '#10b981' }
+    if (priority >= 900) return { label: 'Critical', color: '#c85f63' }
+    if (priority >= 700) return { label: 'High', color: '#c28a2b' }
+    return { label: 'Normal', color: '#3d8c6c' }
 }
 
 /**
@@ -67,7 +67,7 @@ export const priorityIndicatorRenderer = markDataGridFormatRenderer(
                     alignItems: 'center',
                     color: 'var(--planning-priority-label-color, var(--rg-theme-text, var(--revo-grid-text, #475569)))',
                     display: 'inline-flex',
-                    fontWeight: '600',
+                    fontWeight: '500',
                     gap: '8px',
                 },
             },
@@ -77,8 +77,8 @@ export const priorityIndicatorRenderer = markDataGridFormatRenderer(
                     style: {
                         backgroundColor: `var(--planning-priority-color, ${color})`,
                         borderRadius: '50%',
-                        height: '8px',
-                        width: '8px',
+                        height: '7px',
+                        width: '7px',
                     },
                 }),
                 label,

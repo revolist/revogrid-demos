@@ -19,6 +19,27 @@
                 </button>
             </nav>
             <div class="planning-demo__actions">
+                <span v-if="showHint" class="planning-demo__hint">
+                    Double-click a cell to edit
+                    <button
+                        type="button"
+                        aria-label="Dismiss editing hint"
+                        @click="showHint = false"
+                    >
+                        ×
+                    </button>
+                </span>
+                <button type="button" @click="applyActiveTasksPreset">
+                    Active tasks
+                </button>
+                <button
+                    type="button"
+                    :aria-pressed="showInlineFilters"
+                    @click="toggleColumnFilters"
+                >
+                    Column filters
+                </button>
+                <button type="button" @click="resetWorkspace">Reset</button>
                 <button
                     class="planning-demo__fullscreen"
                     type="button"
@@ -30,34 +51,37 @@
                 </button>
             </div>
         </div>
+        <div v-show="activeView === 'grid'" class="planning-demo__grid-stage">
+            <RevoGrid
+                :key="gridKey"
+                ref="gridRef"
+                class="planning-demo__grid"
+                hide-attribution
+                :theme="theme"
+                :plugins="displayedGridPlugins"
+                :source="tasks"
+                :columns="gridColumns"
+                :column-types="gridColumnTypes"
+                :data-grid-context-menu.prop="planningDataGridContextMenu"
+                :data-grid-formatting.prop="planningDataGridFormatting"
+                :filter.prop="gridFilterConfig"
+                :hide-columns.prop="['activityAt']"
+                :row-size="40"
+                :stretch="1"
+                range
+                resize
+                can-move-columns
+                :row-select.prop="rowSelect"
+                :quick-filter.prop="quickFilter"
+                :filter-badges.prop="filterBadgeOptions"
+                @afteredit="handleGridEdit"
+                @rowselected="handleRowSelected"
+                @afterfilterapply="syncVisibleTasks"
+                @afterquickfilterapply="syncVisibleTasks"
+            />
+        </div>
         <RevoGrid
-            v-if="activeView === 'grid'"
-            ref="gridRef"
-            class="planning-demo__grid"
-            hide-attribution
-            :theme="theme"
-            :plugins="gridPlugins"
-            :source="tasks"
-            :columns="gridColumns"
-            :column-types="gridColumnTypes"
-            :data-grid-context-menu.prop="planningDataGridContextMenu"
-            :data-grid-formatting.prop="planningDataGridFormatting"
-            :filter.prop="planningFilterConfig"
-            :row-size="40"
-            :stretch="1"
-            range
-            resize
-            can-move-columns
-            :row-select.prop="rowSelect"
-            :quick-filter.prop="quickFilter"
-            :filter-badges.prop="filterBadgeOptions"
-            @afteredit="handleGridEdit"
-            @rowselected="handleRowSelected"
-            @afterfilterapply="syncVisibleTasks"
-            @afterquickfilterapply="syncVisibleTasks"
-        />
-        <RevoGrid
-            v-else-if="activeView === 'kanban'"
+            v-if="activeView === 'kanban'"
             key="kanban"
             class="planning-demo__grid planning-demo__grid--kanban"
             hide-attribution
@@ -81,13 +105,16 @@
             :source="visibleTasks"
             :columns="ganttColumns"
             :gantt.prop="ganttConfig"
+            :gantt-dependencies.prop="ganttDependencies"
             :gantt-resources.prop="ganttResources"
             :gantt-assignments.prop="ganttAssignments"
             @gantt-before-task-change="handleGanttEdit"
             @gantt-before-assignment-change="handleGanttAssignmentEdit"
         />
         <RevoGrid
-            v-else
+            v-else-if="
+                activeView === 'scheduler' || activeView === 'calendar'
+            "
             :key="activeView"
             class="planning-demo__grid planning-demo__grid--timeline"
             hide-attribution
@@ -123,15 +150,20 @@ import './planning.scss'
 
 const {
     activeView,
+    applyActiveTasksPreset,
     calendarConfig,
     filterBadgeOptions,
+    displayedGridPlugins,
     ganttAssignments,
     ganttColumns,
     ganttConfig,
+    ganttDependencies,
     ganttPlugins,
     ganttResources,
-    gridColumns,
     gridColumnTypes,
+    gridColumns,
+    gridFilterConfig,
+    gridKey,
     gridPlugins,
     gridRef,
     handleGanttAssignmentEdit,
@@ -147,9 +179,9 @@ const {
     kanbanPlugins,
     planningDataGridContextMenu,
     planningDataGridFormatting,
-    planningFilterConfig,
     quickFilter,
     quickSearch,
+    resetWorkspace,
     rootRef,
     rowSelect,
     schedulerConfig,
@@ -157,10 +189,13 @@ const {
     schedulerPlugins,
     schedulerResources,
     selectedCount,
+    showHint,
+    showInlineFilters,
     syncVisibleTasks,
     tasks,
     theme,
     toggleFullscreen,
+    toggleColumnFilters,
     visibleTasks,
     views,
 } = usePlanningWorkspace()

@@ -1,4 +1,5 @@
 export {
+    activePlanningFilterConfig,
     ganttColumns,
     gridColumns,
     gridColumnTypes,
@@ -16,6 +17,7 @@ export { kanbanConfig } from './kanban.config'
 export { calendarConfig, schedulerConfig } from './scheduler.config'
 export {
     createTasks,
+    ganttDependencies,
     ganttResources,
     schedulerResources,
     toGanttAssignments,
@@ -34,6 +36,7 @@ export {
 } from './sync'
 export { views, type PlanningTask, type PlanningView } from './types'
 export {
+    activePlanningFilters,
     applyPlanningGridEdit,
     deletePlanningTasks,
     defaultPlanningFilters,

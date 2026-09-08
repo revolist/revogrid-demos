@@ -56,6 +56,41 @@
     display: flex;
     height: 52px;
     align-items: center;
+    gap: 6px;
+    padding-right: 4px;
+    white-space: nowrap;
+}
+.planning-demo__actions > button:not(.planning-demo__fullscreen) {
+    height: 30px;
+    padding: 0 9px;
+    border: 1px solid var(--rv-ui-border);
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font: 500 11px/1 inherit;
+    cursor: pointer;
+}
+.planning-demo__actions > button[aria-pressed='true'] {
+    background: var(--rv-ui-surface);
+}
+.planning-demo__hint {
+    display: inline-flex;
+    height: 26px;
+    align-items: center;
+    gap: 4px;
+    padding-left: 8px;
+    border-radius: 999px;
+    background: var(--rv-ui-surface);
+    color: var(--vp-c-text-2, inherit);
+    font-size: 10px;
+}
+.planning-demo__hint button {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
 }
 .planning-demo__fullscreen {
     display: inline-flex;
@@ -77,6 +112,14 @@
     min-height: 0 !important;
     overflow: hidden;
 }
+.planning-demo__grid-stage {
+    display: flex;
+    min-height: 0;
+    overflow: hidden;
+}
+.planning-demo__grid-stage > .planning-demo__grid {
+    width: 100%;
+}
 .planning-demo__grid--timeline {
     margin-top: -8px;
 }
@@ -85,7 +128,9 @@
 }
 .planning-demo__grid--kanban .kanban-card {
     padding: 14px 14px 12px;
+    border: 1px solid var(--rv-ui-border) !important;
     border-radius: 7px !important;
+    box-shadow: none !important;
 }
 .planning-card {
     display: grid;
@@ -234,6 +279,10 @@
     }
     .planning-demo__footer {
         padding-right: 2px;
+    }
+    .planning-demo__hint,
+    .planning-demo__actions > button:nth-of-type(2) {
+        display: none;
     }
 }
 @media (max-width: 700px) {

@@ -18,13 +18,14 @@ import {
 } from '@revolist/scheduler'
 import {
     AdvanceFilterPlugin,
+    ColumnHidePlugin,
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
-    FilterHeaderPlugin,
     RowSelectPlugin,
 } from '@revolist/revogrid-pro'
 import { currentTheme } from '../../composables/useRandomData'
 import {
+    activePlanningFilters,
     calendarConfig,
     createPlanningDataGridContextMenu,
     createTasks,
@@ -33,6 +34,7 @@ import {
     filterPlanningTasks,
     ganttColumns,
     ganttConfig,
+    ganttDependencies,
     ganttResources,
     gridColumnTypes,
     gridColumns,
@@ -172,6 +174,9 @@ import {
                         <option value="900">Critical</option>
                     </select></label
                 >
+                <button type="button" (click)="applyActiveTasksPreset()">
+                    Active tasks
+                </button>
                 <button type="button" (click)="resetWorkspace()">Reset</button>
                 <span class="planning-demo__count"
                     >{{ visibleTasks.length }} of {{ tasks.length }} tasks
@@ -190,6 +195,7 @@ import {
                         [plugins]="gridPlugins"
                         [source]="visibleTasks"
                         [columns]="gridColumns"
+                        [hideColumns]="hiddenGridColumns"
                         [columnTypes]="gridColumnTypes"
                         [dataGridContextMenu]="planningDataGridContextMenu"
                         [dataGridFormatting]="planningDataGridFormatting"
@@ -213,6 +219,7 @@ import {
                         [source]="visibleTasks"
                         [columns]="ganttColumns"
                         [gantt]="ganttConfig"
+                        [ganttDependencies]="ganttDependencies"
                         [ganttResources]="ganttResources"
                         [ganttAssignments]="ganttAssignments"
                         (gantt-before-task-change)="handleGanttEdit($event)"
@@ -282,6 +289,7 @@ export class PlanningViewsGridComponent {
     selectedCount = 0
     readonly planningProjects = planningProjects
     readonly gridColumns = gridColumns
+    readonly hiddenGridColumns = ['activityAt']
     readonly gridColumnTypes = gridColumnTypes
     readonly planningFilterConfig = planningFilterConfig
     readonly planningDataGridContextMenu = createPlanningDataGridContextMenu(
@@ -290,6 +298,7 @@ export class PlanningViewsGridComponent {
     readonly planningDataGridFormatting = planningDataGridFormatting
     readonly ganttColumns = ganttColumns
     readonly ganttConfig = ganttConfig
+    readonly ganttDependencies = ganttDependencies
     readonly kanbanConfig = kanbanConfig
     readonly ganttResources = ganttResources
     readonly schedulerConfig = schedulerConfig
@@ -299,9 +308,9 @@ export class PlanningViewsGridComponent {
     readonly gridPlugins = [
         RowSelectPlugin,
         AdvanceFilterPlugin,
-        FilterHeaderPlugin,
         DataGridFormattingPlugin,
         ColumnStretchPlugin,
+        ColumnHidePlugin,
     ]
     readonly rowSelect = { rowOrder: false }
     readonly kanbanPlugins = [KanbanPlugin]
@@ -348,6 +357,10 @@ export class PlanningViewsGridComponent {
         this.tasks = createTasks()
         this.filters = defaultPlanningFilters()
         this.selectedCount = 0
+    }
+
+    applyActiveTasksPreset() {
+        this.filters = activePlanningFilters()
     }
 
     deleteSelectedTasks(taskIds: readonly string[]) {

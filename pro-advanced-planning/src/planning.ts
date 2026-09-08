@@ -17,9 +17,9 @@ import {
 } from '@revolist/scheduler'
 import {
     AdvanceFilterPlugin,
+    ColumnHidePlugin,
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
-    FilterHeaderPlugin,
     RowSelectPlugin,
 } from '@revolist/revogrid-pro'
 import {
@@ -27,6 +27,7 @@ import {
     observeCurrentTheme,
 } from '../../composables/useRandomData'
 import {
+    activePlanningFilters,
     calendarConfig,
     createPlanningDataGridContextMenu,
     createTasks,
@@ -35,6 +36,7 @@ import {
     filterPlanningTasks,
     ganttColumns,
     ganttConfig,
+    ganttDependencies,
     ganttResources,
     gridColumnTypes,
     gridColumns,
@@ -68,6 +70,7 @@ type PlanningGridElement = HTMLRevoGridElement & {
     gantt?: typeof ganttConfig
     ganttResources?: typeof ganttResources
     ganttAssignments?: ReturnType<typeof toGanttAssignments>
+    ganttDependencies?: typeof ganttDependencies
     eventScheduler?: typeof schedulerConfig
     eventSchedulerResources?: typeof schedulerResources
     eventSchedulerEvents?: ReturnType<typeof toSchedulerEvents>
@@ -90,6 +93,7 @@ export function load(parentSelector: string): (() => void) | undefined {
     const status = document.createElement('select')
     const priority = document.createElement('select')
     const count = document.createElement('span')
+    const activeTasks = document.createElement('button')
     const reset = document.createElement('button')
 
     root.className = 'planning-demo'
@@ -109,10 +113,12 @@ export function load(parentSelector: string): (() => void) | undefined {
     priority.ariaLabel = 'Priority'
     priority.innerHTML =
         '<option value="">All priorities</option><option value="500">Normal</option><option value="700">High</option><option value="900">Critical</option>'
+    activeTasks.type = 'button'
+    activeTasks.textContent = 'Active tasks'
     reset.type = 'button'
     reset.textContent = 'Reset'
     count.className = 'planning-demo__count'
-    toolbar.append(search, project, status, priority, reset, count)
+    toolbar.append(search, project, status, priority, activeTasks, reset, count)
     root.append(switcher, toolbar, panel)
     parent.appendChild(root)
 
@@ -133,12 +139,13 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.plugins = [
                 RowSelectPlugin,
                 AdvanceFilterPlugin,
-                FilterHeaderPlugin,
                 DataGridFormattingPlugin,
                 ColumnStretchPlugin,
+                ColumnHidePlugin,
             ]
             grid.columnTypes = gridColumnTypes
             grid.columns = gridColumns
+            grid.hideColumns = ['activityAt']
             grid.dataGridContextMenu = createPlanningDataGridContextMenu(
                 (taskIds) => {
                     tasks = deletePlanningTasks(tasks, taskIds)
@@ -220,6 +227,7 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.plugins = [GanttPlugin]
             grid.columns = ganttColumns
             grid.gantt = ganttConfig
+            grid.ganttDependencies = ganttDependencies
             grid.ganttResources = ganttResources
             grid.ganttAssignments = toGanttAssignments(tasks).filter(
                 ({ taskId }) => visibleIds.has(String(taskId))
@@ -284,6 +292,11 @@ export function load(parentSelector: string): (() => void) | undefined {
             ...filters,
             priorities: priority.value ? [Number(priority.value)] : [],
         }
+        render(activeView)
+    })
+    activeTasks.addEventListener('click', () => {
+        filters = activePlanningFilters()
+        status.value = ''
         render(activeView)
     })
     reset.addEventListener('click', () => {

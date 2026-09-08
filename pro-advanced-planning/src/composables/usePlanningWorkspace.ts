@@ -1,11 +1,13 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import {
     AdvanceFilterPlugin,
+    ColumnHidePlugin,
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
     FilterHeaderPlugin,
     RowSelectPlugin,
     type AdvancedFilterBadgesOptions,
+    type ColumnFilterConfig,
     type RowSelectConfig,
 } from '@revolist/revogrid-pro'
 import {
@@ -29,12 +31,16 @@ import {
     observeCurrentTheme,
 } from '../../../composables/useRandomData'
 import {
+    activePlanningFilterConfig,
+    activePlanningFilters,
     calendarConfig,
     createPlanningDataGridContextMenu,
     createTasks,
     deletePlanningTasks,
+    filterPlanningTasks,
     ganttColumns,
     ganttConfig,
+    ganttDependencies,
     ganttResources,
     planningDataGridFormatting,
     gridColumnTypes,
@@ -66,6 +72,7 @@ const gridPlugins = [
     FilterHeaderPlugin,
     DataGridFormattingPlugin,
     ColumnStretchPlugin,
+    ColumnHidePlugin,
 ]
 const ganttPlugins = [GanttPlugin]
 const kanbanPlugins = [KanbanPlugin]
@@ -78,6 +85,15 @@ export function usePlanningWorkspace() {
     const quickSearch = ref('')
     const visibleTaskIds = ref<string[] | undefined>()
     const selectedCount = ref(0)
+    const showInlineFilters = ref(false)
+    const showHint = ref(true)
+    const gridKey = ref(0)
+    const gridFilterConfig = ref<ColumnFilterConfig>(planningFilterConfig)
+    const displayedGridPlugins = computed(() =>
+        showInlineFilters.value
+            ? gridPlugins
+            : gridPlugins.filter((plugin) => plugin !== FilterHeaderPlugin)
+    )
     const dataGridContextMenu = createPlanningDataGridContextMenu((taskIds) => {
         tasks.value = deletePlanningTasks(tasks.value, taskIds)
         selectedCount.value = 0
@@ -154,6 +170,29 @@ export function usePlanningWorkspace() {
         else await rootRef.value.requestFullscreen()
     }
 
+    function applyActiveTasksPreset() {
+        gridFilterConfig.value = activePlanningFilterConfig
+        visibleTaskIds.value = filterPlanningTasks(
+            tasks.value,
+            activePlanningFilters()
+        ).map(({ id }) => id)
+        gridKey.value += 1
+    }
+
+    function toggleColumnFilters() {
+        showInlineFilters.value = !showInlineFilters.value
+        gridKey.value += 1
+    }
+
+    function resetWorkspace() {
+        tasks.value = createTasks()
+        quickSearch.value = ''
+        visibleTaskIds.value = undefined
+        selectedCount.value = 0
+        gridFilterConfig.value = planningFilterConfig
+        gridKey.value += 1
+    }
+
     function merge(next: PlanningTask[]) {
         tasks.value = mergeVisibleTasks(tasks.value, next)
     }
@@ -217,17 +256,22 @@ export function usePlanningWorkspace() {
 
     return {
         activeView,
+        applyActiveTasksPreset,
         calendarConfig,
         filterBadgeOptions,
+        displayedGridPlugins,
         ganttAssignments,
         ganttColumns,
         ganttConfig,
+        ganttDependencies,
         ganttPlugins,
         ganttResources,
         planningDataGridContextMenu: dataGridContextMenu,
         planningDataGridFormatting,
         gridColumnTypes,
         gridColumns,
+        gridFilterConfig,
+        gridKey,
         gridPlugins,
         gridRef,
         handleGanttAssignmentEdit,
@@ -244,6 +288,7 @@ export function usePlanningWorkspace() {
         planningFilterConfig,
         quickFilter,
         quickSearch,
+        resetWorkspace,
         rootRef,
         rowSelect,
         schedulerConfig,
@@ -251,10 +296,13 @@ export function usePlanningWorkspace() {
         schedulerPlugins,
         schedulerResources,
         selectedCount,
+        showHint,
+        showInlineFilters,
         syncVisibleTasks,
         tasks,
         theme,
         toggleFullscreen,
+        toggleColumnFilters,
         visibleTasks,
         views,
     }

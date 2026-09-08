@@ -78,6 +78,22 @@ const paddedCellProperties: NonNullable<
 
 export const planningFilterConfig = {
     structuredFilterTypes: planningStructuredFilterTypes,
+    multiFilterItems: {},
+    selection: {
+        getItems: {
+            priority: () => priorityFilterItems,
+        },
+        itemTemplate: {
+            priority: priorityFilterItemTemplate,
+        },
+        syncCellTemplate: {
+            owner: true,
+        },
+    },
+} satisfies ColumnFilterConfig
+
+export const activePlanningFilterConfig = {
+    ...planningFilterConfig,
     multiFilterItems: {
         workflowStatus: [
             {
@@ -90,17 +106,6 @@ export const planningFilterConfig = {
                 relation: 'and',
             },
         ],
-    },
-    selection: {
-        getItems: {
-            priority: () => priorityFilterItems,
-        },
-        itemTemplate: {
-            priority: priorityFilterItemTemplate,
-        },
-        syncCellTemplate: {
-            owner: true,
-        },
     },
 } satisfies ColumnFilterConfig
 

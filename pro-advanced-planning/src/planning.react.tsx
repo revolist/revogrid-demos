@@ -18,9 +18,9 @@ import {
 } from '@revolist/scheduler'
 import {
     AdvanceFilterPlugin,
+    ColumnHidePlugin,
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
-    FilterHeaderPlugin,
     RowSelectPlugin,
 } from '@revolist/revogrid-pro'
 import {
@@ -28,6 +28,7 @@ import {
     observeCurrentTheme,
 } from '../../composables/useRandomData'
 import {
+    activePlanningFilters,
     calendarConfig,
     createPlanningDataGridContextMenu,
     createTasks,
@@ -36,6 +37,7 @@ import {
     filterPlanningTasks,
     ganttColumns,
     ganttConfig,
+    ganttDependencies,
     ganttResources,
     gridColumnTypes,
     gridColumns,
@@ -66,6 +68,7 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     gantt?: typeof ganttConfig
     ganttResources?: typeof ganttResources
     ganttAssignments?: ReturnType<typeof toGanttAssignments>
+    ganttDependencies?: typeof ganttDependencies
     eventScheduler?: typeof schedulerConfig
     eventSchedulerResources?: typeof schedulerResources
     eventSchedulerEvents?: ReturnType<typeof toSchedulerEvents>
@@ -115,9 +118,9 @@ export default function PlanningViews() {
         () => [
             RowSelectPlugin,
             AdvanceFilterPlugin,
-            FilterHeaderPlugin,
             DataGridFormattingPlugin,
             ColumnStretchPlugin,
+            ColumnHidePlugin,
         ],
         []
     )
@@ -300,6 +303,12 @@ export default function PlanningViews() {
                 </details>
                 <button
                     type="button"
+                    onClick={() => setFilters(activePlanningFilters())}
+                >
+                    Active tasks
+                </button>
+                <button
+                    type="button"
                     onClick={() => {
                         setTasks(createTasks())
                         setFilters(defaultPlanningFilters())
@@ -334,6 +343,7 @@ export default function PlanningViews() {
                     plugins={gridPlugins}
                     source={visibleTasks}
                     columns={gridColumns}
+                    hideColumns={['activityAt']}
                     columnTypes={gridColumnTypes}
                     dataGridContextMenu={dataGridContextMenu}
                     dataGridFormatting={dataGridFormatting}
@@ -378,6 +388,7 @@ export default function PlanningViews() {
                     source={visibleTasks}
                     columns={ganttColumns}
                     gantt={ganttConfig}
+                    ganttDependencies={ganttDependencies}
                     ganttResources={ganttResources}
                     ganttAssignments={ganttAssignments}
                     onGantt-before-task-change={(

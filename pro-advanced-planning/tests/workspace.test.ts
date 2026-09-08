@@ -7,6 +7,7 @@ import {
     planningPeople,
 } from '../src/data/fixtures'
 import {
+    activePlanningFilters,
     applyPlanningGridEdit,
     defaultPlanningFilters,
     deletePlanningTasks,
@@ -171,7 +172,7 @@ test('aligns the Gantt timeline with the planning fixture window', () => {
     assert.match(ganttConfigSource, /weekStartsOn: 1/)
     assert.match(
         ganttConfigSource,
-        /timelineRange: \{ startDate: '2026-09-07', endDate: '2026-09-30' \}/
+        /timelineRange: \{ startDate: '2026-09-07', endDate: '2026-10-09' \}/
     )
 })
 
@@ -338,7 +339,7 @@ test('keeps plan labeling at page level instead of repeating it in view tabs', (
     assert.doesNotMatch(stylesSource, /planning-demo__pro/)
 })
 
-test('uses a direct fullscreen icon without a custom actions menu', () => {
+test('uses direct workspace actions without a custom actions menu', () => {
     const workspaceSource = readFileSync(
         new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),
         'utf8'
@@ -347,10 +348,30 @@ test('uses a direct fullscreen icon without a custom actions menu', () => {
         vueSource,
         /class="planning-demo__fullscreen"[\s\S]*?aria-label="Full screen"[\s\S]*?name="expand"/
     )
-    assert.doesNotMatch(vueSource, /<details|resetWorkspace|More/)
+    assert.doesNotMatch(vueSource, /<details|More/)
+    assert.match(vueSource, />\s*Active tasks\s*</)
+    assert.match(vueSource, />Reset</)
+    assert.match(vueSource, /Double-click a cell to edit/)
     assert.doesNotMatch(
         workspaceSource,
-        /moreMenuRef|closePopovers|resetWorkspace|resetKey/
+        /moreMenuRef|closePopovers|resetKey/
+    )
+})
+
+test('keeps native Grid filters mounted across planning view switches', () => {
+    const workspaceSource = readFileSync(
+        new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),
+        'utf8'
+    )
+    assert.match(vueSource, /v-show="activeView === 'grid'"/)
+    assert.match(vueSource, /class="planning-demo__grid-stage"/)
+    assert.doesNotMatch(vueSource, /v-if="activeView === 'grid'"/)
+    assert.match(vueSource, /:columns="gridColumns"/)
+    assert.match(vueSource, /:hide-columns\.prop="\['activityAt'\]"/)
+    assert.match(vueSource, /:plugins="displayedGridPlugins"/)
+    assert.match(
+        workspaceSource,
+        /gridPlugins\.filter\(\(plugin\) => plugin !== FilterHeaderPlugin\)/
     )
 })
 
@@ -388,11 +409,11 @@ test('provides a stable 100-task fixture across three projects', () => {
             tasks.length
     )
     assert.ok(new Set(tasks.map(({ startDate }) => startDate)).size > 15)
+    const milestones = tasks.filter(({ type }) => type === 'milestone')
+    assert.equal(milestones.length, 4)
     assert.ok(
-        tasks.every(
-            ({ startDate, endDate }) =>
-                Date.parse(endDate) - Date.parse(startDate) >=
-                4 * 60 * 60 * 1000
+        milestones.every(({ startDate, endDate, duration }) =>
+            startDate === endDate && duration === 0
         )
     )
     assert.ok(
@@ -404,37 +425,35 @@ test('provides a stable 100-task fixture across three projects', () => {
     )
 })
 
-test('schedules each resource without overlapping task assignments', () => {
+test('uses varied multi-day work with parallel owner schedules', () => {
     const tasks = createTasks()
-    const tasksByOwner = Map.groupBy(tasks, ({ owner }) => owner)
-
-    for (const ownerTasks of tasksByOwner.values()) {
-        const scheduled = [...ownerTasks].sort(
-            (left, right) =>
-                Date.parse(left.startDate) - Date.parse(right.startDate)
-        )
-        assert.ok(
-            scheduled.every(({ startDate, endDate }) => {
-                const start = new Date(startDate)
-                const end = new Date(endDate)
-                return (
-                    start.getUTCDay() > 0 &&
-                    start.getUTCDay() < 6 &&
-                    start.getUTCHours() >= 8 &&
-                    end.getUTCHours() <= 17
-                )
-            })
-        )
-        assert.ok(
-            scheduled
-                .slice(1)
-                .every(
-                    (task, index) =>
-                        Date.parse(task.startDate) >=
-                        Date.parse(scheduled[index].endDate)
-                )
-        )
-    }
+    const regularTasks = tasks.filter(({ type }) => type !== 'milestone')
+    assert.deepEqual(
+        [...new Set(regularTasks.map(({ duration }) => duration))].sort(),
+        ['2d', '3d', '4d', '5d', '6d']
+    )
+    assert.ok(
+        regularTasks.every(({ startDate, endDate }) => {
+            const start = new Date(startDate)
+            const end = new Date(endDate)
+            return (
+                start.getUTCDay() > 0 &&
+                start.getUTCDay() < 6 &&
+                start.getUTCHours() >= 8 &&
+                end.getUTCHours() <= 17 &&
+                end > start
+            )
+        })
+    )
+    assert.ok(
+        new Set(regularTasks.map(({ startDate }) => startDate)).size <
+            regularTasks.length
+    )
+    assert.match(planningSource, /ganttDependencies: DependencyEntity\[]/)
+    assert.equal(
+        (planningSource.match(/\['task-\d+', 'task-\d+'\]/g) ?? []).length,
+        5
+    )
 })
 
 test('uses local portrait assets for every shared owner', () => {
@@ -477,10 +496,8 @@ test('combines search, project, status and priority filters', () => {
                 task.priority === 500
         )
     )
-    assert.equal(
-        filterPlanningTasks(tasks, defaultPlanningFilters()).length,
-        60
-    )
+    assert.equal(filterPlanningTasks(tasks, defaultPlanningFilters()).length, 100)
+    assert.equal(filterPlanningTasks(tasks, activePlanningFilters()).length, 60)
 })
 
 test('maps priority filter choices to the formatted Priority column labels', () => {
@@ -497,22 +514,22 @@ test('maps priority filter choices to the formatted Priority column labels', () 
     assert.match(columnsSource, /value:\s*'900',\s*label:\s*'Critical'/)
 })
 
-test('uses high-contrast Status badge defaults with format overrides', () => {
+test('uses restrained Status badge defaults with readable labels', () => {
     assert.match(
         structuredSource,
-        /'not-started':\s*\{\s*label:\s*'Planned',\s*color:\s*'#475569'/
+        /'not-started':\s*\{\s*label:\s*'Planned',\s*color:\s*'#59697c'/
     )
     assert.match(
         structuredSource,
-        /'in-progress':\s*\{\s*label:\s*'In progress',\s*color:\s*'#4338ca'/
+        /'in-progress':\s*\{\s*label:\s*'In progress',\s*color:\s*'#5864b8'/
     )
     assert.match(
         structuredSource,
-        /blocked:\s*\{\s*label:\s*'Blocked',\s*color:\s*'#c62828'/
+        /blocked:\s*\{\s*label:\s*'Blocked',\s*color:\s*'#a84f4f'/
     )
     assert.match(
         structuredSource,
-        /done:\s*\{\s*label:\s*'Done',\s*color:\s*'#087443'/
+        /done:\s*\{\s*label:\s*'Done',\s*color:\s*'#467a62'/
     )
     assert.match(
         formattingSource,
@@ -722,9 +739,14 @@ test('reset fixtures and filters restore deterministic defaults', () => {
     assert.deepEqual(defaultPlanningFilters(), {
         query: '',
         projectId: 'all',
-        statuses: ['in-progress', 'blocked', 'not-started'],
+        statuses: [],
         priorities: [],
     })
+    assert.deepEqual(activePlanningFilters().statuses, [
+        'in-progress',
+        'blocked',
+        'not-started',
+    ])
 })
 
 test('opens timeline views on the fixed fixture window', () => {

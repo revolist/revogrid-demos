@@ -1,4 +1,8 @@
-import { type AssignmentEntity, type ResourceEntity } from '@revolist/gantt'
+import {
+    type AssignmentEntity,
+    type DependencyEntity,
+    type ResourceEntity,
+} from '@revolist/gantt'
 import {
     type EventSchedulerEventEntity,
     type EventSchedulerResourceEntity,
@@ -24,6 +28,20 @@ export const ganttResources: ResourceEntity[] = planningPeople.map(
         hourlyCost: 0,
     })
 )
+
+export const ganttDependencies: DependencyEntity[] = [
+    ['task-001', 'task-011'],
+    ['task-002', 'task-012'],
+    ['task-003', 'task-018'],
+    ['task-004', 'task-024'],
+    ['task-005', 'task-030'],
+].map(([predecessorTaskId, successorTaskId], index) => ({
+    id: `planning-dependency-${index + 1}`,
+    predecessorTaskId,
+    successorTaskId,
+    type: 'finish-to-start',
+    lagDays: 0,
+}))
 
 export function toGanttAssignments(tasks: PlanningTask[]): AssignmentEntity[] {
     return tasks.flatMap((task) =>

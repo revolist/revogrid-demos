@@ -87,6 +87,17 @@ function getTaskSlot(ownerTaskIndex: number) {
     }
 }
 
+function addWorkingDays(start: Date, durationDays: number) {
+    const end = new Date(start)
+    let remaining = durationDays - 1
+    while (remaining > 0) {
+        end.setUTCDate(end.getUTCDate() + 1)
+        const day = end.getUTCDay()
+        if (day !== 0 && day !== 6) remaining -= 1
+    }
+    return end
+}
+
 export function createTasks(): PlanningTask[] {
     const names = [
         'Define requirements',
@@ -210,7 +221,12 @@ export function createTasks(): PlanningTask[] {
             Math.floor(index / owners.length)
         )
         const start = new Date(Date.UTC(2026, 8, 7 + dayOffset, startHour))
-        const end = new Date(Date.UTC(2026, 8, 7 + dayOffset, endHour))
+        const milestone = [9, 39, 69, 99].includes(index)
+        const durationDays = milestone ? 0 : 2 + (index % 5)
+        const end = milestone
+            ? new Date(start)
+            : addWorkingDays(start, durationDays)
+        end.setUTCHours(milestone ? startHour : endHour, 0, 0, 0)
         // Spread activity across the fixture weeks, weekdays, and working hours so
         // the Time Matrix has meaningful, deterministic groups to filter.
         const activityAt = new Date(
@@ -246,10 +262,17 @@ export function createTasks(): PlanningTask[] {
             startDate,
             endDate,
             activityAt,
-            duration: `${endHour - startHour}h`,
+            duration: milestone ? 0 : `${durationDays}d`,
+            type: milestone ? 'milestone' : 'task',
             percentDone,
             order: (index + 1) * 1000,
             workflowStatus,
+            color: {
+                'not-started': '#64748b',
+                'in-progress': '#5b67b7',
+                blocked: '#a85858',
+                done: '#4f8068',
+            }[workflowStatus],
             priority: [500, 700, 900][index % 3],
             projectId: projects[projectIndex],
             budget: 1800 + index * 200,
