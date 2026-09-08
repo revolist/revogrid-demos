@@ -22,6 +22,10 @@ const kanbanConfigSource = readFileSync(
     new URL('../src/data/kanban.config.ts', import.meta.url),
     'utf8'
 )
+const planningSource = readFileSync(
+    new URL('../src/data/source.ts', import.meta.url),
+    'utf8'
+)
 const schedulerConfigSource = readFileSync(
     new URL('../src/data/scheduler.config.ts', import.meta.url),
     'utf8'
@@ -602,7 +606,7 @@ test('synchronizes a dropdown owner edit without a model into the Gantt assignme
     assert.deepEqual(task?.owners, ['Ava'])
 })
 
-test('keeps Kanban and Gantt ownership in sync for a dropdown option', () => {
+test('keeps the canonical owner in sync for a dropdown option', () => {
     const tasks = createTasks()
     const edited = applyPlanningGridEdit(tasks, {
         model: tasks[2],
@@ -742,16 +746,23 @@ test('keeps all four Kanban columns compact enough for the workspace', () => {
     )
 })
 
-test('renders Kanban resources with their native avatar data', () => {
+test('renders Kanban ownership from the canonical owner and native avatar index', () => {
     assert.match(
         kanbanConfigSource,
         /import \{ avatarTemplate \} from '@revolist\/revogrid-pro'/
     )
     assert.match(kanbanConfigSource, /planning-card__avatar-stack/)
+    assert.match(kanbanConfigSource, /assigneeField:\s*'owner'/)
+    assert.doesNotMatch(kanbanConfigSource, /assigneeField:\s*'owners'/)
     assert.match(
         kanbanConfigSource,
-        /value:\s*card\.ownerAvatars\[index\]\s*\?\?\s*owner/
+        /index:\s*Math\.max\(\s*card\.ownerAvatarIndex - 1,\s*0\s*\)/
     )
+    assert.match(kanbanConfigSource, /value:\s*card\.owner/)
+    assert.doesNotMatch(kanbanConfigSource, /card\.owners/)
+    assert.match(planningSource, /task\.owner\s*\?\s*\[/)
+    assert.match(planningSource, /resourceId:\s*task\.owner/)
+    assert.doesNotMatch(planningSource, /task\.owners\.map/)
     assert.match(
         stylesSource,
         /planning-card__title\s*\{[^}]*line-height:\s*20px/

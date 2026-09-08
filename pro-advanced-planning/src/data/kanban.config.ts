@@ -20,8 +20,7 @@ export const kanbanConfig: KanbanConfig<PlanningTask> = {
         dateTimeZone: 'UTC',
         progressField: 'percentDone',
         colorField: 'color',
-        assigneeField: 'owners',
-        assigneeAvatarField: 'ownerAvatars',
+        assigneeField: 'owner',
     },
     customization: {
         cardContent: (h, { card }) =>
@@ -36,28 +35,28 @@ export const kanbanConfig: KanbanConfig<PlanningTask> = {
                         'span',
                         {
                             class: 'planning-card__owner',
-                            title: card.owners.join(', '),
+                            title: card.owner,
                         },
                         [
                             h(
                                 'span',
                                 { class: 'planning-card__avatar-stack' },
-                                card.owners.map((owner, index) =>
-                                    avatarTemplate(h, {
-                                        ariaLabel: owner,
-                                        className: 'planning-card__avatar',
-                                        index,
-                                        label: owner,
-                                        size: 20,
-                                        value:
-                                            card.ownerAvatars[index] ?? owner,
-                                    })
-                                )
+                                avatarTemplate(h, {
+                                    ariaLabel: card.owner,
+                                    className: 'planning-card__avatar',
+                                    index: Math.max(
+                                        card.ownerAvatarIndex - 1,
+                                        0
+                                    ),
+                                    label: card.owner,
+                                    size: 20,
+                                    value: card.owner,
+                                })
                             ),
                             h(
                                 'span',
                                 { class: 'planning-card__owner-label' },
-                                card.owners.join(', ')
+                                card.owner
                             ),
                         ]
                     ),

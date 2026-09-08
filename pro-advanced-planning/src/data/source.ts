@@ -27,13 +27,17 @@ export const ganttResources: ResourceEntity[] = planningPeople.map(
 
 export function toGanttAssignments(tasks: PlanningTask[]): AssignmentEntity[] {
     return tasks.flatMap((task) =>
-        task.owners.map((owner, index) => ({
-            id: `assignment-${task.id}-${owner}`,
-            taskId: task.id,
-            resourceId: owner,
-            allocationUnits: 1,
-            responsibility: index === 0 ? 'Owner' : 'Contributor',
-        }))
+        task.owner
+            ? [
+                  {
+                      id: `assignment-${task.id}-${task.owner}`,
+                      taskId: task.id,
+                      resourceId: task.owner,
+                      allocationUnits: 1,
+                      responsibility: 'Owner',
+                  },
+              ]
+            : []
     )
 }
 
