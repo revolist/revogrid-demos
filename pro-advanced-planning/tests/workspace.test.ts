@@ -444,17 +444,16 @@ test('uses one compact owner renderer for Grid cells and dropdown options', () =
     )
 })
 
-test('renders Progress and Budget as inline slider filters', () => {
+test('renders Progress as a slider and Budget as a histogram brush', () => {
     assert.match(
         columnsSource,
         /\.\.\.percentDoneColumn[\s\S]*?filter: \[FIlTER_SLIDER\][\s\S]*?min: 0[\s\S]*?max: 100[\s\S]*?step: 5/
     )
     assert.match(
         columnsSource,
-        /prop: 'budget',[\s\S]*?filter: \[FIlTER_SLIDER\][\s\S]*?min: 0[\s\S]*?max: 22000[\s\S]*?step: 200/
+        /prop: 'budget',[\s\S]*?filter: \[FILTER_HISTOGRAM_BRUSH\][\s\S]*?dataGridFormat: planningGridFormats\.budget/
     )
     assert.doesNotMatch(columnsSource, /FILTER_RATING_PROGRESS_THRESHOLD/)
-    assert.doesNotMatch(columnsSource, /FILTER_HISTOGRAM_BRUSH/)
 })
 
 test('provides a stable 100-task fixture across three projects', () => {

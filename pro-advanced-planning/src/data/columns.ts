@@ -10,6 +10,7 @@ import { getOwnerAvatar, getOwnerAvatarIndex, planningPeople } from './fixtures'
 import {
     FILTER_CALENDAR_RANGE,
     FILTER_CHIP_BADGE_TOGGLES,
+    FILTER_HISTOGRAM_BRUSH,
     FILTER_TIME_MATRIX,
     planningStructuredFilterTypes,
 } from './planning.structured'
@@ -201,15 +202,12 @@ export const gridColumns: ColumnRegular[] = [
     },
     {
         prop: 'budget',
-        name: 'Budget',
-        size: 96,
-        readonly: true,
-        sortable: true,
-        filter: [FIlTER_SLIDER],
-        min: 0,
-        max: 22000,
-        step: 200,
-        dataGridFormat: planningGridFormats.budget,
+    name: 'Budget',
+    size: 96,
+    readonly: true,
+    sortable: true,
+    filter: [FILTER_HISTOGRAM_BRUSH],
+    dataGridFormat: planningGridFormats.budget,
     },
     {
         prop: 'activityAt',
