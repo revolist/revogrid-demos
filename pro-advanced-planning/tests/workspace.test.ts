@@ -53,6 +53,14 @@ const angularSource = readFileSync(
     new URL('../src/planning.angular.ts', import.meta.url),
     'utf8'
 )
+const demoNavigationSource = readFileSync(
+    new URL('../../../.vitepress/theme/DemoNavigation.vue', import.meta.url),
+    'utf8'
+)
+const siteStylesSource = readFileSync(
+    new URL('../../../.vitepress/theme/style.scss', import.meta.url),
+    'utf8'
+)
 
 test('uses the Pro dropdown editor with canonical owner and status values', () => {
     assert.match(
@@ -250,7 +258,7 @@ test('adds a search affordance to the quick-search filter slot', () => {
     assert.match(stylesSource, /planning-demo__filter-search:after/)
     assert.match(
         stylesSource,
-        /planning-demo__filter-search:focus-within\s*\{[^}]*border-color:\s*var\(--rv-ui-focus-outline,\s*#2563eb\)[^}]*box-shadow:\s*0 0 0 3px var\(--rv-ui-focus-ring,\s*rgb\(37 99 235 \/ 18%\)\)/
+        /planning-demo__filter-search:focus-within\s*\{[^}]*border-color:\s*var\(--demo-focus-color\)[^}]*box-shadow:\s*0 0 0 3px var\(--demo-focus-ring\)/
     )
     assert.doesNotMatch(
         stylesSource,
@@ -259,6 +267,29 @@ test('adds a search affordance to the quick-search filter slot', () => {
     assert.match(
         stylesSource,
         /planning-demo__filter-badges\s*\{[^}]*margin-bottom:\s*5px/
+    )
+})
+
+test('uses one focus treatment for sidebar search, quick search, and row checkboxes', () => {
+    assert.match(
+        siteStylesSource,
+        /--demo-focus-color:\s*var\(--vp-c-brand-1\)[\s\S]*?--demo-focus-ring:\s*color-mix/
+    )
+    assert.match(
+        stylesSource,
+        /--revo-row-select-checkbox-focus:\s*var\(--demo-focus-ring\)/
+    )
+    assert.match(
+        stylesSource,
+        /planning-demo__filter-search:focus-within\s*\{[^}]*border-color:\s*var\(--demo-focus-color\)[^}]*box-shadow:\s*0 0 0 3px var\(--demo-focus-ring\)/
+    )
+    assert.match(
+        demoNavigationSource,
+        /demo-nav>label:focus-within\{[^}]*border-color:var\(--demo-focus-color\)[^}]*box-shadow:0 0 0 3px var\(--demo-focus-ring\)/
+    )
+    assert.match(
+        demoNavigationSource,
+        /demo-nav>label:focus-within\{[^}]*outline:0/
     )
 })
 

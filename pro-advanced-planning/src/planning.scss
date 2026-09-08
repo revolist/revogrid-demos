@@ -1,4 +1,7 @@
 .planning-demo {
+    --rv-ui-focus-outline: var(--demo-focus-color);
+    --rv-ui-focus-ring: var(--demo-focus-ring);
+    --revo-row-select-checkbox-focus: var(--demo-focus-ring);
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;
     gap: 8px;
@@ -165,6 +168,7 @@
     width: min(280px, 32vw);
     height: 30px;
     align-items: center;
+    margin-left: 3px;
     padding: 0 10px 0 31px;
     border: 1px solid var(--rv-ui-border);
     border-radius: 5px;
@@ -199,9 +203,9 @@
     color: inherit;
 }
 .planning-demo__filter-search:focus-within {
-    border-color: var(--rv-ui-focus-outline, #2563eb);
+    border-color: var(--demo-focus-color);
     outline: 0;
-    box-shadow: 0 0 0 3px var(--rv-ui-focus-ring, rgb(37 99 235 / 18%));
+    box-shadow: 0 0 0 3px var(--demo-focus-ring);
 }
 .planning-demo__filter-badges {
     margin-bottom: 5px;
