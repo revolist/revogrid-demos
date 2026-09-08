@@ -58,12 +58,6 @@ const paddedCellProperties: NonNullable<
     style: { padding: '0 16px' },
 })
 
-const selectAllHeaderProperties: NonNullable<
-    ColumnRegular['columnProperties']
-> = () => ({
-    style: { boxShadow: '0 -1px 0 0 var(--rg-theme-header-border) inset' },
-})
-
 export const planningFilterConfig = {
     structuredFilterTypes: planningStructuredFilterTypes,
     multiFilterItems: {
@@ -107,7 +101,6 @@ export const gridColumns: ColumnRegular[] = [
         rowSelect: true,
         readonly: true,
         filter: false,
-        columnProperties: selectAllHeaderProperties,
     },
     {
         prop: 'name',

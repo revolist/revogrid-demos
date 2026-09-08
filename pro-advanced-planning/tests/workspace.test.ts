@@ -89,14 +89,11 @@ test('pins selection and task identity with space for native checkboxes', () => 
     )
 })
 
-test('extends the select-all header divider across the checkbox column', () => {
-    assert.match(
+test('uses the grid header divider for the select-all checkbox column', () => {
+    assert.doesNotMatch(columnsSource, /selectAllHeaderProperties/)
+    assert.doesNotMatch(
         columnsSource,
-        /const selectAllHeaderProperties[\s\S]*?boxShadow: '0 -1px 0 0 var\(--rg-theme-header-border\) inset'/
-    )
-    assert.match(
-        columnsSource,
-        /prop: '_selected',[\s\S]*?columnProperties: selectAllHeaderProperties/
+        /prop: '_selected',[\s\S]*?columnProperties:/
     )
 })
 
