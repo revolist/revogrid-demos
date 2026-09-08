@@ -85,7 +85,7 @@ test('uses the Pro dropdown editor with canonical owner and status values', () =
     )
     assert.match(
         columnsSource,
-        /prop:\s*'workflowStatus'[\s\S]*?columnType:\s*'dropdown'[\s\S]*?source:\s*workflowEditorOptions[\s\S]*?syncCellTemplate:\s*true/
+        /prop:\s*'workflowStatus'[\s\S]*?columnType:\s*'dropdown'[\s\S]*?source:\s*workflowEditorOptions[\s\S]*?syncCellTemplate:\s*true[\s\S]*?cellTemplate:\s*workflowStatusBadgeRenderer/
     )
     assert.match(columnsSource, /'not-started':\s*'Planned'/)
     assert.match(columnsSource, /'in-progress':\s*'In progress'/)
@@ -209,6 +209,7 @@ test('uses declarative data-grid formats for every planning value type', () => {
         columnsSource,
         /prop: 'workflowStatus'[\s\S]*?syncCellTemplate: true,[\s\S]*?cellTemplate: workflowStatusBadgeRenderer/
     )
+    assert.doesNotMatch(columnsSource, /dataGridFormat: planningGridFormats\.workflowStatus/)
     assert.match(
         columnsSource,
         /prop: 'owner'[\s\S]*?avatarProp: 'ownerAvatar'[\s\S]*?avatarIndexProp: 'ownerAvatarIndex'/
@@ -242,7 +243,6 @@ test('uses declarative data-grid formats for every planning value type', () => {
     )
     for (const prop of [
         'name',
-        'workflowStatus',
         'priority',
         'endDate',
         'percentDone',

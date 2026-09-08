@@ -168,7 +168,6 @@ export const gridColumns: ColumnRegular[] = [
             cellTemplate: workflowStatusBadgeRenderer,
         },
         cellProperties: paddedCellProperties,
-        dataGridFormat: planningGridFormats.workflowStatus,
     },
     {
         prop: 'priority',
