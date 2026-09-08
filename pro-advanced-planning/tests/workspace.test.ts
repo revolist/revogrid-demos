@@ -174,6 +174,20 @@ test('grows resource timeline rows for concurrent scheduler events by default', 
     assert.match(schedulerConfigSource, /resourceTimelineRowSizing:\s*true/)
 })
 
+test('keeps generated scheduler timeline columns in chronological order', () => {
+    assert.match(vueSource, /:can-move-columns="false"/)
+    assert.match(vanillaSource, /grid\.canMoveColumns = false/)
+    assert.match(reactSource, /canMoveColumns=\{false\}/)
+    assert.equal(
+        (angularSource.match(/\[canMoveColumns\]="false"/g) ?? []).length,
+        2
+    )
+    assert.match(vueSource, /can-move-columns/)
+    assert.match(vanillaSource, /grid\.canMoveColumns = true/)
+    assert.match(reactSource, /canMoveColumns/)
+    assert.match(angularSource, /\[canMoveColumns\]="true"/)
+})
+
 test('aligns the Gantt timeline with the planning fixture window', () => {
     assert.match(ganttConfigSource, /weekStartsOn: 1/)
     assert.match(

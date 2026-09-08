@@ -452,6 +452,7 @@ export default function PlanningViews() {
                         source={[]}
                         columns={[]}
                         resize
+                        canMoveColumns={false}
                         eventScheduler={
                             activeView === 'calendar'
                                 ? calendarConfig

@@ -150,6 +150,7 @@
             :source="[]"
             :columns="[]"
             resize
+            :can-move-columns="false"
             :event-scheduler.prop="
                 activeView === 'calendar' ? calendarConfig : schedulerConfig
             "

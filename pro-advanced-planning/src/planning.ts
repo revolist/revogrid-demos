@@ -251,6 +251,7 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.plugins = [EventSchedulerPlugin]
             grid.columns = []
             grid.resize = true
+            grid.canMoveColumns = false
             grid.eventScheduler =
                 view === 'calendar' ? calendarConfig : schedulerConfig
             grid.eventSchedulerResources = schedulerResources
