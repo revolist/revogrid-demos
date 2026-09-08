@@ -94,6 +94,11 @@ export function usePlanningWorkspace() {
             ? gridPlugins
             : gridPlugins.filter((plugin) => plugin !== FilterHeaderPlugin)
     )
+    const quickFilter = computed(() => ({
+        text: quickSearch.value,
+        columns: ['name', 'owner'],
+        debounceMs: 150,
+    }))
     const dataGridContextMenu = createPlanningDataGridContextMenu((taskIds) => {
         tasks.value = deletePlanningTasks(tasks.value, taskIds)
         selectedCount.value = 0
@@ -102,32 +107,10 @@ export function usePlanningWorkspace() {
         className: 'planning-demo__filter-badges',
         badgeClassName: 'planning-demo__filter-badge',
         emptyClassName: 'planning-demo__filter-badges--empty',
-        renderEmpty: () => null,
-        slots: {
-            start: () => {
-                const field = document.createElement('label')
-                field.className = 'planning-demo__filter-search'
-                field.ariaLabel = 'Quick search tasks'
-                const input = document.createElement('input')
-                input.type = 'search'
-                input.placeholder = 'Quick search tasks…'
-                input.ariaLabel = 'Quick search tasks'
-                input.value = quickSearch.value
-                input.addEventListener('input', () => {
-                    quickSearch.value = input.value
-                })
-                field.append(input)
-                return field
-            },
-        },
+        renderEmpty: () => '',
     } satisfies AdvancedFilterBadgesOptions
     const isDark = ref(currentTheme().isDark())
     const theme = computed(() => (isDark.value ? 'darkCompact' : 'compact'))
-    const quickFilter = computed(() => ({
-        text: quickSearch.value,
-        columns: ['name', 'owner'],
-        debounceMs: 150,
-    }))
     const visibleTasks = computed(() => {
         const ids = visibleTaskIds.value
         if (!ids) return tasks.value

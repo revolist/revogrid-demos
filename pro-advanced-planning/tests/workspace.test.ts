@@ -259,15 +259,12 @@ test('pads owner and status cell content without changing global grid styles', (
     )
 })
 
-test('adds a search affordance to the quick-search filter slot', () => {
-    const workspaceSource = readFileSync(
-        new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),
-        'utf8'
-    )
+test('keeps quick search in a stable native input', () => {
     assert.match(
-        workspaceSource,
-        /field\.className = 'planning-demo__filter-search'/
+        vueSource,
+        /<label class="planning-demo__filter-search">[\s\S]*?v-model="quickSearch"/
     )
+    assert.doesNotMatch(vueSource, /createElement\('input'\)/)
     assert.match(stylesSource, /planning-demo__filter-search:before/)
     assert.match(stylesSource, /planning-demo__filter-search:after/)
     assert.match(
@@ -281,6 +278,10 @@ test('adds a search affordance to the quick-search filter slot', () => {
     assert.match(
         stylesSource,
         /planning-demo__filter-badges\s*\{[^}]*margin-bottom:\s*5px/
+    )
+    assert.match(
+        stylesSource,
+        /planning-demo__filter-badges\[role='status'\]\s*\{[^}]*display:\s*none/
     )
 })
 

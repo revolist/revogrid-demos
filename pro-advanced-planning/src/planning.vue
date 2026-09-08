@@ -52,6 +52,14 @@
             </div>
         </div>
         <div v-show="activeView === 'grid'" class="planning-demo__grid-stage">
+            <label class="planning-demo__filter-search">
+                <input
+                    v-model="quickSearch"
+                    type="search"
+                    aria-label="Quick search tasks"
+                    placeholder="Quick search tasks…"
+                />
+            </label>
             <RevoGrid
                 :key="gridKey"
                 ref="gridRef"

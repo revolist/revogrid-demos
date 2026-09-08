@@ -114,10 +114,12 @@
 }
 .planning-demo__grid-stage {
     display: flex;
+    flex-direction: column;
     min-height: 0;
     overflow: hidden;
 }
 .planning-demo__grid-stage > .planning-demo__grid {
+    flex: 1;
     width: 100%;
 }
 .planning-demo__grid--timeline {
@@ -254,6 +256,9 @@
 }
 .planning-demo__filter-badges {
     margin-bottom: 5px;
+}
+.planning-demo__filter-badges[role='status'] {
+    display: none;
 }
 .planning-demo__filter-badge {
     display: inline-flex;
