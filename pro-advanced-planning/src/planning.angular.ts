@@ -195,7 +195,6 @@ import {
                         [plugins]="gridPlugins"
                         [source]="visibleTasks"
                         [columns]="gridColumns"
-                        [hideColumns]="hiddenGridColumns"
                         [columnTypes]="gridColumnTypes"
                         [dataGridContextMenu]="planningDataGridContextMenu"
                         [dataGridFormatting]="planningDataGridFormatting"
@@ -289,7 +288,6 @@ export class PlanningViewsGridComponent {
     selectedCount = 0
     readonly planningProjects = planningProjects
     readonly gridColumns = gridColumns
-    readonly hiddenGridColumns = ['activityAt']
     readonly gridColumnTypes = gridColumnTypes
     readonly planningFilterConfig = planningFilterConfig
     readonly planningDataGridContextMenu = createPlanningDataGridContextMenu(

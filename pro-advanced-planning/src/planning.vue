@@ -13,6 +13,7 @@
                     :class="{ on: activeView === view }"
                     role="tab"
                     :aria-selected="activeView === view"
+                    :data-demo-action="`view_${view}`"
                     @click="activeView = view"
                 >
                     {{ view }}
@@ -29,17 +30,28 @@
                         ×
                     </button>
                 </span>
-                <button type="button" @click="applyActiveTasksPreset">
+                <button
+                    type="button"
+                    data-demo-action="apply_active_tasks"
+                    @click="applyActiveTasksPreset"
+                >
                     Active tasks
                 </button>
                 <button
                     type="button"
                     :aria-pressed="showInlineFilters"
+                    data-demo-action="toggle_column_filters"
                     @click="toggleColumnFilters"
                 >
                     Column filters
                 </button>
-                <button type="button" @click="resetWorkspace">Reset</button>
+                <button
+                    type="button"
+                    data-demo-action="reset_workspace"
+                    @click="resetWorkspace"
+                >
+                    Reset
+                </button>
                 <button
                     class="planning-demo__fullscreen"
                     type="button"
@@ -73,7 +85,6 @@
                 :data-grid-context-menu.prop="planningDataGridContextMenu"
                 :data-grid-formatting.prop="planningDataGridFormatting"
                 :filter.prop="gridFilterConfig"
-                :hide-columns.prop="['activityAt']"
                 :row-size="40"
                 :stretch="1"
                 range

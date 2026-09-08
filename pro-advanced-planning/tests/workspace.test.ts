@@ -352,7 +352,7 @@ test('uses direct workspace actions without a custom actions menu', () => {
     )
     assert.doesNotMatch(vueSource, /<details|More/)
     assert.match(vueSource, />\s*Active tasks\s*</)
-    assert.match(vueSource, />Reset</)
+    assert.match(vueSource, />\s*Reset\s*</)
     assert.match(vueSource, /Double-click a cell to edit/)
     assert.doesNotMatch(
         workspaceSource,
@@ -369,7 +369,7 @@ test('keeps native Grid filters mounted across planning view switches', () => {
     assert.match(vueSource, /class="planning-demo__grid-stage"/)
     assert.doesNotMatch(vueSource, /v-if="activeView === 'grid'"/)
     assert.match(vueSource, /:columns="gridColumns"/)
-    assert.match(vueSource, /:hide-columns\.prop="\['activityAt'\]"/)
+    assert.doesNotMatch(vueSource, /hide-columns/)
     assert.match(vueSource, /:plugins="displayedGridPlugins"/)
     assert.match(
         workspaceSource,

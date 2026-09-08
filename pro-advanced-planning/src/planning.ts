@@ -145,7 +145,6 @@ export function load(parentSelector: string): (() => void) | undefined {
             ]
             grid.columnTypes = gridColumnTypes
             grid.columns = gridColumns
-            grid.hideColumns = ['activityAt']
             grid.dataGridContextMenu = createPlanningDataGridContextMenu(
                 (taskIds) => {
                     tasks = deletePlanningTasks(tasks, taskIds)
