@@ -40,18 +40,11 @@
                 </span>
                 <button
                     type="button"
+                    :aria-pressed="isActiveTasksPreset"
                     data-demo-action="apply_active_tasks"
                     @click="applyActiveTasksPreset"
                 >
                     Active tasks
-                </button>
-                <button
-                    type="button"
-                    :aria-pressed="showInlineFilters"
-                    data-demo-action="toggle_column_filters"
-                    @click="toggleColumnFilters"
-                >
-                    Column filters
                 </button>
                 <button
                     type="button"
@@ -86,7 +79,7 @@
                 class="planning-demo__grid"
                 hide-attribution
                 :theme="theme"
-                :plugins="displayedGridPlugins"
+                :plugins="gridPlugins"
                 :source="tasks"
                 :columns="gridColumns"
                 :column-types="gridColumnTypes"
@@ -181,7 +174,6 @@ const {
     applyActiveTasksPreset,
     calendarConfig,
     filterBadgeOptions,
-    displayedGridPlugins,
     ganttAssignments,
     ganttColumns,
     ganttConfig,
@@ -189,6 +181,7 @@ const {
     ganttPlugins,
     ganttResources,
     hasActiveFilters,
+    isActiveTasksPreset,
     gridColumnTypes,
     gridColumns,
     gridFilterConfig,
@@ -219,12 +212,10 @@ const {
     schedulerResources,
     selectedCount,
     showHint,
-    showInlineFilters,
     syncVisibleTasks,
     tasks,
     theme,
     toggleFullscreen,
-    toggleColumnFilters,
     visibleTasks,
     views,
 } = usePlanningWorkspace()

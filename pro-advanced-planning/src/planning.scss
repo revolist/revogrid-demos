@@ -79,7 +79,9 @@
     cursor: pointer;
 }
 .planning-demo__actions > button[aria-pressed='true'] {
-    background: var(--rv-ui-surface);
+    border-color: var(--vp-c-brand-1);
+    background: color-mix(in srgb, var(--vp-c-brand-1) 10%, transparent);
+    color: var(--vp-c-brand-1);
 }
 .planning-demo__hint {
     display: inline-flex;
@@ -309,8 +311,7 @@
     .planning-demo__footer {
         padding-right: 2px;
     }
-    .planning-demo__hint,
-    .planning-demo__actions > button:nth-of-type(2) {
+    .planning-demo__hint {
         display: none;
     }
 }

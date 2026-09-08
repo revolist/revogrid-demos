@@ -389,11 +389,23 @@ test('keeps native Grid filters mounted across planning view switches', () => {
     assert.doesNotMatch(vueSource, /v-if="activeView === 'grid'"/)
     assert.match(vueSource, /:columns="gridColumns"/)
     assert.doesNotMatch(vueSource, /hide-columns/)
-    assert.match(vueSource, /:plugins="displayedGridPlugins"/)
+    assert.match(vueSource, /:plugins="gridPlugins"/)
+    assert.match(workspaceSource, /FilterHeaderPlugin/)
+    assert.doesNotMatch(workspaceSource, /displayedGridPlugins|showInlineFilters/)
+    assert.doesNotMatch(vueSource, /Column filters|toggleColumnFilters/)
+})
+
+test('marks the Active tasks preset as selected while it is applied', () => {
+    const workspaceSource = readFileSync(
+        new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),
+        'utf8'
+    )
+    assert.match(vueSource, /:aria-pressed="isActiveTasksPreset"/)
     assert.match(
         workspaceSource,
-        /gridPlugins\.filter\(\(plugin\) => plugin !== FilterHeaderPlugin\)/
+        /toRaw\(gridFilterConfig\.value\) === activePlanningFilterConfig/
     )
+    assert.match(stylesSource, /button\[aria-pressed='true'\][\s\S]*?border-color/)
 })
 
 test('shows shared filter status outside the Grid', () => {

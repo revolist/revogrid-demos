@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, toRaw } from 'vue'
 import {
     AdvanceFilterPlugin,
     ColumnHidePlugin,
@@ -86,14 +86,11 @@ export function usePlanningWorkspace() {
     const quickSearch = ref('')
     const visibleTaskIds = ref<string[] | undefined>()
     const selectedCount = ref(0)
-    const showInlineFilters = ref(false)
     const showHint = ref(true)
     const gridKey = ref(0)
     const gridFilterConfig = ref<ColumnFilterConfig>(planningFilterConfig)
-    const displayedGridPlugins = computed(() =>
-        showInlineFilters.value
-            ? gridPlugins
-            : gridPlugins.filter((plugin) => plugin !== FilterHeaderPlugin)
+    const isActiveTasksPreset = computed(
+        () => toRaw(gridFilterConfig.value) === activePlanningFilterConfig
     )
     const quickFilter = computed(() => ({
         text: quickSearch.value,
@@ -176,11 +173,6 @@ export function usePlanningWorkspace() {
         gridKey.value += 1
     }
 
-    function toggleColumnFilters() {
-        showInlineFilters.value = !showInlineFilters.value
-        gridKey.value += 1
-    }
-
     function resetWorkspace() {
         tasks.value = createTasks()
         quickSearch.value = ''
@@ -256,7 +248,6 @@ export function usePlanningWorkspace() {
         applyActiveTasksPreset,
         calendarConfig,
         filterBadgeOptions,
-        displayedGridPlugins,
         ganttAssignments,
         ganttColumns,
         ganttConfig,
@@ -264,6 +255,7 @@ export function usePlanningWorkspace() {
         ganttPlugins,
         ganttResources,
         hasActiveFilters,
+        isActiveTasksPreset,
         planningDataGridContextMenu: dataGridContextMenu,
         planningDataGridFormatting,
         gridColumnTypes,
@@ -295,12 +287,10 @@ export function usePlanningWorkspace() {
         schedulerResources,
         selectedCount,
         showHint,
-        showInlineFilters,
         syncVisibleTasks,
         tasks,
         theme,
         toggleFullscreen,
-        toggleColumnFilters,
         visibleTasks,
         views,
     }
