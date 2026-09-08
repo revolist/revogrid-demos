@@ -30,6 +30,14 @@
                         ×
                     </button>
                 </span>
+                <span
+                    v-if="hasActiveFilters"
+                    class="planning-demo__filter-status"
+                    role="status"
+                >
+                    <FontAwesomeSvgIcon name="filter" />
+                    Filtered · {{ visibleTasks.length }} of {{ tasks.length }}
+                </span>
                 <button
                     type="button"
                     data-demo-action="apply_active_tasks"
@@ -179,6 +187,7 @@ const {
     ganttDependencies,
     ganttPlugins,
     ganttResources,
+    hasActiveFilters,
     gridColumnTypes,
     gridColumns,
     gridFilterConfig,

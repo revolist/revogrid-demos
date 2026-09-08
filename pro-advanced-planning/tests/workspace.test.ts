@@ -378,6 +378,15 @@ test('keeps native Grid filters mounted across planning view switches', () => {
     )
 })
 
+test('shows shared filter status outside the Grid', () => {
+    const workspaceSource = readFileSync(
+        new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),
+        'utf8'
+    )
+    assert.match(workspaceSource, /hasActiveFilters/)
+    assert.match(vueSource, /planning-demo__filter-status/)
+})
+
 test('projects zero-duration Gantt milestones as valid scheduler events', () => {
     const tasks = createTasks()
     const schedulerEvents = toSchedulerEvents(tasks)

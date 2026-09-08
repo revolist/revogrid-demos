@@ -132,6 +132,11 @@ export function usePlanningWorkspace() {
     const visibleIds = computed(
         () => new Set(visibleTasks.value.map(({ id }) => id))
     )
+    const hasActiveFilters = computed(
+        () =>
+            Boolean(quickSearch.value.trim()) ||
+            visibleTasks.value.length < tasks.value.length
+    )
     const ganttAssignments = computed(() =>
         toGanttAssignments(tasks.value).filter(({ taskId }) =>
             visibleIds.value.has(String(taskId))
@@ -258,6 +263,7 @@ export function usePlanningWorkspace() {
         ganttDependencies,
         ganttPlugins,
         ganttResources,
+        hasActiveFilters,
         planningDataGridContextMenu: dataGridContextMenu,
         planningDataGridFormatting,
         gridColumnTypes,
