@@ -40,11 +40,20 @@ export function updateFromGridSource(
     },
     visibleTasks: readonly PlanningTask[]
 ): PlanningTask[] {
+    const visibleModel =
+        typeof detail.rowIndex === 'number'
+            ? visibleTasks[detail.rowIndex]
+            : undefined
     const model =
         detail.model?.id === undefined && typeof detail.rowIndex === 'number'
-            ? visibleTasks[detail.rowIndex]
+            ? visibleModel
             : detail.model
-    return applyPlanningGridEdit(tasks, { ...detail, model })
+    const prop = String(detail.prop ?? '')
+    const visibleValue =
+        (model as Record<string, unknown> | undefined)?.[prop] ??
+        visibleModel?.[prop as keyof PlanningTask]
+    const value = detail.val ?? visibleValue
+    return applyPlanningGridEdit(tasks, { ...detail, model, val: value })
 }
 
 export function updateFromKanban(

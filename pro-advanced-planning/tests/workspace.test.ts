@@ -588,6 +588,38 @@ test('synchronizes a dropdown owner edit without a model into the Gantt assignme
     assert.deepEqual(task?.owners, ['Ava'])
 })
 
+test('keeps Kanban and Gantt ownership in sync for a dropdown option', () => {
+    const tasks = createTasks()
+    const edited = applyPlanningGridEdit(tasks, {
+        model: tasks[2],
+        prop: 'owner',
+        val: { value: 'Leo', label: 'Leo' },
+    })
+    const task = edited.find(({ id }) => id === tasks[2].id)
+
+    assert.equal(task?.owner, 'Leo')
+    assert.deepEqual(task?.owners, ['Leo'])
+    assert.equal(task?.ownerAvatarIndex, 3)
+    assert.equal(task?.ownerAvatars.length, 1)
+})
+
+test('uses the edited visible owner when a direct dropdown event has no value', () => {
+    const tasks = createTasks()
+    const rowIndex = 2
+    const visible = tasks.map((task, index) =>
+        index === rowIndex ? { ...task, owner: 'Leo' } : task
+    )
+    const edited = updateFromGridSource(
+        tasks,
+        { model: { id: tasks[rowIndex].id }, rowIndex, prop: 'owner' },
+        visible
+    )
+    const task = edited.find(({ id }) => id === tasks[rowIndex].id)
+
+    assert.equal(task?.owner, 'Leo')
+    assert.deepEqual(task?.owners, ['Leo'])
+})
+
 test('uses the visible source fallback for direct grid editors in every framework', () => {
     const workspaceSource = readFileSync(
         new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),

@@ -44,6 +44,15 @@ export function mergeVisibleTasks(
     return canonical.map((task) => updates.get(task.id) ?? task)
 }
 
+function readGridEditValue(value: unknown, prop: string): string {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const option = value as Record<string, unknown>
+        const optionValue = option.value ?? option[prop] ?? option.label
+        if (optionValue !== undefined) return String(optionValue)
+    }
+    return String(value ?? '')
+}
+
 export function applyPlanningGridEdit(
     tasks: PlanningTask[],
     detail: { model?: { id?: unknown }; prop?: unknown; val?: unknown }
@@ -58,7 +67,7 @@ export function applyPlanningGridEdit(
         const value =
             prop === 'percentDone'
                 ? Math.max(0, Math.min(100, Number(detail.val ?? 0)))
-                : String(detail.val ?? '')
+                : readGridEditValue(detail.val, prop)
         return {
             ...task,
             [prop]: value,
