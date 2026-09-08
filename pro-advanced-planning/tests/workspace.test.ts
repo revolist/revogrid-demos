@@ -187,7 +187,7 @@ test('uses declarative data-grid formats for every planning value type', () => {
     )
     assert.match(
         columnsSource,
-        /prop: 'owner'[\s\S]*?avatarIndexProp: 'ownerAvatarIndex'[\s\S]*?avatarLabelProp: 'owner'/
+        /const ownerAvatarWithTextRenderer[\s\S]*?getOwnerAvatarIndex\(owner\)/
     )
     assert.match(
         formattingSource,
@@ -756,10 +756,11 @@ test('renders Kanban ownership from the canonical owner and native avatar index'
     assert.doesNotMatch(kanbanConfigSource, /assigneeField:\s*'owners'/)
     assert.match(
         kanbanConfigSource,
-        /index:\s*Math\.max\(\s*card\.ownerAvatarIndex - 1,\s*0\s*\)/
+        /index:\s*Math\.max\(\s*getOwnerAvatarIndex\(card\.owner\) - 1,\s*0\s*\)/
     )
     assert.match(kanbanConfigSource, /value:\s*card\.owner/)
     assert.doesNotMatch(kanbanConfigSource, /card\.owners/)
+    assert.doesNotMatch(kanbanConfigSource, /card\.ownerAvatarIndex/)
     assert.match(planningSource, /task\.owner\s*\?\s*\[/)
     assert.match(planningSource, /resourceId:\s*task\.owner/)
     assert.doesNotMatch(planningSource, /task\.owners\.map/)
