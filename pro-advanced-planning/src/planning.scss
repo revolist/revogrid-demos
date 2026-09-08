@@ -3,7 +3,7 @@
     --rv-ui-focus-ring: var(--demo-focus-ring);
     --revo-row-select-checkbox-focus: var(--demo-focus-ring);
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
     gap: 8px;
     height: 100%;
     min-height: 0;
@@ -78,11 +78,6 @@
     font: 500 11px/1 inherit;
     cursor: pointer;
 }
-.planning-demo__actions > button[aria-pressed='true'] {
-    border-color: var(--vp-c-brand-1);
-    background: color-mix(in srgb, var(--vp-c-brand-1) 10%, transparent);
-    color: var(--vp-c-brand-1);
-}
 .planning-demo__hint {
     display: inline-flex;
     height: 26px;
@@ -93,22 +88,6 @@
     background: var(--rv-ui-surface);
     color: var(--vp-c-text-2, inherit);
     font-size: 10px;
-}
-.planning-demo__filter-status {
-    display: inline-flex;
-    height: 26px;
-    align-items: center;
-    gap: 4px;
-    padding: 0 8px;
-    border: 1px solid var(--rv-ui-border);
-    border-radius: 999px;
-    color: var(--vp-c-text-2, inherit);
-    font-size: 10px;
-    font-weight: 500;
-}
-.planning-demo__filter-status .fa-svg-icon {
-    width: 11px;
-    height: 11px;
 }
 .planning-demo__hint button {
     width: 24px;
@@ -143,6 +122,16 @@
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
+}
+.planning-demo__filter-row {
+    display: flex;
+    min-height: 30px;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-left: 3px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rv-ui-border);
 }
 .planning-demo__grid-stage > .planning-demo__grid {
     flex: 1;
@@ -241,7 +230,7 @@
     width: min(280px, 32vw);
     height: 30px;
     align-items: center;
-    margin-left: 3px;
+    flex: 0 1 min(280px, 32vw);
     padding: 0 10px 0 31px;
     border: 1px solid var(--rv-ui-border);
     border-radius: 5px;
@@ -281,7 +270,14 @@
     box-shadow: 0 0 0 3px var(--demo-focus-ring);
 }
 .planning-demo__filter-badges {
-    margin-bottom: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.planning-demo__filter-badge-host {
+    display: flex;
+    min-width: 0;
+    align-items: center;
 }
 .planning-demo__filter-badges[role='status'] {
     display: none;

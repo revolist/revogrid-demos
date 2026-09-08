@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, ref, toRaw } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
     AdvanceFilterPlugin,
     ColumnHidePlugin,
@@ -81,6 +81,8 @@ const schedulerPlugins = [EventSchedulerPlugin]
 export function usePlanningWorkspace() {
     const rootRef = ref<HTMLElement>()
     const gridRef = ref<any>()
+    const filterBadgesRef = ref<HTMLElement>()
+    const filterBadges = ref<HTMLElement>()
     const activeView = ref<PlanningView>('grid')
     const tasks = ref(createTasks())
     const quickSearch = ref('')
@@ -89,9 +91,6 @@ export function usePlanningWorkspace() {
     const showHint = ref(true)
     const gridKey = ref(0)
     const gridFilterConfig = ref<ColumnFilterConfig>(planningFilterConfig)
-    const isActiveTasksPreset = computed(
-        () => toRaw(gridFilterConfig.value) === activePlanningFilterConfig
-    )
     const quickFilter = computed(() => ({
         text: quickSearch.value,
         columns: ['name', 'owner'],
@@ -129,11 +128,6 @@ export function usePlanningWorkspace() {
     const visibleIds = computed(
         () => new Set(visibleTasks.value.map(({ id }) => id))
     )
-    const hasActiveFilters = computed(
-        () =>
-            Boolean(quickSearch.value.trim()) ||
-            visibleTasks.value.length < tasks.value.length
-    )
     const ganttAssignments = computed(() =>
         toGanttAssignments(tasks.value).filter(({ taskId }) =>
             visibleIds.value.has(String(taskId))
@@ -150,12 +144,31 @@ export function usePlanningWorkspace() {
         disconnectTheme()
     })
 
+    onMounted(() => {
+        requestAnimationFrame(moveFilterBadges)
+    })
+
+    function moveFilterBadges() {
+        const host = filterBadgesRef.value
+        if (!host) return
+        const nextBadges = gridElement()?.querySelector<HTMLElement>(
+            '.planning-demo__filter-badges'
+        )
+        if (nextBadges) {
+            filterBadges.value?.remove()
+            filterBadges.value = nextBadges
+        }
+        const badges = filterBadges.value
+        if (badges && badges.parentElement !== host) host.append(badges)
+    }
+
     async function syncVisibleTasks() {
         const grid = gridElement()
         if (!grid) return
         visibleTaskIds.value = (await grid.getVisibleSource()).map(
             (task: PlanningTask) => task.id
         )
+        moveFilterBadges()
     }
 
     async function toggleFullscreen() {
@@ -248,14 +261,13 @@ export function usePlanningWorkspace() {
         applyActiveTasksPreset,
         calendarConfig,
         filterBadgeOptions,
+        filterBadgesRef,
         ganttAssignments,
         ganttColumns,
         ganttConfig,
         ganttDependencies,
         ganttPlugins,
         ganttResources,
-        hasActiveFilters,
-        isActiveTasksPreset,
         planningDataGridContextMenu: dataGridContextMenu,
         planningDataGridFormatting,
         gridColumnTypes,

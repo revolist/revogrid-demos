@@ -295,9 +295,11 @@ test('keeps quick search in a stable native input', () => {
         stylesSource,
         /planning-demo__filter-search:focus-within\s*\{[^}]*currentColor/
     )
+    assert.match(vueSource, /class="planning-demo__filter-row"/)
+    assert.match(vueSource, /class="planning-demo__filter-badge-host"/)
     assert.match(
         stylesSource,
-        /planning-demo__filter-badges\s*\{[^}]*margin-bottom:\s*5px/
+        /planning-demo__filter-row\s*\{[^}]*display:\s*flex[^}]*padding-bottom:\s*6px[^}]*border-bottom:\s*1px solid var\(--rv-ui-border\)/
     )
     assert.match(
         stylesSource,
@@ -395,26 +397,14 @@ test('keeps native Grid filters mounted across planning view switches', () => {
     assert.doesNotMatch(vueSource, /Column filters|toggleColumnFilters/)
 })
 
-test('marks the Active tasks preset as selected while it is applied', () => {
+test('keeps native filter badges in the shared workspace row', () => {
     const workspaceSource = readFileSync(
         new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),
         'utf8'
     )
-    assert.match(vueSource, /:aria-pressed="isActiveTasksPreset"/)
-    assert.match(
-        workspaceSource,
-        /toRaw\(gridFilterConfig\.value\) === activePlanningFilterConfig/
-    )
-    assert.match(stylesSource, /button\[aria-pressed='true'\][\s\S]*?border-color/)
-})
-
-test('shows shared filter status outside the Grid', () => {
-    const workspaceSource = readFileSync(
-        new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),
-        'utf8'
-    )
-    assert.match(workspaceSource, /hasActiveFilters/)
-    assert.match(vueSource, /planning-demo__filter-status/)
+    assert.match(workspaceSource, /function moveFilterBadges\(\)/)
+    assert.match(workspaceSource, /filterBadgesRef/)
+    assert.doesNotMatch(vueSource, /planning-demo__filter-status/)
 })
 
 test('projects zero-duration Gantt milestones as valid scheduler events', () => {

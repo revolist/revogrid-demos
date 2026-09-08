@@ -30,17 +30,8 @@
                         ×
                     </button>
                 </span>
-                <span
-                    v-if="hasActiveFilters"
-                    class="planning-demo__filter-status"
-                    role="status"
-                >
-                    <FontAwesomeSvgIcon name="filter" />
-                    Filtered · {{ visibleTasks.length }} of {{ tasks.length }}
-                </span>
                 <button
                     type="button"
-                    :aria-pressed="isActiveTasksPreset"
                     data-demo-action="apply_active_tasks"
                     @click="applyActiveTasksPreset"
                 >
@@ -64,7 +55,7 @@
                 </button>
             </div>
         </div>
-        <div v-show="activeView === 'grid'" class="planning-demo__grid-stage">
+        <div class="planning-demo__filter-row">
             <label class="planning-demo__filter-search">
                 <input
                     v-model="quickSearch"
@@ -73,6 +64,9 @@
                     placeholder="Quick search tasks…"
                 />
             </label>
+            <div ref="filterBadgesRef" class="planning-demo__filter-badge-host" />
+        </div>
+        <div v-show="activeView === 'grid'" class="planning-demo__grid-stage">
             <RevoGrid
                 :key="gridKey"
                 ref="gridRef"
@@ -174,14 +168,13 @@ const {
     applyActiveTasksPreset,
     calendarConfig,
     filterBadgeOptions,
+    filterBadgesRef,
     ganttAssignments,
     ganttColumns,
     ganttConfig,
     ganttDependencies,
     ganttPlugins,
     ganttResources,
-    hasActiveFilters,
-    isActiveTasksPreset,
     gridColumnTypes,
     gridColumns,
     gridFilterConfig,
