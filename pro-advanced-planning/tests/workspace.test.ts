@@ -298,3 +298,10 @@ test('renders Kanban resources with their native avatar data', () => {
   assert.match(stylesSource, /planning-card__title\{[^}]*line-height:20px/)
   assert.match(stylesSource, /planning-card__avatar-stack/)
 })
+
+test('uses the shared Pro progress renderer in Kanban cards', () => {
+  assert.match(kanbanConfigSource, /import \{ renderKanbanProgress \} from '@revolist\/kanban'/)
+  assert.match(kanbanConfigSource, /renderKanbanProgress\(h, \{ value: card\.percentDone, label: 'Progress' \}\)/)
+  assert.doesNotMatch(kanbanConfigSource, /planning-card__progress/)
+  assert.match(kanbanConfigSource, /cardRowHeight: 144/)
+})

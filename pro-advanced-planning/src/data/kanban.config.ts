@@ -1,3 +1,4 @@
+import { renderKanbanProgress } from '@revolist/kanban';
 import type { KanbanConfig } from '@revolist/kanban';
 import { avatarTemplate } from '@revolist/revogrid-pro';
 import type { PlanningTask } from './types';
@@ -39,10 +40,8 @@ export const kanbanConfig: KanbanConfig<PlanningTask> = {
         ]),
         h('span', {}, `$${Number(card.budget).toLocaleString('en-US')}`),
       ]),
-      h('div', { class: 'planning-card__progress', title: `${card.percentDone}% complete` }, [
-        h('span', { style: { width: `${card.percentDone}%` } }),
-      ]),
+      renderKanbanProgress(h, { value: card.percentDone, label: 'Progress' }),
     ]),
   },
-  cardRowHeight: 120,
+  cardRowHeight: 144,
 };
