@@ -18,6 +18,7 @@ export { calendarConfig, schedulerConfig } from './scheduler.config'
 export { clearPlanningRowSelection } from './selection'
 export {
     createTasks,
+    filterGanttDependencies,
     ganttDependencies,
     ganttResources,
     schedulerResources,

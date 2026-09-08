@@ -31,6 +31,7 @@ import {
     createPlanningDataGridContextMenu,
     createTasks,
     deletePlanningTasks,
+    filterGanttDependencies,
     defaultPlanningFilters,
     filterPlanningTasks,
     ganttColumns,
@@ -219,7 +220,7 @@ import {
                         [source]="visibleTasks"
                         [columns]="ganttColumns"
                         [gantt]="ganttConfig"
-                        [ganttDependencies]="ganttDependencies"
+                        [ganttDependencies]="visibleGanttDependencies"
                         [ganttResources]="ganttResources"
                         [ganttAssignments]="ganttAssignments"
                         (gantt-before-task-change)="handleGanttEdit($event)"
@@ -327,6 +328,9 @@ export class PlanningViewsGridComponent {
         return toGanttAssignments(this.tasks).filter(({ taskId }) =>
             ids.has(String(taskId))
         )
+    }
+    get visibleGanttDependencies() {
+        return filterGanttDependencies(ganttDependencies, this.visibleTasks)
     }
     get schedulerEvents() {
         return toSchedulerEvents(this.visibleTasks)

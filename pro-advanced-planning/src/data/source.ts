@@ -43,6 +43,18 @@ export const ganttDependencies: DependencyEntity[] = [
     lagDays: 0,
 }))
 
+export function filterGanttDependencies(
+    dependencies: readonly DependencyEntity[],
+    tasks: readonly Pick<PlanningTask, 'id'>[]
+): DependencyEntity[] {
+    const taskIds = new Set(tasks.map(({ id }) => String(id)))
+    return dependencies.filter(
+        ({ predecessorTaskId, successorTaskId }) =>
+            taskIds.has(String(predecessorTaskId)) &&
+            taskIds.has(String(successorTaskId))
+    )
+}
+
 export function toGanttAssignments(tasks: PlanningTask[]): AssignmentEntity[] {
     return tasks.flatMap((task) =>
         task.owner

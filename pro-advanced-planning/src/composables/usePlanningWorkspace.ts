@@ -38,6 +38,7 @@ import {
     createPlanningDataGridContextMenu,
     createTasks,
     deletePlanningTasks,
+    filterGanttDependencies,
     filterPlanningTasks,
     ganttColumns,
     ganttConfig,
@@ -132,6 +133,9 @@ export function usePlanningWorkspace() {
         toGanttAssignments(tasks.value).filter(({ taskId }) =>
             visibleIds.value.has(String(taskId))
         )
+    )
+    const visibleGanttDependencies = computed(() =>
+        filterGanttDependencies(ganttDependencies, visibleTasks.value)
     )
     const schedulerEvents = computed(() =>
         toSchedulerEvents(visibleTasks.value)
@@ -265,7 +269,6 @@ export function usePlanningWorkspace() {
         ganttAssignments,
         ganttColumns,
         ganttConfig,
-        ganttDependencies,
         ganttPlugins,
         ganttResources,
         planningDataGridContextMenu: dataGridContextMenu,
@@ -304,6 +307,7 @@ export function usePlanningWorkspace() {
         theme,
         toggleFullscreen,
         visibleTasks,
+        visibleGanttDependencies,
         views,
     }
 }

@@ -119,7 +119,7 @@
             :source="visibleTasks"
             :columns="ganttColumns"
             :gantt.prop="ganttConfig"
-            :gantt-dependencies.prop="ganttDependencies"
+            :gantt-dependencies.prop="visibleGanttDependencies"
             :gantt-resources.prop="ganttResources"
             :gantt-assignments.prop="ganttAssignments"
             @gantt-before-task-change="handleGanttEdit"
@@ -172,7 +172,6 @@ const {
     ganttAssignments,
     ganttColumns,
     ganttConfig,
-    ganttDependencies,
     ganttPlugins,
     ganttResources,
     gridColumnTypes,
@@ -210,6 +209,7 @@ const {
     theme,
     toggleFullscreen,
     visibleTasks,
+    visibleGanttDependencies,
     views,
 } = usePlanningWorkspace()
 </script>

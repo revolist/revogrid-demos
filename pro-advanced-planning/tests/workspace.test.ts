@@ -20,7 +20,10 @@ import {
     updateFromGridSource,
     updateFromKanban,
 } from '../src/data/sync'
-import { toSchedulerEvents } from '../src/data/source'
+import {
+    filterGanttDependencies,
+    toSchedulerEvents,
+} from '../src/data/source'
 const ganttConfigSource = readFileSync(
     new URL('../src/data/gantt.config.ts', import.meta.url),
     'utf8'
@@ -194,6 +197,37 @@ test('aligns the Gantt timeline with the planning fixture window', () => {
         ganttConfigSource,
         /timelineRange: \{ startDate: '2026-09-07', endDate: '2026-10-09' \}/
     )
+})
+
+test('passes only dependencies whose tasks are visible to Gantt', () => {
+    const dependencies = [
+        {
+            id: 'visible',
+            predecessorTaskId: 'task-001',
+            successorTaskId: 'task-002',
+            type: 'finish-to-start' as const,
+            lagDays: 0,
+        },
+        {
+            id: 'hidden-successor',
+            predecessorTaskId: 'task-001',
+            successorTaskId: 'task-003',
+            type: 'finish-to-start' as const,
+            lagDays: 0,
+        },
+    ]
+
+    assert.deepEqual(
+        filterGanttDependencies(dependencies, [
+            { id: 'task-001' },
+            { id: 'task-002' },
+        ]),
+        [dependencies[0]]
+    )
+    assert.match(vueSource, /:gantt-dependencies\.prop="visibleGanttDependencies"/)
+    assert.match(vanillaSource, /grid\.ganttDependencies = visibleGanttDependencies/)
+    assert.match(reactSource, /ganttDependencies=\{visibleGanttDependencies\}/)
+    assert.match(angularSource, /\[ganttDependencies\]="visibleGanttDependencies"/)
 })
 
 test('uses declarative data-grid formats for every planning value type', () => {

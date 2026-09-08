@@ -33,6 +33,7 @@ import {
     createPlanningDataGridContextMenu,
     createTasks,
     deletePlanningTasks,
+    filterGanttDependencies,
     defaultPlanningFilters,
     filterPlanningTasks,
     ganttColumns,
@@ -131,6 +132,10 @@ export function load(parentSelector: string): (() => void) | undefined {
         )
         const visibleTasks = filterPlanningTasks(tasks, filters)
         const visibleIds = new Set(visibleTasks.map(({ id }) => id))
+        const visibleGanttDependencies = filterGanttDependencies(
+            ganttDependencies,
+            visibleTasks
+        )
         count.textContent = `${visibleTasks.length} of ${tasks.length} tasks${selectedCount ? ` · ${selectedCount} selected` : ''}`
         const grid = document.createElement('revo-grid') as PlanningGridElement
         grid.hideAttribution = true
@@ -229,7 +234,7 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.plugins = [GanttPlugin]
             grid.columns = ganttColumns
             grid.gantt = ganttConfig
-            grid.ganttDependencies = ganttDependencies
+            grid.ganttDependencies = visibleGanttDependencies
             grid.ganttResources = ganttResources
             grid.ganttAssignments = toGanttAssignments(tasks).filter(
                 ({ taskId }) => visibleIds.has(String(taskId))

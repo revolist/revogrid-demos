@@ -34,6 +34,7 @@ import {
     createPlanningDataGridContextMenu,
     createTasks,
     deletePlanningTasks,
+    filterGanttDependencies,
     defaultPlanningFilters,
     filterPlanningTasks,
     ganttColumns,
@@ -150,6 +151,10 @@ export default function PlanningViews() {
                 visibleIds.has(String(taskId))
             ),
         [tasks, visibleIds]
+    )
+    const visibleGanttDependencies = useMemo(
+        () => filterGanttDependencies(ganttDependencies, visibleTasks),
+        [visibleTasks]
     )
     const schedulerEvents = useMemo(
         () => toSchedulerEvents(visibleTasks),
@@ -392,7 +397,7 @@ export default function PlanningViews() {
                     source={visibleTasks}
                     columns={ganttColumns}
                     gantt={ganttConfig}
-                    ganttDependencies={ganttDependencies}
+                    ganttDependencies={visibleGanttDependencies}
                     ganttResources={ganttResources}
                     ganttAssignments={ganttAssignments}
                     onGantt-before-task-change={(
