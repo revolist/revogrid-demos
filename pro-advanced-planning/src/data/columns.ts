@@ -28,34 +28,9 @@ const ownerEditorOptions = planningPeople.map(({ id, name }) => ({
     value: id,
     label: name,
     owner: name,
+    ownerAvatar: getOwnerAvatar(id),
     ownerAvatarIndex: getOwnerAvatarIndex(id),
 }))
-
-/**
- * The dropdown updates the owner value before its surrounding row is replaced.
- * Resolve the avatar from that value so its photo cannot lag behind the label.
- */
-const ownerAvatarWithTextRenderer: ColumnRegular['cellTemplate'] = (
-    h,
-    { value, column, model }
-) => {
-    const owner = String(value ?? '')
-    return avatarWithTextRenderer(h, {
-        value: owner,
-        column: {
-            ...column,
-            avatarProp: 'ownerAvatar',
-            avatarIndexProp: 'ownerAvatarIndex',
-            avatarLabelProp: 'owner',
-        },
-        model: {
-            ...model,
-            owner,
-            ownerAvatar: getOwnerAvatar(owner),
-            ownerAvatarIndex: getOwnerAvatarIndex(owner),
-        },
-    })
-}
 
 const workflowLabels: Record<string, string> = {
     'not-started': 'Planned',
@@ -152,9 +127,11 @@ export const gridColumns: ColumnRegular[] = [
         dropdown: {
             source: ownerEditorOptions,
             syncCellTemplate: true,
+            cellTemplate: avatarWithTextRenderer,
         },
-        avatarSize: 16,
-        cellTemplate: ownerAvatarWithTextRenderer,
+        avatarProp: 'ownerAvatar',
+        avatarIndexProp: 'ownerAvatarIndex',
+        avatarLabelProp: 'owner',
         cellProperties: paddedCellProperties,
         dataGridFormat: planningGridFormats.owner,
     },

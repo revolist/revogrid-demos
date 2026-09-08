@@ -187,7 +187,12 @@ test('uses declarative data-grid formats for every planning value type', () => {
     )
     assert.match(
         columnsSource,
-        /const ownerAvatarWithTextRenderer[\s\S]*?getOwnerAvatarIndex\(owner\)/
+        /prop: 'owner'[\s\S]*?avatarProp: 'ownerAvatar'[\s\S]*?avatarIndexProp: 'ownerAvatarIndex'/
+    )
+    assert.match(columnsSource, /ownerAvatar:\s*getOwnerAvatar\(id\)/)
+    assert.match(
+        columnsSource,
+        /prop: 'owner'[\s\S]*?dropdown: \{[\s\S]*?cellTemplate: avatarWithTextRenderer/
     )
     assert.match(
         formattingSource,
@@ -354,14 +359,14 @@ test('keeps the normal page surface and text color in fullscreen mode', () => {
     )
 })
 
-test('keeps native grid internals unstyled and uses compact owner avatars', () => {
+test('keeps native grid internals unstyled and uses compact formatted owner avatars', () => {
     assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revogr-/)
     assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revo-grid/)
-    assert.match(columnsSource, /avatarSize: 16/)
     assert.match(
         formattingSource,
-        /options: \{ avatarSize: 16, rectangular: false \}/
+        /options:\s*\{[\s\S]*?avatarSize:\s*20/
     )
+    assert.match(columnsSource, /avatarProp: 'ownerAvatar'/)
 })
 
 test('provides a stable 100-task fixture across three projects', () => {

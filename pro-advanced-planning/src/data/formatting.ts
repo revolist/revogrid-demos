@@ -119,7 +119,10 @@ export const planningGridFormats = {
     owner: {
         presentation: {
             id: 'avatar-with-text',
-            options: { avatarSize: 16, rectangular: false },
+            options: {
+                avatarSize: 20,
+                rectangular: false,
+            },
         },
     },
     workflowStatus: {

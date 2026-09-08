@@ -50,7 +50,7 @@ export const kanbanConfig: KanbanConfig<PlanningTask> = {
                                         0
                                     ),
                                     label: card.owner,
-                                    size: 20,
+                                    size: 28,
                                     value: getOwnerAvatar(card.owner),
                                 })
                             ),
