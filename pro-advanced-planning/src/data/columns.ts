@@ -52,6 +52,10 @@ const paddedCellProperties: NonNullable<ColumnRegular['cellProperties']> = () =>
   style: { padding: '0 16px' },
 });
 
+const selectAllHeaderProperties: NonNullable<ColumnRegular['columnProperties']> = () => ({
+  style: { boxShadow: '0 -1px 0 0 var(--rg-theme-header-border) inset' },
+});
+
 export const planningFilterConfig = {
   structuredFilterTypes: planningStructuredFilterTypes,
   multiFilterItems: {
@@ -82,7 +86,16 @@ export const gridColumnTypes = {
 };
 
 export const gridColumns: ColumnRegular[] = [
-  { prop: '_selected', name: '', size: 48, pin: 'colPinStart', rowSelect: true, readonly: true, filter: false },
+  {
+    prop: '_selected',
+    name: '',
+    size: 48,
+    pin: 'colPinStart',
+    rowSelect: true,
+    readonly: true,
+    filter: false,
+    columnProperties: selectAllHeaderProperties,
+  },
   { prop: 'name', name: 'Task', size: 220, pin: 'colPinStart', sortable: true, filter: [FIlTER_SELECTION], filterPlaceholder: 'All tasks', dataGridFormat: planningGridFormats.name },
   {
     prop: 'owner',

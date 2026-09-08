@@ -27,8 +27,13 @@ test('uses the Pro dropdown editor with canonical owner and status values', () =
 })
 
 test('pins selection and task identity with space for native checkboxes', () => {
-  assert.match(columnsSource, /prop: '_selected', name: '', size: 48, pin: 'colPinStart', rowSelect: true/)
+  assert.match(columnsSource, /prop: '_selected',[\s\S]*?name: '',[\s\S]*?size: 48,[\s\S]*?pin: 'colPinStart',[\s\S]*?rowSelect: true/)
   assert.match(columnsSource, /prop: 'name', name: 'Task', size: 220, pin: 'colPinStart'/)
+})
+
+test('extends the select-all header divider across the checkbox column', () => {
+  assert.match(columnsSource, /const selectAllHeaderProperties[\s\S]*?boxShadow: '0 -1px 0 0 var\(--rg-theme-header-border\) inset'/)
+  assert.match(columnsSource, /prop: '_selected',[\s\S]*?columnProperties: selectAllHeaderProperties/)
 })
 
 test('allocates enough width for formatted due dates', () => {
