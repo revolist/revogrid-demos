@@ -16,7 +16,7 @@ import {
   FILTER_TIME_MATRIX,
   planningStructuredFilterTypes,
 } from './planning.structured';
-import { planningGridFormats, priorityIndicatorRenderer, workflowStatusBadgeRenderer, workflowStatusBadgeStyles } from './formatting';
+import { planningGridFormats, priorityIndicatorRenderer, workflowStatusBadgeRenderer } from './formatting';
 
 const ownerEditorOptions = planningPeople.map(({ id, name }) => ({
   value: id,
@@ -115,7 +115,6 @@ export const gridColumns: ColumnRegular[] = [
       syncCellTemplate: true,
       cellTemplate: workflowStatusBadgeRenderer,
     },
-    badgeStyles: workflowStatusBadgeStyles,
     cellProperties: paddedCellProperties,
     dataGridFormat: planningGridFormats.workflowStatus,
   },

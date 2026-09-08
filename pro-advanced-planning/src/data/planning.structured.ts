@@ -21,10 +21,10 @@ export {
 };
 
 export const workflowBadges: Readonly<Record<string, { label: string; color: string }>> = {
-  'not-started': { label: 'Planned', color: '#64748b' },
-  'in-progress': { label: 'In progress', color: '#4f46e5' },
-  blocked: { label: 'Blocked', color: '#dc2626' },
-  done: { label: 'Done', color: '#008b55' },
+  'not-started': { label: 'Planned', color: '#475569' },
+  'in-progress': { label: 'In progress', color: '#4338ca' },
+  blocked: { label: 'Blocked', color: '#c62828' },
+  done: { label: 'Done', color: '#087443' },
 };
 
 const configuredTypes = new Map([
@@ -32,7 +32,7 @@ const configuredTypes = new Map([
     order: ['not-started', 'in-progress', 'blocked', 'done'],
     badge: ({ value }) => workflowBadges[String(value)] ?? {
       label: String(value),
-      color: '#64748b',
+      color: '#475569',
     },
   })],
   [FILTER_CALENDAR_RANGE, createCalendarRangeStructuredFilterType({

@@ -5,15 +5,8 @@ import type {
   DataGridContextMenuConfig,
   DataGridFormattingPresetState,
 } from '@revolist/revogrid-pro';
-import { badgeRenderer, markDataGridFormatRenderer } from '@revolist/revogrid-pro';
+import { markDataGridFormatRenderer } from '@revolist/revogrid-pro';
 import { workflowBadges } from './planning.structured';
-
-const workflowLabels: Record<string, string> = {
-  'not-started': 'Planned',
-  'in-progress': 'In progress',
-  blocked: 'Blocked',
-  done: 'Done',
-};
 
 const priorityPresentation = (value: unknown) => {
   const priority = Number(value);
@@ -22,23 +15,24 @@ const priorityPresentation = (value: unknown) => {
   return { label: 'Normal', color: '#10b981' };
 };
 
-/** Reuse the filter badge palette for the status format in every grid view. */
-export const workflowStatusBadgeStyles = Object.fromEntries(
-  Object.values(workflowBadges).map(({ label, color }) => [
-    label,
-    { backgroundColor: color, color: '#ffffff' },
-  ]),
-);
-
 /**
  * Keep workflow values canonical for filtering and planning engines while the
- * native badge presentation renders the label a person expects to read.
+ * grid and dropdowns use the same solid, high-contrast visual treatment.
  */
 export const workflowStatusBadgeRenderer = markDataGridFormatRenderer(
-  ((h, props) => badgeRenderer!(h, {
-    ...props,
-    value: workflowLabels[String(props.value)] ?? String(props.value ?? ''),
-  })) as CellTemplate,
+  ((h, props) => {
+    const { label, color } = workflowBadges[String(props.value)] ?? {
+      label: String(props.value ?? ''),
+      color: '#475569',
+    };
+    return h('span', {
+      class: 'badge-cell',
+      style: {
+        backgroundColor: `var(--badge-cell-appearance-background-color, ${color})`,
+        color: 'var(--badge-cell-appearance-color, #ffffff)',
+      },
+    }, label);
+  }) as CellTemplate,
   'workflow-status-badge',
 );
 
@@ -49,6 +43,13 @@ const workflowStatusBadgeFormat = {
   valueKind: 'text',
   cellTemplate: workflowStatusBadgeRenderer,
   replaceAuthoredTemplate: true,
+  appearanceSections: {
+    colors: true,
+    colorVariables: {
+      fill: '--badge-cell-appearance-background-color',
+      text: '--badge-cell-appearance-color',
+    },
+  },
 } as const satisfies DataGridAdvancedFormatDefinition;
 
 export const priorityIndicatorRenderer = markDataGridFormatRenderer(
