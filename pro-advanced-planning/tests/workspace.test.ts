@@ -170,6 +170,10 @@ test('keeps scheduler and calendar events free of conflict validation outlines',
     assert.match(schedulerConfigSource, /conflicts: \{ enabled: false \}/)
 })
 
+test('grows resource timeline rows for concurrent scheduler events by default', () => {
+    assert.match(schedulerConfigSource, /resourceTimelineRowSizing:\s*true/)
+})
+
 test('aligns the Gantt timeline with the planning fixture window', () => {
     assert.match(ganttConfigSource, /weekStartsOn: 1/)
     assert.match(

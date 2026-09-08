@@ -9,6 +9,7 @@ export const schedulerConfig: EventSchedulerConfig = {
     slotMinutes: 60,
     timeRange: { start: '08:00', end: '18:00' },
     rowSize: 50,
+    resourceTimelineRowSizing: true,
     resourceColumnSize: 150,
     timelineColumnSize: 80,
     editable: true,
