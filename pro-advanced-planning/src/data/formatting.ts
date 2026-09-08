@@ -51,7 +51,7 @@ const workflowStatusBadgeFormat = {
   replaceAuthoredTemplate: true,
 } as const satisfies DataGridAdvancedFormatDefinition;
 
-const priorityIndicatorRenderer = markDataGridFormatRenderer(
+export const priorityIndicatorRenderer = markDataGridFormatRenderer(
   ((h, props) => {
     const { label, color } = priorityPresentation(props.value);
     return h('span', {

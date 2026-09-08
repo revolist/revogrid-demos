@@ -191,6 +191,14 @@ test('combines search, project, status and priority filters', () => {
   assert.equal(filterPlanningTasks(tasks, defaultPlanningFilters()).length, 60)
 })
 
+test('maps priority filter choices to the formatted Priority column labels', () => {
+  assert.match(columnsSource, /getItems:\s*\{[\s\S]*?priority:\s*\(\)\s*=>\s*priorityFilterItems/)
+  assert.match(columnsSource, /itemTemplate:\s*\{[\s\S]*?priority:\s*priorityFilterItemTemplate/)
+  assert.match(columnsSource, /value:\s*'500',\s*label:\s*'Normal'/)
+  assert.match(columnsSource, /value:\s*'700',\s*label:\s*'High'/)
+  assert.match(columnsSource, /value:\s*'900',\s*label:\s*'Critical'/)
+})
+
 test('applies filtered and sorted edits only by stable task ID', () => {
   const tasks = createTasks()
   const visible = [...filterPlanningTasks(tasks, { ...defaultPlanningFilters(), projectId: 'billing-platform' })]

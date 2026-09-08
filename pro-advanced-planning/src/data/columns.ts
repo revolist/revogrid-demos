@@ -16,7 +16,7 @@ import {
   FILTER_TIME_MATRIX,
   planningStructuredFilterTypes,
 } from './planning.structured';
-import { planningGridFormats, workflowStatusBadgeRenderer, workflowStatusBadgeStyles } from './formatting';
+import { planningGridFormats, priorityIndicatorRenderer, workflowStatusBadgeRenderer, workflowStatusBadgeStyles } from './formatting';
 
 const ownerEditorOptions = planningPeople.map(({ id, name }) => ({
   value: id,
@@ -37,6 +37,17 @@ const workflowEditorOptions = Object.entries(workflowLabels).map(([value, label]
   label,
 }));
 
+const priorityFilterItems = [
+  { value: '500', label: 'Normal' },
+  { value: '700', label: 'High' },
+  { value: '900', label: 'Critical' },
+];
+
+const priorityFilterItemTemplate = (
+  h: Parameters<typeof priorityIndicatorRenderer>[0],
+  { value }: { value: string },
+) => priorityIndicatorRenderer(h, { value } as never);
+
 const paddedCellProperties: NonNullable<ColumnRegular['cellProperties']> = () => ({
   style: { padding: '0 16px' },
 });
@@ -52,9 +63,14 @@ export const planningFilterConfig = {
     }],
   },
   selection: {
+    getItems: {
+      priority: () => priorityFilterItems,
+    },
+    itemTemplate: {
+      priority: priorityFilterItemTemplate,
+    },
     syncCellTemplate: {
       owner: true,
-      priority: true,
     },
   },
 } satisfies ColumnFilterConfig;
