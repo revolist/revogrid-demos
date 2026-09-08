@@ -401,6 +401,10 @@ test('uses one compact owner renderer for Grid cells and dropdown options', () =
     assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revogr-/)
     assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revo-grid/)
     assert.match(
+        stylesSource,
+        /\.planning-demo \.avatar-cell > \.avatar-cell__image\s*\{[^}]*width:\s*var\(--avatar-cell-size\)[^}]*height:\s*var\(--avatar-cell-size\)[^}]*margin:\s*0[^}]*object-fit:\s*cover[^}]*object-position:\s*center/
+    )
+    assert.match(
         columnsSource,
         /const ownerAvatarRenderer[\s\S]*?ownerAvatar: getOwnerAvatar\(owner\)[\s\S]*?ownerAvatarIndex: getOwnerAvatarIndex\(owner\)/
     )

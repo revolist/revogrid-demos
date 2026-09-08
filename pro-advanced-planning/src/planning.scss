@@ -21,6 +21,14 @@
 .planning-demo * {
     box-sizing: border-box;
 }
+.planning-demo .avatar-cell > .avatar-cell__image {
+    width: var(--avatar-cell-size);
+    height: var(--avatar-cell-size);
+    margin: 0;
+    max-width: none;
+    object-fit: cover;
+    object-position: center;
+}
 .planning-demo__topbar,
 .planning-demo__footer {
     display: flex;
