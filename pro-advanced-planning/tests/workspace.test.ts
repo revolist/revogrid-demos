@@ -9,7 +9,11 @@ import {
     filterPlanningTasks,
     mergeVisibleTasks,
 } from '../src/data/workspace'
-import { updateFromGridSource, updateFromKanban } from '../src/data/sync'
+import {
+    updateFromGrid,
+    updateFromGridSource,
+    updateFromKanban,
+} from '../src/data/sync'
 const ganttConfigSource = readFileSync(
     new URL('../src/data/gantt.config.ts', import.meta.url),
     'utf8'
@@ -611,6 +615,15 @@ test('keeps Kanban and Gantt ownership in sync for a dropdown option', () => {
     assert.deepEqual(task?.owners, ['Leo'])
     assert.equal(task?.ownerAvatarIndex, 3)
     assert.equal(task?.ownerAvatars.length, 1)
+})
+
+test('updates the edited grid row avatar with the selected owner', () => {
+    const tasks = createTasks()
+    const row = { ...tasks[2] }
+    updateFromGrid(tasks, { model: row, prop: 'owner', val: 'Leo' })
+
+    assert.equal(row.owner, 'Leo')
+    assert.equal(row.ownerAvatarIndex, 3)
 })
 
 test('uses the edited visible owner when a direct dropdown event has no value', () => {

@@ -22,7 +22,9 @@ export function updateFromGrid(
         val?: unknown
     }
 ): PlanningTask[] {
-    return applyPlanningGridEdit(tasks, detail)
+    const updated = applyPlanningGridEdit(tasks, detail)
+    syncGridRow(detail.model, updated)
+    return updated
 }
 
 /**
@@ -53,7 +55,21 @@ export function updateFromGridSource(
         (model as Record<string, unknown> | undefined)?.[prop] ??
         visibleModel?.[prop as keyof PlanningTask]
     const value = detail.val ?? visibleValue
-    return applyPlanningGridEdit(tasks, { ...detail, model, val: value })
+    const updated = applyPlanningGridEdit(tasks, {
+        ...detail,
+        model,
+        val: value,
+    })
+    syncGridRow(model, updated)
+    syncGridRow(visibleModel, updated)
+    return updated
+}
+
+function syncGridRow(model: unknown, tasks: readonly PlanningTask[]): void {
+    if (!model || typeof model !== 'object') return
+    const row = model as Record<string, unknown>
+    const task = tasks.find(({ id }) => id === String(row.id))
+    if (task) Object.assign(row, task)
 }
 
 export function updateFromKanban(
