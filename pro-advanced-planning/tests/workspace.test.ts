@@ -5,6 +5,7 @@ import { createTasks, planningPeople } from '../src/data/fixtures'
 import {
     applyPlanningGridEdit,
     defaultPlanningFilters,
+    deletePlanningTasks,
     filterPlanningTasks,
     mergeVisibleTasks,
 } from '../src/data/workspace'
@@ -557,6 +558,15 @@ test('merges visible Kanban changes without removing hidden tasks', () => {
     )
 })
 
+test('deletes every selected task from the canonical workspace', () => {
+    const tasks = createTasks()
+    const deleted = [tasks[2].id, tasks[3].id, tasks[4].id]
+    const remaining = deletePlanningTasks(tasks, deleted)
+
+    assert.equal(remaining.length, tasks.length - deleted.length)
+    assert.equal(remaining.some(({ id }) => deleted.includes(id)), false)
+})
+
 test('synchronizes a grid status edit into the Kanban source', () => {
     const tasks = createTasks()
     const edited = applyPlanningGridEdit(tasks, {
@@ -633,6 +643,22 @@ test('uses the visible source fallback for direct grid editors in every framewor
     ]) {
         assert.match(source, /updateFromGridSource/)
         assert.match(source, /getVisibleSource\(\)/)
+    }
+})
+
+test('routes context-menu row deletion through the shared task source', () => {
+    const workspaceSource = readFileSync(
+        new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),
+        'utf8'
+    )
+    for (const source of [
+        workspaceSource,
+        vanillaSource,
+        reactSource,
+        angularSource,
+    ]) {
+        assert.match(source, /createPlanningDataGridContextMenu/)
+        assert.match(source, /deletePlanningTasks/)
     }
 })
 

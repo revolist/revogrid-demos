@@ -5,6 +5,7 @@ export {
     planningFilterConfig,
 } from './columns'
 export {
+    createPlanningDataGridContextMenu,
     planningDataGridContextMenu,
     planningDataGridFormatting,
     planningGridFormats,
@@ -34,6 +35,7 @@ export {
 export { views, type PlanningTask, type PlanningView } from './types'
 export {
     applyPlanningGridEdit,
+    deletePlanningTasks,
     defaultPlanningFilters,
     filterPlanningTasks,
     mergeVisibleTasks,

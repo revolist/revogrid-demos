@@ -30,11 +30,12 @@ import {
 } from '../../../composables/useRandomData'
 import {
     calendarConfig,
+    createPlanningDataGridContextMenu,
     createTasks,
+    deletePlanningTasks,
     ganttColumns,
     ganttConfig,
     ganttResources,
-    planningDataGridContextMenu,
     planningDataGridFormatting,
     gridColumnTypes,
     gridColumns,
@@ -77,6 +78,10 @@ export function usePlanningWorkspace() {
     const quickSearch = ref('')
     const visibleTaskIds = ref<string[] | undefined>()
     const selectedCount = ref(0)
+    const dataGridContextMenu = createPlanningDataGridContextMenu((taskIds) => {
+        tasks.value = deletePlanningTasks(tasks.value, taskIds)
+        selectedCount.value = 0
+    })
     const filterBadgeOptions = {
         className: 'planning-demo__filter-badges',
         badgeClassName: 'planning-demo__filter-badge',
@@ -219,7 +224,7 @@ export function usePlanningWorkspace() {
         ganttConfig,
         ganttPlugins,
         ganttResources,
-        planningDataGridContextMenu,
+        planningDataGridContextMenu: dataGridContextMenu,
         planningDataGridFormatting,
         gridColumnTypes,
         gridColumns,

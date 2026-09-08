@@ -26,7 +26,9 @@ import {
 import { currentTheme } from '../../composables/useRandomData'
 import {
     calendarConfig,
+    createPlanningDataGridContextMenu,
     createTasks,
+    deletePlanningTasks,
     defaultPlanningFilters,
     filterPlanningTasks,
     ganttColumns,
@@ -37,7 +39,6 @@ import {
     kanbanConfig,
     planningProjects,
     planningFilterConfig,
-    planningDataGridContextMenu,
     planningDataGridFormatting,
     schedulerConfig,
     schedulerResources,
@@ -283,7 +284,9 @@ export class PlanningViewsGridComponent {
     readonly gridColumns = gridColumns
     readonly gridColumnTypes = gridColumnTypes
     readonly planningFilterConfig = planningFilterConfig
-    readonly planningDataGridContextMenu = planningDataGridContextMenu
+    readonly planningDataGridContextMenu = createPlanningDataGridContextMenu(
+        (taskIds) => this.deleteSelectedTasks(taskIds)
+    )
     readonly planningDataGridFormatting = planningDataGridFormatting
     readonly ganttColumns = ganttColumns
     readonly ganttConfig = ganttConfig
@@ -344,6 +347,11 @@ export class PlanningViewsGridComponent {
     resetWorkspace() {
         this.tasks = createTasks()
         this.filters = defaultPlanningFilters()
+        this.selectedCount = 0
+    }
+
+    deleteSelectedTasks(taskIds: readonly string[]) {
+        this.tasks = deletePlanningTasks(this.tasks, taskIds)
         this.selectedCount = 0
     }
 

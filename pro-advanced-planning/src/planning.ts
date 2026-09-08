@@ -28,7 +28,9 @@ import {
 } from '../../composables/useRandomData'
 import {
     calendarConfig,
+    createPlanningDataGridContextMenu,
     createTasks,
+    deletePlanningTasks,
     defaultPlanningFilters,
     filterPlanningTasks,
     ganttColumns,
@@ -39,7 +41,6 @@ import {
     kanbanConfig,
     planningProjects,
     planningFilterConfig,
-    planningDataGridContextMenu,
     planningDataGridFormatting,
     schedulerConfig,
     schedulerResources,
@@ -138,7 +139,13 @@ export function load(parentSelector: string): (() => void) | undefined {
             ]
             grid.columnTypes = gridColumnTypes
             grid.columns = gridColumns
-            grid.dataGridContextMenu = planningDataGridContextMenu
+            grid.dataGridContextMenu = createPlanningDataGridContextMenu(
+                (taskIds) => {
+                    tasks = deletePlanningTasks(tasks, taskIds)
+                    selectedCount = 0
+                    render(activeView)
+                }
+            )
             grid.dataGridFormatting = planningDataGridFormatting
             grid.stretch = 1
             grid.filter = planningFilterConfig

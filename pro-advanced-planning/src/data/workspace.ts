@@ -44,6 +44,16 @@ export function mergeVisibleTasks(
     return canonical.map((task) => updates.get(task.id) ?? task)
 }
 
+export function deletePlanningTasks(
+    tasks: PlanningTask[],
+    taskIds: readonly string[]
+): PlanningTask[] {
+    const deleted = new Set(taskIds)
+    return deleted.size
+        ? tasks.filter(({ id }) => !deleted.has(id))
+        : tasks
+}
+
 function readGridEditValue(value: unknown, prop: string): string {
     if (value && typeof value === 'object' && !Array.isArray(value)) {
         const option = value as Record<string, unknown>

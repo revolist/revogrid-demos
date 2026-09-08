@@ -7,6 +7,7 @@ import type {
 } from '@revolist/revogrid-pro'
 import { markDataGridFormatRenderer } from '@revolist/revogrid-pro'
 import { workflowBadges } from './planning.structured'
+import type { PlanningTask } from './types'
 
 const priorityPresentation = (value: unknown) => {
     const priority = Number(value)
@@ -184,3 +185,25 @@ export const planningDataGridContextMenu = {
         },
     },
 } as const satisfies DataGridContextMenuConfig
+
+export function createPlanningDataGridContextMenu(
+    onDelete: (taskIds: readonly string[]) => void
+) {
+    return {
+        ...planningDataGridContextMenu,
+        commandHandlers: {
+            'row.delete': ({ rows }) => {
+                const taskIds = [
+                    ...new Set(
+                        rows.flatMap(({ model }) =>
+                            model.id === undefined || model.id === null
+                                ? []
+                                : [String(model.id)]
+                        )
+                    ),
+                ]
+                if (taskIds.length) onDelete(taskIds)
+            },
+        },
+    } satisfies DataGridContextMenuConfig<PlanningTask>
+}

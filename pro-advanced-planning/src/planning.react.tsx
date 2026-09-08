@@ -29,7 +29,9 @@ import {
 } from '../../composables/useRandomData'
 import {
     calendarConfig,
+    createPlanningDataGridContextMenu,
     createTasks,
+    deletePlanningTasks,
     defaultPlanningFilters,
     filterPlanningTasks,
     ganttColumns,
@@ -40,7 +42,6 @@ import {
     kanbanConfig,
     planningProjects,
     planningFilterConfig,
-    planningDataGridContextMenu,
     planningDataGridFormatting,
     schedulerConfig,
     schedulerResources,
@@ -121,6 +122,14 @@ export default function PlanningViews() {
         []
     )
     const dataGridFormatting = useMemo(() => planningDataGridFormatting, [])
+    const dataGridContextMenu = useMemo(
+        () =>
+            createPlanningDataGridContextMenu((taskIds) => {
+                setTasks((current) => deletePlanningTasks(current, taskIds))
+                setSelectedCount(0)
+            }),
+        []
+    )
     const visibleTasks = useMemo(
         () => filterPlanningTasks(tasks, filters),
         [tasks, filters]
@@ -326,7 +335,7 @@ export default function PlanningViews() {
                     source={visibleTasks}
                     columns={gridColumns}
                     columnTypes={gridColumnTypes}
-                    dataGridContextMenu={planningDataGridContextMenu}
+                    dataGridContextMenu={dataGridContextMenu}
                     dataGridFormatting={dataGridFormatting}
                     range
                     resize
