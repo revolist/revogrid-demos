@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
-import { createTasks, planningPeople } from '../src/data/fixtures'
+import {
+    createTasks,
+    getOwnerAvatar,
+    planningPeople,
+} from '../src/data/fixtures'
 import {
     applyPlanningGridEdit,
     defaultPlanningFilters,
@@ -173,7 +177,6 @@ test('aligns the Gantt timeline with the planning fixture window', () => {
 
 test('uses declarative data-grid formats for every planning value type', () => {
     assert.match(formattingSource, /name:\s*text/)
-    assert.match(formattingSource, /id:\s*'avatar-with-text'/)
     assert.match(formattingSource, /id:\s*'workflow-status-badge'/)
     assert.match(formattingSource, /id:\s*'planning-priority-indicator'/)
     assert.match(
@@ -192,7 +195,7 @@ test('uses declarative data-grid formats for every planning value type', () => {
     assert.match(columnsSource, /ownerAvatar:\s*getOwnerAvatar\(id\)/)
     assert.match(
         columnsSource,
-        /prop: 'owner'[\s\S]*?dropdown: \{[\s\S]*?cellTemplate: avatarWithTextRenderer/
+        /prop: 'owner'[\s\S]*?dropdown: \{[\s\S]*?cellTemplate: ownerAvatarRenderer/
     )
     assert.match(
         formattingSource,
@@ -218,7 +221,6 @@ test('uses declarative data-grid formats for every planning value type', () => {
     )
     for (const prop of [
         'name',
-        'owner',
         'workflowStatus',
         'priority',
         'endDate',
@@ -359,14 +361,17 @@ test('keeps the normal page surface and text color in fullscreen mode', () => {
     )
 })
 
-test('keeps native grid internals unstyled and uses compact formatted owner avatars', () => {
+test('uses one compact owner renderer for Grid cells and dropdown options', () => {
     assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revogr-/)
     assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revo-grid/)
     assert.match(
-        formattingSource,
-        /options:\s*\{[\s\S]*?avatarSize:\s*20/
+        columnsSource,
+        /const ownerAvatarRenderer[\s\S]*?ownerAvatar: getOwnerAvatar\(owner\)[\s\S]*?ownerAvatarIndex: getOwnerAvatarIndex\(owner\)/
     )
-    assert.match(columnsSource, /avatarProp: 'ownerAvatar'/)
+    assert.match(
+        columnsSource,
+        /prop: 'owner'[\s\S]*?avatarSize: 20,[\s\S]*?cellTemplate: ownerAvatarRenderer/
+    )
 })
 
 test('provides a stable 100-task fixture across three projects', () => {
@@ -633,6 +638,7 @@ test('updates the edited grid row avatar with the selected owner', () => {
 
     assert.equal(row.owner, 'Leo')
     assert.equal(row.ownerAvatarIndex, 3)
+    assert.equal(row.ownerAvatar, getOwnerAvatar('Leo'))
 })
 
 test('uses the edited visible owner when a direct dropdown event has no value', () => {

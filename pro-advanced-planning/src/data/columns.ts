@@ -5,11 +5,7 @@ import {
     FIlTER_SELECTION,
 } from '@revolist/revogrid-pro'
 import { createDefaultTaskTableColumn } from '@revolist/gantt'
-import {
-    getOwnerAvatar,
-    getOwnerAvatarIndex,
-    planningPeople,
-} from './fixtures'
+import { getOwnerAvatar, getOwnerAvatarIndex, planningPeople } from './fixtures'
 import {
     FILTER_CALENDAR_RANGE,
     FILTER_CHIP_BADGE_TOGGLES,
@@ -31,6 +27,23 @@ const ownerEditorOptions = planningPeople.map(({ id, name }) => ({
     ownerAvatar: getOwnerAvatar(id),
     ownerAvatarIndex: getOwnerAvatarIndex(id),
 }))
+
+const ownerAvatarRenderer: ColumnRegular['cellTemplate'] = (
+    h,
+    { value, column, model }
+) => {
+    const owner = String(value ?? model.owner ?? '')
+    return avatarWithTextRenderer(h, {
+        value: owner,
+        column,
+        model: {
+            ...model,
+            owner,
+            ownerAvatar: getOwnerAvatar(owner),
+            ownerAvatarIndex: getOwnerAvatarIndex(owner),
+        },
+    })
+}
 
 const workflowLabels: Record<string, string> = {
     'not-started': 'Planned',
@@ -127,13 +140,14 @@ export const gridColumns: ColumnRegular[] = [
         dropdown: {
             source: ownerEditorOptions,
             syncCellTemplate: true,
-            cellTemplate: avatarWithTextRenderer,
+            cellTemplate: ownerAvatarRenderer,
         },
         avatarProp: 'ownerAvatar',
         avatarIndexProp: 'ownerAvatarIndex',
         avatarLabelProp: 'owner',
+        avatarSize: 20,
+        cellTemplate: ownerAvatarRenderer,
         cellProperties: paddedCellProperties,
-        dataGridFormat: planningGridFormats.owner,
     },
     {
         prop: 'workflowStatus',

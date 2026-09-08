@@ -116,15 +116,6 @@ const text = {
 
 export const planningGridFormats = {
     name: text,
-    owner: {
-        presentation: {
-            id: 'avatar-with-text',
-            options: {
-                avatarSize: 20,
-                rectangular: false,
-            },
-        },
-    },
     workflowStatus: {
         presentation: {
             id: 'workflow-status-badge',
