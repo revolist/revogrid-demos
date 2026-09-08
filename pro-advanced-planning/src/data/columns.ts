@@ -1,164 +1,210 @@
-import type { ColumnFilterConfig, ColumnRegular } from '@revolist/revogrid';
+import type { ColumnFilterConfig, ColumnRegular } from '@revolist/revogrid'
 import {
-  avatarWithTextRenderer,
-  ColumnDropdown,
-  FIlTER_SELECTION,
-} from '@revolist/revogrid-pro';
+    avatarWithTextRenderer,
+    ColumnDropdown,
+    FIlTER_SELECTION,
+} from '@revolist/revogrid-pro'
+import { createDefaultTaskTableColumn } from '@revolist/gantt'
+import { getOwnerAvatarIndex, planningPeople } from './fixtures'
 import {
-  createDefaultTaskTableColumn,
-} from '@revolist/gantt';
-import { getOwnerAvatarIndex, planningPeople } from './fixtures';
+    FILTER_CALENDAR_RANGE,
+    FILTER_CHIP_BADGE_TOGGLES,
+    FILTER_HISTOGRAM_BRUSH,
+    FILTER_RATING_PROGRESS_THRESHOLD,
+    FILTER_TIME_MATRIX,
+    planningStructuredFilterTypes,
+} from './planning.structured'
 import {
-  FILTER_CALENDAR_RANGE,
-  FILTER_CHIP_BADGE_TOGGLES,
-  FILTER_HISTOGRAM_BRUSH,
-  FILTER_RATING_PROGRESS_THRESHOLD,
-  FILTER_TIME_MATRIX,
-  planningStructuredFilterTypes,
-} from './planning.structured';
-import { planningGridFormats, priorityIndicatorRenderer, workflowStatusBadgeRenderer } from './formatting';
+    planningGridFormats,
+    priorityIndicatorRenderer,
+    workflowStatusBadgeRenderer,
+} from './formatting'
 
 const ownerEditorOptions = planningPeople.map(({ id, name }) => ({
-  value: id,
-  label: name,
-  owner: name,
-  ownerAvatarIndex: getOwnerAvatarIndex(id),
-}));
+    value: id,
+    label: name,
+    owner: name,
+    ownerAvatarIndex: getOwnerAvatarIndex(id),
+}))
 
 const workflowLabels: Record<string, string> = {
-  'not-started': 'Planned',
-  'in-progress': 'In progress',
-  blocked: 'Blocked',
-  done: 'Done',
-};
+    'not-started': 'Planned',
+    'in-progress': 'In progress',
+    blocked: 'Blocked',
+    done: 'Done',
+}
 
-const workflowEditorOptions = Object.entries(workflowLabels).map(([value, label]) => ({
-  value,
-  label,
-}));
+const workflowEditorOptions = Object.entries(workflowLabels).map(
+    ([value, label]) => ({
+        value,
+        label,
+    })
+)
 
 const priorityFilterItems = [
-  { value: '500', label: 'Normal' },
-  { value: '700', label: 'High' },
-  { value: '900', label: 'Critical' },
-];
+    { value: '500', label: 'Normal' },
+    { value: '700', label: 'High' },
+    { value: '900', label: 'Critical' },
+]
 
 const priorityFilterItemTemplate = (
-  h: Parameters<typeof priorityIndicatorRenderer>[0],
-  { value }: { value: string },
-) => priorityIndicatorRenderer(h, { value } as never);
+    h: Parameters<typeof priorityIndicatorRenderer>[0],
+    { value }: { value: string }
+) => priorityIndicatorRenderer(h, { value } as never)
 
-const paddedCellProperties: NonNullable<ColumnRegular['cellProperties']> = () => ({
-  style: { padding: '0 16px' },
-});
+const paddedCellProperties: NonNullable<
+    ColumnRegular['cellProperties']
+> = () => ({
+    style: { padding: '0 16px' },
+})
 
-const selectAllHeaderProperties: NonNullable<ColumnRegular['columnProperties']> = () => ({
-  style: { boxShadow: '0 -1px 0 0 var(--rg-theme-header-border) inset' },
-});
+const selectAllHeaderProperties: NonNullable<
+    ColumnRegular['columnProperties']
+> = () => ({
+    style: { boxShadow: '0 -1px 0 0 var(--rg-theme-header-border) inset' },
+})
 
 export const planningFilterConfig = {
-  structuredFilterTypes: planningStructuredFilterTypes,
-  multiFilterItems: {
-    workflowStatus: [{
-      id: 0,
-      type: 'chipBadgeSelection',
-      value: { values: ['in-progress', 'blocked', 'not-started'], includeBlanks: false },
-      relation: 'and',
-    }],
-  },
-  selection: {
-    getItems: {
-      priority: () => priorityFilterItems,
+    structuredFilterTypes: planningStructuredFilterTypes,
+    multiFilterItems: {
+        workflowStatus: [
+            {
+                id: 0,
+                type: 'chipBadgeSelection',
+                value: {
+                    values: ['in-progress', 'blocked', 'not-started'],
+                    includeBlanks: false,
+                },
+                relation: 'and',
+            },
+        ],
     },
-    itemTemplate: {
-      priority: priorityFilterItemTemplate,
+    selection: {
+        getItems: {
+            priority: () => priorityFilterItems,
+        },
+        itemTemplate: {
+            priority: priorityFilterItemTemplate,
+        },
+        syncCellTemplate: {
+            owner: true,
+        },
     },
-    syncCellTemplate: {
-      owner: true,
-    },
-  },
-} satisfies ColumnFilterConfig;
+} satisfies ColumnFilterConfig
 
-const percentDoneColumn = createDefaultTaskTableColumn('percentDone');
+const percentDoneColumn = createDefaultTaskTableColumn('percentDone')
 
 export const gridColumnTypes = {
-  dropdown: ColumnDropdown,
-};
+    dropdown: ColumnDropdown,
+}
 
 export const gridColumns: ColumnRegular[] = [
-  {
-    prop: '_selected',
-    name: '',
-    size: 48,
-    pin: 'colPinStart',
-    rowSelect: true,
-    readonly: true,
-    filter: false,
-    columnProperties: selectAllHeaderProperties,
-  },
-  { prop: 'name', name: 'Task', size: 220, pin: 'colPinStart', sortable: true, filter: [FIlTER_SELECTION], filterPlaceholder: 'All tasks', dataGridFormat: planningGridFormats.name },
-  {
-    prop: 'owner',
-    name: 'Owner',
-    size: 120,
-    sortable: true,
-    filter: [FIlTER_SELECTION],
-    columnType: 'dropdown',
-    dropdown: {
-      source: ownerEditorOptions,
-      syncCellTemplate: true,
+    {
+        prop: '_selected',
+        name: '',
+        size: 48,
+        pin: 'colPinStart',
+        rowSelect: true,
+        readonly: true,
+        filter: false,
+        columnProperties: selectAllHeaderProperties,
     },
-    avatarIndexProp: 'ownerAvatarIndex',
-    avatarLabelProp: 'owner',
-    avatarSize: 16,
-    cellTemplate: avatarWithTextRenderer,
-    cellProperties: paddedCellProperties,
-    dataGridFormat: planningGridFormats.owner,
-  },
-  {
-    prop: 'workflowStatus',
-    name: 'Status',
-    size: 132,
-    sortable: true,
-    filter: [FILTER_CHIP_BADGE_TOGGLES],
-    filterPlaceholder: 'All statuses',
-    columnType: 'dropdown',
-    dropdown: {
-      source: workflowEditorOptions,
-      syncCellTemplate: true,
-      cellTemplate: workflowStatusBadgeRenderer,
+    {
+        prop: 'name',
+        name: 'Task',
+        size: 220,
+        pin: 'colPinStart',
+        sortable: true,
+        filter: [FIlTER_SELECTION],
+        filterPlaceholder: 'All tasks',
+        dataGridFormat: planningGridFormats.name,
     },
-    cellProperties: paddedCellProperties,
-    dataGridFormat: planningGridFormats.workflowStatus,
-  },
-  {
-    prop: 'priority', name: 'Priority', size: 110, readonly: true, sortable: true, filter: [FIlTER_SELECTION], filterPlaceholder: 'All priorities', cellProperties: paddedCellProperties, dataGridFormat: planningGridFormats.priority,
-  },
-  {
-    prop: 'endDate',
-    name: 'Due date',
-    size: 130,
-    readonly: true,
-    sortable: true,
-    filter: [FILTER_CALENDAR_RANGE],
-    dataGridFormat: planningGridFormats.endDate,
-  },
-  {
-    ...percentDoneColumn,
-    name: 'Progress',
-    size: 116,
-    sortable: true,
-    filter: [FILTER_RATING_PROGRESS_THRESHOLD],
-    dataGridFormat: planningGridFormats.percentDone,
-  },
-  { prop: 'budget', name: 'Budget', size: 96, readonly: true, sortable: true, filter: [FILTER_HISTOGRAM_BRUSH], dataGridFormat: planningGridFormats.budget },
-  { prop: 'activityAt', name: 'Activity time', size: 173, readonly: true, sortable: true, filter: [FILTER_TIME_MATRIX], dataGridFormat: planningGridFormats.activityAt },
-];
+    {
+        prop: 'owner',
+        name: 'Owner',
+        size: 120,
+        sortable: true,
+        filter: [FIlTER_SELECTION],
+        columnType: 'dropdown',
+        dropdown: {
+            source: ownerEditorOptions,
+            syncCellTemplate: true,
+        },
+        avatarIndexProp: 'ownerAvatarIndex',
+        avatarLabelProp: 'owner',
+        avatarSize: 16,
+        cellTemplate: avatarWithTextRenderer,
+        cellProperties: paddedCellProperties,
+        dataGridFormat: planningGridFormats.owner,
+    },
+    {
+        prop: 'workflowStatus',
+        name: 'Status',
+        size: 132,
+        sortable: true,
+        filter: [FILTER_CHIP_BADGE_TOGGLES],
+        filterPlaceholder: 'All statuses',
+        columnType: 'dropdown',
+        dropdown: {
+            source: workflowEditorOptions,
+            syncCellTemplate: true,
+            cellTemplate: workflowStatusBadgeRenderer,
+        },
+        cellProperties: paddedCellProperties,
+        dataGridFormat: planningGridFormats.workflowStatus,
+    },
+    {
+        prop: 'priority',
+        name: 'Priority',
+        size: 110,
+        readonly: true,
+        sortable: true,
+        filter: [FIlTER_SELECTION],
+        filterPlaceholder: 'All priorities',
+        cellProperties: paddedCellProperties,
+        dataGridFormat: planningGridFormats.priority,
+    },
+    {
+        prop: 'endDate',
+        name: 'Due date',
+        size: 130,
+        readonly: true,
+        sortable: true,
+        filter: [FILTER_CALENDAR_RANGE],
+        dataGridFormat: planningGridFormats.endDate,
+    },
+    {
+        ...percentDoneColumn,
+        name: 'Progress',
+        size: 116,
+        sortable: true,
+        filter: [FILTER_RATING_PROGRESS_THRESHOLD],
+        dataGridFormat: planningGridFormats.percentDone,
+    },
+    {
+        prop: 'budget',
+        name: 'Budget',
+        size: 96,
+        readonly: true,
+        sortable: true,
+        filter: [FILTER_HISTOGRAM_BRUSH],
+        dataGridFormat: planningGridFormats.budget,
+    },
+    {
+        prop: 'activityAt',
+        name: 'Activity time',
+        size: 173,
+        readonly: true,
+        sortable: true,
+        filter: [FILTER_TIME_MATRIX],
+        dataGridFormat: planningGridFormats.activityAt,
+    },
+]
 
 export const ganttColumns = [
-  createDefaultTaskTableColumn('name'),
-  createDefaultTaskTableColumn('assignees'),
-  createDefaultTaskTableColumn('startDate'),
-  createDefaultTaskTableColumn('endDate'),
-  createDefaultTaskTableColumn('percentDone'),
-];
+    createDefaultTaskTableColumn('name'),
+    createDefaultTaskTableColumn('assignees'),
+    createDefaultTaskTableColumn('startDate'),
+    createDefaultTaskTableColumn('endDate'),
+    createDefaultTaskTableColumn('percentDone'),
+]
