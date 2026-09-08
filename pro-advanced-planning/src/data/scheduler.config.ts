@@ -30,4 +30,6 @@ export const calendarConfig: EventSchedulerConfig = {
     dateRange: { start: '2026-09-01', end: '2026-09-30' },
     dayColumnSize: 160,
     timeColumnSize: 72,
+    editable: false,
+    beforeSlotSelect: () => false,
 }

@@ -875,6 +875,17 @@ test('opens timeline views on the fixed fixture window', () => {
     )
 })
 
+test('keeps Scheduler movable while Calendar is read-only and does not select empty days', () => {
+    assert.match(
+        schedulerConfigSource,
+        /schedulerConfig:[\s\S]*?editable:\s*true[\s\S]*?allowMove:\s*true/
+    )
+    assert.match(
+        schedulerConfigSource,
+        /calendarConfig:[\s\S]*?editable:\s*false[\s\S]*?beforeSlotSelect:\s*\(\)\s*=>\s*false/
+    )
+})
+
 test('keeps all four Kanban columns compact enough for the workspace', () => {
     const columns = [
         ...kanbanConfigSource.matchAll(
