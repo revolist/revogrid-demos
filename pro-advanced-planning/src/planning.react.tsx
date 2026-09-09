@@ -65,6 +65,12 @@ import {
     type PlanningFilters,
 } from './data'
 import './planning.scss'
+import {
+    planningTipCopy,
+    readPlanningTip,
+    updatePlanningTip,
+    type PlanningTipStep,
+} from './planning.tips'
 
 type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     gantt?: typeof ganttConfig
@@ -112,6 +118,7 @@ export default function PlanningViews() {
         defaultPlanningFilters
     )
     const [selectedCount, setSelectedCount] = useState(0)
+    const [tipStep, setTipStep] = useState<PlanningTipStep>(readPlanningTip)
     const gridRef = useRef<HTMLRevoGridElement>(null)
     const [isDark, setIsDark] = useState(() => currentTheme().isDark())
     const ganttPlugins = useMemo(() => [GanttPlugin], [])
@@ -163,6 +170,16 @@ export default function PlanningViews() {
 
     useEffect(() => observeCurrentTheme(setIsDark), [])
 
+    const selectPlanningView = (view: PlanningView) => {
+        if (view === 'kanban') {
+            setTipStep((current) => updatePlanningTip(current, 'kanban-opened'))
+        }
+        setActiveView(view)
+    }
+
+    const visibleTip =
+        activeView === 'grid' && tipStep !== 'done' ? tipStep : null
+
     return (
         <section className="planning-demo">
             <nav
@@ -177,12 +194,33 @@ export default function PlanningViews() {
                         className={`rv-segmented-switch-item${activeView === view ? ' on' : ''}`}
                         role="tab"
                         aria-selected={activeView === view}
-                        onClick={() => setActiveView(view)}
+                        onClick={() => selectPlanningView(view)}
                     >
                         {view}
                     </button>
                 ))}
             </nav>
+
+            {visibleTip && (
+                <aside
+                    className={`planning-demo__tip planning-demo__tip--${visibleTip}`}
+                >
+                    <span role="status" aria-live="polite">
+                        {planningTipCopy[visibleTip]}
+                    </span>
+                    <button
+                        type="button"
+                        aria-label="Dismiss tips"
+                        onClick={() =>
+                            setTipStep((current) =>
+                                updatePlanningTip(current, 'dismiss')
+                            )
+                        }
+                    >
+                        ×
+                    </button>
+                </aside>
+            )}
 
             <div className="planning-demo__toolbar">
                 <label className="planning-demo__search">
@@ -363,6 +401,11 @@ export default function PlanningViews() {
                     stretch={1}
                     rowSelect={{ rowOrder: false }}
                     filter={planningFilterConfig}
+                    onBeforeedit={() =>
+                        setTipStep((current) =>
+                            updatePlanningTip(current, 'edit-committed')
+                        )
+                    }
                     onRowselected={(event: CustomEvent<{ count: number }>) =>
                         setSelectedCount(event.detail.count)
                     }
@@ -474,6 +517,22 @@ export default function PlanningViews() {
                         }
                     />
                 )}
+            <footer className="planning-demo__footer">
+                <span className="planning-demo__footer-meta">
+                    <span>Changes stay in this demo</span>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setActiveView('grid')
+                            setTipStep((current) =>
+                                updatePlanningTip(current, 'restart')
+                            )
+                        }}
+                    >
+                        Show tips
+                    </button>
+                </span>
+            </footer>
         </section>
     )
 }

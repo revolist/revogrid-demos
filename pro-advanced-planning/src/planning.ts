@@ -64,6 +64,12 @@ import {
     type PlanningView,
 } from './data'
 import './planning.scss'
+import {
+    planningTipCopy,
+    readPlanningTip,
+    updatePlanningTip,
+    type PlanningTipStep,
+} from './planning.tips'
 
 defineCustomElements()
 
@@ -86,6 +92,7 @@ export function load(parentSelector: string): (() => void) | undefined {
     let activeView: PlanningView = 'grid'
     let filters: PlanningFilters = defaultPlanningFilters()
     let selectedCount = 0
+    let tipStep: PlanningTipStep = readPlanningTip()
     const root = document.createElement('section')
     const switcher = document.createElement('nav')
     const panel = document.createElement('article')
@@ -97,6 +104,12 @@ export function load(parentSelector: string): (() => void) | undefined {
     const count = document.createElement('span')
     const activeTasks = document.createElement('button')
     const reset = document.createElement('button')
+    const footer = document.createElement('footer')
+    const footerMessage = document.createElement('span')
+    const showTips = document.createElement('button')
+    const tip = document.createElement('aside')
+    const tipText = document.createElement('span')
+    const dismissTips = document.createElement('button')
 
     root.className = 'planning-demo'
     switcher.className = 'planning-demo__switch rv-segmented-switch'
@@ -120,11 +133,37 @@ export function load(parentSelector: string): (() => void) | undefined {
     reset.type = 'button'
     reset.textContent = 'Reset'
     count.className = 'planning-demo__count'
+    footer.className = 'planning-demo__footer'
+    footerMessage.textContent = 'Changes stay in this demo'
+    showTips.type = 'button'
+    showTips.textContent = 'Show tips'
+    tip.className = 'planning-demo__tip'
+    tipText.setAttribute('role', 'status')
+    tipText.setAttribute('aria-live', 'polite')
+    dismissTips.type = 'button'
+    dismissTips.ariaLabel = 'Dismiss tips'
+    dismissTips.textContent = '×'
+    tip.append(tipText, dismissTips)
+    const footerMeta = document.createElement('span')
+    footerMeta.className = 'planning-demo__footer-meta'
+    footerMeta.append(footerMessage, showTips)
+    footer.append(footerMeta)
     toolbar.append(search, project, status, priority, activeTasks, reset, count)
-    root.append(switcher, toolbar, panel)
+    root.append(switcher, toolbar, panel, footer, tip)
     parent.appendChild(root)
 
+    function renderTip() {
+        const visible = activeView === 'grid' && tipStep !== 'done'
+        tip.hidden = !visible
+        if (activeView !== 'grid' || tipStep === 'done') return
+        tip.className = `planning-demo__tip planning-demo__tip--${tipStep}`
+        tipText.textContent = planningTipCopy[tipStep]
+    }
+
     function render(view: PlanningView) {
+        if (view === 'kanban') {
+            tipStep = updatePlanningTip(tipStep, 'kanban-opened')
+        }
         activeView = view
         panel.classList.toggle(
             'planning-demo__grid--timeline',
@@ -168,6 +207,10 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.canMoveColumns = true
             grid.rowSize = 40
             grid.rowSelect = { rowOrder: false }
+            grid.addEventListener('beforeedit', () => {
+                tipStep = updatePlanningTip(tipStep, 'edit-committed')
+                renderTip()
+            })
             grid.addEventListener('afteredit', (event) => {
                 const detail = event.detail as Parameters<
                     typeof updateFromGrid
@@ -278,6 +321,7 @@ export function load(parentSelector: string): (() => void) | undefined {
             button.classList.toggle('on', selected)
             button.ariaSelected = String(selected)
         })
+        renderTip()
     }
 
     search.addEventListener('input', () => {
@@ -316,6 +360,14 @@ export function load(parentSelector: string): (() => void) | undefined {
         status.value = ''
         priority.value = ''
         render(activeView)
+    })
+    dismissTips.addEventListener('click', () => {
+        tipStep = updatePlanningTip(tipStep, 'dismiss')
+        renderTip()
+    })
+    showTips.addEventListener('click', () => {
+        tipStep = updatePlanningTip(tipStep, 'restart')
+        render('grid')
     })
 
     for (const view of views) {

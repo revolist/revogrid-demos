@@ -1,5 +1,9 @@
 <template>
-    <section ref="rootRef" class="planning-demo planning-demo--filter-toolbar">
+    <section
+        ref="rootRef"
+        class="planning-demo planning-demo--filter-toolbar"
+        @beforeedit="handlePlanningTipEdit"
+    >
         <div class="planning-demo__topbar">
             <nav
                 class="planning-demo__switch"
@@ -14,7 +18,7 @@
                     role="tab"
                     :aria-selected="activeView === view"
                     :data-demo-action="`view_${view}`"
-                    @click="activeView = view"
+                    @click="selectPlanningView(view)"
                 >
                     {{ view }}
                 </button>
@@ -45,6 +49,22 @@
                 </button>
             </div>
         </div>
+        <aside
+            v-if="visibleTip"
+            class="planning-demo__tip"
+            :class="`planning-demo__tip--${visibleTip}`"
+        >
+            <span role="status" aria-live="polite">{{
+                planningTipCopy[visibleTip]
+            }}</span>
+            <button
+                type="button"
+                aria-label="Dismiss tips"
+                @click="dismissPlanningTips"
+            >
+                ×
+            </button>
+        </aside>
         <div class="planning-demo__filter-row">
             <label class="planning-demo__filter-search">
                 <input
@@ -54,7 +74,10 @@
                     placeholder="Quick search tasks…"
                 />
             </label>
-            <div ref="filterBadgesRef" class="planning-demo__filter-badge-host" />
+            <div
+                ref="filterBadgesRef"
+                class="planning-demo__filter-badge-host"
+            />
         </div>
         <div v-show="activeView === 'grid'" class="planning-demo__grid-stage">
             <RevoGrid
@@ -116,9 +139,7 @@
             @gantt-before-assignment-change="handleGanttAssignmentEdit"
         />
         <RevoGrid
-            v-else-if="
-                activeView === 'scheduler' || activeView === 'calendar'
-            "
+            v-else-if="activeView === 'scheduler' || activeView === 'calendar'"
             :key="activeView"
             class="planning-demo__grid planning-demo__grid--timeline"
             hide-attribution
@@ -142,7 +163,12 @@
                 >
                     · {{ selectedCount }} selected</template
                 ></span
-            ><span>Changes stay in this demo</span>
+            ><span class="planning-demo__footer-meta"
+                ><span>Changes stay in this demo</span>
+                <button type="button" @click="showPlanningTips">
+                    Show tips
+                </button></span
+            >
         </footer>
     </section>
 </template>
@@ -173,6 +199,7 @@ const {
     handleGanttAssignmentEdit,
     handleGanttEdit,
     handleGridEdit,
+    handlePlanningTipEdit,
     handleKanbanCreate,
     handleKanbanDelete,
     handleKanbanMove,
@@ -193,12 +220,17 @@ const {
     schedulerPlugins,
     schedulerResources,
     selectedCount,
+    selectPlanningView,
+    showPlanningTips,
     syncVisibleTasks,
     tasks,
     theme,
     toggleFullscreen,
     visibleTasks,
     visibleGanttDependencies,
+    visibleTip,
     views,
+    planningTipCopy,
+    dismissPlanningTips,
 } = usePlanningWorkspace()
 </script>

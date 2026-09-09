@@ -25,6 +25,12 @@ import {
 } from '@revolist/revogrid-pro'
 import { currentTheme } from '../../composables/useRandomData'
 import {
+    planningTipCopy,
+    readPlanningTip,
+    updatePlanningTip,
+    type PlanningTipStep,
+} from './planning.tips'
+import {
     activePlanningFilters,
     calendarConfig,
     clearPlanningRowSelection,
@@ -81,7 +87,7 @@ import {
                     role="tab"
                     [class.on]="activeView === 'grid'"
                     [attr.aria-selected]="activeView === 'grid'"
-                    (click)="activeView = 'grid'"
+                    (click)="selectPlanningView('grid')"
                 >
                     Grid
                 </button>
@@ -91,7 +97,7 @@ import {
                     role="tab"
                     [class.on]="activeView === 'kanban'"
                     [attr.aria-selected]="activeView === 'kanban'"
-                    (click)="activeView = 'kanban'"
+                    (click)="selectPlanningView('kanban')"
                 >
                     Kanban
                 </button>
@@ -101,7 +107,7 @@ import {
                     role="tab"
                     [class.on]="activeView === 'gantt'"
                     [attr.aria-selected]="activeView === 'gantt'"
-                    (click)="activeView = 'gantt'"
+                    (click)="selectPlanningView('gantt')"
                 >
                     Gantt
                 </button>
@@ -111,7 +117,7 @@ import {
                     role="tab"
                     [class.on]="activeView === 'scheduler'"
                     [attr.aria-selected]="activeView === 'scheduler'"
-                    (click)="activeView = 'scheduler'"
+                    (click)="selectPlanningView('scheduler')"
                 >
                     Scheduler
                 </button>
@@ -121,11 +127,30 @@ import {
                     role="tab"
                     [class.on]="activeView === 'calendar'"
                     [attr.aria-selected]="activeView === 'calendar'"
-                    (click)="activeView = 'calendar'"
+                    (click)="selectPlanningView('calendar')"
                 >
                     Calendar
                 </button>
             </nav>
+
+            @if (visibleTip) {
+                <aside
+                    class="planning-demo__tip"
+                    [class.planning-demo__tip--edit]="visibleTip === 'edit'"
+                    [class.planning-demo__tip--kanban]="visibleTip === 'kanban'"
+                >
+                    <span role="status" aria-live="polite">{{
+                        planningTipCopy[visibleTip]
+                    }}</span>
+                    <button
+                        type="button"
+                        aria-label="Dismiss tips"
+                        (click)="dismissPlanningTips()"
+                    >
+                        ×
+                    </button>
+                </aside>
+            }
 
             <div class="planning-demo__toolbar">
                 <label class="planning-demo__search"
@@ -207,6 +232,7 @@ import {
                         [canMoveColumns]="true"
                         [rowSize]="40"
                         [rowSelect]="rowSelect"
+                        (beforeedit)="handlePlanningTipEdit()"
                         (afteredit)="handleGridEdit($event)"
                         (rowselected)="handleRowSelected($event)"
                     ></revo-grid>
@@ -281,6 +307,14 @@ import {
                     ></revo-grid>
                 }
             }
+            <footer class="planning-demo__footer">
+                <span class="planning-demo__footer-meta">
+                    <span>Changes stay in this demo</span>
+                    <button type="button" (click)="showPlanningTips()">
+                        Show tips
+                    </button>
+                </span>
+            </footer>
         </section>
     `,
 })
@@ -290,6 +324,7 @@ export class PlanningViewsGridComponent {
     tasks = createTasks()
     filters: PlanningFilters = defaultPlanningFilters()
     selectedCount = 0
+    tipStep: PlanningTipStep = readPlanningTip()
     private grid?: HTMLRevoGridElement
     readonly planningProjects = planningProjects
     readonly gridColumns = gridColumns
@@ -319,6 +354,13 @@ export class PlanningViewsGridComponent {
     readonly kanbanPlugins = [KanbanPlugin]
     readonly schedulerPlugins = [EventSchedulerPlugin]
     readonly empty: never[] = []
+    readonly planningTipCopy = planningTipCopy
+
+    get visibleTip(): Exclude<PlanningTipStep, 'done'> | undefined {
+        return this.activeView === 'grid' && this.tipStep !== 'done'
+            ? this.tipStep
+            : undefined
+    }
 
     get visibleTasks() {
         return filterPlanningTasks(this.tasks, this.filters)
@@ -365,6 +407,22 @@ export class PlanningViewsGridComponent {
         this.selectedCount = 0
     }
 
+    selectPlanningView(view: PlanningView) {
+        if (view === 'kanban') {
+            this.tipStep = updatePlanningTip(this.tipStep, 'kanban-opened')
+        }
+        this.activeView = view
+    }
+
+    dismissPlanningTips() {
+        this.tipStep = updatePlanningTip(this.tipStep, 'dismiss')
+    }
+
+    showPlanningTips() {
+        this.activeView = 'grid'
+        this.tipStep = updatePlanningTip(this.tipStep, 'restart')
+    }
+
     applyActiveTasksPreset() {
         this.filters = activePlanningFilters()
     }
@@ -380,6 +438,10 @@ export class PlanningViewsGridComponent {
         const grid = event.currentTarget as HTMLRevoGridElement
         const visible = (await grid.getVisibleSource()) as PlanningTask[]
         this.setTasks(updateFromGridSource(this.tasks, event.detail, visible))
+    }
+
+    handlePlanningTipEdit() {
+        this.tipStep = updatePlanningTip(this.tipStep, 'edit-committed')
     }
 
     handleRowSelected(

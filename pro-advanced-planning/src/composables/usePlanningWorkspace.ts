@@ -66,6 +66,12 @@ import {
     type PlanningTask,
     type PlanningView,
 } from '../data'
+import {
+    planningTipCopy,
+    readPlanningTip,
+    updatePlanningTip,
+    type PlanningTipStep,
+} from '../planning.tips'
 
 const rowSelect: RowSelectConfig = { rowOrder: false }
 const gridPlugins = [
@@ -85,6 +91,7 @@ export function usePlanningWorkspace() {
     const filterBadgesRef = ref<HTMLElement>()
     const filterBadges = ref<HTMLElement>()
     const activeView = ref<PlanningView>('grid')
+    const tipStep = ref<PlanningTipStep>(readPlanningTip())
     const tasks = ref(createTasks())
     const quickSearch = ref('')
     const visibleTaskIds = ref<string[] | undefined>()
@@ -96,18 +103,20 @@ export function usePlanningWorkspace() {
         columns: ['name', 'owner'],
         debounceMs: 150,
     }))
+    const visibleTip = computed(() =>
+        activeView.value === 'grid' && tipStep.value !== 'done'
+            ? tipStep.value
+            : undefined
+    )
     const gridElement = () =>
-        (gridRef.value?.$el ?? gridRef.value) as
-            | HTMLRevoGridElement
-            | undefined
+        (gridRef.value?.$el ?? gridRef.value) as HTMLRevoGridElement | undefined
     const deleteSelectedTasks = (taskIds: readonly string[]) => {
         tasks.value = deletePlanningTasks(tasks.value, taskIds)
         selectedCount.value = 0
         void clearPlanningRowSelection(gridElement())
     }
-    const dataGridContextMenu = createPlanningDataGridContextMenu(
-        deleteSelectedTasks
-    )
+    const dataGridContextMenu =
+        createPlanningDataGridContextMenu(deleteSelectedTasks)
     const filterBadgeOptions = {
         className: 'planning-demo__filter-badges',
         badgeClassName: 'planning-demo__filter-badge',
@@ -198,6 +207,28 @@ export function usePlanningWorkspace() {
         gridKey.value += 1
     }
 
+    function selectPlanningView(view: PlanningView) {
+        if (view === 'kanban') {
+            tipStep.value = updatePlanningTip(tipStep.value, 'kanban-opened')
+        }
+        activeView.value = view
+    }
+
+    function dismissPlanningTips() {
+        tipStep.value = updatePlanningTip(tipStep.value, 'dismiss')
+    }
+
+    function showPlanningTips() {
+        activeView.value = 'grid'
+        tipStep.value = updatePlanningTip(tipStep.value, 'restart')
+    }
+
+    function handlePlanningTipEdit() {
+        if (activeView.value === 'grid') {
+            tipStep.value = updatePlanningTip(tipStep.value, 'edit-committed')
+        }
+    }
+
     function merge(next: PlanningTask[]) {
         tasks.value = mergeVisibleTasks(tasks.value, next)
     }
@@ -281,6 +312,7 @@ export function usePlanningWorkspace() {
         handleGanttAssignmentEdit,
         handleGanttEdit,
         handleGridEdit,
+        handlePlanningTipEdit,
         handleKanbanCreate,
         handleKanbanDelete,
         handleKanbanMove,
@@ -300,12 +332,17 @@ export function usePlanningWorkspace() {
         schedulerPlugins,
         schedulerResources,
         selectedCount,
+        selectPlanningView,
+        showPlanningTips,
         syncVisibleTasks,
         tasks,
         theme,
         toggleFullscreen,
         visibleTasks,
         visibleGanttDependencies,
+        visibleTip,
         views,
+        planningTipCopy,
+        dismissPlanningTips,
     }
 }

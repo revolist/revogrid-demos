@@ -24,6 +24,12 @@ import {
     filterGanttDependencies,
     toSchedulerEvents,
 } from '../src/data/source'
+import {
+    PLANNING_TIP_STORAGE_KEY,
+    nextPlanningTip,
+    readPlanningTip,
+    updatePlanningTip,
+} from '../src/planning.tips'
 const ganttConfigSource = readFileSync(
     new URL('../src/data/gantt.config.ts', import.meta.url),
     'utf8'
@@ -60,6 +66,10 @@ const vueSource = readFileSync(
     new URL('../src/planning.vue', import.meta.url),
     'utf8'
 )
+const vueWorkspaceSource = readFileSync(
+    new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),
+    'utf8'
+)
 const vanillaSource = readFileSync(
     new URL('../src/planning.ts', import.meta.url),
     'utf8'
@@ -80,6 +90,62 @@ const siteStylesSource = readFileSync(
     new URL('../../../.vitepress/theme/style.scss', import.meta.url),
     'utf8'
 )
+
+test('advances, completes, dismisses, and restarts planning tips', () => {
+    assert.equal(nextPlanningTip('edit', 'edit-committed'), 'kanban')
+    assert.equal(nextPlanningTip('edit', 'edit-cancelled'), 'edit')
+    assert.equal(nextPlanningTip('kanban', 'kanban-opened'), 'done')
+    assert.equal(nextPlanningTip('edit', 'kanban-opened'), 'edit')
+    assert.equal(nextPlanningTip('kanban', 'dismiss'), 'done')
+    assert.equal(nextPlanningTip('done', 'restart'), 'edit')
+})
+test('persists planning tips and tolerates unavailable browser storage', () => {
+    const values = new Map<string, string>()
+    const storage = {
+        getItem: (key: string) => values.get(key) ?? null,
+        setItem: (key: string, value: string) => void values.set(key, value),
+    }
+
+    assert.equal(readPlanningTip(storage), 'edit')
+    assert.equal(updatePlanningTip('edit', 'edit-committed', storage), 'kanban')
+    assert.equal(values.get(PLANNING_TIP_STORAGE_KEY), 'kanban')
+    assert.equal(readPlanningTip(storage), 'kanban')
+
+    const unavailableStorage = {
+        getItem: () => {
+            throw new Error('blocked')
+        },
+        setItem: () => {
+            throw new Error('blocked')
+        },
+    }
+    assert.equal(readPlanningTip(unavailableStorage), 'edit')
+    assert.equal(
+        updatePlanningTip('edit', 'edit-committed', unavailableStorage),
+        'kanban'
+    )
+})
+
+test('wires the same lightweight tips through every planning framework', () => {
+    for (const source of [
+        `${vueSource}\n${vueWorkspaceSource}`,
+        vanillaSource,
+        reactSource,
+        angularSource,
+    ]) {
+        assert.match(source, /planningTipCopy/)
+        assert.match(source, /Show tips/)
+        assert.match(source, /Dismiss tips/)
+        assert.match(source, /edit-committed/)
+        assert.match(source, /kanban-opened/)
+    }
+    assert.match(stylesSource, /planning-demo__tip--edit/)
+    assert.match(stylesSource, /planning-demo__tip--kanban/)
+    assert.doesNotMatch(
+        stylesSource,
+        /planning-demo__tip[^}]*position:\\s*(static|relative)/
+    )
+})
 
 test('uses the Pro dropdown editor with canonical owner and status values', () => {
     assert.match(
