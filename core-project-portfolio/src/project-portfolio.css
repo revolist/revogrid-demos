@@ -38,8 +38,8 @@
   align-items: center;
   padding: 0 10px;
   border-radius: 6px;
-  background: #e8f5ef;
-  color: #067647;
+  background: #f2f4f7;
+  color: #475467;
   font-size: 12px;
   font-weight: 650;
   line-height: 1;
@@ -132,7 +132,7 @@
   background: #e4e7ec;
 }
 
-.portfolio-progress-track i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg,#12b76a,#2e90fa); }
+.portfolio-progress-track i { display: block; height: 100%; border-radius: 99px; background: #2e90fa; }
 .portfolio-progress strong { min-width: 32px; font-size: 11px; font-variant-numeric: tabular-nums; }
 .portfolio-risk { height: 100%; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .portfolio-risk i { width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: #98a2b3; }
@@ -142,7 +142,10 @@
 
 .portfolio-demo.is-dark { color: #f2f4f7; background: #1a1a20; }
 .portfolio-demo.is-dark .portfolio-grouping { color: #b7c0d0; }
-.portfolio-demo.is-dark .portfolio-grouping strong { color: #6ce9a6; background: #103c2d; }
+.portfolio-demo.is-dark .portfolio-grouping strong { color: #eaecf0; background: #2b2d33; }
+.portfolio-demo.is-dark .portfolio-on-track { color: #6ce9a6; background: #103c2d; }
+.portfolio-demo.is-dark .portfolio-at-risk { color: #fda29b; background: #5d1f1a; }
+.portfolio-demo.is-dark .portfolio-planning { color: #84adff; background: #1e3a5f; }
 .portfolio-demo.is-dark .portfolio-toggle { color: #d0d5dd; background: transparent; border-color: #505050; }
 .portfolio-demo.is-dark .portfolio-toggle:hover { color: #fff; background: #2b2d33; border-color: #667085; }
 .portfolio-demo.is-dark .portfolio-toggle:focus-visible { outline-color: #98a2b3; }

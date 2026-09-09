@@ -1,14 +1,14 @@
 [
   {
     "slug": "core-ai-prompts",
-    "title": "AI Prompt Library",
-    "summary": "A searchable, editable prompt catalog with multiline content, category workflows, and instant local data loading.",
+    "title": "RevoGrid AI Prompt Library",
+    "summary": "One hundred searchable, editable prompts for building, debugging, optimizing, and extending RevoGrid.",
     "edition": "Core",
     "sourceDir": "core-ai-prompts",
     "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/core-ai-prompts",
     "productUrl": "https://rv-grid.com/",
     "frameworks": ["ts", "react", "vue", "angular"],
-    "highlights": ["Local bundled data", "Multiline prompt editing", "Search and category filtering"],
+    "highlights": ["100 RevoGrid prompts", "Multiline prompt editing", "Search and category filtering"],
     "media": { "poster": "assets/core-ai-prompts-poster.svg" }
   },
   {

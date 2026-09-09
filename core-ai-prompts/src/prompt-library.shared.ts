@@ -1,7 +1,7 @@
 import type { ColumnRegular } from '@revolist/revogrid';
 import promptRows from './prompts.json';
 
-export type PromptCategory = 'Content' | 'Engineering' | 'Research' | 'Operations' | 'Learning';
+export type PromptCategory = 'Setup' | 'Data' | 'Interaction' | 'Performance' | 'Extensions';
 
 export interface PromptRow {
   id: number;
@@ -13,7 +13,7 @@ export interface PromptRow {
 
 export const PROMPTS = promptRows as PromptRow[];
 
-export const PROMPT_CATEGORIES = ['All', 'Content', 'Engineering', 'Research', 'Operations', 'Learning'] as const;
+export const PROMPT_CATEGORIES = ['All', 'Setup', 'Data', 'Interaction', 'Performance', 'Extensions'] as const;
 
 export function filterPrompts(rows: PromptRow[], query: string, category: string): PromptRow[] {
   const needle = query.trim().toLocaleLowerCase();
