@@ -18,6 +18,9 @@ test('advanced filtering showcase exposes every requested behavior', async () =>
   assert.match(config, /case 'high-value-europe'/);
   assert.match(config, /case 'recent-expedited'/);
   assert.match(config, /case 'review-queue'/);
+  assert.equal((config.match(/HISTOGRAM_BRUSH_BETWEEN/g) ?? []).length, 3);
+  assert.doesNotMatch(config, /FIlTER_SLIDER/);
+  assert.match(config, /value: \{ min: 0, max: 50_000, inclusive: true \}/);
   assert.match(config, /cascadeOptions:\s*{\s*enabled: true,\s*showDependencyNumbers: true/);
   assert.match(config, /groupedFilter:\s*{}/);
   assert.match(config, /ORDER_EXPLORER_QUICK_FILTER_EXAMPLE = 'Lisbon pending'/);
@@ -220,6 +223,7 @@ test('order columns expose every structured filter through the shared config', a
   assert.match(config, /count: 200/);
   assert.match(config, /structuredFilterTypes: orderExplorerStructuredFilterTypes/);
   assert.match(structured, /BUILT_IN_STRUCTURED_FILTER_TYPES\.map/);
+  assert.match(structured, /FILTER_HISTOGRAM_BRUSH[\s\S]*?scale: 'log'/);
 });
 
 test('showcase stays focused on local filtering', async () => {

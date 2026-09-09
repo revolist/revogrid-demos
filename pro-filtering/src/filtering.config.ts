@@ -5,7 +5,7 @@ import type {
 } from '@revolist/revogrid';
 import {
   FIlTER_SELECTION,
-  FIlTER_SLIDER,
+  HISTOGRAM_BRUSH_BETWEEN,
   type AdvancedFilterBadgesOptions,
 } from '@revolist/revogrid-pro';
 import { ORDER_OPTIONS_BY_PROP, ORDER_STATUSES } from './filtering.data';
@@ -46,10 +46,9 @@ export function createOrderExplorerPreset(preset: OrderExplorerPreset): MultiFil
         region: [selectionItem(101, 'region', ['Europe'])],
         total: [{
           id: 102,
-          type: FIlTER_SLIDER,
-          value: { fromValue: 900, toValue: 2495 },
+          type: HISTOGRAM_BRUSH_BETWEEN as FilterData['type'],
+          value: { min: 0, max: 50_000, inclusive: true },
           relation: 'and',
-          hidden: true,
         }],
         priority: [{
           id: 103,
@@ -67,8 +66,12 @@ export function createOrderExplorerPreset(preset: OrderExplorerPreset): MultiFil
       return {
         status: [selectionItem(301, 'status', ['Pending Review', 'Payment Hold'])],
         total: [
-          { id: 302, type: 'gte', value: 250, relation: 'and' },
-          { id: 303, type: 'lte', value: 800, relation: 'and' },
+          {
+            id: 302,
+            type: HISTOGRAM_BRUSH_BETWEEN as FilterData['type'],
+            value: { min: 250, max: 800, inclusive: true },
+            relation: 'and',
+          },
         ],
       };
   }

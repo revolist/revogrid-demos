@@ -59,6 +59,7 @@ const configuredTypes = new Map([
   })],
   [FILTER_HISTOGRAM_BRUSH, createHistogramBrushStructuredFilterType({
     bins: 10,
+    scale: 'log',
     formatValue: value => `$${Math.round(value).toLocaleString('en-US')}`,
     formatMatchCount: count => `${count.toLocaleString('en-US')} orders`,
     chart: {
