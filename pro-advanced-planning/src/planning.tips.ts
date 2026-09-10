@@ -1,9 +1,12 @@
-export const PLANNING_TIP_STORAGE_KEY = 'revogrid-planning-tips-v1'
+export const PLANNING_TIP_STORAGE_KEY = 'revogrid-planning-tips-v2'
 
 export const planningTipCopy = {
-    edit: 'Try editing a task name',
-    kanban: 'Switch to Kanban to see your change',
+    edit: 'Double-click a task name to edit it. Press Enter to save.',
+    kanban: 'Now switch to Kanban to see your updated task.',
 } as const
+
+export const planningTipCompletionCopy =
+    'Your change is shared across views.'
 
 export type PlanningTipStep = keyof typeof planningTipCopy | 'done'
 export type PlanningTipEvent =
@@ -17,10 +20,19 @@ type TipStorage = Pick<Storage, 'getItem' | 'setItem'>
 
 function browserStorage(): TipStorage | undefined {
     try {
-        return window.localStorage
+        return window.sessionStorage
     } catch {
         return undefined
     }
+}
+
+/** Returns the edited task only when a task name was actually committed. */
+export function changedPlanningTaskName(
+    previous: readonly { id: string; name: string }[],
+    next: readonly { id: string; name: string }[]
+): string | undefined {
+    const previousNames = new Map(previous.map(({ id, name }) => [id, name]))
+    return next.find(({ id, name }) => previousNames.get(id) !== name)?.id
 }
 
 export function readPlanningTip(

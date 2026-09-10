@@ -10,6 +10,10 @@ import type {
 } from '@revolist/kanban'
 import type { EventSchedulerEventChangedDetail } from '@revolist/scheduler'
 import { getOwnerAvatar, getOwnerAvatarIndex } from './fixtures'
+import {
+    getPlanningDurationHours,
+    getPlanningEndDate,
+} from './source'
 import { applyPlanningGridEdit } from './workspace'
 import type { PlanningTask } from './types'
 
@@ -106,13 +110,6 @@ export function updateFromKanbanDelete(
     return tasks.filter((task) => !deleted.has(task.id))
 }
 
-function shiftPlanningDate(value: string, deltaMs: number): string | undefined {
-    const timestamp = Date.parse(value)
-    if (!Number.isFinite(timestamp)) return
-    const shifted = new Date(timestamp + deltaMs).toISOString()
-    return value.includes('T') ? shifted : shifted.slice(0, 10)
-}
-
 function readHourDuration(value: unknown, unit: unknown): number | undefined {
     if (
         typeof value === 'number' &&
@@ -142,25 +139,29 @@ export function updateFromGantt(
 
     const task = tasks[taskIndex]
     const sourcePatch = { ...detail.sourcePatch }
-    if (detail.action === 'move' && typeof sourcePatch.startDate === 'string') {
-        const deltaMs =
-            Date.parse(sourcePatch.startDate) - Date.parse(task.startDate)
-        const endDate = Number.isFinite(deltaMs)
-            ? shiftPlanningDate(task.endDate, deltaMs)
-            : undefined
-        if (endDate) sourcePatch.endDate = endDate
+    if (detail.action === 'move') {
+        // Moving changes the start only. Ignore the Gantt projection's finish
+        // and duration patch so repeated moves cannot grow the task.
+        sourcePatch.duration = getPlanningDurationHours(task)
+        sourcePatch.durationUnit = 'hour'
+        sourcePatch.durationIsElapsed = true
+        delete sourcePatch.endDate
     }
-    if (
-        detail.action === 'resize' &&
-        typeof sourcePatch.startDate === 'string' &&
-        typeof sourcePatch.endDate === 'string'
-    ) {
+    if (detail.action === 'resize') {
+        const startDate =
+            typeof sourcePatch.startDate === 'string'
+                ? sourcePatch.startDate
+                : task.startDate
+        const endDate =
+            typeof sourcePatch.endDate === 'string'
+                ? sourcePatch.endDate
+                : task.endDate
         const durationHours =
-            (Date.parse(sourcePatch.endDate) -
-                Date.parse(sourcePatch.startDate)) /
-            3_600_000
+            (Date.parse(endDate) - Date.parse(startDate)) / 3_600_000
         if (Number.isFinite(durationHours) && durationHours > 0) {
-            sourcePatch.duration = `${durationHours}h`
+            sourcePatch.duration = durationHours
+            sourcePatch.durationUnit = 'hour'
+            sourcePatch.durationIsElapsed = true
         }
     }
     if (detail.action === 'edit' && sourcePatch.duration !== undefined) {
@@ -168,15 +169,11 @@ export function updateFromGantt(
             sourcePatch.duration,
             sourcePatch.durationUnit ?? task.durationUnit
         )
-        const startDate =
-            typeof sourcePatch.startDate === 'string'
-                ? sourcePatch.startDate
-                : task.startDate
-        const endDate =
-            durationHours === undefined
-                ? undefined
-                : shiftPlanningDate(startDate, durationHours * 3_600_000)
-        if (endDate) sourcePatch.endDate = endDate
+        if (durationHours !== undefined) {
+            sourcePatch.duration = durationHours
+            sourcePatch.durationUnit = 'hour'
+            sourcePatch.durationIsElapsed = true
+        }
     }
     if (detail.action === 'indent') {
         sourcePatch.parentId = tasks[taskIndex - 1]?.id ?? task.parentId ?? null
@@ -184,11 +181,11 @@ export function updateFromGantt(
         const parent = tasks.find(({ id }) => id === String(task.parentId))
         sourcePatch.parentId = parent?.parentId ?? null
     }
-    return tasks.map((task) =>
-        task.id === String(detail.taskId)
-            ? ({ ...task, ...sourcePatch } as PlanningTask)
-            : task
-    )
+    return tasks.map((candidate) => {
+        if (candidate.id !== String(detail.taskId)) return candidate
+        const updated = { ...candidate, ...sourcePatch } as PlanningTask
+        return { ...updated, endDate: getPlanningEndDate(updated) }
+    })
 }
 
 export function updateFromGanttAssignment(
@@ -235,10 +232,15 @@ export function updateFromScheduler(
             owners: owner ? [owner] : [],
             ownerAvatars: owner ? [getOwnerAvatar(owner)] : [],
             startDate: event.startDateTime,
-            endDate: event.endDateTime,
             workflowStatus: event.status ?? task.workflowStatus,
             color: event.color,
-            duration: `${(Date.parse(event.endDateTime) - Date.parse(event.startDateTime)) / 3_600_000}h`,
-        } as PlanningTask
+            duration:
+                (Date.parse(event.endDateTime) -
+                    Date.parse(event.startDateTime)) /
+                3_600_000,
+            durationUnit: 'hour',
+            durationIsElapsed: true,
+            endDate: event.endDateTime,
+        } satisfies PlanningTask
     })
 }

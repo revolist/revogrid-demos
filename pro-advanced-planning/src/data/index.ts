@@ -13,7 +13,7 @@ export {
 } from './formatting'
 export { planningStructuredFilterTypes } from './planning.structured'
 export { ganttConfig } from './gantt.config'
-export { kanbanConfig } from './kanban.config'
+export { createKanbanConfig, kanbanConfig } from './kanban.config'
 export { calendarConfig, schedulerConfig } from './scheduler.config'
 export { clearPlanningRowSelection } from './selection'
 export {
@@ -23,6 +23,7 @@ export {
     ganttResources,
     schedulerResources,
     toGanttAssignments,
+    toGanttTasks,
     toSchedulerEvents,
 } from './source'
 export {

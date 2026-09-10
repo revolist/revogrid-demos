@@ -2,7 +2,6 @@
     <section
         ref="rootRef"
         class="planning-demo planning-demo--filter-toolbar"
-        @beforeedit="handlePlanningTipEdit"
     >
         <div class="planning-demo__topbar">
             <nav
@@ -45,26 +44,10 @@
                     title="Full screen"
                     @click="toggleFullscreen"
                 >
-                    <FontAwesomeSvgIcon name="expand" />
+                    <span aria-hidden="true">↗</span>
                 </button>
             </div>
         </div>
-        <aside
-            v-if="visibleTip"
-            class="planning-demo__tip"
-            :class="`planning-demo__tip--${visibleTip}`"
-        >
-            <span role="status" aria-live="polite">{{
-                planningTipCopy[visibleTip]
-            }}</span>
-            <button
-                type="button"
-                aria-label="Dismiss tips"
-                @click="dismissPlanningTips"
-            >
-                ×
-            </button>
-        </aside>
         <div class="planning-demo__filter-row">
             <label class="planning-demo__filter-search">
                 <input
@@ -109,6 +92,7 @@
         </div>
         <RevoGrid
             v-if="activeView === 'kanban'"
+            ref="kanbanRef"
             key="kanban"
             class="planning-demo__grid planning-demo__grid--kanban"
             hide-attribution
@@ -129,7 +113,7 @@
             hide-attribution
             :theme="theme"
             :plugins="ganttPlugins"
-            :source="visibleTasks"
+            :source="ganttTasks"
             :columns="ganttColumns"
             :gantt.prop="ganttConfig"
             :gantt-dependencies.prop="visibleGanttDependencies"
@@ -163,19 +147,13 @@
                 >
                     · {{ selectedCount }} selected</template
                 ></span
-            ><span class="planning-demo__footer-meta"
-                ><span>Changes stay in this demo</span>
-                <button type="button" @click="showPlanningTips">
-                    Show tips
-                </button></span
-            >
+            ><span class="planning-demo__footer-meta">Changes stay in this demo</span>
         </footer>
     </section>
 </template>
 
 <script setup lang="ts">
 import RevoGrid from '@revolist/vue3-datagrid'
-import FontAwesomeSvgIcon from '../../../.vitepress/theme/home-v2/FontAwesomeSvgIcon.vue'
 import { usePlanningWorkspace } from './composables/usePlanningWorkspace'
 import './planning.scss'
 
@@ -190,6 +168,7 @@ const {
     ganttConfig,
     ganttPlugins,
     ganttResources,
+    ganttTasks,
     gridColumnTypes,
     gridColumns,
     gridFilterConfig,
@@ -199,7 +178,6 @@ const {
     handleGanttAssignmentEdit,
     handleGanttEdit,
     handleGridEdit,
-    handlePlanningTipEdit,
     handleKanbanCreate,
     handleKanbanDelete,
     handleKanbanMove,
@@ -207,6 +185,7 @@ const {
     handleRowSelected,
     handleSchedulerEdit,
     kanbanConfig,
+    kanbanRef,
     kanbanPlugins,
     planningDataGridContextMenu,
     planningDataGridFormatting,
@@ -221,16 +200,12 @@ const {
     schedulerResources,
     selectedCount,
     selectPlanningView,
-    showPlanningTips,
     syncVisibleTasks,
     tasks,
     theme,
     toggleFullscreen,
     visibleTasks,
     visibleGanttDependencies,
-    visibleTip,
     views,
-    planningTipCopy,
-    dismissPlanningTips,
 } = usePlanningWorkspace()
 </script>

@@ -41,6 +41,7 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
     ExportExcelPlugin,
   ], []);
   const dataGridContextMenu = useMemo(() => createDataGridContextMenuConfig(), []);
+  const history = useMemo(() => ({ clearOnSourceChange: false }), []);
   const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
 
   useEffect(() => observeCurrentTheme(setDarkTheme), []);
@@ -57,6 +58,7 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
         dataGridFormatting={dataGridFormatting}
         dataGridFormattingPanel
         dataGridContextMenu={dataGridContextMenu}
+        history={history}
         rowHeaders={rowHeaders}
         range
         resize

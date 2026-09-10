@@ -42,13 +42,14 @@ import {
     ganttResources,
     gridColumnTypes,
     gridColumns,
-    kanbanConfig,
+    createKanbanConfig,
     planningProjects,
     planningFilterConfig,
     planningDataGridFormatting,
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
+    toGanttTasks,
     toSchedulerEvents,
     updateFromGantt,
     updateFromGanttAssignment,
@@ -65,11 +66,14 @@ import {
 } from './data'
 import './planning.scss'
 import {
+    changedPlanningTaskName,
+    planningTipCompletionCopy,
     planningTipCopy,
     readPlanningTip,
     updatePlanningTip,
     type PlanningTipStep,
 } from './planning.tips'
+import { revealPlanningKanbanCard } from './planning.kanban'
 
 defineCustomElements()
 
@@ -93,6 +97,7 @@ export function load(parentSelector: string): (() => void) | undefined {
     let filters: PlanningFilters = defaultPlanningFilters()
     let selectedCount = 0
     let tipStep: PlanningTipStep = readPlanningTip()
+    let updatedTaskId: string | undefined
     const root = document.createElement('section')
     const switcher = document.createElement('nav')
     const panel = document.createElement('article')
@@ -110,6 +115,7 @@ export function load(parentSelector: string): (() => void) | undefined {
     const tip = document.createElement('aside')
     const tipText = document.createElement('span')
     const dismissTips = document.createElement('button')
+    const completion = document.createElement('p')
 
     root.className = 'planning-demo'
     switcher.className = 'planning-demo__switch rv-segmented-switch'
@@ -144,17 +150,21 @@ export function load(parentSelector: string): (() => void) | undefined {
     dismissTips.ariaLabel = 'Dismiss tips'
     dismissTips.textContent = '×'
     tip.append(tipText, dismissTips)
+    completion.className = 'planning-demo__completion'
+    completion.setAttribute('role', 'status')
     const footerMeta = document.createElement('span')
     footerMeta.className = 'planning-demo__footer-meta'
     footerMeta.append(footerMessage, showTips)
     footer.append(footerMeta)
     toolbar.append(search, project, status, priority, activeTasks, reset, count)
-    root.append(switcher, toolbar, panel, footer, tip)
+    root.append(switcher, tip, completion, toolbar, panel, footer)
     parent.appendChild(root)
 
     function renderTip() {
         const visible = activeView === 'grid' && tipStep !== 'done'
         tip.hidden = !visible
+        completion.hidden = activeView !== 'kanban' || !updatedTaskId
+        completion.textContent = planningTipCompletionCopy
         if (activeView !== 'grid' || tipStep === 'done') return
         tip.className = `planning-demo__tip planning-demo__tip--${tipStep}`
         tipText.textContent = planningTipCopy[tipStep]
@@ -165,6 +175,7 @@ export function load(parentSelector: string): (() => void) | undefined {
             tipStep = updatePlanningTip(tipStep, 'kanban-opened')
         }
         activeView = view
+        renderTip()
         panel.classList.toggle(
             'planning-demo__grid--timeline',
             view === 'gantt' || view === 'scheduler' || view === 'calendar'
@@ -207,17 +218,28 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.canMoveColumns = true
             grid.rowSize = 40
             grid.rowSelect = { rowOrder: false }
-            grid.addEventListener('beforeedit', () => {
-                tipStep = updatePlanningTip(tipStep, 'edit-committed')
-                renderTip()
-            })
             grid.addEventListener('afteredit', (event) => {
                 const detail = event.detail as Parameters<
                     typeof updateFromGrid
                 >[1]
-                tasks = updateFromGrid(tasks, detail)
+                const previous = tasks
+                const next = updateFromGrid(previous, detail)
+                const taskId = changedPlanningTaskName(previous, next)
+                tasks = next
+                if (taskId) {
+                    updatedTaskId = taskId
+                    tipStep = updatePlanningTip(tipStep, 'edit-committed')
+                    renderTip()
+                }
                 void grid.getVisibleSource().then((visible: PlanningTask[]) => {
-                    tasks = updateFromGridSource(tasks, detail, visible)
+                    const resolved = updateFromGridSource(tasks, detail, visible)
+                    const resolvedTaskId = changedPlanningTaskName(tasks, resolved)
+                    tasks = resolved
+                    if (resolvedTaskId) {
+                        updatedTaskId = resolvedTaskId
+                        tipStep = updatePlanningTip(tipStep, 'edit-committed')
+                        renderTip()
+                    }
                 })
             })
             grid.addEventListener('rowselected', (event) => {
@@ -231,8 +253,7 @@ export function load(parentSelector: string): (() => void) | undefined {
         } else if (view === 'kanban') {
             grid.plugins = [KanbanPlugin]
             grid.columns = gridColumns
-            ;(grid as unknown as { kanban: typeof kanbanConfig }).kanban =
-                kanbanConfig
+            grid.kanban = createKanbanConfig(updatedTaskId)
             grid.addEventListener('kanbancardmove', (event) => {
                 tasks = updateFromKanban(
                     tasks,
@@ -283,6 +304,7 @@ export function load(parentSelector: string): (() => void) | undefined {
                 ({ taskId }) => visibleIds.has(String(taskId))
             )
             grid.addEventListener('gantt-before-task-change', (event) => {
+                event.preventDefault()
                 tasks = updateFromGantt(
                     tasks,
                     (event as CustomEvent<GanttBeforeTaskChangeDetail>).detail
@@ -314,8 +336,13 @@ export function load(parentSelector: string): (() => void) | undefined {
         }
 
         panel.replaceChildren(grid)
+        if (view === 'kanban') void revealPlanningKanbanCard(grid, updatedTaskId)
         grid.source =
-            view === 'scheduler' || view === 'calendar' ? [] : visibleTasks
+            view === 'scheduler' || view === 'calendar'
+                ? []
+                : view === 'gantt'
+                  ? toGanttTasks(visibleTasks)
+                  : visibleTasks
         switcher.querySelectorAll('button').forEach((button) => {
             const selected = button.dataset.view === activeView
             button.classList.toggle('on', selected)

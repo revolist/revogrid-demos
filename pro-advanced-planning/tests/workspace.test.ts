@@ -18,14 +18,19 @@ import { clearPlanningRowSelection } from '../src/data/selection'
 import {
     updateFromGrid,
     updateFromGridSource,
+    updateFromGantt,
+    updateFromGanttAssignment,
     updateFromKanban,
 } from '../src/data/sync'
 import {
     filterGanttDependencies,
+    toGanttAssignments,
+    toGanttTasks,
     toSchedulerEvents,
 } from '../src/data/source'
 import {
     PLANNING_TIP_STORAGE_KEY,
+    changedPlanningTaskName,
     nextPlanningTip,
     readPlanningTip,
     updatePlanningTip,
@@ -91,6 +96,14 @@ const siteStylesSource = readFileSync(
     'utf8'
 )
 
+test('removes action suggestion banners from the Planning workspace', () => {
+    assert.doesNotMatch(vueSource, /planning-demo__tip|Show tips|Dismiss tips/)
+    assert.match(
+        stylesSource,
+        /\.planning-demo__tip,[\s\S]*?\.planning-demo__completion,[\s\S]*?\.planning-demo__footer-meta button\s*\{\s*display:\s*none/,
+    )
+})
+
 test('advances, completes, dismisses, and restarts planning tips', () => {
     assert.equal(nextPlanningTip('edit', 'edit-committed'), 'kanban')
     assert.equal(nextPlanningTip('edit', 'edit-cancelled'), 'edit')
@@ -98,6 +111,16 @@ test('advances, completes, dismisses, and restarts planning tips', () => {
     assert.equal(nextPlanningTip('edit', 'kanban-opened'), 'edit')
     assert.equal(nextPlanningTip('kanban', 'dismiss'), 'done')
     assert.equal(nextPlanningTip('done', 'restart'), 'edit')
+})
+test('only advances after a task name changes', () => {
+    const previous = [{ id: 'task-1', name: 'Draft brief' }]
+    assert.equal(changedPlanningTaskName(previous, previous), undefined)
+    assert.equal(
+        changedPlanningTaskName(previous, [
+            { id: 'task-1', name: 'Write brief' },
+        ]),
+        'task-1'
+    )
 })
 test('persists planning tips and tolerates unavailable browser storage', () => {
     const values = new Map<string, string>()
@@ -138,13 +161,39 @@ test('wires the same lightweight tips through every planning framework', () => {
         assert.match(source, /Dismiss tips/)
         assert.match(source, /edit-committed/)
         assert.match(source, /kanban-opened/)
+        assert.match(source, /changedPlanningTaskName/)
+        assert.match(source, /createKanbanConfig/)
+        assert.match(source, /revealPlanningKanbanCard/)
+        assert.doesNotMatch(source, /beforeedit/)
     }
-    assert.match(stylesSource, /planning-demo__tip--edit/)
+    const tipsSource = readFileSync(
+        new URL('../src/planning.tips.ts', import.meta.url),
+        'utf8'
+    )
+    assert.match(
+        tipsSource,
+        /Double-click a task name to edit it\. Press Enter to save\./
+    )
+    assert.match(
+        tipsSource,
+        /Now switch to Kanban to see your updated task\./
+    )
     assert.match(stylesSource, /planning-demo__tip--kanban/)
     assert.doesNotMatch(
         stylesSource,
-        /planning-demo__tip[^}]*position:\\s*(static|relative)/
+        /planning-demo__tip[^}]*position:\\s*(absolute|fixed|sticky)/
     )
+})
+
+test('reveals the edited task through the public Kanban plugin API', () => {
+    const revealSource = readFileSync(
+        new URL('../src/planning.kanban.ts', import.meta.url),
+        'utf8'
+    )
+    assert.match(revealSource, /getPlugins\(\)/)
+    assert.match(revealSource, /instanceof KanbanPlugin/)
+    assert.match(revealSource, /\.revealCard\(taskId\)/)
+    assert.doesNotMatch(revealSource, /querySelector|scrollIntoView|shadowRoot/)
 })
 
 test('uses the Pro dropdown editor with canonical owner and status values', () => {
@@ -282,10 +331,70 @@ test('keeps generated scheduler timeline columns in chronological order', () => 
 
 test('aligns the Gantt timeline with the planning fixture window', () => {
     assert.match(ganttConfigSource, /weekStartsOn: 1/)
+    assert.match(ganttConfigSource, /showTaskLabels:\s*false/)
+    assert.match(ganttConfigSource, /taskModeDefault:\s*'auto'/)
     assert.match(
         ganttConfigSource,
         /timelineRange: \{ startDate: '2026-09-07', endDate: '2026-10-09' \}/
     )
+})
+
+test('drives Gantt and Scheduler from one canonical task duration', () => {
+    const task = createTasks().find(({ type }) => type === 'task')!
+    const ganttTask = toGanttTasks([task])[0]
+    const schedulerEvent = toSchedulerEvents([task])[0]
+
+    assert.equal('endDate' in ganttTask, false)
+    assert.equal(ganttTask.startDate, task.startDate)
+    assert.equal(ganttTask.duration, task.duration)
+    assert.equal(schedulerEvent.startDateTime, task.startDate)
+    assert.equal(schedulerEvent.endDateTime, task.endDate)
+    assert.match(vueWorkspaceSource, /handleGanttEdit[\s\S]*?event\.preventDefault\(\)/)
+    assert.match(vanillaSource, /gantt-before-task-change[\s\S]*?event\.preventDefault\(\)/)
+    assert.match(reactSource, /onGantt-before-task-change[\s\S]*?event\.preventDefault\(\)/)
+    assert.match(angularSource, /handleGanttEdit[\s\S]*?event\.preventDefault\(\)/)
+})
+
+test('moves a Gantt task without accepting a conflicting duration or finish', () => {
+    const tasks = createTasks()
+    const task = tasks.find(({ type }) => type === 'task')!
+    const start = Date.parse(task.startDate)
+    const movedStart = new Date(start + 24 * 3_600_000).toISOString()
+    const moved = updateFromGantt(tasks, {
+        taskId: task.id,
+        action: 'move',
+        sourcePatch: {
+            startDate: movedStart,
+            endDate: new Date(start + 20 * 24 * 3_600_000).toISOString(),
+            duration: Number(task.duration) + 100,
+        },
+    } as Parameters<typeof updateFromGantt>[1]).find(
+        ({ id }) => id === task.id
+    )!
+
+    assert.equal(moved.duration, task.duration)
+    assert.equal(
+        Date.parse(moved.endDate) - Date.parse(moved.startDate),
+        Date.parse(task.endDate) - Date.parse(task.startDate)
+    )
+})
+
+test('uses an end-only Gantt resize patch to change canonical duration', () => {
+    const tasks = createTasks()
+    const task = tasks.find(({ type }) => type === 'task')!
+    const resizedEnd = new Date(
+        Date.parse(task.endDate) + 24 * 3_600_000
+    ).toISOString()
+    const resized = updateFromGantt(tasks, {
+        taskId: task.id,
+        action: 'resize',
+        sourcePatch: { endDate: resizedEnd },
+    } as Parameters<typeof updateFromGantt>[1]).find(
+        ({ id }) => id === task.id
+    )!
+
+    assert.equal(Number(resized.duration), Number(task.duration) + 24)
+    assert.equal(resized.endDate, resizedEnd)
 })
 
 test('passes only dependencies whose tasks are visible to Gantt', () => {
@@ -614,10 +723,9 @@ test('provides a stable 100-task fixture across three projects', () => {
 test('uses varied multi-day work with parallel owner schedules', () => {
     const tasks = createTasks()
     const regularTasks = tasks.filter(({ type }) => type !== 'milestone')
-    assert.deepEqual(
-        [...new Set(regularTasks.map(({ duration }) => duration))].sort(),
-        ['2d', '3d', '4d', '5d', '6d']
-    )
+    assert.ok(regularTasks.every(({ duration, durationIsElapsed }) =>
+        typeof duration === 'number' && duration > 0 && durationIsElapsed === true
+    ))
     assert.ok(
         regularTasks.every(({ startDate, endDate }) => {
             const start = new Date(startDate)
@@ -839,6 +947,47 @@ test('synchronizes a dropdown owner edit without a model into the Gantt assignme
     assert.deepEqual(task?.owners, ['Ava'])
 })
 
+test('preserves every selected Gantt assignee through the controlled assignment source', () => {
+    const tasks = createTasks()
+    const taskId = tasks[0].id
+    const edited = updateFromGanttAssignment(tasks, {
+        action: 'edit',
+        taskId,
+        previousAssignments: [
+            {
+                id: `assignment-${taskId}-Maya`,
+                taskId,
+                resourceId: 'Maya',
+                allocationUnits: 1,
+                responsibility: 'Owner',
+            },
+        ],
+        assignments: [
+            {
+                id: `assignment-${taskId}-Maya`,
+                taskId,
+                resourceId: 'Maya',
+                allocationUnits: 1,
+                responsibility: 'Owner',
+            },
+            {
+                id: `${taskId}-assignment-2`,
+                taskId,
+                resourceId: 'Ava',
+                allocationUnits: 100,
+                responsibility: 'assigned',
+            },
+        ],
+    })
+
+    assert.deepEqual(
+        toGanttAssignments(edited)
+            .filter((assignment) => assignment.taskId === taskId)
+            .map((assignment) => assignment.resourceId),
+        ['Maya', 'Ava']
+    )
+})
+
 test('keeps the canonical owner in sync for a dropdown option', () => {
     const tasks = createTasks()
     const edited = applyPlanningGridEdit(tasks, {
@@ -957,7 +1106,16 @@ test('reset fixtures and filters restore deterministic defaults', () => {
 })
 
 test('opens timeline views on the fixed fixture window', () => {
-    assert.match(ganttConfigSource, /zoomPreset:\s*'day-week'/)
+    assert.match(ganttConfigSource, /id:\s*'day-week-medium'/)
+    assert.match(ganttConfigSource, /tickWidth:\s*100/)
+    assert.match(
+        ganttConfigSource,
+        /defaultLevelId:\s*dayWeekMediumZoomLevel\.id/
+    )
+    assert.match(
+        ganttConfigSource,
+        /level\.id === 'day-week' \? \[dayWeekMediumZoomLevel, level\]/
+    )
     assert.match(ganttConfigSource, /timelinePrecision:\s*'day'/)
     assert.match(schedulerConfigSource, /view:\s*'month'/)
     assert.match(
@@ -1015,7 +1173,10 @@ test('renders Kanban ownership from the canonical owner and local portrait', () 
     )
     assert.doesNotMatch(kanbanConfigSource, /card\.owners/)
     assert.doesNotMatch(kanbanConfigSource, /card\.ownerAvatarIndex/)
-    assert.match(planningSource, /task\.owner\s*\?\s*\[/)
+    assert.match(
+        planningSource,
+        /task\.owners\.length\s*\?\s*task\.owners\s*:\s*\[task\.owner\]/
+    )
     assert.match(planningSource, /resourceId:\s*task\.owner/)
     assert.doesNotMatch(planningSource, /task\.owners\.map/)
     assert.match(

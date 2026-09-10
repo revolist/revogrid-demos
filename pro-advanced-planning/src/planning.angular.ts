@@ -1,4 +1,10 @@
-import { Component, NO_ERRORS_SCHEMA, ViewEncapsulation } from '@angular/core'
+import {
+    Component,
+    ElementRef,
+    NO_ERRORS_SCHEMA,
+    ViewChild,
+    ViewEncapsulation,
+} from '@angular/core'
 import { RevoGrid } from '@revolist/angular-datagrid'
 import {
     GanttPlugin,
@@ -25,6 +31,8 @@ import {
 } from '@revolist/revogrid-pro'
 import { currentTheme } from '../../composables/useRandomData'
 import {
+    changedPlanningTaskName,
+    planningTipCompletionCopy,
     planningTipCopy,
     readPlanningTip,
     updatePlanningTip,
@@ -46,13 +54,14 @@ import {
     ganttResources,
     gridColumnTypes,
     gridColumns,
-    kanbanConfig,
+    createKanbanConfig,
     planningProjects,
     planningFilterConfig,
     planningDataGridFormatting,
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
+    toGanttTasks,
     toSchedulerEvents,
     updateFromGantt,
     updateFromGanttAssignment,
@@ -66,6 +75,7 @@ import {
     type PlanningFilters,
     type PlanningView,
 } from './data'
+import { revealPlanningKanbanCard } from './planning.kanban'
 
 @Component({
     selector: 'planning-views-grid',
@@ -151,6 +161,11 @@ import {
                     </button>
                 </aside>
             }
+            @if (activeView === 'kanban' && updatedTaskId) {
+                <p class="planning-demo__completion" role="status">
+                    {{ planningTipCompletionCopy }}
+                </p>
+            }
 
             <div class="planning-demo__toolbar">
                 <label class="planning-demo__search"
@@ -232,7 +247,6 @@ import {
                         [canMoveColumns]="true"
                         [rowSize]="40"
                         [rowSelect]="rowSelect"
-                        (beforeedit)="handlePlanningTipEdit()"
                         (afteredit)="handleGridEdit($event)"
                         (rowselected)="handleRowSelected($event)"
                     ></revo-grid>
@@ -243,7 +257,7 @@ import {
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="ganttPlugins"
-                        [source]="visibleTasks"
+                        [source]="ganttTasks"
                         [columns]="ganttColumns"
                         [gantt]="ganttConfig"
                         [ganttDependencies]="visibleGanttDependencies"
@@ -257,6 +271,7 @@ import {
                 }
                 @case ('kanban') {
                     <revo-grid
+                        #kanbanGrid
                         class="planning-demo__grid"
                         [hideAttribution]="true"
                         [theme]="theme"
@@ -325,7 +340,9 @@ export class PlanningViewsGridComponent {
     filters: PlanningFilters = defaultPlanningFilters()
     selectedCount = 0
     tipStep: PlanningTipStep = readPlanningTip()
+    updatedTaskId?: string
     private grid?: HTMLRevoGridElement
+    @ViewChild('kanbanGrid') kanbanGrid?: ElementRef<HTMLRevoGridElement>
     readonly planningProjects = planningProjects
     readonly gridColumns = gridColumns
     readonly gridColumnTypes = gridColumnTypes
@@ -337,7 +354,9 @@ export class PlanningViewsGridComponent {
     readonly ganttColumns = ganttColumns
     readonly ganttConfig = ganttConfig
     readonly ganttDependencies = ganttDependencies
-    readonly kanbanConfig = kanbanConfig
+    get kanbanConfig() {
+        return createKanbanConfig(this.updatedTaskId)
+    }
     readonly ganttResources = ganttResources
     readonly schedulerConfig = schedulerConfig
     readonly calendarConfig = calendarConfig
@@ -355,6 +374,7 @@ export class PlanningViewsGridComponent {
     readonly schedulerPlugins = [EventSchedulerPlugin]
     readonly empty: never[] = []
     readonly planningTipCopy = planningTipCopy
+    readonly planningTipCompletionCopy = planningTipCompletionCopy
 
     get visibleTip(): Exclude<PlanningTipStep, 'done'> | undefined {
         return this.activeView === 'grid' && this.tipStep !== 'done'
@@ -373,6 +393,9 @@ export class PlanningViewsGridComponent {
     }
     get visibleGanttDependencies() {
         return filterGanttDependencies(ganttDependencies, this.visibleTasks)
+    }
+    get ganttTasks() {
+        return toGanttTasks(this.visibleTasks)
     }
     get schedulerEvents() {
         return toSchedulerEvents(this.visibleTasks)
@@ -412,6 +435,16 @@ export class PlanningViewsGridComponent {
             this.tipStep = updatePlanningTip(this.tipStep, 'kanban-opened')
         }
         this.activeView = view
+        if (view === 'kanban' && this.updatedTaskId) {
+            setTimeout(
+                () =>
+                    void revealPlanningKanbanCard(
+                        this.kanbanGrid?.nativeElement,
+                        this.updatedTaskId
+                    ),
+                0
+            )
+        }
     }
 
     dismissPlanningTips() {
@@ -434,13 +467,24 @@ export class PlanningViewsGridComponent {
     }
 
     async handleGridEdit(event: CustomEvent) {
-        this.setTasks(updateFromGrid(this.tasks, event.detail))
+        const previous = this.tasks
+        const next = updateFromGrid(previous, event.detail)
+        this.setTasks(next)
+        this.handleCommittedTaskNameEdit(previous, next)
         const grid = event.currentTarget as HTMLRevoGridElement
         const visible = (await grid.getVisibleSource()) as PlanningTask[]
-        this.setTasks(updateFromGridSource(this.tasks, event.detail, visible))
+        const resolved = updateFromGridSource(this.tasks, event.detail, visible)
+        this.handleCommittedTaskNameEdit(this.tasks, resolved)
+        this.setTasks(resolved)
     }
 
-    handlePlanningTipEdit() {
+    handleCommittedTaskNameEdit(
+        previous: PlanningTask[],
+        next: PlanningTask[]
+    ) {
+        const taskId = changedPlanningTaskName(previous, next)
+        if (!taskId) return
+        this.updatedTaskId = taskId
         this.tipStep = updatePlanningTip(this.tipStep, 'edit-committed')
     }
 
@@ -474,6 +518,7 @@ export class PlanningViewsGridComponent {
     }
 
     handleGanttEdit(event: CustomEvent<GanttBeforeTaskChangeDetail>) {
+        event.preventDefault()
         this.setTasks(updateFromGantt(this.tasks, event.detail))
     }
 

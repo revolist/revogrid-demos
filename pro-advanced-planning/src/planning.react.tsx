@@ -43,13 +43,14 @@ import {
     ganttResources,
     gridColumnTypes,
     gridColumns,
-    kanbanConfig,
+    createKanbanConfig,
     planningProjects,
     planningFilterConfig,
     planningDataGridFormatting,
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
+    toGanttTasks,
     toSchedulerEvents,
     updateFromGantt,
     updateFromGanttAssignment,
@@ -66,11 +67,14 @@ import {
 } from './data'
 import './planning.scss'
 import {
+    changedPlanningTaskName,
+    planningTipCompletionCopy,
     planningTipCopy,
     readPlanningTip,
     updatePlanningTip,
     type PlanningTipStep,
 } from './planning.tips'
+import { revealPlanningKanbanCard } from './planning.kanban'
 
 type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     gantt?: typeof ganttConfig
@@ -80,7 +84,7 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     eventScheduler?: typeof schedulerConfig
     eventSchedulerResources?: typeof schedulerResources
     eventSchedulerEvents?: ReturnType<typeof toSchedulerEvents>
-    kanban?: typeof kanbanConfig
+    kanban?: ReturnType<typeof createKanbanConfig>
     rowSelect?: { rowOrder: boolean }
     filter?: typeof planningFilterConfig
     onRowselected?: (
@@ -119,7 +123,9 @@ export default function PlanningViews() {
     )
     const [selectedCount, setSelectedCount] = useState(0)
     const [tipStep, setTipStep] = useState<PlanningTipStep>(readPlanningTip)
+    const [updatedTaskId, setUpdatedTaskId] = useState<string>()
     const gridRef = useRef<HTMLRevoGridElement>(null)
+    const kanbanRef = useRef<HTMLRevoGridElement>(null)
     const [isDark, setIsDark] = useState(() => currentTheme().isDark())
     const ganttPlugins = useMemo(() => [GanttPlugin], [])
     const kanbanPlugins = useMemo(() => [KanbanPlugin], [])
@@ -135,6 +141,10 @@ export default function PlanningViews() {
         []
     )
     const dataGridFormatting = useMemo(() => planningDataGridFormatting, [])
+    const kanbanConfig = useMemo(
+        () => createKanbanConfig(updatedTaskId),
+        [updatedTaskId]
+    )
     const dataGridContextMenu = useMemo(
         () =>
             createPlanningDataGridContextMenu((taskIds) => {
@@ -163,12 +173,28 @@ export default function PlanningViews() {
         () => filterGanttDependencies(ganttDependencies, visibleTasks),
         [visibleTasks]
     )
+    const ganttTasks = useMemo(() => toGanttTasks(visibleTasks), [visibleTasks])
     const schedulerEvents = useMemo(
         () => toSchedulerEvents(visibleTasks),
         [visibleTasks]
     )
 
     useEffect(() => observeCurrentTheme(setIsDark), [])
+    useEffect(() => {
+        if (activeView === 'kanban') {
+            void revealPlanningKanbanCard(kanbanRef.current, updatedTaskId)
+        }
+    }, [activeView, updatedTaskId])
+
+    const handleCommittedTaskNameEdit = (
+        previous: PlanningTask[],
+        next: PlanningTask[]
+    ) => {
+        const taskId = changedPlanningTaskName(previous, next)
+        if (!taskId) return
+        setUpdatedTaskId(taskId)
+        setTipStep((current) => updatePlanningTip(current, 'edit-committed'))
+    }
 
     const selectPlanningView = (view: PlanningView) => {
         if (view === 'kanban') {
@@ -220,6 +246,11 @@ export default function PlanningViews() {
                         ×
                     </button>
                 </aside>
+            )}
+            {activeView === 'kanban' && updatedTaskId && (
+                <p className="planning-demo__completion" role="status">
+                    {planningTipCompletionCopy}
+                </p>
             )}
 
             <div className="planning-demo__toolbar">
@@ -401,11 +432,6 @@ export default function PlanningViews() {
                     stretch={1}
                     rowSelect={{ rowOrder: false }}
                     filter={planningFilterConfig}
-                    onBeforeedit={() =>
-                        setTipStep((current) =>
-                            updatePlanningTip(current, 'edit-committed')
-                        )
-                    }
                     onRowselected={(event: CustomEvent<{ count: number }>) =>
                         setSelectedCount(event.detail.count)
                     }
@@ -413,19 +439,26 @@ export default function PlanningViews() {
                         const detail = event.detail as Parameters<
                             typeof updateFromGrid
                         >[1]
-                        setTasks((current) => updateFromGrid(current, detail))
+                        const next = updateFromGrid(tasks, detail)
+                        handleCommittedTaskNameEdit(tasks, next)
+                        setTasks(next)
                         const grid =
                             event.currentTarget as unknown as HTMLRevoGridElement
                         void grid
                             .getVisibleSource()
                             .then((visible: PlanningTask[]) => {
-                                setTasks((current) =>
-                                    updateFromGridSource(
+                                setTasks((current) => {
+                                    const resolved = updateFromGridSource(
                                         current,
                                         detail,
                                         visible
                                     )
-                                )
+                                    handleCommittedTaskNameEdit(
+                                        current,
+                                        resolved
+                                    )
+                                    return resolved
+                                })
                             })
                     }}
                 />
@@ -437,7 +470,7 @@ export default function PlanningViews() {
                     theme={isDark ? 'darkCompact' : 'compact'}
                     hideAttribution
                     plugins={ganttPlugins}
-                    source={visibleTasks}
+                    source={ganttTasks}
                     columns={ganttColumns}
                     gantt={ganttConfig}
                     ganttDependencies={visibleGanttDependencies}
@@ -445,11 +478,12 @@ export default function PlanningViews() {
                     ganttAssignments={ganttAssignments}
                     onGantt-before-task-change={(
                         event: CustomEvent<GanttBeforeTaskChangeDetail>
-                    ) =>
+                    ) => {
+                        event.preventDefault()
                         setTasks((current) =>
                             updateFromGantt(current, event.detail)
                         )
-                    }
+                    }}
                     onGantt-before-assignment-change={(
                         event: CustomEvent<GanttBeforeAssignmentChangeDetail>
                     ) =>
@@ -462,6 +496,7 @@ export default function PlanningViews() {
             {!!visibleTasks.length && activeView === 'kanban' && (
                 <PlanningGrid
                     key="kanban"
+                    ref={kanbanRef}
                     className="planning-demo__grid"
                     theme={isDark ? 'darkCompact' : 'compact'}
                     hideAttribution

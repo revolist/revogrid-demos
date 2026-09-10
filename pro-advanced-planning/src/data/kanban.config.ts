@@ -4,28 +4,38 @@ import { avatarTemplate } from '@revolist/revogrid-pro'
 import { getOwnerAvatar, getOwnerAvatarIndex } from './fixtures'
 import type { PlanningTask } from './types'
 
-export const kanbanConfig: KanbanConfig<PlanningTask> = {
-    columns: [
-        { prop: 'not-started', name: 'Planned', size: 228, minSize: 216 },
-        { prop: 'in-progress', name: 'In progress', size: 228, minSize: 216 },
-        { prop: 'blocked', name: 'Blocked', size: 228, minSize: 216 },
-        { prop: 'done', name: 'Done', size: 228, minSize: 216 },
-    ],
-    columnField: 'workflowStatus',
-    orderField: 'order',
-    swimlaneColumn: false,
-    card: {
-        titleField: 'name',
-        startDateField: 'startDate',
-        endDateField: 'endDate',
-        dateTimeZone: 'UTC',
-        progressField: 'percentDone',
-        colorField: 'color',
-        assigneeField: 'owner',
-    },
-    customization: {
-        cardContent: (h, { card }) =>
-            h('div', { class: 'planning-card' }, [
+export function createKanbanConfig(
+    updatedTaskId?: string
+): KanbanConfig<PlanningTask> {
+    return {
+        columns: [
+            { prop: 'not-started', name: 'Planned', size: 228, minSize: 216 },
+            { prop: 'in-progress', name: 'In progress', size: 228, minSize: 216 },
+            { prop: 'blocked', name: 'Blocked', size: 228, minSize: 216 },
+            { prop: 'done', name: 'Done', size: 228, minSize: 216 },
+        ],
+        columnField: 'workflowStatus',
+        orderField: 'order',
+        swimlaneColumn: false,
+        card: {
+            titleField: 'name',
+            startDateField: 'startDate',
+            endDateField: 'endDate',
+            dateTimeZone: 'UTC',
+            progressField: 'percentDone',
+            colorField: 'color',
+            assigneeField: 'owner',
+        },
+        customization: {
+            cardContent: (h, { card }) =>
+                h(
+                    'div',
+                    {
+                        class: `planning-card${card.id === updatedTaskId ? ' planning-card--updated' : ''}`,
+                        'data-planning-updated-card':
+                            card.id === updatedTaskId ? 'true' : undefined,
+                    },
+                    [
                 h(
                     'strong',
                     { class: 'planning-card__title', title: card.name },
@@ -71,7 +81,11 @@ export const kanbanConfig: KanbanConfig<PlanningTask> = {
                     value: card.percentDone,
                     label: 'Progress',
                 }),
-            ]),
-    },
-    cardRowHeight: 144,
+                    ]
+                ),
+        },
+        cardRowHeight: 144,
+    }
 }
+
+export const kanbanConfig = createKanbanConfig()

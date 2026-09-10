@@ -2,8 +2,8 @@
     --rv-ui-focus-outline: var(--demo-focus-color);
     --rv-ui-focus-ring: var(--demo-focus-ring);
     --revo-row-select-checkbox-focus: var(--demo-focus-ring);
-    display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    display: flex;
+    flex-direction: column;
     gap: 8px;
     height: 100%;
     min-height: 0;
@@ -61,12 +61,9 @@
     outline-offset: 2px;
 }
 .planning-demo__tip {
-    position: absolute;
-    z-index: 15;
     display: flex;
-    width: max-content;
-    min-width: min(300px, calc(100% - 24px));
-    max-width: min(360px, calc(100% - 24px));
+    width: fit-content;
+    max-width: min(100%, 560px);
     align-items: flex-start;
     gap: 14px;
     padding: 14px 13px 14px 18px;
@@ -74,38 +71,17 @@
     border-radius: 10px;
     background: var(--vp-c-bg, var(--rv-ui-surface));
     color: var(--vp-c-text-1, inherit);
-    box-shadow: 0 8px 28px rgb(0 0 0 / 18%);
     font-size: 16px;
     font-weight: 600;
     line-height: 24px;
 }
-.planning-demo__tip:before {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    transform: rotate(45deg);
-    background: inherit;
-    content: '';
-}
-.planning-demo__tip--edit {
-    top: 172px;
-    left: clamp(72px, 8vw, 104px);
-}
-.planning-demo__tip--edit:before {
-    bottom: -7px;
-    left: 48px;
-    border-right: 1px solid var(--rv-ui-border);
-    border-bottom: 1px solid var(--rv-ui-border);
-}
 .planning-demo__tip--kanban {
-    top: 48px;
-    left: 54px;
+    border-color: var(--demo-focus-color);
 }
-.planning-demo__tip--kanban:before {
-    top: -7px;
-    left: 24px;
-    border-top: 1px solid var(--rv-ui-border);
-    border-left: 1px solid var(--rv-ui-border);
+.planning-demo__completion {
+    margin: 0;
+    color: var(--demo-focus-color);
+    font-weight: 600;
 }
 .planning-demo__tip button {
     display: inline-flex;
@@ -125,6 +101,11 @@
 }
 .planning-demo__tip button:hover {
     background: var(--rv-ui-surface);
+}
+.planning-demo__tip,
+.planning-demo__completion,
+.planning-demo__footer-meta button {
+    display: none;
 }
 .planning-demo__topbar {
     justify-content: space-between;
@@ -192,9 +173,14 @@
 }
 .planning-demo__grid-stage {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
+}
+.planning-demo > .planning-demo__grid {
+    flex: 1 1 auto;
+    height: auto;
 }
 .planning-demo__filter-row {
     display: flex;
@@ -229,6 +215,25 @@
     height: 100%;
     min-width: 0;
     padding: 0;
+}
+.planning-card--updated {
+    animation: planning-card-updated 2.4s ease-out;
+    outline: 3px solid var(--demo-focus-color);
+    outline-offset: 5px;
+}
+@keyframes planning-card-updated {
+    0%,
+    45% {
+        background: color-mix(
+            in srgb,
+            var(--demo-focus-color) 22%,
+            transparent
+        );
+    }
+    100% {
+        background: transparent;
+        outline-color: transparent;
+    }
 }
 .planning-card__title {
     overflow: hidden;
@@ -384,9 +389,6 @@
 @media (max-width: 700px) {
     .planning-demo__footer-meta > span {
         display: none;
-    }
-    .planning-demo__tip--edit {
-        left: 12px;
     }
 }
 @media (prefers-reduced-motion: reduce) {

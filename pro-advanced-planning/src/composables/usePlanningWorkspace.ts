@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
     AdvanceFilterPlugin,
     ColumnHidePlugin,
@@ -47,12 +47,13 @@ import {
     planningDataGridFormatting,
     gridColumnTypes,
     gridColumns,
-    kanbanConfig,
+    createKanbanConfig,
     mergeVisibleTasks,
     planningFilterConfig,
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
+    toGanttTasks,
     toSchedulerEvents,
     updateFromGantt,
     updateFromGanttAssignment,
@@ -66,12 +67,7 @@ import {
     type PlanningTask,
     type PlanningView,
 } from '../data'
-import {
-    planningTipCopy,
-    readPlanningTip,
-    updatePlanningTip,
-    type PlanningTipStep,
-} from '../planning.tips'
+import { revealPlanningKanbanCard } from '../planning.kanban'
 
 const rowSelect: RowSelectConfig = { rowOrder: false }
 const gridPlugins = [
@@ -88,10 +84,11 @@ const schedulerPlugins = [EventSchedulerPlugin]
 export function usePlanningWorkspace() {
     const rootRef = ref<HTMLElement>()
     const gridRef = ref<any>()
+    const kanbanRef = ref<any>()
     const filterBadgesRef = ref<HTMLElement>()
     const filterBadges = ref<HTMLElement>()
     const activeView = ref<PlanningView>('grid')
-    const tipStep = ref<PlanningTipStep>(readPlanningTip())
+    const updatedTaskId = ref<string>()
     const tasks = ref(createTasks())
     const quickSearch = ref('')
     const visibleTaskIds = ref<string[] | undefined>()
@@ -103,11 +100,7 @@ export function usePlanningWorkspace() {
         columns: ['name', 'owner'],
         debounceMs: 150,
     }))
-    const visibleTip = computed(() =>
-        activeView.value === 'grid' && tipStep.value !== 'done'
-            ? tipStep.value
-            : undefined
-    )
+    const kanbanConfig = computed(() => createKanbanConfig(updatedTaskId.value))
     const gridElement = () =>
         (gridRef.value?.$el ?? gridRef.value) as HTMLRevoGridElement | undefined
     const deleteSelectedTasks = (taskIds: readonly string[]) => {
@@ -145,6 +138,7 @@ export function usePlanningWorkspace() {
     const visibleGanttDependencies = computed(() =>
         filterGanttDependencies(ganttDependencies, visibleTasks.value)
     )
+    const ganttTasks = computed(() => toGanttTasks(visibleTasks.value))
     const schedulerEvents = computed(() =>
         toSchedulerEvents(visibleTasks.value)
     )
@@ -207,25 +201,14 @@ export function usePlanningWorkspace() {
         gridKey.value += 1
     }
 
-    function selectPlanningView(view: PlanningView) {
-        if (view === 'kanban') {
-            tipStep.value = updatePlanningTip(tipStep.value, 'kanban-opened')
-        }
+    async function selectPlanningView(view: PlanningView) {
         activeView.value = view
-    }
-
-    function dismissPlanningTips() {
-        tipStep.value = updatePlanningTip(tipStep.value, 'dismiss')
-    }
-
-    function showPlanningTips() {
-        activeView.value = 'grid'
-        tipStep.value = updatePlanningTip(tipStep.value, 'restart')
-    }
-
-    function handlePlanningTipEdit() {
-        if (activeView.value === 'grid') {
-            tipStep.value = updatePlanningTip(tipStep.value, 'edit-committed')
+        if (view === 'kanban' && updatedTaskId.value) {
+            await nextTick()
+            await revealPlanningKanbanCard(
+                kanbanRef.value?.$el ?? kanbanRef.value,
+                updatedTaskId.value
+            )
         }
     }
 
@@ -234,11 +217,14 @@ export function usePlanningWorkspace() {
     }
 
     async function handleGridEdit(event: CustomEvent) {
-        tasks.value = updateFromGrid(tasks.value, event.detail)
+        const previous = tasks.value
+        const next = updateFromGrid(previous, event.detail)
+        tasks.value = next
         const grid = gridElement()
         if (!grid) return
         const visible = (await grid.getVisibleSource()) as PlanningTask[]
-        tasks.value = updateFromGridSource(tasks.value, event.detail, visible)
+        const resolved = updateFromGridSource(tasks.value, event.detail, visible)
+        tasks.value = resolved
         visibleTaskIds.value = visible.map((task) => task.id)
     }
 
@@ -275,6 +261,7 @@ export function usePlanningWorkspace() {
     }
 
     function handleGanttEdit(event: CustomEvent<GanttBeforeTaskChangeDetail>) {
+        event.preventDefault()
         tasks.value = updateFromGantt(tasks.value, event.detail)
     }
 
@@ -301,6 +288,7 @@ export function usePlanningWorkspace() {
         ganttConfig,
         ganttPlugins,
         ganttResources,
+        ganttTasks,
         planningDataGridContextMenu: dataGridContextMenu,
         planningDataGridFormatting,
         gridColumnTypes,
@@ -312,7 +300,6 @@ export function usePlanningWorkspace() {
         handleGanttAssignmentEdit,
         handleGanttEdit,
         handleGridEdit,
-        handlePlanningTipEdit,
         handleKanbanCreate,
         handleKanbanDelete,
         handleKanbanMove,
@@ -320,6 +307,7 @@ export function usePlanningWorkspace() {
         handleRowSelected,
         handleSchedulerEdit,
         kanbanConfig,
+        kanbanRef,
         kanbanPlugins,
         planningFilterConfig,
         quickFilter,
@@ -333,16 +321,12 @@ export function usePlanningWorkspace() {
         schedulerResources,
         selectedCount,
         selectPlanningView,
-        showPlanningTips,
         syncVisibleTasks,
         tasks,
         theme,
         toggleFullscreen,
         visibleTasks,
         visibleGanttDependencies,
-        visibleTip,
         views,
-        planningTipCopy,
-        dismissPlanningTips,
     }
 }
