@@ -1,9 +1,14 @@
-import type { ColumnFilterConfig, ColumnRegular } from '@revolist/revogrid'
+import type {
+    ColumnFilterConfig,
+    ColumnRegular,
+    RowResizeConfig,
+} from '@revolist/revogrid'
 import {
     avatarWithTextRenderer,
     ColumnDropdown,
     FIlTER_SELECTION,
     FIlTER_SLIDER,
+    type RowOrderPluginConfig,
 } from '@revolist/revogrid-pro'
 import { createDefaultTaskTableColumn } from '@revolist/gantt'
 import { getOwnerAvatar, getOwnerAvatarIndex, planningPeople } from './fixtures'
@@ -27,6 +32,15 @@ const ownerEditorOptions = planningPeople.map(({ id, name }) => ({
     ownerAvatar: getOwnerAvatar(id),
     ownerAvatarIndex: getOwnerAvatarIndex(id),
 }))
+
+export const planningRowOrder: RowOrderPluginConfig = {
+    prop: 'name',
+    preview: 'compact',
+}
+
+export const planningRowResize: RowResizeConfig = {
+    fullRow: true,
+}
 
 const ownerAvatarRenderer: ColumnRegular['cellTemplate'] = (
     h,
@@ -74,6 +88,12 @@ const paddedCellProperties: NonNullable<
     ColumnRegular['cellProperties']
 > = () => ({
     style: { padding: '0 16px' },
+})
+
+const taskCellProperties: NonNullable<
+    ColumnRegular['cellProperties']
+> = () => ({
+    class: 'planning-demo__task-cell',
 })
 
 export const planningFilterConfig = {
@@ -136,6 +156,8 @@ export const gridColumns: ColumnRegular[] = [
         name: 'Task',
         size: 220,
         pin: 'colPinStart',
+        rowDrag: true,
+        cellProperties: taskCellProperties,
         sortable: true,
         filter: [FIlTER_SELECTION],
         filterPlaceholder: 'All tasks',

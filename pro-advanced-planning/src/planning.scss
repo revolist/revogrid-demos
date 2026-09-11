@@ -171,6 +171,15 @@
     min-height: 0 !important;
     overflow: hidden;
 }
+.planning-demo__grid revogr-data .planning-demo__task-cell .cell-wrapper {
+    align-items: center;
+    position: relative;
+    padding-left: 20px;
+}
+.planning-demo__grid revogr-data .planning-demo__task-cell .revo-draggable {
+    position: absolute;
+    inset: 0 auto 0 0;
+}
 .planning-demo__grid-stage {
     display: flex;
     flex: 1 1 auto;

@@ -77,6 +77,8 @@
                 :data-grid-formatting.prop="planningDataGridFormatting"
                 :filter.prop="gridFilterConfig"
                 :row-size="40"
+                :resize-row="planningRowResize"
+                :row-order.prop="planningRowOrder"
                 :stretch="1"
                 range
                 resize
@@ -112,6 +114,7 @@
             :plugins="ganttPlugins"
             :source="visibleTasks"
             :columns="ganttColumns"
+            :resize-row="planningRowResize"
             :gantt.prop="ganttConfig"
             :gantt-dependencies.prop="visibleGanttDependencies"
             :gantt-resources.prop="ganttResources"
@@ -178,6 +181,8 @@ const {
     kanbanPlugins,
     planningDataGridContextMenu,
     planningDataGridFormatting,
+    planningRowOrder,
+    planningRowResize,
     quickFilter,
     quickSearch,
     resetWorkspace,

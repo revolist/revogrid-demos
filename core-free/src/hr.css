@@ -240,46 +240,6 @@ revo-grid .rgCell.disabled.drag-icon {
   backdrop-filter: blur(8px);
 }
 
-.hr-loading-counter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-}
-
-.hr-loading-counter-line {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 4px;
-  font-variant-numeric: tabular-nums;
-  color: #101827;
-  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-  font-size: 74px;
-  font-weight: 900;
-  line-height: 1;
-}
-
-.hr-loading-counter-digit {
-  display: inline-block;
-  width: 0.62em;
-  color: inherit;
-  line-height: 1;
-  text-align: center;
-  text-shadow: 0 12px 28px rgba(15, 23, 42, 0.24);
-  animation: none;
-}
-
-.hr-loading-counter-symbol {
-  color: inherit;
-  font: inherit;
-  line-height: 1;
-  text-shadow: 0 12px 28px rgba(15, 23, 42, 0.24);
-}
-
 .hr-loading-label {
   color: inherit;
   font-size: 14px;
@@ -421,13 +381,6 @@ revo-grid .rgCell.disabled.drag-icon {
   color: var(--showcase-text-1, #f4f4f6);
 }
 
-[data-theme='dark'] .hr-loading-counter-symbol,
-[data-theme='dark'] .hr-loading-counter-line,
-.hr-demo:has(.hr-scale-grid[theme*='dark']) .hr-loading-counter-symbol,
-.hr-demo:has(.hr-scale-grid[theme*='dark']) .hr-loading-counter-line {
-  color: var(--showcase-text-1, #f4f4f6);
-}
-
 @media (max-width: 900px) {
   .hr-performance {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -451,11 +404,6 @@ revo-grid .rgCell.disabled.drag-icon {
   .hr-grid-wrapper {
     flex: 0 0 320px;
     min-height: 320px;
-  }
-
-  .hr-loading-counter-line {
-    gap: 6px;
-    font-size: 48px;
   }
 
   .hr-performance {

@@ -3,6 +3,8 @@ export {
     ganttColumns,
     gridColumns,
     gridColumnTypes,
+    planningRowOrder,
+    planningRowResize,
     planningFilterConfig,
 } from './columns'
 export {

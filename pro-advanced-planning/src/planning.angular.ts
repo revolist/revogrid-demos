@@ -15,6 +15,7 @@ import {
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
     RowSelectPlugin,
+    RowOrderPlugin,
 } from '@revolist/revogrid-pro'
 import { currentTheme } from '../../composables/useRandomData'
 import {
@@ -45,6 +46,8 @@ import {
     planningProjects,
     planningFilterConfig,
     planningDataGridFormatting,
+    planningRowOrder,
+    planningRowResize,
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
@@ -227,6 +230,8 @@ import { revealPlanningKanbanCard } from './planning.kanban'
                         [resize]="true"
                         [canMoveColumns]="true"
                         [rowSize]="40"
+                        [resizeRow]="planningRowResize"
+                        [rowOrder]="planningRowOrder"
                         [rowSelect]="rowSelect"
                         (afteredit)="handleGridEdit($event)"
                         (rowselected)="handleRowSelected($event)"
@@ -240,6 +245,7 @@ import { revealPlanningKanbanCard } from './planning.kanban'
                         [plugins]="ganttPlugins"
                         [source]="visibleTasks"
                         [columns]="ganttColumns"
+                        [resizeRow]="planningRowResize"
                         [gantt]="ganttConfig"
                         [ganttDependencies]="visibleGanttDependencies"
                         [ganttResources]="ganttResources"
@@ -334,13 +340,16 @@ export class PlanningViewsGridComponent {
     readonly schedulerResources = schedulerResources
     readonly ganttPlugins = [GanttPlugin]
     readonly gridPlugins = [
+        RowOrderPlugin,
         RowSelectPlugin,
         AdvanceFilterPlugin,
         DataGridFormattingPlugin,
         ColumnStretchPlugin,
         ColumnHidePlugin,
     ]
-    readonly rowSelect = { rowOrder: false }
+    readonly rowSelect = { rowOrder: true }
+    readonly planningRowOrder = planningRowOrder
+    readonly planningRowResize = planningRowResize
     readonly kanbanPlugins = [KanbanPlugin]
     readonly schedulerPlugins = [EventSchedulerPlugin]
     readonly empty: never[] = []

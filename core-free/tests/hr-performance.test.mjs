@@ -30,11 +30,12 @@ test('preserves high-refresh animation frame rates', () => {
   assert.ok(Math.abs(fps - 120) < 0.1);
 });
 
-test('formats unsupported and measured values without overstating precision', () => {
+test('formats unsupported and 60 Hz-normalized measured values without overstating precision', () => {
   assert.equal(formatDuration(null), 'N/A');
   assert.equal(formatDuration(12.345), '12.3 ms');
   assert.equal(formatFrameRate(null), 'Scroll to measure');
   assert.equal(formatFrameRate(59.6), '60 FPS');
+  assert.equal(formatFrameRate(120), '60 FPS');
   assert.equal(formatMemory(undefined), 'N/A');
   assert.equal(formatMemory(10 * 1024 * 1024), '10.0 MB');
 });
@@ -52,7 +53,7 @@ test('defines calculation and meaning help for every displayed metric', () => {
     assert.ok(metric.description.length > 80);
     assert.equal(getHRMetricTooltipId(key), `hr-metric-${key}-tooltip`);
   }
-  assert.match(HR_PERFORMANCE_METRICS.scroll.description, /display refresh rate/);
+  assert.match(HR_PERFORMANCE_METRICS.scroll.description, /normalized to a 60 Hz maximum/);
   assert.match(HR_PERFORMANCE_METRICS.memory.description, /entire page/);
   assert.match(HR_PERFORMANCE_METRICS.dataset.description, /virtualizes/);
 });

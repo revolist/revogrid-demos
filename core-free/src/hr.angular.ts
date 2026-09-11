@@ -12,14 +12,12 @@ import type { AfterViewInit } from '@angular/core';
 import type { OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RevoGrid, BasePlugin, type PluginProviders } from '@revolist/angular-datagrid';
+import { RevoGrid } from '@revolist/angular-datagrid';
 import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_COMPANY_OPTIONS, HR_OPTIONS } from './sys-data/hr.data';
-import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 import { getBaseHRColumns, getExtraHRColumns, withHRShortDate } from './sys-data/hr.columns';
 import { renderHrColorPill } from './hr-color-select';
 import { renderHrCompanyCell } from './hr-company-avatar';
 import { renderHrAgeCell } from './hr-age-indicator';
-import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
 import { getInitialHRTheme, HR_THEME_DEFINITIONS, HR_THEME_OPTIONS } from './hr-themes';
 import {
   createHRPerformanceMonitor,
@@ -85,7 +83,6 @@ import './hr.css';
           [source]="rows()"
           [columns]="columns()"
           [columnTypes]="columnTypes()"
-          [plugins]="plugins"
           [filter]="workspaceState().filter ?? true"
           [sorting]="workspaceState().sorting"
           [range]="true"
@@ -97,14 +94,6 @@ import './hr.css';
         ></revo-grid>
         @if (loading()) {
           <div class="hr-loading-overlay" aria-live="polite">
-            <div class="hr-loading-counter" [attr.aria-label]="progressPercent() + ' percent complete'">
-              <div class="hr-loading-counter-line">
-                @for (digit of loadingDigits(); track digit + '-' + $index + '-' + progressPercent(); let index = $index) {
-                  <span class="hr-loading-counter-digit">{{ digit }}</span>
-                }
-                <span class="hr-loading-counter-symbol">%</span>
-              </div>
-            </div>
             <div class="hr-loading-label">{{ loadingLabel() }}</div>
           </div>
         }
@@ -185,7 +174,6 @@ export class HRDemoGridComponent implements AfterViewInit, OnDestroy {
   readonly selectedTheme = signal(HR_THEME_OPTIONS.some(option => option.value === this.workspaceState().theme)
     ? this.workspaceState().theme!
     : getInitialHRTheme());
-  readonly progress = signal<HRGenerationProgress>({ loaded: 0, total: 100 });
   readonly columnTypes = signal<any>({});
   readonly performanceState = signal(createInitialHRPerformanceState());
   readonly metricDefinitions = HR_PERFORMANCE_METRICS;
@@ -193,22 +181,7 @@ export class HRDemoGridComponent implements AfterViewInit, OnDestroy {
   readonly formatDuration = formatDuration;
   readonly formatFrameRate = formatFrameRate;
   readonly formatMemory = formatMemory;
-  readonly plugins = [
-    class HRPlugin extends BasePlugin {
-      constructor(r: HTMLRevoGridElement, p: PluginProviders) {
-        super(r, p);
-        this.addEventListener('rowdragstart', (e) => {
-          if (e.detail.model) {
-            e.detail.text = e.detail.model['name'];
-          }
-        });
-      }
-    },
-  ];
-
   readonly theme = computed(() => this.selectedTheme());
-  readonly progressPercent = computed(() => getHRProgressPercent(this.progress()));
-  readonly loadingDigits = computed(() => getHRLoadingDigits(this.progress()));
   private activeController?: AbortController;
   private performanceMonitor?: HRPerformanceMonitor;
   private workspaceController?: HRWorkspaceController;
@@ -271,22 +244,14 @@ export class HRDemoGridComponent implements AfterViewInit, OnDestroy {
     const controller = new AbortController();
     this.activeController = controller;
     this.loading.set(true);
-    this.loadingLabel.set(`Preparing ${size.toLocaleString()} rows…`);
-    this.progress.set({ loaded: 0, total: size });
     const preparationStartedAt = performance.now();
     try {
-      const data = await getHRData(size, {
-        signal: controller.signal,
-        onProgress: nextProgress => {
-          this.progress.set(nextProgress);
-        },
-      });
+      const data = await getHRData(size, { signal: controller.signal });
       this.performanceMonitor?.setPreparationResult(
         performance.now() - preparationStartedAt,
         size,
         getHRVisibleColumnsCount(size),
       );
-      this.loadingLabel.set('Rendering RevoGrid…');
       if (this.performanceMonitor) {
         await this.performanceMonitor.measureGridUpdate(() => this.rows.set(data));
       } else {

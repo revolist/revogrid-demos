@@ -221,6 +221,30 @@ test('pins selection and task identity with space for native checkboxes', () => 
     )
 })
 
+test('enables native row resizing for task rows in every planning framework', () => {
+    assert.match(columnsSource, /planningRowResize[\s\S]*?fullRow:\s*true/)
+    assert.equal((vueSource.match(/:resize-row\.prop="planningRowResize"/g) || []).length, 2)
+    assert.equal((reactSource.match(/resizeRow=\{planningRowResize\}/g) || []).length, 2)
+    assert.equal((vanillaSource.match(/grid\.resizeRow = planningRowResize/g) || []).length, 2)
+    assert.equal((angularSource.match(/\[resizeRow\]="planningRowResize"/g) || []).length, 2)
+})
+
+test('enables shared Pro row ordering for every planning Grid variant', () => {
+    assert.match(columnsSource, /planningRowOrder[\s\S]*?prop:\s*'name'[\s\S]*?preview:\s*'compact'/)
+    assert.match(columnsSource, /prop: 'name',[\s\S]*?rowDrag: true/)
+    assert.match(vueSource, /:row-order\.prop="planningRowOrder"/)
+    assert.match(vueSource, /:row-select\.prop="rowSelect"/)
+    assert.match(reactSource, /RowOrderPlugin/)
+    assert.match(reactSource, /rowOrder=\{planningRowOrder\}/)
+    assert.match(vanillaSource, /RowOrderPlugin/)
+    assert.match(vanillaSource, /grid\.rowOrder = planningRowOrder/)
+    assert.match(angularSource, /RowOrderPlugin/)
+    assert.match(angularSource, /\[rowOrder\]="planningRowOrder"/)
+    for (const source of [vueWorkspaceSource, reactSource, vanillaSource, angularSource]) {
+        assert.match(source, /rowOrder:\s*true/)
+    }
+})
+
 test('uses the grid header divider for the select-all checkbox column', () => {
     assert.doesNotMatch(columnsSource, /selectAllHeaderProperties/)
     assert.doesNotMatch(

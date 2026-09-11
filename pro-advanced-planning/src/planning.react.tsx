@@ -9,6 +9,7 @@ import {
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
     RowSelectPlugin,
+    RowOrderPlugin,
 } from '@revolist/revogrid-pro'
 import {
     currentTheme,
@@ -34,6 +35,8 @@ import {
     planningProjects,
     planningFilterConfig,
     planningDataGridFormatting,
+    planningRowOrder,
+    planningRowResize,
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
@@ -95,6 +98,7 @@ export default function PlanningViews() {
     const schedulerPlugins = useMemo(() => [EventSchedulerPlugin], [])
     const gridPlugins = useMemo(
         () => [
+            RowOrderPlugin,
             RowSelectPlugin,
             AdvanceFilterPlugin,
             DataGridFormattingPlugin,
@@ -391,8 +395,10 @@ export default function PlanningViews() {
                     resize
                     canMoveColumns
                     rowSize={40}
+                    resizeRow={planningRowResize}
                     stretch={1}
-                    rowSelect={{ rowOrder: false }}
+                    rowOrder={planningRowOrder}
+                    rowSelect={{ rowOrder: true }}
                     filter={planningFilterConfig}
                     onRowselected={(event: CustomEvent<{ count: number }>) =>
                         setSelectedCount(event.detail.count)
@@ -434,6 +440,7 @@ export default function PlanningViews() {
                     plugins={ganttPlugins}
                     source={visibleTasks}
                     columns={ganttColumns}
+                    resizeRow={planningRowResize}
                     gantt={ganttConfig}
                     ganttDependencies={visibleGanttDependencies}
                     ganttResources={ganttResources}

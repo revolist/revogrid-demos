@@ -8,6 +8,7 @@ import {
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
     RowSelectPlugin,
+    RowOrderPlugin,
 } from '@revolist/revogrid-pro'
 import {
     currentTheme,
@@ -33,6 +34,8 @@ import {
     planningProjects,
     planningFilterConfig,
     planningDataGridFormatting,
+    planningRowOrder,
+    planningRowResize,
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
@@ -173,6 +176,7 @@ export function load(parentSelector: string): (() => void) | undefined {
 
         if (view === 'grid') {
             grid.plugins = [
+                RowOrderPlugin,
                 RowSelectPlugin,
                 AdvanceFilterPlugin,
                 DataGridFormattingPlugin,
@@ -197,7 +201,9 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.resize = true
             grid.canMoveColumns = true
             grid.rowSize = 40
-            grid.rowSelect = { rowOrder: false }
+            grid.resizeRow = planningRowResize
+            grid.rowOrder = planningRowOrder
+            grid.rowSelect = { rowOrder: true }
             grid.addEventListener('afteredit', (event) => {
                 const detail = event.detail as Parameters<
                     typeof updateFromGrid
@@ -237,6 +243,7 @@ export function load(parentSelector: string): (() => void) | undefined {
         } else if (view === 'gantt') {
             grid.plugins = [GanttPlugin]
             grid.columns = ganttColumns
+            grid.resizeRow = planningRowResize
             grid.gantt = ganttConfig
             grid.ganttDependencies = visibleGanttDependencies
             grid.ganttResources = ganttResources

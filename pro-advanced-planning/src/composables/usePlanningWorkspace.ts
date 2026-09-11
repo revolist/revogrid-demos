@@ -5,6 +5,7 @@ import {
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
     FilterHeaderPlugin,
+    RowOrderPlugin,
     RowSelectPlugin,
     type AdvancedFilterBadgesOptions,
     type ColumnFilterConfig,
@@ -32,6 +33,8 @@ import {
     ganttDependencies,
     ganttResources,
     planningDataGridFormatting,
+    planningRowOrder,
+    planningRowResize,
     gridColumnTypes,
     gridColumns,
     createKanbanConfig,
@@ -49,8 +52,9 @@ import {
 } from '../data'
 import { revealPlanningKanbanCard } from '../planning.kanban'
 
-const rowSelect: RowSelectConfig = { rowOrder: false }
+const rowSelect: RowSelectConfig = { rowOrder: true }
 const gridPlugins = [
+    RowOrderPlugin,
     RowSelectPlugin,
     AdvanceFilterPlugin,
     FilterHeaderPlugin,
@@ -221,6 +225,7 @@ export function usePlanningWorkspace() {
         ganttResources,
         planningDataGridContextMenu: dataGridContextMenu,
         planningDataGridFormatting,
+        planningRowResize,
         gridColumnTypes,
         gridColumns,
         gridFilterConfig,
