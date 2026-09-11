@@ -10,22 +10,9 @@ import {
     type ColumnFilterConfig,
     type RowSelectConfig,
 } from '@revolist/revogrid-pro'
-import {
-    GanttPlugin,
-    type GanttBeforeAssignmentChangeDetail,
-    type GanttBeforeTaskChangeDetail,
-} from '@revolist/gantt'
-import {
-    KanbanPlugin,
-    type KanbanCardCreateDetail,
-    type KanbanCardDeleteDetail,
-    type KanbanCardMoveDetail,
-    type KanbanCardUpdateDetail,
-} from '@revolist/kanban'
-import {
-    EventSchedulerPlugin,
-    type EventSchedulerEventChangedDetail,
-} from '@revolist/scheduler'
+import { GanttPlugin } from '@revolist/gantt'
+import { KanbanPlugin } from '@revolist/kanban'
+import { EventSchedulerPlugin } from '@revolist/scheduler'
 import {
     currentTheme,
     observeCurrentTheme,
@@ -48,20 +35,14 @@ import {
     gridColumnTypes,
     gridColumns,
     createKanbanConfig,
-    mergeVisibleTasks,
     planningFilterConfig,
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
     toSchedulerEvents,
-    updateFromGantt,
-    updateFromGanttAssignment,
     updateFromGrid,
     updateFromGridSource,
-    updateFromKanban,
-    updateFromKanbanCreate,
-    updateFromKanbanUpdate,
-    updateFromScheduler,
+    updateFromPlanningEdit,
     views,
     type PlanningTask,
     type PlanningView,
@@ -126,13 +107,8 @@ export function usePlanningWorkspace() {
             return task ? [task] : []
         })
     })
-    const visibleIds = computed(
-        () => new Set(visibleTasks.value.map(({ id }) => id))
-    )
     const ganttAssignments = computed(() =>
-        toGanttAssignments(tasks.value).filter(({ taskId }) =>
-            visibleIds.value.has(String(taskId))
-        )
+        toGanttAssignments(visibleTasks.value)
     )
     const visibleGanttDependencies = computed(() =>
         filterGanttDependencies(ganttDependencies, visibleTasks.value)
@@ -210,10 +186,6 @@ export function usePlanningWorkspace() {
         }
     }
 
-    function merge(next: PlanningTask[]) {
-        tasks.value = mergeVisibleTasks(tasks.value, next)
-    }
-
     async function handleGridEdit(event: CustomEvent) {
         const previous = tasks.value
         const next = updateFromGrid(previous, event.detail)
@@ -230,49 +202,10 @@ export function usePlanningWorkspace() {
         selectedCount.value = event.detail.count
     }
 
-    function handleKanbanMove(
-        event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>
+    function handlePlanningEdit(
+        event: CustomEvent<Parameters<typeof updateFromPlanningEdit>[1]>
     ) {
-        merge(updateFromKanban(visibleTasks.value, event.detail))
-    }
-
-    function handleKanbanCreate(
-        event: CustomEvent<KanbanCardCreateDetail<PlanningTask>>
-    ) {
-        tasks.value = [
-            ...tasks.value,
-            ...updateFromKanbanCreate([], event.detail),
-        ]
-    }
-
-    function handleKanbanUpdate(
-        event: CustomEvent<KanbanCardUpdateDetail<PlanningTask>>
-    ) {
-        merge(updateFromKanbanUpdate(visibleTasks.value, event.detail))
-    }
-
-    function handleKanbanDelete(
-        event: CustomEvent<KanbanCardDeleteDetail<PlanningTask>>
-    ) {
-        const deleted = new Set(event.detail.cardIds.map(String))
-        tasks.value = tasks.value.filter(({ id }) => !deleted.has(id))
-    }
-
-    function handleGanttEdit(event: CustomEvent<GanttBeforeTaskChangeDetail>) {
-        event.preventDefault()
-        tasks.value = updateFromGantt(tasks.value, event.detail)
-    }
-
-    function handleGanttAssignmentEdit(
-        event: CustomEvent<GanttBeforeAssignmentChangeDetail>
-    ) {
-        tasks.value = updateFromGanttAssignment(tasks.value, event.detail)
-    }
-
-    function handleSchedulerEdit(
-        event: CustomEvent<EventSchedulerEventChangedDetail>
-    ) {
-        tasks.value = updateFromScheduler(tasks.value, event.detail)
+        tasks.value = updateFromPlanningEdit(tasks.value, event.detail)
     }
 
     return {
@@ -294,15 +227,9 @@ export function usePlanningWorkspace() {
         gridKey,
         gridPlugins,
         gridRef,
-        handleGanttAssignmentEdit,
-        handleGanttEdit,
         handleGridEdit,
-        handleKanbanCreate,
-        handleKanbanDelete,
-        handleKanbanMove,
-        handleKanbanUpdate,
+        handlePlanningEdit,
         handleRowSelected,
-        handleSchedulerEdit,
         kanbanConfig,
         kanbanRef,
         kanbanPlugins,

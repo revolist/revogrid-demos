@@ -1,20 +1,7 @@
 import { defineCustomElements } from '@revolist/revogrid/loader'
-import {
-    GanttPlugin,
-    type GanttBeforeAssignmentChangeDetail,
-    type GanttBeforeTaskChangeDetail,
-} from '@revolist/gantt'
-import {
-    KanbanPlugin,
-    type KanbanCardCreateDetail,
-    type KanbanCardDeleteDetail,
-    type KanbanCardMoveDetail,
-    type KanbanCardUpdateDetail,
-} from '@revolist/kanban'
-import {
-    EventSchedulerPlugin,
-    type EventSchedulerEventChangedDetail,
-} from '@revolist/scheduler'
+import { GanttPlugin } from '@revolist/gantt'
+import { KanbanPlugin } from '@revolist/kanban'
+import { EventSchedulerPlugin } from '@revolist/scheduler'
 import {
     AdvanceFilterPlugin,
     ColumnHidePlugin,
@@ -50,14 +37,9 @@ import {
     schedulerResources,
     toGanttAssignments,
     toSchedulerEvents,
-    updateFromGantt,
-    updateFromGanttAssignment,
     updateFromGrid,
     updateFromGridSource,
-    updateFromKanban,
-    updateFromKanbanDelete,
-    updateFromKanbanUpdate,
-    updateFromScheduler,
+    updateFromPlanningEdit,
     views,
     type PlanningTask,
     type PlanningFilters,
@@ -180,7 +162,6 @@ export function load(parentSelector: string): (() => void) | undefined {
             view === 'gantt' || view === 'scheduler' || view === 'calendar'
         )
         const visibleTasks = filterPlanningTasks(tasks, filters)
-        const visibleIds = new Set(visibleTasks.map(({ id }) => id))
         const visibleGanttDependencies = filterGanttDependencies(
             ganttDependencies,
             visibleTasks
@@ -253,69 +234,13 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.plugins = [KanbanPlugin]
             grid.columns = gridColumns
             grid.kanban = createKanbanConfig(updatedTaskId)
-            grid.addEventListener('kanbancardmove', (event) => {
-                tasks = updateFromKanban(
-                    tasks,
-                    (
-                        event as unknown as CustomEvent<
-                            KanbanCardMoveDetail<PlanningTask>
-                        >
-                    ).detail
-                )
-            })
-            grid.addEventListener('kanbancardcreate', (event) => {
-                tasks = [
-                    ...tasks,
-                    (
-                        event as unknown as CustomEvent<
-                            KanbanCardCreateDetail<PlanningTask>
-                        >
-                    ).detail.card,
-                ]
-            })
-            grid.addEventListener('kanbancardupdate', (event) => {
-                tasks = updateFromKanbanUpdate(
-                    tasks,
-                    (
-                        event as unknown as CustomEvent<
-                            KanbanCardUpdateDetail<PlanningTask>
-                        >
-                    ).detail
-                )
-            })
-            grid.addEventListener('kanbancarddelete', (event) => {
-                tasks = updateFromKanbanDelete(
-                    tasks,
-                    (
-                        event as unknown as CustomEvent<
-                            KanbanCardDeleteDetail<PlanningTask>
-                        >
-                    ).detail
-                )
-            })
         } else if (view === 'gantt') {
             grid.plugins = [GanttPlugin]
             grid.columns = ganttColumns
             grid.gantt = ganttConfig
             grid.ganttDependencies = visibleGanttDependencies
             grid.ganttResources = ganttResources
-            grid.ganttAssignments = toGanttAssignments(tasks).filter(
-                ({ taskId }) => visibleIds.has(String(taskId))
-            )
-            grid.addEventListener('gantt-before-task-change', (event) => {
-                event.preventDefault()
-                tasks = updateFromGantt(
-                    tasks,
-                    (event as CustomEvent<GanttBeforeTaskChangeDetail>).detail
-                )
-            })
-            grid.addEventListener('gantt-before-assignment-change', (event) => {
-                tasks = updateFromGanttAssignment(
-                    tasks,
-                    (event as CustomEvent<GanttBeforeAssignmentChangeDetail>)
-                        .detail
-                )
-            })
+            grid.ganttAssignments = toGanttAssignments(visibleTasks)
         } else {
             grid.plugins = [EventSchedulerPlugin]
             grid.columns = []
@@ -325,12 +250,11 @@ export function load(parentSelector: string): (() => void) | undefined {
                 view === 'calendar' ? calendarConfig : schedulerConfig
             grid.eventSchedulerResources = schedulerResources
             grid.eventSchedulerEvents = toSchedulerEvents(visibleTasks)
-            grid.addEventListener('event-scheduler-event-changed', (event) => {
-                tasks = updateFromScheduler(
-                    tasks,
-                    (event as CustomEvent<EventSchedulerEventChangedDetail>)
-                        .detail
-                )
+        }
+
+        if (view !== 'grid') {
+            grid.addEventListener('gridedit', (event) => {
+                tasks = updateFromPlanningEdit(tasks, event.detail)
             })
         }
 

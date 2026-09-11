@@ -1,7 +1,6 @@
 import { renderKanbanProgress } from '@revolist/kanban'
 import type { KanbanConfig } from '@revolist/kanban'
 import { avatarTemplate } from '@revolist/revogrid-pro'
-import { getOwnerAvatar, getOwnerAvatarIndex } from './fixtures'
 import type { PlanningTask } from './types'
 
 export function createKanbanConfig(
@@ -55,13 +54,10 @@ export function createKanbanConfig(
                                 avatarTemplate(h, {
                                     ariaLabel: card.owner,
                                     className: 'planning-card__avatar',
-                                    index: Math.max(
-                                        getOwnerAvatarIndex(card.owner) - 1,
-                                        0
-                                    ),
+                                    index: card.ownerAvatarIndex - 1,
                                     label: card.owner,
                                     size: 28,
-                                    value: getOwnerAvatar(card.owner),
+                                    value: card.ownerAvatar,
                                 })
                             ),
                             h(

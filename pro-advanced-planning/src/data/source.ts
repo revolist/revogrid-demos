@@ -13,9 +13,8 @@ import type { PlanningTask } from './types'
 export const planningCalendarId = 'launch-day'
 export { createTasks, getOwnerAvatar } from './fixtures'
 
-export const schedulerResources: EventSchedulerResourceEntity[] = [
-    ...planningPeople,
-]
+export const schedulerResources: readonly EventSchedulerResourceEntity[] =
+    planningPeople
 
 export const ganttResources: ResourceEntity[] = planningPeople.map(
     (person) => ({

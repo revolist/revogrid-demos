@@ -6,22 +6,9 @@ import {
     ViewEncapsulation,
 } from '@angular/core'
 import { RevoGrid } from '@revolist/angular-datagrid'
-import {
-    GanttPlugin,
-    type GanttBeforeAssignmentChangeDetail,
-    type GanttBeforeTaskChangeDetail,
-} from '@revolist/gantt'
-import {
-    KanbanPlugin,
-    type KanbanCardCreateDetail,
-    type KanbanCardDeleteDetail,
-    type KanbanCardMoveDetail,
-    type KanbanCardUpdateDetail,
-} from '@revolist/kanban'
-import {
-    EventSchedulerPlugin,
-    type EventSchedulerEventChangedDetail,
-} from '@revolist/scheduler'
+import { GanttPlugin } from '@revolist/gantt'
+import { KanbanPlugin } from '@revolist/kanban'
+import { EventSchedulerPlugin } from '@revolist/scheduler'
 import {
     AdvanceFilterPlugin,
     ColumnHidePlugin,
@@ -62,14 +49,9 @@ import {
     schedulerResources,
     toGanttAssignments,
     toSchedulerEvents,
-    updateFromGantt,
-    updateFromGanttAssignment,
     updateFromGrid,
     updateFromGridSource,
-    updateFromKanban,
-    updateFromKanbanDelete,
-    updateFromKanbanUpdate,
-    updateFromScheduler,
+    updateFromPlanningEdit,
     type PlanningTask,
     type PlanningFilters,
     type PlanningView,
@@ -262,10 +244,7 @@ import { revealPlanningKanbanCard } from './planning.kanban'
                         [ganttDependencies]="visibleGanttDependencies"
                         [ganttResources]="ganttResources"
                         [ganttAssignments]="ganttAssignments"
-                        (gantt-before-task-change)="handleGanttEdit($event)"
-                        (gantt-before-assignment-change)="
-                            handleGanttAssignmentEdit($event)
-                        "
+                        (gridedit)="handlePlanningEdit($event)"
                     ></revo-grid>
                 }
                 @case ('kanban') {
@@ -278,10 +257,7 @@ import { revealPlanningKanbanCard } from './planning.kanban'
                         [source]="visibleTasks"
                         [columns]="gridColumns"
                         [kanban]="kanbanConfig"
-                        (kanbancardmove)="handleKanbanMove($event)"
-                        (kanbancardcreate)="handleKanbanCreate($event)"
-                        (kanbancardupdate)="handleKanbanUpdate($event)"
-                        (kanbancarddelete)="handleKanbanDelete($event)"
+                        (gridedit)="handlePlanningEdit($event)"
                     ></revo-grid>
                 }
                 @case ('scheduler') {
@@ -297,9 +273,7 @@ import { revealPlanningKanbanCard } from './planning.kanban'
                         [eventScheduler]="schedulerConfig"
                         [eventSchedulerResources]="schedulerResources"
                         [eventSchedulerEvents]="schedulerEvents"
-                        (event-scheduler-event-changed)="
-                            handleSchedulerEdit($event)
-                        "
+                        (gridedit)="handlePlanningEdit($event)"
                     ></revo-grid>
                 }
                 @case ('calendar') {
@@ -315,9 +289,7 @@ import { revealPlanningKanbanCard } from './planning.kanban'
                         [eventScheduler]="calendarConfig"
                         [eventSchedulerResources]="schedulerResources"
                         [eventSchedulerEvents]="schedulerEvents"
-                        (event-scheduler-event-changed)="
-                            handleSchedulerEdit($event)
-                        "
+                        (gridedit)="handlePlanningEdit($event)"
                     ></revo-grid>
                 }
             }
@@ -385,10 +357,7 @@ export class PlanningViewsGridComponent {
         return filterPlanningTasks(this.tasks, this.filters)
     }
     get ganttAssignments() {
-        const ids = new Set(this.visibleTasks.map(({ id }) => id))
-        return toGanttAssignments(this.tasks).filter(({ taskId }) =>
-            ids.has(String(taskId))
-        )
+        return toGanttAssignments(this.visibleTasks)
     }
     get visibleGanttDependencies() {
         return filterGanttDependencies(ganttDependencies, this.visibleTasks)
@@ -491,41 +460,10 @@ export class PlanningViewsGridComponent {
         this.selectedCount = event.detail.count
     }
 
-    handleKanbanMove(event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>) {
-        this.setTasks(updateFromKanban(this.tasks, event.detail))
-    }
-
-    handleKanbanCreate(
-        event: CustomEvent<KanbanCardCreateDetail<PlanningTask>>
+    handlePlanningEdit(
+        event: CustomEvent<Parameters<typeof updateFromPlanningEdit>[1]>
     ) {
-        this.setTasks([...this.tasks, event.detail.card])
-    }
-
-    handleKanbanUpdate(
-        event: CustomEvent<KanbanCardUpdateDetail<PlanningTask>>
-    ) {
-        this.setTasks(updateFromKanbanUpdate(this.tasks, event.detail))
-    }
-
-    handleKanbanDelete(
-        event: CustomEvent<KanbanCardDeleteDetail<PlanningTask>>
-    ) {
-        this.setTasks(updateFromKanbanDelete(this.tasks, event.detail))
-    }
-
-    handleGanttEdit(event: CustomEvent<GanttBeforeTaskChangeDetail>) {
-        event.preventDefault()
-        this.setTasks(updateFromGantt(this.tasks, event.detail))
-    }
-
-    handleGanttAssignmentEdit(
-        event: CustomEvent<GanttBeforeAssignmentChangeDetail>
-    ) {
-        this.setTasks(updateFromGanttAssignment(this.tasks, event.detail))
-    }
-
-    handleSchedulerEdit(event: CustomEvent<EventSchedulerEventChangedDetail>) {
-        this.setTasks(updateFromScheduler(this.tasks, event.detail))
+        this.setTasks(updateFromPlanningEdit(this.tasks, event.detail))
     }
 
     private setTasks(tasks: PlanningTask[]) {

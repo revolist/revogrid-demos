@@ -1,21 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { RevoGrid } from '@revolist/react-datagrid'
-import {
-    GanttPlugin,
-    type GanttBeforeAssignmentChangeDetail,
-    type GanttBeforeTaskChangeDetail,
-} from '@revolist/gantt'
-import {
-    KanbanPlugin,
-    type KanbanCardCreateDetail,
-    type KanbanCardDeleteDetail,
-    type KanbanCardMoveDetail,
-    type KanbanCardUpdateDetail,
-} from '@revolist/kanban'
-import {
-    EventSchedulerPlugin,
-    type EventSchedulerEventChangedDetail,
-} from '@revolist/scheduler'
+import { GanttPlugin } from '@revolist/gantt'
+import { KanbanPlugin } from '@revolist/kanban'
+import { EventSchedulerPlugin } from '@revolist/scheduler'
 import {
     AdvanceFilterPlugin,
     ColumnHidePlugin,
@@ -51,14 +38,9 @@ import {
     schedulerResources,
     toGanttAssignments,
     toSchedulerEvents,
-    updateFromGantt,
-    updateFromGanttAssignment,
     updateFromGrid,
     updateFromGridSource,
-    updateFromKanban,
-    updateFromKanbanDelete,
-    updateFromKanbanUpdate,
-    updateFromScheduler,
+    updateFromPlanningEdit,
     views,
     type PlanningView,
     type PlanningTask,
@@ -89,26 +71,8 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     onRowselected?: (
         event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>
     ) => void
-    'onGantt-before-task-change'?: (
-        event: CustomEvent<GanttBeforeTaskChangeDetail>
-    ) => void
-    'onGantt-before-assignment-change'?: (
-        event: CustomEvent<GanttBeforeAssignmentChangeDetail>
-    ) => void
-    'onEvent-scheduler-event-changed'?: (
-        event: CustomEvent<EventSchedulerEventChangedDetail>
-    ) => void
-    onKanbancardmove?: (
-        event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>
-    ) => void
-    onKanbancardcreate?: (
-        event: CustomEvent<KanbanCardCreateDetail<PlanningTask>>
-    ) => void
-    onKanbancardupdate?: (
-        event: CustomEvent<KanbanCardUpdateDetail<PlanningTask>>
-    ) => void
-    onKanbancarddelete?: (
-        event: CustomEvent<KanbanCardDeleteDetail<PlanningTask>>
+    onGridedit?: (
+        event: CustomEvent<Parameters<typeof updateFromPlanningEdit>[1]>
     ) => void
 }
 
@@ -157,16 +121,9 @@ export default function PlanningViews() {
         () => filterPlanningTasks(tasks, filters),
         [tasks, filters]
     )
-    const visibleIds = useMemo(
-        () => new Set(visibleTasks.map(({ id }) => id)),
-        [visibleTasks]
-    )
     const ganttAssignments = useMemo(
-        () =>
-            toGanttAssignments(tasks).filter(({ taskId }) =>
-                visibleIds.has(String(taskId))
-            ),
-        [tasks, visibleIds]
+        () => toGanttAssignments(visibleTasks),
+        [visibleTasks]
     )
     const visibleGanttDependencies = useMemo(
         () => filterGanttDependencies(ganttDependencies, visibleTasks),
@@ -193,6 +150,13 @@ export default function PlanningViews() {
         setUpdatedTaskId(taskId)
         setTipStep((current) => updatePlanningTip(current, 'edit-committed'))
     }
+
+    const handlePlanningEdit = (
+        event: CustomEvent<Parameters<typeof updateFromPlanningEdit>[1]>
+    ) =>
+        setTasks((current) =>
+            updateFromPlanningEdit(current, event.detail)
+        )
 
     const selectPlanningView = (view: PlanningView) => {
         if (view === 'kanban') {
@@ -474,21 +438,7 @@ export default function PlanningViews() {
                     ganttDependencies={visibleGanttDependencies}
                     ganttResources={ganttResources}
                     ganttAssignments={ganttAssignments}
-                    onGantt-before-task-change={(
-                        event: CustomEvent<GanttBeforeTaskChangeDetail>
-                    ) => {
-                        event.preventDefault()
-                        setTasks((current) =>
-                            updateFromGantt(current, event.detail)
-                        )
-                    }}
-                    onGantt-before-assignment-change={(
-                        event: CustomEvent<GanttBeforeAssignmentChangeDetail>
-                    ) =>
-                        setTasks((current) =>
-                            updateFromGanttAssignment(current, event.detail)
-                        )
-                    }
+                    onGridedit={handlePlanningEdit}
                 />
             )}
             {!!visibleTasks.length && activeView === 'kanban' && (
@@ -502,24 +452,7 @@ export default function PlanningViews() {
                     source={visibleTasks}
                     columns={gridColumns}
                     kanban={kanbanConfig}
-                    onKanbancardmove={(event) =>
-                        setTasks((current) =>
-                            updateFromKanban(current, event.detail)
-                        )
-                    }
-                    onKanbancardcreate={(event) =>
-                        setTasks((current) => [...current, event.detail.card])
-                    }
-                    onKanbancardupdate={(event) =>
-                        setTasks((current) =>
-                            updateFromKanbanUpdate(current, event.detail)
-                        )
-                    }
-                    onKanbancarddelete={(event) =>
-                        setTasks((current) =>
-                            updateFromKanbanDelete(current, event.detail)
-                        )
-                    }
+                    onGridedit={handlePlanningEdit}
                 />
             )}
             {!!visibleTasks.length &&
@@ -541,13 +474,7 @@ export default function PlanningViews() {
                         }
                         eventSchedulerResources={schedulerResources}
                         eventSchedulerEvents={schedulerEvents}
-                        onEvent-scheduler-event-changed={(
-                            event: CustomEvent<EventSchedulerEventChangedDetail>
-                        ) =>
-                            setTasks((current) =>
-                                updateFromScheduler(current, event.detail)
-                            )
-                        }
+                        onGridedit={handlePlanningEdit}
                     />
                 )}
             <footer className="planning-demo__footer">

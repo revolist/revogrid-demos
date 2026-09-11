@@ -26,15 +26,9 @@ export {
     toSchedulerEvents,
 } from './source'
 export {
-    updateFromGantt,
-    updateFromGanttAssignment,
     updateFromGrid,
     updateFromGridSource,
-    updateFromKanban,
-    updateFromKanbanCreate,
-    updateFromKanbanDelete,
-    updateFromKanbanUpdate,
-    updateFromScheduler,
+    updateFromPlanningEdit,
 } from './sync'
 export { views, type PlanningTask, type PlanningView } from './types'
 export {

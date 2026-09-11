@@ -15,9 +15,11 @@ export type PlanningTask = GanttTaskSourceRow & {
     ownerAvatar: string
     ownerAvatarIndex: number
     owners: string[]
-    ownerAvatars: string[]
     startDate: string
     endDate: string
+    duration: number
+    durationUnit: 'hour'
+    durationIsElapsed: true
     percentDone: number
     order: number
     projectId: PlanningProjectId

@@ -18,12 +18,11 @@ import { clearPlanningRowSelection } from '../src/data/selection'
 import {
     updateFromGrid,
     updateFromGridSource,
-    updateFromGantt,
-    updateFromGanttAssignment,
-    updateFromKanban,
+    updateFromPlanningEdit,
 } from '../src/data/sync'
 import {
     filterGanttDependencies,
+    schedulerResources,
     toGanttAssignments,
     toSchedulerEvents,
 } from '../src/data/source'
@@ -351,52 +350,148 @@ test('drives Gantt and Scheduler from one canonical task duration', () => {
     assert.match(reactSource, /source=\{visibleTasks\}/)
     assert.match(angularSource, /\[source\]="visibleTasks"/)
     assert.match(vanillaSource, /calendar' \? \[\] : visibleTasks/)
-    assert.match(vueWorkspaceSource, /handleGanttEdit[\s\S]*?event\.preventDefault\(\)/)
-    assert.match(vanillaSource, /gantt-before-task-change[\s\S]*?event\.preventDefault\(\)/)
-    assert.match(reactSource, /onGantt-before-task-change[\s\S]*?event\.preventDefault\(\)/)
-    assert.match(angularSource, /handleGanttEdit[\s\S]*?event\.preventDefault\(\)/)
+    for (const source of [vueSource, vanillaSource, reactSource, angularSource]) {
+        assert.match(source, /gridedit/i)
+        assert.doesNotMatch(source, /gantt-before-task-change|event\.preventDefault\(\)/)
+    }
 })
 
-test('moves a Gantt task without accepting a conflicting duration or finish', () => {
+test('builds Gantt assignments directly from the visible task source', () => {
+    const visibleTasks = createTasks().slice(0, 2)
+
+    assert.deepEqual(
+        toGanttAssignments(visibleTasks).map(({ taskId }) => taskId),
+        visibleTasks.map(({ id }) => id)
+    )
+    assert.match(vueWorkspaceSource, /toGanttAssignments\(visibleTasks\.value\)/)
+    assert.match(reactSource, /toGanttAssignments\(visibleTasks\)/)
+    assert.match(angularSource, /toGanttAssignments\(this\.visibleTasks\)/)
+    assert.match(vanillaSource, /toGanttAssignments\(visibleTasks\)/)
+    for (const source of [vueWorkspaceSource, reactSource, angularSource, vanillaSource]) {
+        assert.doesNotMatch(source, /visibleIds/)
+    }
+})
+
+test('accepts the committed Gantt task from EventManager', () => {
     const tasks = createTasks()
     const task = tasks.find(({ type }) => type === 'task')!
     const start = Date.parse(task.startDate)
     const movedStart = new Date(start + 24 * 3_600_000).toISOString()
-    const moved = updateFromGantt(tasks, {
-        taskId: task.id,
-        action: 'move',
-        sourcePatch: {
-            startDate: movedStart,
-            endDate: new Date(start + 20 * 24 * 3_600_000).toISOString(),
-            duration: Number(task.duration) + 100,
-        },
-    } as Parameters<typeof updateFromGantt>[1]).find(
+    const moved = updateFromPlanningEdit(tasks, {
+        domainChanges: [{
+            type: 'gantt-task',
+            detail: {
+                action: 'move',
+                taskId: task.id,
+                previousTask: null,
+                task: {
+                    ...task,
+                    progressPercent: task.percentDone,
+                    wbsCode: '1',
+                    parentId: null,
+                    calendarId: 'launch-day',
+                    isCritical: false,
+                    tags: [],
+                    startDate: movedStart,
+                    endDate: new Date(
+                        Date.parse(movedStart) + task.duration * 3_600_000
+                    ).toISOString(),
+                },
+            },
+        }],
+    } as Parameters<typeof updateFromPlanningEdit>[1]).find(
         ({ id }) => id === task.id
     )!
 
+    assert.equal(moved.startDate, movedStart)
     assert.equal(moved.duration, task.duration)
     assert.equal(
         Date.parse(moved.endDate) - Date.parse(moved.startDate),
-        Date.parse(task.endDate) - Date.parse(task.startDate)
+        task.duration * 3_600_000
     )
+    assert.equal('progressPercent' in moved, false)
+    assert.equal('wbsCode' in moved, false)
 })
 
-test('uses an end-only Gantt resize patch to change canonical duration', () => {
+test('accepts a committed Gantt resize duration', () => {
     const tasks = createTasks()
     const task = tasks.find(({ type }) => type === 'task')!
     const resizedEnd = new Date(
         Date.parse(task.endDate) + 24 * 3_600_000
     ).toISOString()
-    const resized = updateFromGantt(tasks, {
-        taskId: task.id,
-        action: 'resize',
-        sourcePatch: { endDate: resizedEnd },
-    } as Parameters<typeof updateFromGantt>[1]).find(
+    const resized = updateFromPlanningEdit(tasks, {
+        domainChanges: [{
+            type: 'gantt-task',
+            detail: {
+                action: 'resize',
+                taskId: task.id,
+                previousTask: null,
+                task: {
+                    ...task,
+                    progressPercent: task.percentDone,
+                    wbsCode: '1',
+                    parentId: null,
+                    calendarId: 'launch-day',
+                    isCritical: false,
+                    tags: [],
+                    endDate: resizedEnd,
+                    duration: task.duration + 24,
+                },
+            },
+        }],
+    } as Parameters<typeof updateFromPlanningEdit>[1]).find(
         ({ id }) => id === task.id
     )!
 
-    assert.equal(Number(resized.duration), Number(task.duration) + 24)
+    assert.equal(resized.duration, task.duration + 24)
     assert.equal(resized.endDate, resizedEnd)
+})
+
+test('accepts the committed Scheduler event from EventManager', () => {
+    const tasks = createTasks()
+    const task = tasks[0]
+    const startDateTime = '2026-09-20T09:00:00.000Z'
+    const endDateTime = '2026-09-20T13:00:00.000Z'
+    const edited = updateFromPlanningEdit(tasks, {
+        domainChanges: [{
+            type: 'event-scheduler-event',
+            detail: {
+                action: 'move',
+                eventId: task.id,
+                previousEvent: null,
+                event: {
+                    id: task.id,
+                    resourceId: 'Ava',
+                    title: 'Scheduled task',
+                    startDateTime,
+                    endDateTime,
+                    status: 'in-progress',
+                },
+            },
+        }],
+    })[0]
+
+    assert.equal(edited.name, 'Scheduled task')
+    assert.equal(edited.owner, 'Ava')
+    assert.equal(edited.startDate, startDateTime)
+    assert.equal(edited.endDate, endDateTime)
+    assert.equal(edited.duration, 4)
+})
+
+test('uses one EventManager edit handler in every Pro planning view', () => {
+    for (const source of [
+        `${vueSource}\n${vueWorkspaceSource}`,
+        vanillaSource,
+        reactSource,
+        angularSource,
+    ]) {
+        assert.match(source, /updateFromPlanningEdit/)
+        assert.match(source, /gridedit/i)
+        assert.doesNotMatch(
+            source,
+            /kanbancard(move|create|update|delete)|event-scheduler-event-changed|gantt-before-(task|assignment)-change/
+        )
+    }
 })
 
 test('passes only dependencies whose tasks are visible to Gantt', () => {
@@ -754,6 +849,7 @@ test('uses varied multi-day work with parallel owner schedules', () => {
 
 test('uses local portrait assets for every shared owner', () => {
     const tasks = createTasks()
+    assert.strictEqual(schedulerResources, planningPeople)
     assert.equal(
         planningPeople.every((person) => Boolean(person.color)),
         true
@@ -952,10 +1048,13 @@ test('synchronizes a dropdown owner edit without a model into the Gantt assignme
 test('preserves every selected Gantt assignee through the controlled assignment source', () => {
     const tasks = createTasks()
     const taskId = tasks[0].id
-    const edited = updateFromGanttAssignment(tasks, {
-        action: 'edit',
-        taskId,
-        previousAssignments: [
+    const edited = updateFromPlanningEdit(tasks, {
+        domainChanges: [{
+            type: 'gantt-assignment',
+            detail: {
+                action: 'edit',
+                taskId,
+                previousAssignments: [
             {
                 id: `assignment-${taskId}-Maya`,
                 taskId,
@@ -963,8 +1062,8 @@ test('preserves every selected Gantt assignee through the controlled assignment 
                 allocationUnits: 1,
                 responsibility: 'Owner',
             },
-        ],
-        assignments: [
+                ],
+                assignments: [
             {
                 id: `assignment-${taskId}-Maya`,
                 taskId,
@@ -979,7 +1078,9 @@ test('preserves every selected Gantt assignee through the controlled assignment 
                 allocationUnits: 100,
                 responsibility: 'assigned',
             },
-        ],
+                ],
+            },
+        }],
     })
 
     assert.deepEqual(
@@ -1002,7 +1103,6 @@ test('keeps the canonical owner in sync for a dropdown option', () => {
     assert.equal(task?.owner, 'Leo')
     assert.deepEqual(task?.owners, ['Leo'])
     assert.equal(task?.ownerAvatarIndex, 3)
-    assert.equal(task?.ownerAvatars.length, 1)
 })
 
 test('updates the edited grid row avatar with the selected owner', () => {
@@ -1072,9 +1172,17 @@ test('reconciles a filtered Kanban move into canonical tasks', () => {
         projectId: 'billing-platform',
     })
     const card = { ...visible[0], workflowStatus: 'done' }
-    const next = updateFromKanban(tasks, { changedCards: [card] } as Parameters<
-        typeof updateFromKanban
-    >[1])
+    const next = updateFromPlanningEdit(tasks, {
+        domainChanges: [{
+            type: 'kanban-card',
+            detail: {
+                action: 'move',
+                cardId: card.id,
+                previousCard: visible[0],
+                card,
+            },
+        }],
+    })
     assert.equal(
         next.find((task) => task.id === card.id)?.workflowStatus,
         'done'
@@ -1165,16 +1273,11 @@ test('renders Kanban ownership from the canonical owner and local portrait', () 
     assert.match(kanbanConfigSource, /planning-card__avatar-stack/)
     assert.match(kanbanConfigSource, /assigneeField:\s*'owner'/)
     assert.doesNotMatch(kanbanConfigSource, /assigneeField:\s*'owners'/)
-    assert.match(
-        kanbanConfigSource,
-        /index:\s*Math\.max\(\s*getOwnerAvatarIndex\(card\.owner\) - 1,\s*0\s*\)/
-    )
-    assert.match(
-        kanbanConfigSource,
-        /value:\s*getOwnerAvatar\(card\.owner\)/
-    )
+    assert.match(kanbanConfigSource, /index:\s*card\.ownerAvatarIndex - 1/)
+    assert.match(kanbanConfigSource, /value:\s*card\.ownerAvatar/)
+    assert.doesNotMatch(kanbanConfigSource, /getOwnerAvatar/)
     assert.doesNotMatch(kanbanConfigSource, /card\.owners/)
-    assert.doesNotMatch(kanbanConfigSource, /card\.ownerAvatarIndex/)
+    assert.doesNotMatch(planningSource, /ownerAvatars/)
     assert.match(
         planningSource,
         /task\.owners\.length\s*\?\s*task\.owners\s*:\s*\[task\.owner\]/

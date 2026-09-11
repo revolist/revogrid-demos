@@ -1,21 +1,14 @@
-import type {
-    GanttBeforeAssignmentChangeDetail,
-    GanttBeforeTaskChangeDetail,
-} from '@revolist/gantt'
-import type {
-    KanbanCardCreateDetail,
-    KanbanCardDeleteDetail,
-    KanbanCardMoveDetail,
-    KanbanCardUpdateDetail,
-} from '@revolist/kanban'
-import type { EventSchedulerEventChangedDetail } from '@revolist/scheduler'
+import type { GanttEventManagerDomainChange } from '@revolist/gantt'
+import type { KanbanEventManagerDomainChange } from '@revolist/kanban'
+import type { EventSchedulerEventManagerDomainChange } from '@revolist/scheduler'
 import { getOwnerAvatar, getOwnerAvatarIndex } from './fixtures'
-import {
-    getPlanningDurationHours,
-    getPlanningEndDate,
-} from './source'
 import { applyPlanningGridEdit } from './workspace'
 import type { PlanningTask } from './types'
+
+type PlanningDomainChange =
+    | GanttEventManagerDomainChange
+    | KanbanEventManagerDomainChange<PlanningTask>
+    | EventSchedulerEventManagerDomainChange
 
 export function updateFromGrid(
     tasks: PlanningTask[],
@@ -76,171 +69,101 @@ function syncGridRow(model: unknown, tasks: readonly PlanningTask[]): void {
     if (task) Object.assign(row, task)
 }
 
-export function updateFromKanban(
+/** Apply committed Gantt, Kanban, and Scheduler edits to the shared task list. */
+export function updateFromPlanningEdit(
     tasks: PlanningTask[],
-    detail: KanbanCardMoveDetail<PlanningTask>
+    detail: { readonly domainChanges?: readonly PlanningDomainChange[] }
 ): PlanningTask[] {
-    const changed = new Map(detail.changedCards.map((task) => [task.id, task]))
-    return tasks.map((task) => changed.get(task.id) ?? task)
-}
-
-export function updateFromKanbanCreate(
-    tasks: PlanningTask[],
-    detail: KanbanCardCreateDetail<PlanningTask>
-): PlanningTask[] {
-    const next = [...tasks]
-    next.splice(detail.sourceIndex, 0, detail.card)
-    return next
-}
-
-export function updateFromKanbanUpdate(
-    tasks: PlanningTask[],
-    detail: KanbanCardUpdateDetail<PlanningTask>
-): PlanningTask[] {
-    return tasks.map((task) =>
-        task.id === String(detail.cardId) ? detail.card : task
-    )
-}
-
-export function updateFromKanbanDelete(
-    tasks: PlanningTask[],
-    detail: KanbanCardDeleteDetail<PlanningTask>
-): PlanningTask[] {
-    const deleted = new Set(detail.cardIds.map(String))
-    return tasks.filter((task) => !deleted.has(task.id))
-}
-
-function readHourDuration(value: unknown, unit: unknown): number | undefined {
-    if (
-        typeof value === 'number' &&
-        Number.isFinite(value) &&
-        unit === 'hour'
-    ) {
-        return value
-    }
-    if (typeof value !== 'string') return
-    const match = value.trim().match(/^([0-9]+(?:\.[0-9]+)?)h$/i)
-    const hours = match ? Number(match[1]) : Number.NaN
-    return Number.isFinite(hours) ? hours : undefined
-}
-
-export function updateFromGantt(
-    tasks: PlanningTask[],
-    detail: GanttBeforeTaskChangeDetail
-): PlanningTask[] {
-    if (detail.taskId === null || !detail.sourcePatch) return tasks
-    const taskIndex = tasks.findIndex(
-        (task) => task.id === String(detail.taskId)
-    )
-    if (taskIndex < 0) return tasks
-    if (detail.action === 'delete') {
-        return tasks.filter((_, index) => index !== taskIndex)
-    }
-
-    const task = tasks[taskIndex]
-    const sourcePatch = { ...detail.sourcePatch }
-    if (detail.action === 'move') {
-        // Moving changes the start only. Ignore the Gantt projection's finish
-        // and duration patch so repeated moves cannot grow the task.
-        sourcePatch.duration = getPlanningDurationHours(task)
-        sourcePatch.durationUnit = 'hour'
-        sourcePatch.durationIsElapsed = true
-        delete sourcePatch.endDate
-    }
-    if (detail.action === 'resize') {
-        const startDate =
-            typeof sourcePatch.startDate === 'string'
-                ? sourcePatch.startDate
-                : task.startDate
-        const endDate =
-            typeof sourcePatch.endDate === 'string'
-                ? sourcePatch.endDate
-                : task.endDate
-        const durationHours =
-            (Date.parse(endDate) - Date.parse(startDate)) / 3_600_000
-        if (Number.isFinite(durationHours) && durationHours > 0) {
-            sourcePatch.duration = durationHours
-            sourcePatch.durationUnit = 'hour'
-            sourcePatch.durationIsElapsed = true
+    return (detail.domainChanges ?? []).reduce((current, change) => {
+        if (change.type === 'kanban-card') {
+            const card = change.detail.card
+            if (!card) {
+                return current.filter(
+                    ({ id }) => id !== String(change.detail.cardId)
+                )
+            }
+            return current.some(({ id }) => id === card.id)
+                ? current.map((task) => (task.id === card.id ? card : task))
+                : [...current, card]
         }
-    }
-    if (detail.action === 'edit' && sourcePatch.duration !== undefined) {
-        const durationHours = readHourDuration(
-            sourcePatch.duration,
-            sourcePatch.durationUnit ?? task.durationUnit
-        )
-        if (durationHours !== undefined) {
-            sourcePatch.duration = durationHours
-            sourcePatch.durationUnit = 'hour'
-            sourcePatch.durationIsElapsed = true
+
+        if (change.type === 'gantt-task') {
+            const ganttTask = change.detail.task
+            if (!ganttTask) {
+                return current.filter(
+                    ({ id }) => id !== String(change.detail.taskId)
+                )
+            }
+            return current.map((task) =>
+                task.id === String(ganttTask.id)
+                    ? {
+                          ...task,
+                          name: ganttTask.name,
+                          color: ganttTask.color,
+                          parentId: ganttTask.parentId,
+                          type: ganttTask.type,
+                          workflowStatus: ganttTask.workflowStatus,
+                          startDate: ganttTask.startDate,
+                          endDate: ganttTask.endDate,
+                          duration: ganttTask.duration,
+                          durationUnit: 'hour',
+                          durationIsElapsed: true,
+                          percentDone: ganttTask.progressPercent,
+                      }
+                    : task
+            )
         }
-    }
-    if (detail.action === 'indent') {
-        sourcePatch.parentId = tasks[taskIndex - 1]?.id ?? task.parentId ?? null
-    } else if (detail.action === 'outdent') {
-        const parent = tasks.find(({ id }) => id === String(task.parentId))
-        sourcePatch.parentId = parent?.parentId ?? null
-    }
-    return tasks.map((candidate) => {
-        if (candidate.id !== String(detail.taskId)) return candidate
-        const updated = { ...candidate, ...sourcePatch } as PlanningTask
-        return { ...updated, endDate: getPlanningEndDate(updated) }
-    })
-}
 
-export function updateFromGanttAssignment(
-    tasks: PlanningTask[],
-    detail: GanttBeforeAssignmentChangeDetail
-): PlanningTask[] {
-    const owners = detail.assignments
-        .filter(({ taskId }) => String(taskId) === String(detail.taskId))
-        .map(({ resourceId }) => String(resourceId))
-    const owner = owners[0] ?? ''
+        if (change.type === 'gantt-assignment') {
+            const owners = change.detail.assignments.map(({ resourceId }) =>
+                String(resourceId)
+            )
+            const owner = owners[0] ?? ''
+            return current.map((task) =>
+                task.id === String(change.detail.taskId)
+                    ? {
+                          ...task,
+                          owner,
+                          ownerAvatar: getOwnerAvatar(owner),
+                          ownerAvatarIndex: getOwnerAvatarIndex(owner),
+                          owners,
+                      }
+                    : task
+            )
+        }
 
-    return tasks.map((task) =>
-        task.id === String(detail.taskId)
-            ? {
-                  ...task,
-                  owner,
-                  ownerAvatar: getOwnerAvatar(owner),
-                  ownerAvatarIndex: getOwnerAvatarIndex(owner),
-                  owners,
-                  ownerAvatars: owners.map(getOwnerAvatar),
-              }
-            : task
-    )
-}
+        if (change.type === 'event-scheduler-event') {
+            const event = change.detail.event
+            if (!event) {
+                return current.filter(
+                    ({ id }) => id !== String(change.detail.eventId)
+                )
+            }
+            const owner =
+                event.resourceId === undefined ? '' : String(event.resourceId)
+            return current.map((task) =>
+                task.id === String(event.id)
+                    ? {
+                          ...task,
+                          name: event.title ?? task.name,
+                          owner,
+                          ownerAvatar: getOwnerAvatar(owner),
+                          ownerAvatarIndex: getOwnerAvatarIndex(owner),
+                          owners: owner ? [owner] : [],
+                          startDate: event.startDateTime,
+                          endDate: event.endDateTime,
+                          duration:
+                              (Date.parse(event.endDateTime) -
+                                  Date.parse(event.startDateTime)) /
+                              3_600_000,
+                          workflowStatus:
+                              event.status ?? task.workflowStatus,
+                          color: event.color,
+                      }
+                    : task
+            )
+        }
 
-export function updateFromScheduler(
-    tasks: PlanningTask[],
-    detail: EventSchedulerEventChangedDetail
-): PlanningTask[] {
-    const events = new Map(
-        detail.events.map((event) => [String(event.id), event])
-    )
-    return tasks.map((task) => {
-        const event = events.get(task.id)
-        if (!event) return task
-        const owner =
-            event.resourceId === undefined ? '' : String(event.resourceId)
-        return {
-            ...task,
-            name: event.title ?? task.name,
-            owner,
-            ownerAvatar: getOwnerAvatar(owner),
-            ownerAvatarIndex: getOwnerAvatarIndex(owner),
-            owners: owner ? [owner] : [],
-            ownerAvatars: owner ? [getOwnerAvatar(owner)] : [],
-            startDate: event.startDateTime,
-            workflowStatus: event.status ?? task.workflowStatus,
-            color: event.color,
-            duration:
-                (Date.parse(event.endDateTime) -
-                    Date.parse(event.startDateTime)) /
-                3_600_000,
-            durationUnit: 'hour',
-            durationIsElapsed: true,
-            endDate: event.endDateTime,
-        } satisfies PlanningTask
-    })
+        return current
+    }, tasks)
 }

@@ -91,7 +91,6 @@ export function applyPlanningGridEdit(
                       ownerAvatar: getOwnerAvatar(String(value)),
                       ownerAvatarIndex: getOwnerAvatarIndex(String(value)),
                       owners: [String(value)],
-                      ownerAvatars: [getOwnerAvatar(String(value))],
                   }
                 : {}),
         }

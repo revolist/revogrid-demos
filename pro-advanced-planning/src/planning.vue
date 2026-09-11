@@ -101,10 +101,7 @@
             :source="visibleTasks"
             :columns="gridColumns"
             :kanban.prop="kanbanConfig"
-            @kanbancardmove="handleKanbanMove"
-            @kanbancardcreate="handleKanbanCreate"
-            @kanbancardupdate="handleKanbanUpdate"
-            @kanbancarddelete="handleKanbanDelete"
+            @gridedit="handlePlanningEdit"
         />
         <RevoGrid
             v-else-if="activeView === 'gantt'"
@@ -119,8 +116,7 @@
             :gantt-dependencies.prop="visibleGanttDependencies"
             :gantt-resources.prop="ganttResources"
             :gantt-assignments.prop="ganttAssignments"
-            @gantt-before-task-change="handleGanttEdit"
-            @gantt-before-assignment-change="handleGanttAssignmentEdit"
+            @gridedit="handlePlanningEdit"
         />
         <RevoGrid
             v-else-if="activeView === 'scheduler' || activeView === 'calendar'"
@@ -138,7 +134,7 @@
             "
             :event-scheduler-resources.prop="schedulerResources"
             :event-scheduler-events.prop="schedulerEvents"
-            @event-scheduler-event-changed="handleSchedulerEdit"
+            @gridedit="handlePlanningEdit"
         />
         <footer class="planning-demo__footer">
             <span
@@ -174,15 +170,9 @@ const {
     gridKey,
     gridPlugins,
     gridRef,
-    handleGanttAssignmentEdit,
-    handleGanttEdit,
     handleGridEdit,
-    handleKanbanCreate,
-    handleKanbanDelete,
-    handleKanbanMove,
-    handleKanbanUpdate,
+    handlePlanningEdit,
     handleRowSelected,
-    handleSchedulerEdit,
     kanbanConfig,
     kanbanRef,
     kanbanPlugins,

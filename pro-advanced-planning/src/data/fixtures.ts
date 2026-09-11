@@ -258,7 +258,6 @@ export function createTasks(): PlanningTask[] {
             ownerAvatar: getOwnerAvatar(owner),
             ownerAvatarIndex: getOwnerAvatarIndex(owner),
             owners: [owner],
-            ownerAvatars: [getOwnerAvatar(owner)],
             startDate,
             endDate,
             activityAt,
