@@ -1,4 +1,4 @@
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
     AdvanceFilterPlugin,
     ColumnHidePlugin,
@@ -50,7 +50,6 @@ import {
     type PlanningTask,
     type PlanningView,
 } from '../data'
-import { revealPlanningKanbanCard } from '../planning.kanban'
 
 const rowSelect: RowSelectConfig = { rowOrder: true }
 const gridPlugins = [
@@ -68,11 +67,9 @@ const schedulerPlugins = [EventSchedulerPlugin]
 export function usePlanningWorkspace() {
     const rootRef = ref<HTMLElement>()
     const gridRef = ref<any>()
-    const kanbanRef = ref<any>()
     const filterBadgesRef = ref<HTMLElement>()
     const filterBadges = ref<HTMLElement>()
     const activeView = ref<PlanningView>('grid')
-    const updatedTaskId = ref<string>()
     const tasks = ref(createTasks())
     const quickSearch = ref('')
     const visibleTaskIds = ref<string[] | undefined>()
@@ -84,7 +81,7 @@ export function usePlanningWorkspace() {
         columns: ['name', 'owner'],
         debounceMs: 150,
     }))
-    const kanbanConfig = computed(() => createKanbanConfig(updatedTaskId.value))
+    const kanbanConfig = computed(() => createKanbanConfig())
     const gridElement = () =>
         (gridRef.value?.$el ?? gridRef.value) as HTMLRevoGridElement | undefined
     const deleteSelectedTasks = (taskIds: readonly string[]) => {
@@ -179,15 +176,8 @@ export function usePlanningWorkspace() {
         gridKey.value += 1
     }
 
-    async function selectPlanningView(view: PlanningView) {
+    function selectPlanningView(view: PlanningView) {
         activeView.value = view
-        if (view === 'kanban' && updatedTaskId.value) {
-            await nextTick()
-            await revealPlanningKanbanCard(
-                kanbanRef.value?.$el ?? kanbanRef.value,
-                updatedTaskId.value
-            )
-        }
     }
 
     async function handleGridEdit(event: CustomEvent) {
@@ -236,7 +226,6 @@ export function usePlanningWorkspace() {
         handlePlanningEdit,
         handleRowSelected,
         kanbanConfig,
-        kanbanRef,
         kanbanPlugins,
         planningFilterConfig,
         quickFilter,

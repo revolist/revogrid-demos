@@ -94,7 +94,6 @@
         </div>
         <RevoGrid
             v-if="activeView === 'kanban'"
-            ref="kanbanRef"
             key="kanban"
             class="planning-demo__grid planning-demo__grid--kanban"
             hide-attribution

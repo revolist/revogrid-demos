@@ -3,9 +3,7 @@ import type { KanbanConfig } from '@revolist/kanban'
 import { avatarTemplate } from '@revolist/revogrid-pro'
 import type { PlanningTask } from './types'
 
-export function createKanbanConfig(
-    updatedTaskId?: string
-): KanbanConfig<PlanningTask> {
+export function createKanbanConfig(): KanbanConfig<PlanningTask> {
     return {
         columns: [
             { prop: 'not-started', name: 'Planned', size: 228, minSize: 216 },
@@ -29,11 +27,7 @@ export function createKanbanConfig(
             cardContent: (h, { card }) =>
                 h(
                     'div',
-                    {
-                        class: `planning-card${card.id === updatedTaskId ? ' planning-card--updated' : ''}`,
-                        'data-planning-updated-card':
-                            card.id === updatedTaskId ? 'true' : undefined,
-                    },
+                    { class: 'planning-card' },
                     [
                 h(
                     'strong',

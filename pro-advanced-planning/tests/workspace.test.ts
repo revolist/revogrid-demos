@@ -26,13 +26,6 @@ import {
     toGanttAssignments,
     toSchedulerEvents,
 } from '../src/data/source'
-import {
-    PLANNING_TIP_STORAGE_KEY,
-    changedPlanningTaskName,
-    nextPlanningTip,
-    readPlanningTip,
-    updatePlanningTip,
-} from '../src/planning.tips'
 const ganttConfigSource = readFileSync(
     new URL('../src/data/gantt.config.ts', import.meta.url),
     'utf8'
@@ -94,104 +87,18 @@ const siteStylesSource = readFileSync(
     'utf8'
 )
 
-test('removes action suggestion banners from the Planning workspace', () => {
-    assert.doesNotMatch(vueSource, /planning-demo__tip|Show tips|Dismiss tips/)
-    assert.match(
-        stylesSource,
-        /\.planning-demo__tip,[\s\S]*?\.planning-demo__completion,[\s\S]*?\.planning-demo__footer-meta button\s*\{\s*display:\s*none/,
-    )
-})
-
-test('advances, completes, dismisses, and restarts planning tips', () => {
-    assert.equal(nextPlanningTip('edit', 'edit-committed'), 'kanban')
-    assert.equal(nextPlanningTip('edit', 'edit-cancelled'), 'edit')
-    assert.equal(nextPlanningTip('kanban', 'kanban-opened'), 'done')
-    assert.equal(nextPlanningTip('edit', 'kanban-opened'), 'edit')
-    assert.equal(nextPlanningTip('kanban', 'dismiss'), 'done')
-    assert.equal(nextPlanningTip('done', 'restart'), 'edit')
-})
-test('only advances after a task name changes', () => {
-    const previous = [{ id: 'task-1', name: 'Draft brief' }]
-    assert.equal(changedPlanningTaskName(previous, previous), undefined)
-    assert.equal(
-        changedPlanningTaskName(previous, [
-            { id: 'task-1', name: 'Write brief' },
-        ]),
-        'task-1'
-    )
-})
-test('persists planning tips and tolerates unavailable browser storage', () => {
-    const values = new Map<string, string>()
-    const storage = {
-        getItem: (key: string) => values.get(key) ?? null,
-        setItem: (key: string, value: string) => void values.set(key, value),
-    }
-
-    assert.equal(readPlanningTip(storage), 'edit')
-    assert.equal(updatePlanningTip('edit', 'edit-committed', storage), 'kanban')
-    assert.equal(values.get(PLANNING_TIP_STORAGE_KEY), 'kanban')
-    assert.equal(readPlanningTip(storage), 'kanban')
-
-    const unavailableStorage = {
-        getItem: () => {
-            throw new Error('blocked')
-        },
-        setItem: () => {
-            throw new Error('blocked')
-        },
-    }
-    assert.equal(readPlanningTip(unavailableStorage), 'edit')
-    assert.equal(
-        updatePlanningTip('edit', 'edit-committed', unavailableStorage),
-        'kanban'
-    )
-})
-
-test('wires the same lightweight tips through every planning framework', () => {
+test('keeps all Planning framework variants free of guided tips', () => {
     for (const source of [
         `${vueSource}\n${vueWorkspaceSource}`,
         vanillaSource,
         reactSource,
         angularSource,
     ]) {
-        assert.match(source, /planningTipCopy/)
-        assert.match(source, /Show tips/)
-        assert.match(source, /Dismiss tips/)
-        assert.match(source, /edit-committed/)
-        assert.match(source, /kanban-opened/)
-        assert.match(source, /changedPlanningTaskName/)
+        assert.doesNotMatch(source, /planningTip|Show tips|Dismiss tips/)
         assert.match(source, /createKanbanConfig/)
-        assert.match(source, /revealPlanningKanbanCard/)
         assert.doesNotMatch(source, /beforeedit/)
     }
-    const tipsSource = readFileSync(
-        new URL('../src/planning.tips.ts', import.meta.url),
-        'utf8'
-    )
-    assert.match(
-        tipsSource,
-        /Double-click a task name to edit it\. Press Enter to save\./
-    )
-    assert.match(
-        tipsSource,
-        /Now switch to Kanban to see your updated task\./
-    )
-    assert.match(stylesSource, /planning-demo__tip--kanban/)
-    assert.doesNotMatch(
-        stylesSource,
-        /planning-demo__tip[^}]*position:\\s*(absolute|fixed|sticky)/
-    )
-})
-
-test('reveals the edited task through the public Kanban plugin API', () => {
-    const revealSource = readFileSync(
-        new URL('../src/planning.kanban.ts', import.meta.url),
-        'utf8'
-    )
-    assert.match(revealSource, /getPlugins\(\)/)
-    assert.match(revealSource, /instanceof KanbanPlugin/)
-    assert.match(revealSource, /\.revealCard\(taskId\)/)
-    assert.doesNotMatch(revealSource, /querySelector|scrollIntoView|shadowRoot/)
+    assert.doesNotMatch(stylesSource, /planning-demo__(tip|completion)|planning-card--updated/)
 })
 
 test('uses the Pro dropdown editor with canonical owner and status values', () => {
@@ -435,6 +342,37 @@ test('accepts the committed Gantt task from EventManager', () => {
     )
     assert.equal('progressPercent' in moved, false)
     assert.equal('wbsCode' in moved, false)
+})
+
+test('keeps the Gantt source ordered when a row is dropped into another task', () => {
+    const tasks = createTasks()
+    const droppedTask = tasks[0]
+    const parentTask = tasks[1]
+    const updated = updateFromPlanningEdit(tasks, {
+        domainChanges: [{
+            type: 'gantt-task',
+            detail: {
+                action: 'indent',
+                taskId: droppedTask.id,
+                previousTask: null,
+                index: 1,
+                task: {
+                    ...droppedTask,
+                    parentId: parentTask.id,
+                    progressPercent: droppedTask.percentDone,
+                    wbsCode: '1.1',
+                    calendarId: 'launch-day',
+                    isCritical: false,
+                    tags: [],
+                },
+            },
+        }],
+    } as Parameters<typeof updateFromPlanningEdit>[1])
+
+    assert.equal(updated.length, tasks.length)
+    assert.equal(updated[0].id, parentTask.id)
+    assert.equal(updated[1].id, droppedTask.id)
+    assert.equal(updated[1].parentId, parentTask.id)
 })
 
 test('accepts a committed Gantt resize duration', () => {

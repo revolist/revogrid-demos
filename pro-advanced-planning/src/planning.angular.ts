@@ -1,8 +1,6 @@
 import {
     Component,
-    ElementRef,
     NO_ERRORS_SCHEMA,
-    ViewChild,
     ViewEncapsulation,
 } from '@angular/core'
 import { RevoGrid } from '@revolist/angular-datagrid'
@@ -18,14 +16,6 @@ import {
     RowOrderPlugin,
 } from '@revolist/revogrid-pro'
 import { currentTheme } from '../../composables/useRandomData'
-import {
-    changedPlanningTaskName,
-    planningTipCompletionCopy,
-    planningTipCopy,
-    readPlanningTip,
-    updatePlanningTip,
-    type PlanningTipStep,
-} from './planning.tips'
 import {
     activePlanningFilters,
     calendarConfig,
@@ -59,7 +49,6 @@ import {
     type PlanningFilters,
     type PlanningView,
 } from './data'
-import { revealPlanningKanbanCard } from './planning.kanban'
 
 @Component({
     selector: 'planning-views-grid',
@@ -126,30 +115,6 @@ import { revealPlanningKanbanCard } from './planning.kanban'
                     Calendar
                 </button>
             </nav>
-
-            @if (visibleTip) {
-                <aside
-                    class="planning-demo__tip"
-                    [class.planning-demo__tip--edit]="visibleTip === 'edit'"
-                    [class.planning-demo__tip--kanban]="visibleTip === 'kanban'"
-                >
-                    <span role="status" aria-live="polite">{{
-                        planningTipCopy[visibleTip]
-                    }}</span>
-                    <button
-                        type="button"
-                        aria-label="Dismiss tips"
-                        (click)="dismissPlanningTips()"
-                    >
-                        ×
-                    </button>
-                </aside>
-            }
-            @if (activeView === 'kanban' && updatedTaskId) {
-                <p class="planning-demo__completion" role="status">
-                    {{ planningTipCompletionCopy }}
-                </p>
-            }
 
             <div class="planning-demo__toolbar">
                 <label class="planning-demo__search"
@@ -255,7 +220,6 @@ import { revealPlanningKanbanCard } from './planning.kanban'
                 }
                 @case ('kanban') {
                     <revo-grid
-                        #kanbanGrid
                         class="planning-demo__grid"
                         [hideAttribution]="true"
                         [theme]="theme"
@@ -302,9 +266,6 @@ import { revealPlanningKanbanCard } from './planning.kanban'
             <footer class="planning-demo__footer">
                 <span class="planning-demo__footer-meta">
                     <span>Changes stay in this demo</span>
-                    <button type="button" (click)="showPlanningTips()">
-                        Show tips
-                    </button>
                 </span>
             </footer>
         </section>
@@ -316,10 +277,7 @@ export class PlanningViewsGridComponent {
     tasks = createTasks()
     filters: PlanningFilters = defaultPlanningFilters()
     selectedCount = 0
-    tipStep: PlanningTipStep = readPlanningTip()
-    updatedTaskId?: string
     private grid?: HTMLRevoGridElement
-    @ViewChild('kanbanGrid') kanbanGrid?: ElementRef<HTMLRevoGridElement>
     readonly planningProjects = planningProjects
     readonly gridColumns = gridColumns
     readonly gridColumnTypes = gridColumnTypes
@@ -331,9 +289,7 @@ export class PlanningViewsGridComponent {
     readonly ganttColumns = ganttColumns
     readonly ganttConfig = ganttConfig
     readonly ganttDependencies = ganttDependencies
-    get kanbanConfig() {
-        return createKanbanConfig(this.updatedTaskId)
-    }
+    readonly kanbanConfig = createKanbanConfig()
     readonly ganttResources = ganttResources
     readonly schedulerConfig = schedulerConfig
     readonly calendarConfig = calendarConfig
@@ -353,15 +309,6 @@ export class PlanningViewsGridComponent {
     readonly kanbanPlugins = [KanbanPlugin]
     readonly schedulerPlugins = [EventSchedulerPlugin]
     readonly empty: never[] = []
-    readonly planningTipCopy = planningTipCopy
-    readonly planningTipCompletionCopy = planningTipCompletionCopy
-
-    get visibleTip(): Exclude<PlanningTipStep, 'done'> | undefined {
-        return this.activeView === 'grid' && this.tipStep !== 'done'
-            ? this.tipStep
-            : undefined
-    }
-
     get visibleTasks() {
         return filterPlanningTasks(this.tasks, this.filters)
     }
@@ -405,29 +352,7 @@ export class PlanningViewsGridComponent {
     }
 
     selectPlanningView(view: PlanningView) {
-        if (view === 'kanban') {
-            this.tipStep = updatePlanningTip(this.tipStep, 'kanban-opened')
-        }
         this.activeView = view
-        if (view === 'kanban' && this.updatedTaskId) {
-            setTimeout(
-                () =>
-                    void revealPlanningKanbanCard(
-                        this.kanbanGrid?.nativeElement,
-                        this.updatedTaskId
-                    ),
-                0
-            )
-        }
-    }
-
-    dismissPlanningTips() {
-        this.tipStep = updatePlanningTip(this.tipStep, 'dismiss')
-    }
-
-    showPlanningTips() {
-        this.activeView = 'grid'
-        this.tipStep = updatePlanningTip(this.tipStep, 'restart')
     }
 
     applyActiveTasksPreset() {
@@ -444,22 +369,10 @@ export class PlanningViewsGridComponent {
         const previous = this.tasks
         const next = updateFromGrid(previous, event.detail)
         this.setTasks(next)
-        this.handleCommittedTaskNameEdit(previous, next)
         const grid = event.currentTarget as HTMLRevoGridElement
         const visible = (await grid.getVisibleSource()) as PlanningTask[]
         const resolved = updateFromGridSource(this.tasks, event.detail, visible)
-        this.handleCommittedTaskNameEdit(this.tasks, resolved)
         this.setTasks(resolved)
-    }
-
-    handleCommittedTaskNameEdit(
-        previous: PlanningTask[],
-        next: PlanningTask[]
-    ) {
-        const taskId = changedPlanningTaskName(previous, next)
-        if (!taskId) return
-        this.updatedTaskId = taskId
-        this.tipStep = updatePlanningTip(this.tipStep, 'edit-committed')
     }
 
     handleRowSelected(

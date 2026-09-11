@@ -50,15 +50,6 @@ import {
     type PlanningFilters,
 } from './data'
 import './planning.scss'
-import {
-    changedPlanningTaskName,
-    planningTipCompletionCopy,
-    planningTipCopy,
-    readPlanningTip,
-    updatePlanningTip,
-    type PlanningTipStep,
-} from './planning.tips'
-import { revealPlanningKanbanCard } from './planning.kanban'
 
 type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     gantt?: typeof ganttConfig
@@ -88,10 +79,7 @@ export default function PlanningViews() {
         defaultPlanningFilters
     )
     const [selectedCount, setSelectedCount] = useState(0)
-    const [tipStep, setTipStep] = useState<PlanningTipStep>(readPlanningTip)
-    const [updatedTaskId, setUpdatedTaskId] = useState<string>()
     const gridRef = useRef<HTMLRevoGridElement>(null)
-    const kanbanRef = useRef<HTMLRevoGridElement>(null)
     const [isDark, setIsDark] = useState(() => currentTheme().isDark())
     const ganttPlugins = useMemo(() => [GanttPlugin], [])
     const kanbanPlugins = useMemo(() => [KanbanPlugin], [])
@@ -108,10 +96,7 @@ export default function PlanningViews() {
         []
     )
     const dataGridFormatting = useMemo(() => planningDataGridFormatting, [])
-    const kanbanConfig = useMemo(
-        () => createKanbanConfig(updatedTaskId),
-        [updatedTaskId]
-    )
+    const kanbanConfig = useMemo(() => createKanbanConfig(), [])
     const dataGridContextMenu = useMemo(
         () =>
             createPlanningDataGridContextMenu((taskIds) => {
@@ -139,22 +124,6 @@ export default function PlanningViews() {
     )
 
     useEffect(() => observeCurrentTheme(setIsDark), [])
-    useEffect(() => {
-        if (activeView === 'kanban') {
-            void revealPlanningKanbanCard(kanbanRef.current, updatedTaskId)
-        }
-    }, [activeView, updatedTaskId])
-
-    const handleCommittedTaskNameEdit = (
-        previous: PlanningTask[],
-        next: PlanningTask[]
-    ) => {
-        const taskId = changedPlanningTaskName(previous, next)
-        if (!taskId) return
-        setUpdatedTaskId(taskId)
-        setTipStep((current) => updatePlanningTip(current, 'edit-committed'))
-    }
-
     const handlePlanningEdit = (
         event: CustomEvent<Parameters<typeof updateFromPlanningEdit>[1]>
     ) =>
@@ -162,15 +131,7 @@ export default function PlanningViews() {
             updateFromPlanningEdit(current, event.detail)
         )
 
-    const selectPlanningView = (view: PlanningView) => {
-        if (view === 'kanban') {
-            setTipStep((current) => updatePlanningTip(current, 'kanban-opened'))
-        }
-        setActiveView(view)
-    }
-
-    const visibleTip =
-        activeView === 'grid' && tipStep !== 'done' ? tipStep : null
+    const selectPlanningView = (view: PlanningView) => setActiveView(view)
 
     return (
         <section className="planning-demo">
@@ -192,32 +153,6 @@ export default function PlanningViews() {
                     </button>
                 ))}
             </nav>
-
-            {visibleTip && (
-                <aside
-                    className={`planning-demo__tip planning-demo__tip--${visibleTip}`}
-                >
-                    <span role="status" aria-live="polite">
-                        {planningTipCopy[visibleTip]}
-                    </span>
-                    <button
-                        type="button"
-                        aria-label="Dismiss tips"
-                        onClick={() =>
-                            setTipStep((current) =>
-                                updatePlanningTip(current, 'dismiss')
-                            )
-                        }
-                    >
-                        ×
-                    </button>
-                </aside>
-            )}
-            {activeView === 'kanban' && updatedTaskId && (
-                <p className="planning-demo__completion" role="status">
-                    {planningTipCompletionCopy}
-                </p>
-            )}
 
             <div className="planning-demo__toolbar">
                 <label className="planning-demo__search">
@@ -408,7 +343,6 @@ export default function PlanningViews() {
                             typeof updateFromGrid
                         >[1]
                         const next = updateFromGrid(tasks, detail)
-                        handleCommittedTaskNameEdit(tasks, next)
                         setTasks(next)
                         const grid =
                             event.currentTarget as unknown as HTMLRevoGridElement
@@ -420,10 +354,6 @@ export default function PlanningViews() {
                                         current,
                                         detail,
                                         visible
-                                    )
-                                    handleCommittedTaskNameEdit(
-                                        current,
-                                        resolved
                                     )
                                     return resolved
                                 })
@@ -451,7 +381,6 @@ export default function PlanningViews() {
             {!!visibleTasks.length && activeView === 'kanban' && (
                 <PlanningGrid
                     key="kanban"
-                    ref={kanbanRef}
                     className="planning-demo__grid"
                     theme={isDark ? 'darkCompact' : 'compact'}
                     hideAttribution
@@ -487,17 +416,6 @@ export default function PlanningViews() {
             <footer className="planning-demo__footer">
                 <span className="planning-demo__footer-meta">
                     <span>Changes stay in this demo</span>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setActiveView('grid')
-                            setTipStep((current) =>
-                                updatePlanningTip(current, 'restart')
-                            )
-                        }}
-                    >
-                        Show tips
-                    </button>
                 </span>
             </footer>
         </section>
