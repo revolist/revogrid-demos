@@ -23,7 +23,6 @@ export {
     ganttResources,
     schedulerResources,
     toGanttAssignments,
-    toGanttTasks,
     toSchedulerEvents,
 } from './source'
 export {

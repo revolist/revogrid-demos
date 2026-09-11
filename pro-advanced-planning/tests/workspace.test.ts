@@ -25,7 +25,6 @@ import {
 import {
     filterGanttDependencies,
     toGanttAssignments,
-    toGanttTasks,
     toSchedulerEvents,
 } from '../src/data/source'
 import {
@@ -341,14 +340,17 @@ test('aligns the Gantt timeline with the planning fixture window', () => {
 
 test('drives Gantt and Scheduler from one canonical task duration', () => {
     const task = createTasks().find(({ type }) => type === 'task')!
-    const ganttTask = toGanttTasks([task])[0]
     const schedulerEvent = toSchedulerEvents([task])[0]
 
-    assert.equal('endDate' in ganttTask, false)
-    assert.equal(ganttTask.startDate, task.startDate)
-    assert.equal(ganttTask.duration, task.duration)
+    assert.equal(task.durationUnit, 'hour')
+    assert.equal(task.durationIsElapsed, true)
     assert.equal(schedulerEvent.startDateTime, task.startDate)
     assert.equal(schedulerEvent.endDateTime, task.endDate)
+    assert.doesNotMatch(planningSource, /toGanttTasks/)
+    assert.match(vueSource, /:source="visibleTasks"/)
+    assert.match(reactSource, /source=\{visibleTasks\}/)
+    assert.match(angularSource, /\[source\]="visibleTasks"/)
+    assert.match(vanillaSource, /calendar' \? \[\] : visibleTasks/)
     assert.match(vueWorkspaceSource, /handleGanttEdit[\s\S]*?event\.preventDefault\(\)/)
     assert.match(vanillaSource, /gantt-before-task-change[\s\S]*?event\.preventDefault\(\)/)
     assert.match(reactSource, /onGantt-before-task-change[\s\S]*?event\.preventDefault\(\)/)

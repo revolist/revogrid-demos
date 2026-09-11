@@ -50,7 +50,6 @@ import {
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
-    toGanttTasks,
     toSchedulerEvents,
     updateFromGantt,
     updateFromGanttAssignment,
@@ -173,7 +172,6 @@ export default function PlanningViews() {
         () => filterGanttDependencies(ganttDependencies, visibleTasks),
         [visibleTasks]
     )
-    const ganttTasks = useMemo(() => toGanttTasks(visibleTasks), [visibleTasks])
     const schedulerEvents = useMemo(
         () => toSchedulerEvents(visibleTasks),
         [visibleTasks]
@@ -470,7 +468,7 @@ export default function PlanningViews() {
                     theme={isDark ? 'darkCompact' : 'compact'}
                     hideAttribution
                     plugins={ganttPlugins}
-                    source={ganttTasks}
+                    source={visibleTasks}
                     columns={ganttColumns}
                     gantt={ganttConfig}
                     ganttDependencies={visibleGanttDependencies}

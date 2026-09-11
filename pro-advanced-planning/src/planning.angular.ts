@@ -61,7 +61,6 @@ import {
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
-    toGanttTasks,
     toSchedulerEvents,
     updateFromGantt,
     updateFromGanttAssignment,
@@ -257,7 +256,7 @@ import { revealPlanningKanbanCard } from './planning.kanban'
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="ganttPlugins"
-                        [source]="ganttTasks"
+                        [source]="visibleTasks"
                         [columns]="ganttColumns"
                         [gantt]="ganttConfig"
                         [ganttDependencies]="visibleGanttDependencies"
@@ -393,9 +392,6 @@ export class PlanningViewsGridComponent {
     }
     get visibleGanttDependencies() {
         return filterGanttDependencies(ganttDependencies, this.visibleTasks)
-    }
-    get ganttTasks() {
-        return toGanttTasks(this.visibleTasks)
     }
     get schedulerEvents() {
         return toSchedulerEvents(this.visibleTasks)

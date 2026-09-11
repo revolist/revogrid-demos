@@ -53,7 +53,6 @@ import {
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
-    toGanttTasks,
     toSchedulerEvents,
     updateFromGantt,
     updateFromGanttAssignment,
@@ -138,7 +137,6 @@ export function usePlanningWorkspace() {
     const visibleGanttDependencies = computed(() =>
         filterGanttDependencies(ganttDependencies, visibleTasks.value)
     )
-    const ganttTasks = computed(() => toGanttTasks(visibleTasks.value))
     const schedulerEvents = computed(() =>
         toSchedulerEvents(visibleTasks.value)
     )
@@ -288,7 +286,6 @@ export function usePlanningWorkspace() {
         ganttConfig,
         ganttPlugins,
         ganttResources,
-        ganttTasks,
         planningDataGridContextMenu: dataGridContextMenu,
         planningDataGridFormatting,
         gridColumnTypes,

@@ -49,7 +49,6 @@ import {
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
-    toGanttTasks,
     toSchedulerEvents,
     updateFromGantt,
     updateFromGanttAssignment,
@@ -338,11 +337,7 @@ export function load(parentSelector: string): (() => void) | undefined {
         panel.replaceChildren(grid)
         if (view === 'kanban') void revealPlanningKanbanCard(grid, updatedTaskId)
         grid.source =
-            view === 'scheduler' || view === 'calendar'
-                ? []
-                : view === 'gantt'
-                  ? toGanttTasks(visibleTasks)
-                  : visibleTasks
+            view === 'scheduler' || view === 'calendar' ? [] : visibleTasks
         switcher.querySelectorAll('button').forEach((button) => {
             const selected = button.dataset.view === activeView
             button.classList.toggle('on', selected)

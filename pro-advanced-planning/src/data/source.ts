@@ -1,7 +1,6 @@
 import type {
     AssignmentEntity,
     DependencyEntity,
-    GanttTaskSourceRow,
     ResourceEntity,
 } from '@revolist/gantt'
 import type {
@@ -78,49 +77,13 @@ export function toGanttAssignments(tasks: PlanningTask[]): AssignmentEntity[] {
 
 const HOUR_IN_MS = 3_600_000
 
-/** The Planning workspace stores task duration canonically in elapsed hours. */
-export function getPlanningDurationHours(
-    task: Pick<PlanningTask, 'duration' | 'durationUnit' | 'startDate' | 'endDate'>
-): number {
-    if (typeof task.duration === 'number' && Number.isFinite(task.duration)) {
-        return Math.max(0, task.duration)
-    }
-    if (typeof task.duration === 'string') {
-        const match = task.duration.trim().match(/^([0-9]+(?:\.[0-9]+)?)h$/i)
-        if (match) return Number(match[1])
-    }
-
-    const fallback =
-        (Date.parse(task.endDate) - Date.parse(task.startDate)) / HOUR_IN_MS
-    return Number.isFinite(fallback) ? Math.max(0, fallback) : 0
-}
-
 /** Materialize the finish required by Scheduler from start + duration. */
 export function getPlanningEndDate(
-    task: Pick<PlanningTask, 'duration' | 'durationUnit' | 'startDate' | 'endDate'>
+    task: Pick<PlanningTask, 'duration' | 'startDate'>
 ): string {
-    const start = Date.parse(task.startDate)
-    if (!Number.isFinite(start)) return task.endDate
     return new Date(
-        start + getPlanningDurationHours(task) * HOUR_IN_MS
+        Date.parse(task.startDate) + task.duration * HOUR_IN_MS
     ).toISOString()
-}
-
-/**
- * Gantt owns finish-date calculation. Supplying only start + duration avoids
- * conflicting schedule inputs when a bar is moved.
- */
-export function toGanttTasks(tasks: PlanningTask[]): GanttTaskSourceRow[] {
-    return tasks.map((task) => {
-        const source: GanttTaskSourceRow = {
-            ...task,
-            duration: getPlanningDurationHours(task),
-            durationUnit: 'hour',
-            durationIsElapsed: true,
-        }
-        delete source.endDate
-        return source
-    })
 }
 
 export function toSchedulerEvents(

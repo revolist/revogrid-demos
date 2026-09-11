@@ -113,7 +113,7 @@
             hide-attribution
             :theme="theme"
             :plugins="ganttPlugins"
-            :source="ganttTasks"
+            :source="visibleTasks"
             :columns="ganttColumns"
             :gantt.prop="ganttConfig"
             :gantt-dependencies.prop="visibleGanttDependencies"
@@ -168,7 +168,6 @@ const {
     ganttConfig,
     ganttPlugins,
     ganttResources,
-    ganttTasks,
     gridColumnTypes,
     gridColumns,
     gridFilterConfig,
