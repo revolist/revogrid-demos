@@ -119,6 +119,16 @@ test('uses the Pro dropdown editor with canonical owner and status values', () =
     assert.match(vueSource, /:column-types="gridColumnTypes"/)
 })
 
+test('passes the Scheduler event projection through the grid source', () => {
+    for (const source of [vueSource, vanillaSource, reactSource, angularSource]) {
+        assert.doesNotMatch(source, /eventSchedulerEvents/)
+    }
+    assert.match(vueSource, /:source="schedulerEvents"/)
+    assert.match(vanillaSource, /\? toSchedulerEvents\(visibleTasks\)\s*:\s*visibleTasks/)
+    assert.match(reactSource, /source=\{schedulerEvents\}/)
+    assert.equal((angularSource.match(/\[source\]="schedulerEvents"/g) || []).length, 2)
+})
+
 test('pins selection and task identity with space for native checkboxes', () => {
     assert.match(
         columnsSource,

@@ -236,13 +236,12 @@ import {
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="schedulerPlugins"
-                        [source]="empty"
+                        [source]="schedulerEvents"
                         [columns]="empty"
                         [resize]="true"
                         [canMoveColumns]="false"
                         [eventScheduler]="schedulerConfig"
                         [eventSchedulerResources]="schedulerResources"
-                        [eventSchedulerEvents]="schedulerEvents"
                         (gridedit)="handlePlanningEdit($event)"
                     ></revo-grid>
                 }
@@ -252,13 +251,12 @@ import {
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="schedulerPlugins"
-                        [source]="empty"
+                        [source]="schedulerEvents"
                         [columns]="empty"
                         [resize]="true"
                         [canMoveColumns]="false"
                         [eventScheduler]="calendarConfig"
                         [eventSchedulerResources]="schedulerResources"
-                        [eventSchedulerEvents]="schedulerEvents"
                         (gridedit)="handlePlanningEdit($event)"
                     ></revo-grid>
                 }

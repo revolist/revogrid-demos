@@ -57,7 +57,6 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     ganttDependencies?: typeof ganttDependencies
     eventScheduler?: typeof schedulerConfig
     eventSchedulerResources?: typeof schedulerResources
-    eventSchedulerEvents?: ReturnType<typeof toSchedulerEvents>
     kanban?: ReturnType<typeof createKanbanConfig>
     rowSelect?: { rowOrder: boolean }
     filter?: typeof planningFilterConfig
@@ -421,7 +420,7 @@ export default function PlanningViews() {
                         theme={isDark ? 'darkCompact' : 'compact'}
                         hideAttribution
                         plugins={schedulerPlugins}
-                        source={emptySource}
+                        source={schedulerEvents}
                         columns={emptySource}
                         resize
                         canMoveColumns={false}
@@ -431,7 +430,6 @@ export default function PlanningViews() {
                                 : schedulerConfig
                         }
                         eventSchedulerResources={schedulerResources}
-                        eventSchedulerEvents={schedulerEvents}
                         onGridedit={handlePlanningEdit}
                     />
                 )}

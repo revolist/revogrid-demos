@@ -59,7 +59,6 @@ type PlanningGridElement = HTMLRevoGridElement & {
     ganttDependencies?: typeof ganttDependencies
     eventScheduler?: typeof schedulerConfig
     eventSchedulerResources?: typeof schedulerResources
-    eventSchedulerEvents?: ReturnType<typeof toSchedulerEvents>
 }
 
 export function load(parentSelector: string): (() => void) | undefined {
@@ -213,7 +212,6 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.eventScheduler =
                 view === 'calendar' ? calendarConfig : schedulerConfig
             grid.eventSchedulerResources = schedulerResources
-            grid.eventSchedulerEvents = toSchedulerEvents(visibleTasks)
         }
 
         if (view !== 'grid') {
@@ -226,7 +224,9 @@ export function load(parentSelector: string): (() => void) | undefined {
 
         panel.replaceChildren(grid)
         grid.source =
-            view === 'scheduler' || view === 'calendar' ? [] : visibleTasks
+            view === 'scheduler' || view === 'calendar'
+                ? toSchedulerEvents(visibleTasks)
+                : visibleTasks
         switcher.querySelectorAll('button').forEach((button) => {
             const selected = button.dataset.view === activeView
             button.classList.toggle('on', selected)

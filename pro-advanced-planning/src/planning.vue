@@ -128,7 +128,7 @@
             hide-attribution
             :theme="theme"
             :plugins="schedulerPlugins"
-            :source="emptySource"
+            :source="schedulerEvents"
             :columns="emptySource"
             resize
             :can-move-columns="false"
@@ -136,7 +136,6 @@
                 activeView === 'calendar' ? calendarConfig : schedulerConfig
             "
             :event-scheduler-resources.prop="schedulerResources"
-            :event-scheduler-events.prop="schedulerEvents"
             @gridedit="handlePlanningEdit"
         />
         <footer class="planning-demo__footer">
