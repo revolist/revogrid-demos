@@ -20,7 +20,6 @@ import {
     clearPlanningRowSelection,
     createPlanningDataGridContextMenu,
     createTasks,
-    deletePlanningTasks,
     filterGanttDependencies,
     defaultPlanningFilters,
     filterPlanningTasks,
@@ -40,10 +39,10 @@ import {
     schedulerResources,
     toGanttAssignments,
     toSchedulerEvents,
-    updateFromGrid,
-    updateFromGridSource,
-    updateFromPlanningEdit,
+    PlanningWorkspaceStore,
     views,
+    type PlanningEditDetail,
+    type PlanningGridEditDetail,
     type PlanningTask,
     type PlanningFilters,
     type PlanningView,
@@ -67,7 +66,7 @@ export function load(parentSelector: string): (() => void) | undefined {
     const parent = document.querySelector(parentSelector)
     if (!parent) return
 
-    let tasks = createTasks()
+    const planningStore = new PlanningWorkspaceStore(createTasks())
     let activeView: PlanningView = 'grid'
     let filters: PlanningFilters = defaultPlanningFilters()
     let selectedCount = 0
@@ -123,12 +122,15 @@ export function load(parentSelector: string): (() => void) | undefined {
             'planning-demo__grid--timeline',
             view === 'gantt' || view === 'scheduler' || view === 'calendar'
         )
-        const visibleTasks = filterPlanningTasks(tasks, filters)
+        const visibleTasks = filterPlanningTasks(
+            planningStore.createSnapshot(),
+            filters
+        )
         const visibleGanttDependencies = filterGanttDependencies(
             ganttDependencies,
             visibleTasks
         )
-        count.textContent = `${visibleTasks.length} of ${tasks.length} tasks${selectedCount ? ` · ${selectedCount} selected` : ''}`
+        count.textContent = `${visibleTasks.length} of ${planningStore.size} tasks${selectedCount ? ` · ${selectedCount} selected` : ''}`
         const grid = document.createElement('revo-grid') as PlanningGridElement
         grid.hideAttribution = true
         grid.theme = currentTheme().isDark() ? 'darkCompact' : 'compact'
@@ -146,7 +148,7 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.columns = gridColumns
             grid.dataGridContextMenu = createPlanningDataGridContextMenu(
                 (taskIds) => {
-                    tasks = deletePlanningTasks(tasks, taskIds)
+                    planningStore.delete(taskIds)
                     selectedCount = 0
                     void clearPlanningRowSelection(grid).then(() =>
                         render(activeView)
@@ -164,16 +166,24 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.rowOrder = planningRowOrder
             grid.rowSelect = { rowOrder: true }
             grid.addEventListener('afteredit', (event) => {
-                const detail = event.detail as Parameters<
-                    typeof updateFromGrid
-                >[1]
-                const previous = tasks
-                const next = updateFromGrid(previous, detail)
-                tasks = next
+                const detail = event.detail as PlanningGridEditDetail
+                const hasTaskId = detail.model?.id !== undefined
+                if (hasTaskId) planningStore.commitGridEdit(detail)
                 void grid.getVisibleSource().then((visible: PlanningTask[]) => {
-                    const resolved = updateFromGridSource(tasks, detail, visible)
-                    tasks = resolved
+                    if (!hasTaskId) {
+                        planningStore.commitGridEditFromVisibleSource(
+                            detail,
+                            visible
+                        )
+                    }
                 })
+            })
+            grid.addEventListener('roworderapplied', () => {
+                void grid
+                    .getVisibleSource()
+                    .then((visible: PlanningTask[]) =>
+                        planningStore.commitVisibleOrder(visible)
+                    )
             })
             grid.addEventListener('rowselected', (event) => {
                 selectedCount = (
@@ -181,7 +191,7 @@ export function load(parentSelector: string): (() => void) | undefined {
                         HTMLRevoGridElementEventMap['rowselected']
                     >
                 ).detail.count
-                count.textContent = `${visibleTasks.length} of ${tasks.length} tasks${selectedCount ? ` · ${selectedCount} selected` : ''}`
+                count.textContent = `${visibleTasks.length} of ${planningStore.size} tasks${selectedCount ? ` · ${selectedCount} selected` : ''}`
             })
         } else if (view === 'kanban') {
             grid.plugins = [KanbanPlugin]
@@ -208,7 +218,9 @@ export function load(parentSelector: string): (() => void) | undefined {
 
         if (view !== 'grid') {
             grid.addEventListener('gridedit', (event) => {
-                tasks = updateFromPlanningEdit(tasks, event.detail)
+                planningStore.commitPlanningEdit(
+                    event.detail as PlanningEditDetail
+                )
             })
         }
 
@@ -250,7 +262,7 @@ export function load(parentSelector: string): (() => void) | undefined {
         render(activeView)
     })
     reset.addEventListener('click', () => {
-        tasks = createTasks()
+        planningStore.replace(createTasks())
         filters = defaultPlanningFilters()
         selectedCount = 0
         search.value = ''

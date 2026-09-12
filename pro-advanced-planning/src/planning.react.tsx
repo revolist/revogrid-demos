@@ -21,7 +21,6 @@ import {
     clearPlanningRowSelection,
     createPlanningDataGridContextMenu,
     createTasks,
-    deletePlanningTasks,
     filterGanttDependencies,
     defaultPlanningFilters,
     filterPlanningTasks,
@@ -41,10 +40,10 @@ import {
     schedulerResources,
     toGanttAssignments,
     toSchedulerEvents,
-    updateFromGrid,
-    updateFromGridSource,
-    updateFromPlanningEdit,
+    PlanningWorkspaceStore,
     views,
+    type PlanningEditDetail,
+    type PlanningGridEditDetail,
     type PlanningView,
     type PlanningTask,
     type PlanningFilters,
@@ -66,15 +65,20 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
         event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>
     ) => void
     onGridedit?: (
-        event: CustomEvent<Parameters<typeof updateFromPlanningEdit>[1]>
+        event: CustomEvent<PlanningEditDetail>
     ) => void
+    onRoworderapplied?: (event: CustomEvent) => void
 }
 
 const PlanningGrid = RevoGrid as React.ComponentType<PlanningGridProps>
 
 export default function PlanningViews() {
+    const planningStore = useMemo(
+        () => new PlanningWorkspaceStore(createTasks()),
+        []
+    )
     const [activeView, setActiveView] = useState<PlanningView>('grid')
-    const [tasks, setTasks] = useState(createTasks)
+    const [tasks, setTasks] = useState(() => planningStore.createSnapshot())
     const [filters, setFilters] = useState<PlanningFilters>(
         defaultPlanningFilters
     )
@@ -84,6 +88,7 @@ export default function PlanningViews() {
     const ganttPlugins = useMemo(() => [GanttPlugin], [])
     const kanbanPlugins = useMemo(() => [KanbanPlugin], [])
     const schedulerPlugins = useMemo(() => [EventSchedulerPlugin], [])
+    const emptySource = useMemo<never[]>(() => [], [])
     const gridPlugins = useMemo(
         () => [
             RowOrderPlugin,
@@ -100,11 +105,12 @@ export default function PlanningViews() {
     const dataGridContextMenu = useMemo(
         () =>
             createPlanningDataGridContextMenu((taskIds) => {
-                setTasks((current) => deletePlanningTasks(current, taskIds))
+                planningStore.delete(taskIds)
+                setTasks(planningStore.createSnapshot())
                 setSelectedCount(0)
                 void clearPlanningRowSelection(gridRef.current)
             }),
-        []
+        [planningStore]
     )
     const visibleTasks = useMemo(
         () => filterPlanningTasks(tasks, filters),
@@ -125,13 +131,21 @@ export default function PlanningViews() {
 
     useEffect(() => observeCurrentTheme(setIsDark), [])
     const handlePlanningEdit = (
-        event: CustomEvent<Parameters<typeof updateFromPlanningEdit>[1]>
-    ) =>
-        setTasks((current) =>
-            updateFromPlanningEdit(current, event.detail)
-        )
+        event: CustomEvent<PlanningEditDetail>
+    ) => planningStore.commitPlanningEdit(event.detail)
 
-    const selectPlanningView = (view: PlanningView) => setActiveView(view)
+    const selectPlanningView = (view: PlanningView) => {
+        if (view === activeView) return
+        setTasks(planningStore.createSnapshot())
+        setActiveView(view)
+    }
+
+    const changeFilters = (
+        update: React.SetStateAction<PlanningFilters>
+    ) => {
+        setTasks(planningStore.createSnapshot())
+        setFilters(update)
+    }
 
     return (
         <section className="planning-demo">
@@ -163,7 +177,7 @@ export default function PlanningViews() {
                         placeholder="Search tasks…"
                         value={filters.query}
                         onChange={(event) =>
-                            setFilters((current) => ({
+                            changeFilters((current) => ({
                                 ...current,
                                 query: event.target.value,
                             }))
@@ -175,7 +189,7 @@ export default function PlanningViews() {
                         aria-label="Project"
                         value={filters.projectId}
                         onChange={(event) =>
-                            setFilters((current) => ({
+                            changeFilters((current) => ({
                                 ...current,
                                 projectId: event.target
                                     .value as PlanningFilters['projectId'],
@@ -213,7 +227,7 @@ export default function PlanningViews() {
                                             value
                                         )}
                                         onChange={() =>
-                                            setFilters((current) => ({
+                                            changeFilters((current) => ({
                                                 ...current,
                                                 statuses:
                                                     current.statuses.includes(
@@ -248,7 +262,7 @@ export default function PlanningViews() {
                                             Number(value)
                                         )}
                                         onChange={() =>
-                                            setFilters((current) => ({
+                                            changeFilters((current) => ({
                                                 ...current,
                                                 priorities:
                                                     current.priorities.includes(
@@ -273,7 +287,9 @@ export default function PlanningViews() {
                         <button
                             type="button"
                             className="planning-demo__clear"
-                            onClick={() => setFilters(defaultPlanningFilters())}
+                            onClick={() =>
+                                changeFilters(defaultPlanningFilters())
+                            }
                         >
                             Clear filters
                         </button>
@@ -281,14 +297,15 @@ export default function PlanningViews() {
                 </details>
                 <button
                     type="button"
-                    onClick={() => setFilters(activePlanningFilters())}
+                    onClick={() => changeFilters(activePlanningFilters())}
                 >
                     Active tasks
                 </button>
                 <button
                     type="button"
                     onClick={() => {
-                        setTasks(createTasks())
+                        planningStore.replace(createTasks())
+                        setTasks(planningStore.createSnapshot())
                         setFilters(defaultPlanningFilters())
                         setSelectedCount(0)
                     }}
@@ -306,7 +323,7 @@ export default function PlanningViews() {
                     <strong>No tasks match your filters</strong>
                     <button
                         type="button"
-                        onClick={() => setFilters(defaultPlanningFilters())}
+                        onClick={() => changeFilters(defaultPlanningFilters())}
                     >
                         Clear filters
                     </button>
@@ -339,25 +356,30 @@ export default function PlanningViews() {
                         setSelectedCount(event.detail.count)
                     }
                     onAfteredit={(event) => {
-                        const detail = event.detail as Parameters<
-                            typeof updateFromGrid
-                        >[1]
-                        const next = updateFromGrid(tasks, detail)
-                        setTasks(next)
+                        const detail = event.detail as PlanningGridEditDetail
+                        const hasTaskId = detail.model?.id !== undefined
+                        if (hasTaskId) planningStore.commitGridEdit(detail)
                         const grid =
                             event.currentTarget as unknown as HTMLRevoGridElement
                         void grid
                             .getVisibleSource()
                             .then((visible: PlanningTask[]) => {
-                                setTasks((current) => {
-                                    const resolved = updateFromGridSource(
-                                        current,
+                                if (!hasTaskId) {
+                                    planningStore.commitGridEditFromVisibleSource(
                                         detail,
                                         visible
                                     )
-                                    return resolved
-                                })
+                                }
                             })
+                    }}
+                    onRoworderapplied={(event) => {
+                        const grid =
+                            event.currentTarget as unknown as HTMLRevoGridElement
+                        void grid
+                            .getVisibleSource()
+                            .then((visible: PlanningTask[]) =>
+                                planningStore.commitVisibleOrder(visible)
+                            )
                     }}
                 />
             )}
@@ -399,8 +421,8 @@ export default function PlanningViews() {
                         theme={isDark ? 'darkCompact' : 'compact'}
                         hideAttribution
                         plugins={schedulerPlugins}
-                        source={[]}
-                        columns={[]}
+                        source={emptySource}
+                        columns={emptySource}
                         resize
                         canMoveColumns={false}
                         eventScheduler={

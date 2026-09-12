@@ -87,6 +87,7 @@
                 :quick-filter.prop="quickFilter"
                 :filter-badges.prop="filterBadgeOptions"
                 @afteredit="handleGridEdit"
+                @roworderapplied="handleGridRowOrder"
                 @rowselected="handleRowSelected"
                 @afterfilterapply="syncVisibleTasks"
                 @afterquickfilterapply="syncVisibleTasks"
@@ -127,8 +128,8 @@
             hide-attribution
             :theme="theme"
             :plugins="schedulerPlugins"
-            :source="[]"
-            :columns="[]"
+            :source="emptySource"
+            :columns="emptySource"
             resize
             :can-move-columns="false"
             :event-scheduler.prop="
@@ -159,6 +160,7 @@ const {
     activeView,
     applyActiveTasksPreset,
     calendarConfig,
+    emptySource,
     filterBadgeOptions,
     filterBadgesRef,
     ganttAssignments,
@@ -173,6 +175,7 @@ const {
     gridPlugins,
     gridRef,
     handleGridEdit,
+    handleGridRowOrder,
     handlePlanningEdit,
     handleRowSelected,
     kanbanConfig,

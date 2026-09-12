@@ -1,8 +1,23 @@
 # Unified Planning Suite: Grid + Kanban + Gantt + Scheduler + Calendar
 
 An integrated Data Grid, Kanban board, Gantt, Scheduler, and Calendar demo
-backed by one task array. Switch between each planning surface to see edits
-carried into the next view.
+backed by one canonical task store. Switch between each planning surface to
+see committed edits carried into the next view.
+
+## Edit synchronization
+
+Gantt, Kanban, and Scheduler commit their own interactions before emitting a
+`gridedit` event with `sourceMutation: 'producer'`. The demo applies the
+event's `domainChanges` to its canonical store, but does not assign a new
+source back to the component that originated the edit. This avoids a redundant
+full projection and preserves plugin-local history.
+
+The demo publishes a fresh task snapshot only when a consumer actually needs
+one: initial mount, view switch, filtering, reset, or explicit deletion. Grid
+cell edits follow the same rule and resolve row-index-only editor events by
+stable task ID. A real application can persist the same `domainChanges` as a
+delta and treat the server response as an acknowledgement; only normalized or
+conflicting values need to be applied back through incremental plugin APIs.
 
 ## Run this example
 

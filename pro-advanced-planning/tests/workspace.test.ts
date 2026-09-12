@@ -13,6 +13,7 @@ import {
     deletePlanningTasks,
     filterPlanningTasks,
     mergeVisibleTasks,
+    reorderVisibleTasks,
 } from '../src/data/workspace'
 import { clearPlanningRowSelection } from '../src/data/selection'
 import {
@@ -20,6 +21,7 @@ import {
     updateFromGridSource,
     updateFromPlanningEdit,
 } from '../src/data/sync'
+import { PlanningWorkspaceStore } from '../src/data/store'
 import {
     filterGanttDependencies,
     schedulerResources,
@@ -149,7 +151,25 @@ test('enables shared Pro row ordering for every planning Grid variant', () => {
     assert.match(angularSource, /\[rowOrder\]="planningRowOrder"/)
     for (const source of [vueWorkspaceSource, reactSource, vanillaSource, angularSource]) {
         assert.match(source, /rowOrder:\s*true/)
+        assert.match(source, /commitVisibleOrder/)
     }
+})
+
+test('persists visible row order without moving filtered-out tasks', () => {
+    const [first, hidden, third] = createTasks().slice(0, 3)
+    const reordered = reorderVisibleTasks(
+        [first, hidden, third],
+        [third, first]
+    )
+
+    assert.deepEqual(reordered.map(({ id }) => id), [third.id, hidden.id, first.id])
+
+    const store = new PlanningWorkspaceStore([first, hidden, third])
+    store.commitVisibleOrder([third, first])
+    assert.deepEqual(
+        store.createSnapshot().map(({ id }) => id),
+        [third.id, hidden.id, first.id]
+    )
 })
 
 test('uses the grid header divider for the select-all checkbox column', () => {
@@ -375,6 +395,114 @@ test('keeps the Gantt source ordered when a row is dropped into another task', (
     assert.equal(updated[1].parentId, parentTask.id)
 })
 
+test('ignores a missing Gantt task unless the action explicitly deletes it', () => {
+    const tasks = createTasks()
+    const taskId = tasks[0].id
+    const malformedMove = updateFromPlanningEdit(tasks, {
+        domainChanges: [{
+            type: 'gantt-task',
+            detail: {
+                action: 'move',
+                taskId,
+                previousTask: null,
+                task: null,
+            },
+        }],
+    } as Parameters<typeof updateFromPlanningEdit>[1])
+
+    assert.deepEqual(malformedMove, tasks)
+
+    const deleted = updateFromPlanningEdit(tasks, {
+        domainChanges: [{
+            type: 'gantt-task',
+            detail: {
+                action: 'delete',
+                taskId,
+                previousTask: null,
+                task: null,
+            },
+        }],
+    } as Parameters<typeof updateFromPlanningEdit>[1])
+
+    assert.equal(deleted.length, tasks.length - 1)
+    assert.equal(deleted.some(({ id }) => id === taskId), false)
+})
+
+test('commits producer changes without mutating an already published view snapshot', () => {
+    const initial = createTasks()
+    const store = new PlanningWorkspaceStore(initial)
+    const published = store.createSnapshot()
+    const droppedTask = initial[0]
+    const parentTask = initial[1]
+
+    store.commitPlanningEdit({
+        sourceMutation: 'producer',
+        domainChanges: [{
+            type: 'gantt-task',
+            detail: {
+                action: 'indent',
+                taskId: droppedTask.id,
+                previousTask: null,
+                index: 1,
+                task: {
+                    ...droppedTask,
+                    parentId: parentTask.id,
+                    progressPercent: droppedTask.percentDone,
+                    wbsCode: '1.1',
+                    calendarId: 'launch-day',
+                    isCritical: false,
+                    tags: [],
+                },
+            },
+        }],
+    } as Parameters<PlanningWorkspaceStore['commitPlanningEdit']>[0])
+
+    assert.equal(published[0].id, droppedTask.id)
+    assert.equal(published[0].parentId, droppedTask.parentId)
+
+    const next = store.createSnapshot()
+    assert.equal(next[0].id, parentTask.id)
+    assert.equal(next[1].id, droppedTask.id)
+    assert.equal(next[1].parentId, parentTask.id)
+})
+
+test('does not echo committed planning edits into the active framework source', () => {
+    const frameworkSources = [
+        vueWorkspaceSource,
+        reactSource,
+        angularSource,
+        vanillaSource,
+    ]
+
+    for (const source of frameworkSources) {
+        assert.match(source, /commitPlanningEdit\([\s\S]{0,80}event\.detail/)
+    }
+    assert.doesNotMatch(
+        vueWorkspaceSource,
+        /tasks\.value\s*=\s*updateFromPlanningEdit/
+    )
+    assert.doesNotMatch(
+        reactSource,
+        /setTasks\([\s\S]{0,80}updateFromPlanningEdit/
+    )
+    assert.doesNotMatch(
+        angularSource,
+        /(?:this\.)?setTasks\([\s\S]{0,80}updateFromPlanningEdit/
+    )
+})
+
+test('keeps Angular planning projections as stable snapshot fields', () => {
+    for (const property of [
+        'visibleTasks',
+        'ganttAssignments',
+        'visibleGanttDependencies',
+        'schedulerEvents',
+    ]) {
+        assert.doesNotMatch(angularSource, new RegExp(`get ${property}\\(`))
+    }
+    assert.match(angularSource, /refreshViewSnapshot\(\)/)
+})
+
 test('accepts a committed Gantt resize duration', () => {
     const tasks = createTasks()
     const task = tasks.find(({ type }) => type === 'task')!
@@ -447,7 +575,7 @@ test('uses one EventManager edit handler in every Pro planning view', () => {
         reactSource,
         angularSource,
     ]) {
-        assert.match(source, /updateFromPlanningEdit/)
+        assert.match(source, /commitPlanningEdit/)
         assert.match(source, /gridedit/i)
         assert.doesNotMatch(
             source,
@@ -1105,7 +1233,7 @@ test('uses the visible source fallback for direct grid editors in every framewor
         reactSource,
         angularSource,
     ]) {
-        assert.match(source, /updateFromGridSource/)
+        assert.match(source, /commitGridEditFromVisibleSource/)
         assert.match(source, /getVisibleSource\(\)/)
     }
 })
@@ -1122,7 +1250,7 @@ test('routes context-menu row deletion through the shared task source', () => {
         angularSource,
     ]) {
         assert.match(source, /createPlanningDataGridContextMenu/)
-        assert.match(source, /deletePlanningTasks/)
+        assert.match(source, /planningStore\.delete\(taskIds\)/)
         assert.match(source, /clearPlanningRowSelection/)
     }
 })

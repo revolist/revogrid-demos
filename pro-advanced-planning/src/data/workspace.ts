@@ -49,6 +49,18 @@ export function mergeVisibleTasks(
     return canonical.map((task) => updates.get(task.id) ?? task)
 }
 
+/** Reorders visible tasks while leaving filtered-out tasks in their slots. */
+export function reorderVisibleTasks(
+    canonical: readonly PlanningTask[],
+    visible: readonly PlanningTask[]
+): PlanningTask[] {
+    const visibleIds = new Set(visible.map(({ id }) => id))
+    let visibleIndex = 0
+    return canonical.map((task) =>
+        visibleIds.has(task.id) ? visible[visibleIndex++] ?? task : task
+    )
+}
+
 export function deletePlanningTasks(
     tasks: PlanningTask[],
     taskIds: readonly string[]

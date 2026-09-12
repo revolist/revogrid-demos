@@ -25,7 +25,6 @@ import {
     clearPlanningRowSelection,
     createPlanningDataGridContextMenu,
     createTasks,
-    deletePlanningTasks,
     filterGanttDependencies,
     filterPlanningTasks,
     ganttColumns,
@@ -43,10 +42,10 @@ import {
     schedulerResources,
     toGanttAssignments,
     toSchedulerEvents,
-    updateFromGrid,
-    updateFromGridSource,
-    updateFromPlanningEdit,
+    PlanningWorkspaceStore,
     views,
+    type PlanningEditDetail,
+    type PlanningGridEditDetail,
     type PlanningTask,
     type PlanningView,
 } from '../data'
@@ -64,13 +63,15 @@ const gridPlugins = [
 const ganttPlugins = [GanttPlugin]
 const kanbanPlugins = [KanbanPlugin]
 const schedulerPlugins = [EventSchedulerPlugin]
+const emptySource: never[] = []
 export function usePlanningWorkspace() {
     const rootRef = ref<HTMLElement>()
     const gridRef = ref<any>()
     const filterBadgesRef = ref<HTMLElement>()
     const filterBadges = ref<HTMLElement>()
     const activeView = ref<PlanningView>('grid')
-    const tasks = ref(createTasks())
+    const planningStore = new PlanningWorkspaceStore(createTasks())
+    const tasks = ref(planningStore.createSnapshot())
     const quickSearch = ref('')
     const visibleTaskIds = ref<string[] | undefined>()
     const selectedCount = ref(0)
@@ -84,8 +85,12 @@ export function usePlanningWorkspace() {
     const kanbanConfig = computed(() => createKanbanConfig())
     const gridElement = () =>
         (gridRef.value?.$el ?? gridRef.value) as HTMLRevoGridElement | undefined
+    const refreshViewSnapshot = () => {
+        tasks.value = planningStore.createSnapshot()
+    }
     const deleteSelectedTasks = (taskIds: readonly string[]) => {
-        tasks.value = deletePlanningTasks(tasks.value, taskIds)
+        planningStore.delete(taskIds)
+        refreshViewSnapshot()
         selectedCount.value = 0
         void clearPlanningRowSelection(gridElement())
     }
@@ -159,6 +164,7 @@ export function usePlanningWorkspace() {
     }
 
     function applyActiveTasksPreset() {
+        refreshViewSnapshot()
         gridFilterConfig.value = activePlanningFilterConfig
         visibleTaskIds.value = filterPlanningTasks(
             tasks.value,
@@ -168,7 +174,8 @@ export function usePlanningWorkspace() {
     }
 
     function resetWorkspace() {
-        tasks.value = createTasks()
+        planningStore.replace(createTasks())
+        refreshViewSnapshot()
         quickSearch.value = ''
         visibleTaskIds.value = undefined
         selectedCount.value = 0
@@ -177,18 +184,28 @@ export function usePlanningWorkspace() {
     }
 
     function selectPlanningView(view: PlanningView) {
+        if (view === activeView.value) return
+        refreshViewSnapshot()
         activeView.value = view
     }
 
     async function handleGridEdit(event: CustomEvent) {
-        const previous = tasks.value
-        const next = updateFromGrid(previous, event.detail)
-        tasks.value = next
+        const detail = event.detail as PlanningGridEditDetail
+        const hasTaskId = detail.model?.id !== undefined
+        if (hasTaskId) planningStore.commitGridEdit(detail)
         const grid = gridElement()
         if (!grid) return
         const visible = (await grid.getVisibleSource()) as PlanningTask[]
-        const resolved = updateFromGridSource(tasks.value, event.detail, visible)
-        tasks.value = resolved
+        if (!hasTaskId) {
+            planningStore.commitGridEditFromVisibleSource(detail, visible)
+        }
+        visibleTaskIds.value = visible.map((task) => task.id)
+    }
+
+    async function handleGridRowOrder(event: Event) {
+        const grid = event.currentTarget as HTMLRevoGridElement
+        const visible = (await grid.getVisibleSource()) as PlanningTask[]
+        planningStore.commitVisibleOrder(visible)
         visibleTaskIds.value = visible.map((task) => task.id)
     }
 
@@ -197,15 +214,16 @@ export function usePlanningWorkspace() {
     }
 
     function handlePlanningEdit(
-        event: CustomEvent<Parameters<typeof updateFromPlanningEdit>[1]>
+        event: CustomEvent<PlanningEditDetail>
     ) {
-        tasks.value = updateFromPlanningEdit(tasks.value, event.detail)
+        planningStore.commitPlanningEdit(event.detail)
     }
 
     return {
         activeView,
         applyActiveTasksPreset,
         calendarConfig,
+        emptySource,
         filterBadgeOptions,
         filterBadgesRef,
         ganttAssignments,
@@ -223,6 +241,7 @@ export function usePlanningWorkspace() {
         gridPlugins,
         gridRef,
         handleGridEdit,
+        handleGridRowOrder,
         handlePlanningEdit,
         handleRowSelected,
         kanbanConfig,

@@ -22,7 +22,6 @@ import {
     clearPlanningRowSelection,
     createPlanningDataGridContextMenu,
     createTasks,
-    deletePlanningTasks,
     filterGanttDependencies,
     defaultPlanningFilters,
     filterPlanningTasks,
@@ -42,9 +41,9 @@ import {
     schedulerResources,
     toGanttAssignments,
     toSchedulerEvents,
-    updateFromGrid,
-    updateFromGridSource,
-    updateFromPlanningEdit,
+    PlanningWorkspaceStore,
+    type PlanningEditDetail,
+    type PlanningGridEditDetail,
     type PlanningTask,
     type PlanningFilters,
     type PlanningView,
@@ -199,6 +198,7 @@ import {
                         [rowOrder]="planningRowOrder"
                         [rowSelect]="rowSelect"
                         (afteredit)="handleGridEdit($event)"
+                        (roworderapplied)="handleGridRowOrder($event)"
                         (rowselected)="handleRowSelected($event)"
                     ></revo-grid>
                 }
@@ -274,7 +274,8 @@ import {
 export class PlanningViewsGridComponent {
     theme = currentTheme().isDark() ? 'darkCompact' : 'compact'
     activeView: PlanningView = 'grid'
-    tasks = createTasks()
+    private readonly planningStore = new PlanningWorkspaceStore(createTasks())
+    tasks = this.planningStore.createSnapshot()
     filters: PlanningFilters = defaultPlanningFilters()
     selectedCount = 0
     private grid?: HTMLRevoGridElement
@@ -309,23 +310,30 @@ export class PlanningViewsGridComponent {
     readonly kanbanPlugins = [KanbanPlugin]
     readonly schedulerPlugins = [EventSchedulerPlugin]
     readonly empty: never[] = []
-    get visibleTasks() {
-        return filterPlanningTasks(this.tasks, this.filters)
-    }
-    get ganttAssignments() {
-        return toGanttAssignments(this.visibleTasks)
-    }
-    get visibleGanttDependencies() {
-        return filterGanttDependencies(ganttDependencies, this.visibleTasks)
-    }
-    get schedulerEvents() {
-        return toSchedulerEvents(this.visibleTasks)
+    visibleTasks = filterPlanningTasks(this.tasks, this.filters)
+    ganttAssignments = toGanttAssignments(this.visibleTasks)
+    visibleGanttDependencies = filterGanttDependencies(
+        ganttDependencies,
+        this.visibleTasks
+    )
+    schedulerEvents = toSchedulerEvents(this.visibleTasks)
+
+    refreshViewSnapshot() {
+        this.tasks = this.planningStore.createSnapshot()
+        this.visibleTasks = filterPlanningTasks(this.tasks, this.filters)
+        this.ganttAssignments = toGanttAssignments(this.visibleTasks)
+        this.visibleGanttDependencies = filterGanttDependencies(
+            ganttDependencies,
+            this.visibleTasks
+        )
+        this.schedulerEvents = toSchedulerEvents(this.visibleTasks)
     }
     setQuery(event: Event) {
         this.filters = {
             ...this.filters,
             query: (event.target as HTMLInputElement).value,
         }
+        this.refreshViewSnapshot()
     }
     setProject(event: Event) {
         this.filters = {
@@ -333,10 +341,12 @@ export class PlanningViewsGridComponent {
             projectId: (event.target as HTMLSelectElement)
                 .value as PlanningFilters['projectId'],
         }
+        this.refreshViewSnapshot()
     }
     setStatus(event: Event) {
         const value = (event.target as HTMLSelectElement).value
         this.filters = { ...this.filters, statuses: value ? [value] : [] }
+        this.refreshViewSnapshot()
     }
     setPriority(event: Event) {
         const value = (event.target as HTMLSelectElement).value
@@ -344,35 +354,48 @@ export class PlanningViewsGridComponent {
             ...this.filters,
             priorities: value ? [Number(value)] : [],
         }
+        this.refreshViewSnapshot()
     }
     resetWorkspace() {
-        this.tasks = createTasks()
+        this.planningStore.replace(createTasks())
         this.filters = defaultPlanningFilters()
         this.selectedCount = 0
+        this.refreshViewSnapshot()
     }
 
     selectPlanningView(view: PlanningView) {
+        if (view === this.activeView) return
+        this.refreshViewSnapshot()
         this.activeView = view
     }
 
     applyActiveTasksPreset() {
         this.filters = activePlanningFilters()
+        this.refreshViewSnapshot()
     }
 
     deleteSelectedTasks(taskIds: readonly string[]) {
-        this.tasks = deletePlanningTasks(this.tasks, taskIds)
+        this.planningStore.delete(taskIds)
+        this.refreshViewSnapshot()
         this.selectedCount = 0
         void clearPlanningRowSelection(this.grid)
     }
 
     async handleGridEdit(event: CustomEvent) {
-        const previous = this.tasks
-        const next = updateFromGrid(previous, event.detail)
-        this.setTasks(next)
+        const detail = event.detail as PlanningGridEditDetail
+        const hasTaskId = detail.model?.id !== undefined
+        if (hasTaskId) this.planningStore.commitGridEdit(detail)
         const grid = event.currentTarget as HTMLRevoGridElement
         const visible = (await grid.getVisibleSource()) as PlanningTask[]
-        const resolved = updateFromGridSource(this.tasks, event.detail, visible)
-        this.setTasks(resolved)
+        if (!hasTaskId) {
+            this.planningStore.commitGridEditFromVisibleSource(detail, visible)
+        }
+    }
+
+    async handleGridRowOrder(event: Event) {
+        const grid = event.currentTarget as HTMLRevoGridElement
+        const visible = (await grid.getVisibleSource()) as PlanningTask[]
+        this.planningStore.commitVisibleOrder(visible)
     }
 
     handleRowSelected(
@@ -383,12 +406,8 @@ export class PlanningViewsGridComponent {
     }
 
     handlePlanningEdit(
-        event: CustomEvent<Parameters<typeof updateFromPlanningEdit>[1]>
+        event: CustomEvent<PlanningEditDetail>
     ) {
-        this.setTasks(updateFromPlanningEdit(this.tasks, event.detail))
-    }
-
-    private setTasks(tasks: PlanningTask[]) {
-        this.tasks = tasks
+        this.planningStore.commitPlanningEdit(event.detail)
     }
 }

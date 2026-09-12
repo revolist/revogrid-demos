@@ -31,7 +31,11 @@ export {
     updateFromGrid,
     updateFromGridSource,
     updateFromPlanningEdit,
+    type PlanningDomainChange,
+    type PlanningEditDetail,
+    type PlanningGridEditDetail,
 } from './sync'
+export { PlanningWorkspaceStore } from './store'
 export { views, type PlanningTask, type PlanningView } from './types'
 export {
     activePlanningFilters,

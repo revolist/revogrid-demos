@@ -5,19 +5,26 @@ import { getOwnerAvatar, getOwnerAvatarIndex } from './fixtures'
 import { applyPlanningGridEdit } from './workspace'
 import type { PlanningTask } from './types'
 
-type PlanningDomainChange =
+export type PlanningDomainChange =
     | GanttEventManagerDomainChange
     | KanbanEventManagerDomainChange<PlanningTask>
     | EventSchedulerEventManagerDomainChange
 
+export type PlanningGridEditDetail = {
+    model?: { id?: unknown }
+    prop?: unknown
+    rowIndex?: number
+    val?: unknown
+}
+
+export type PlanningEditDetail = {
+    readonly domainChanges?: readonly PlanningDomainChange[]
+    readonly sourceMutation?: 'event-manager' | 'producer'
+}
+
 export function updateFromGrid(
     tasks: PlanningTask[],
-    detail: {
-        model?: { id?: unknown }
-        prop?: unknown
-        rowIndex?: number
-        val?: unknown
-    }
+    detail: PlanningGridEditDetail
 ): PlanningTask[] {
     const updated = applyPlanningGridEdit(tasks, detail)
     syncGridRow(detail.model, updated)
@@ -31,12 +38,7 @@ export function updateFromGrid(
  */
 export function updateFromGridSource(
     tasks: PlanningTask[],
-    detail: {
-        model?: { id?: unknown }
-        prop?: unknown
-        rowIndex?: number
-        val?: unknown
-    },
+    detail: PlanningGridEditDetail,
     visibleTasks: readonly PlanningTask[]
 ): PlanningTask[] {
     const visibleModel =
@@ -72,98 +74,140 @@ function syncGridRow(model: unknown, tasks: readonly PlanningTask[]): void {
 /** Apply committed Gantt, Kanban, and Scheduler edits to the shared task list. */
 export function updateFromPlanningEdit(
     tasks: PlanningTask[],
-    detail: { readonly domainChanges?: readonly PlanningDomainChange[] }
+    detail: PlanningEditDetail
 ): PlanningTask[] {
-    return (detail.domainChanges ?? []).reduce((current, change) => {
-        if (change.type === 'kanban-card') {
-            const card = change.detail.card
-            if (!card) {
-                return current.filter(
-                    ({ id }) => id !== String(change.detail.cardId)
+    return (detail.domainChanges ?? []).reduce<PlanningTask[]>(
+        (current, change) => {
+            if (change.type === 'kanban-card') {
+                const card = change.detail.card
+                if (!card) {
+                    return current.filter(
+                        ({ id }) => id !== String(change.detail.cardId)
+                    )
+                }
+                return current.some(({ id }) => id === card.id)
+                    ? current.map((task) =>
+                          task.id === card.id ? card : task
+                      )
+                    : [...current, card]
+            }
+
+            if (change.type === 'gantt-task') {
+                const ganttTask = change.detail.task
+                if (!ganttTask) {
+                    return change.detail.action === 'delete'
+                        ? current.filter(
+                              ({ id }) =>
+                                  id !== String(change.detail.taskId)
+                          )
+                        : current
+                }
+                const updated = current.map((task): PlanningTask =>
+                    task.id === String(ganttTask.id)
+                        ? {
+                              ...task,
+                              name: ganttTask.name,
+                              color: ganttTask.color,
+                              parentId: ganttTask.parentId,
+                              type: ganttTask.type,
+                              workflowStatus: ganttTask.workflowStatus,
+                              startDate: ganttTask.startDate,
+                              endDate: ganttTask.endDate,
+                              duration: ganttTask.duration,
+                              durationUnit: 'hour',
+                              durationIsElapsed: true,
+                              percentDone: ganttTask.progressPercent,
+                          }
+                        : task
+                )
+                return moveTaskToSourceIndex(
+                    updated,
+                    String(ganttTask.id),
+                    change.detail.index
                 )
             }
-            return current.some(({ id }) => id === card.id)
-                ? current.map((task) => (task.id === card.id ? card : task))
-                : [...current, card]
-        }
 
-        if (change.type === 'gantt-task') {
-            const ganttTask = change.detail.task
-            if (!ganttTask) {
-                return current.filter(
-                    ({ id }) => id !== String(change.detail.taskId)
+            if (change.type === 'gantt-assignment') {
+                const owners = change.detail.assignments.map(
+                    ({ resourceId }) => String(resourceId)
+                )
+                const owner = owners[0] ?? ''
+                return current.map((task): PlanningTask =>
+                    task.id === String(change.detail.taskId)
+                        ? {
+                              ...task,
+                              owner,
+                              ownerAvatar: getOwnerAvatar(owner),
+                              ownerAvatarIndex: getOwnerAvatarIndex(owner),
+                              owners,
+                          }
+                        : task
                 )
             }
-            return current.map((task) =>
-                task.id === String(ganttTask.id)
-                    ? {
-                          ...task,
-                          name: ganttTask.name,
-                          color: ganttTask.color,
-                          parentId: ganttTask.parentId,
-                          type: ganttTask.type,
-                          workflowStatus: ganttTask.workflowStatus,
-                          startDate: ganttTask.startDate,
-                          endDate: ganttTask.endDate,
-                          duration: ganttTask.duration,
-                          durationUnit: 'hour',
-                          durationIsElapsed: true,
-                          percentDone: ganttTask.progressPercent,
-                      }
-                    : task
-            )
-        }
 
-        if (change.type === 'gantt-assignment') {
-            const owners = change.detail.assignments.map(({ resourceId }) =>
-                String(resourceId)
-            )
-            const owner = owners[0] ?? ''
-            return current.map((task) =>
-                task.id === String(change.detail.taskId)
-                    ? {
-                          ...task,
-                          owner,
-                          ownerAvatar: getOwnerAvatar(owner),
-                          ownerAvatarIndex: getOwnerAvatarIndex(owner),
-                          owners,
-                      }
-                    : task
-            )
-        }
-
-        if (change.type === 'event-scheduler-event') {
-            const event = change.detail.event
-            if (!event) {
-                return current.filter(
-                    ({ id }) => id !== String(change.detail.eventId)
+            if (change.type === 'event-scheduler-event') {
+                const event = change.detail.event
+                if (!event) {
+                    return current.filter(
+                        ({ id }) => id !== String(change.detail.eventId)
+                    )
+                }
+                const owner =
+                    event.resourceId === undefined
+                        ? ''
+                        : String(event.resourceId)
+                return current.map((task): PlanningTask =>
+                    task.id === String(event.id)
+                        ? {
+                              ...task,
+                              name: event.title ?? task.name,
+                              owner,
+                              ownerAvatar: getOwnerAvatar(owner),
+                              ownerAvatarIndex: getOwnerAvatarIndex(owner),
+                              owners: owner ? [owner] : [],
+                              startDate:
+                                  event.startDateTime as PlanningTask['startDate'],
+                              endDate:
+                                  event.endDateTime as PlanningTask['endDate'],
+                              duration:
+                                  (Date.parse(event.endDateTime) -
+                                      Date.parse(event.startDateTime)) /
+                                  3_600_000,
+                              workflowStatus: (event.status ??
+                                  task.workflowStatus) as PlanningTask['workflowStatus'],
+                              color: event.color,
+                          }
+                        : task
                 )
             }
-            const owner =
-                event.resourceId === undefined ? '' : String(event.resourceId)
-            return current.map((task) =>
-                task.id === String(event.id)
-                    ? {
-                          ...task,
-                          name: event.title ?? task.name,
-                          owner,
-                          ownerAvatar: getOwnerAvatar(owner),
-                          ownerAvatarIndex: getOwnerAvatarIndex(owner),
-                          owners: owner ? [owner] : [],
-                          startDate: event.startDateTime,
-                          endDate: event.endDateTime,
-                          duration:
-                              (Date.parse(event.endDateTime) -
-                                  Date.parse(event.startDateTime)) /
-                              3_600_000,
-                          workflowStatus:
-                              event.status ?? task.workflowStatus,
-                          color: event.color,
-                      }
-                    : task
-            )
-        }
 
-        return current
-    }, tasks)
+            return current
+        },
+        tasks
+    )
+}
+
+/**
+ * Gantt provides a canonical source position after hierarchy row drops. Keep
+ * that order in the controlled source so the parent precedes its new child.
+ */
+function moveTaskToSourceIndex(
+    tasks: PlanningTask[],
+    taskId: string,
+    index: number | undefined
+): PlanningTask[] {
+    if (
+        index === undefined ||
+        !Number.isInteger(index) ||
+        index < 0 ||
+        index >= tasks.length
+    ) {
+        return tasks
+    }
+    const currentIndex = tasks.findIndex(({ id }) => id === taskId)
+    if (currentIndex < 0 || currentIndex === index) return tasks
+    const reordered = [...tasks]
+    const [task] = reordered.splice(currentIndex, 1)
+    reordered.splice(index, 0, task)
+    return reordered
 }
