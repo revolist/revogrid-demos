@@ -8,6 +8,7 @@ import {
     ColumnHidePlugin,
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
+    EventManagerPlugin,
     RowSelectPlugin,
     RowOrderPlugin,
 } from '@revolist/revogrid-pro'
@@ -90,6 +91,7 @@ export default function PlanningViews() {
             RowOrderPlugin,
             RowSelectPlugin,
             PlanningWorkspacePlugin,
+            EventManagerPlugin,
             AdvanceFilterPlugin,
             DataGridFormattingPlugin,
             ColumnStretchPlugin,

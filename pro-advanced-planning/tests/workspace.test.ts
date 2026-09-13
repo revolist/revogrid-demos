@@ -21,6 +21,7 @@ import {
     PlanningWorkspacePlugin,
 } from '../src/data/workspace.plugin'
 import { planningFields } from '../src/data/fields'
+import { createKanbanConfig } from '../src/data/kanban.config'
 import {
     filterGanttDependencies,
     schedulerResources,
@@ -899,6 +900,10 @@ test('uses local portrait assets for every shared owner', () => {
         tasks.every((task) => task.ownerAvatar.endsWith('.webp')),
         true
     )
+})
+
+test('uses every canonical planning person in the Kanban assignee picker', () => {
+    assert.deepEqual(createKanbanConfig().resources, planningPeople)
 })
 
 test('combines search, project, status and priority filters', () => {

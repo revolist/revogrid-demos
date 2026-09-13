@@ -12,6 +12,7 @@ import {
     ColumnHidePlugin,
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
+    EventManagerPlugin,
     RowSelectPlugin,
     RowOrderPlugin,
 } from '@revolist/revogrid-pro'
@@ -296,6 +297,7 @@ export class PlanningViewsGridComponent {
         RowOrderPlugin,
         RowSelectPlugin,
         PlanningWorkspacePlugin,
+        EventManagerPlugin,
         AdvanceFilterPlugin,
         DataGridFormattingPlugin,
         ColumnStretchPlugin,

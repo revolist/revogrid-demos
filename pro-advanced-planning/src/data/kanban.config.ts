@@ -3,7 +3,11 @@ import type { KanbanConfig } from '@revolist/kanban'
 import { avatarTemplate } from '@revolist/revogrid-pro'
 import type { PlanningTask } from './types'
 import { planningFields } from './fields'
-import { getOwnerAvatar, getOwnerAvatarIndex } from './fixtures'
+import {
+    getOwnerAvatar,
+    getOwnerAvatarIndex,
+    planningPeople,
+} from './fixtures'
 
 export function createKanbanConfig(): KanbanConfig<PlanningTask> {
     return {
@@ -13,6 +17,7 @@ export function createKanbanConfig(): KanbanConfig<PlanningTask> {
             { prop: 'blocked', name: 'Blocked', size: 228, minSize: 216 },
             { prop: 'done', name: 'Done', size: 228, minSize: 216 },
         ],
+        resources: planningPeople,
         fields: planningFields,
         orderField: 'order',
         swimlaneColumn: false,

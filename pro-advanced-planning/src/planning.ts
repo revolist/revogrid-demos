@@ -7,6 +7,7 @@ import {
     ColumnHidePlugin,
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
+    EventManagerPlugin,
     RowSelectPlugin,
     RowOrderPlugin,
 } from '@revolist/revogrid-pro'
@@ -137,6 +138,7 @@ export function load(parentSelector: string): (() => void) | undefined {
                 RowOrderPlugin,
                 RowSelectPlugin,
                 PlanningWorkspacePlugin,
+                EventManagerPlugin,
                 AdvanceFilterPlugin,
                 DataGridFormattingPlugin,
                 ColumnStretchPlugin,

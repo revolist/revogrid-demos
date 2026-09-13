@@ -12,9 +12,10 @@ properties represent identity, title, status, dates, color, progress, and
 owner. The plugins translate those fields internally, so the demo does not
 create Scheduler event objects or maintain view-specific aliases.
 
-Accepted mapped edits arrive through `gridedit` with the authored property
-names. A small generic handler applies those row patches to the demo store by
-stable task ID, refreshing only derived avatar and elapsed-duration values.
+Accepted Grid and mapped planning edits all arrive through EventManager's
+`gridedit` event with the authored property names. A small generic handler
+applies those row patches to the demo store by stable task ID, refreshing only
+derived avatar and elapsed-duration values.
 Fresh snapshots are published on view switches, filtering, and reset without
 echoing a new source into the view that originated an edit.
 
