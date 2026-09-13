@@ -4,6 +4,7 @@ import {
     type TimelineZoomLevel,
 } from '@revolist/gantt'
 import { planningCalendarId } from './source'
+import { planningFields } from './fields'
 
 const dayWeekMediumZoomLevel: TimelineZoomLevel = {
     id: 'day-week-medium',
@@ -35,6 +36,7 @@ export const ganttConfig: GanttPluginConfig = {
     primaryCalendarId: planningCalendarId,
     updatedAt: '2026-09-07T00:00:00Z',
     statusDate: '2026-09-07',
+    fields: planningFields,
     zoom: {
         levels: planningTimelineZoomLevels,
         defaultLevelId: dayWeekMediumZoomLevel.id,
@@ -43,7 +45,7 @@ export const ganttConfig: GanttPluginConfig = {
     weekStartsOn: 1,
     timelineRange: { startDate: '2026-09-07', endDate: '2026-10-09' },
     allowTaskCreate: false,
-    contextMenu: {},
+    contextMenu: { row: false },
     scheduling: {
         taskModeDefault: 'auto',
     },

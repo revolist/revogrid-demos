@@ -3,10 +3,7 @@ import type {
     DependencyEntity,
     ResourceEntity,
 } from '@revolist/gantt'
-import type {
-    EventSchedulerEventEntity,
-    EventSchedulerResourceEntity,
-} from '@revolist/scheduler'
+import type { EventSchedulerResourceEntity } from '@revolist/scheduler'
 import { planningPeople } from './fixtures'
 import type { PlanningTask } from './types'
 
@@ -55,56 +52,17 @@ export function filterGanttDependencies(
 }
 
 export function toGanttAssignments(tasks: PlanningTask[]): AssignmentEntity[] {
-    return tasks.flatMap((task) => {
-        const resourceIds = [
-            ...new Set(
-                (task.owners.length ? task.owners : [task.owner]).filter(
-                    Boolean
-                )
-            ),
-        ]
-
-        return resourceIds.map((resourceId) => ({
-            id: `assignment-${task.id}-${resourceId}`,
-            taskId: task.id,
-            resourceId,
-            allocationUnits: 1,
-            responsibility: 'Owner',
-        }))
-    })
-}
-
-const HOUR_IN_MS = 3_600_000
-
-/** Materialize the finish required by Scheduler from start + duration. */
-export function getPlanningEndDate(
-    task: Pick<PlanningTask, 'duration' | 'startDate'>
-): string {
-    return new Date(
-        Date.parse(task.startDate) + task.duration * HOUR_IN_MS
-    ).toISOString()
-}
-
-export function toSchedulerEvents(
-    tasks: PlanningTask[]
-): EventSchedulerEventEntity[] {
-    return tasks.map((task) => {
-        const start = Date.parse(task.startDate)
-        const endDate = getPlanningEndDate(task)
-        const end = Date.parse(endDate)
-
-        return {
-            id: task.id,
-            resourceId: task.owner || undefined,
-            title: task.name,
-            startDateTime: task.startDate,
-            // Gantt milestones have no duration. Give them a visible scheduler slot.
-            endDateTime:
-                end > start
-                    ? endDate
-                    : new Date(start + 3_600_000).toISOString(),
-            status: task.workflowStatus,
-            color: task.color,
-        }
-    })
+    return tasks.flatMap((task) =>
+        task.owner
+            ? [
+                  {
+                      id: `assignment-${task.id}-${task.owner}`,
+                      taskId: task.id,
+                      resourceId: task.owner,
+                      allocationUnits: 1,
+                      responsibility: 'Owner',
+                  },
+              ]
+            : []
+    )
 }

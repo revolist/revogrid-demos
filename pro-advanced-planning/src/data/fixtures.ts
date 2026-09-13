@@ -224,9 +224,9 @@ export function createTasks(): PlanningTask[] {
         const milestone = [9, 39, 69, 99].includes(index)
         const durationDays = milestone ? 0 : 2 + (index % 5)
         const end = milestone
-            ? new Date(start)
+            ? new Date(start.getTime() + 3_600_000)
             : addWorkingDays(start, durationDays)
-        end.setUTCHours(milestone ? startHour : endHour, 0, 0, 0)
+        if (!milestone) end.setUTCHours(endHour, 0, 0, 0)
         // Spread activity across the fixture weeks, weekdays, and working hours so
         // the Time Matrix has meaningful, deterministic groups to filter.
         const activityAt = new Date(
@@ -257,7 +257,6 @@ export function createTasks(): PlanningTask[] {
             owner,
             ownerAvatar: getOwnerAvatar(owner),
             ownerAvatarIndex: getOwnerAvatarIndex(owner),
-            owners: [owner],
             startDate,
             endDate,
             activityAt,

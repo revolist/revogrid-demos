@@ -1,11 +1,8 @@
 import type { PlanningTask } from './types'
 import { deletePlanningTasks, reorderVisibleTasks } from './workspace'
 import {
-    updateFromGrid,
-    updateFromGridSource,
     updateFromPlanningEdit,
     type PlanningEditDetail,
-    type PlanningGridEditDetail,
 } from './sync'
 
 /**
@@ -33,17 +30,6 @@ export class PlanningWorkspaceStore {
 
     delete(taskIds: readonly string[]): void {
         this.tasks = deletePlanningTasks(this.tasks, taskIds)
-    }
-
-    commitGridEdit(detail: PlanningGridEditDetail): void {
-        this.tasks = updateFromGrid(this.tasks, detail)
-    }
-
-    commitGridEditFromVisibleSource(
-        detail: PlanningGridEditDetail,
-        visibleTasks: readonly PlanningTask[]
-    ): void {
-        this.tasks = updateFromGridSource(this.tasks, detail, visibleTasks)
     }
 
     commitVisibleOrder(visibleTasks: readonly PlanningTask[]): void {

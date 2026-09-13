@@ -4,20 +4,28 @@ An integrated Data Grid, Kanban board, Gantt, Scheduler, and Calendar demo
 backed by one canonical task store. Switch between each planning surface to
 see committed edits carried into the next view.
 
-## Edit synchronization
+## Shared source and edit synchronization
 
-Gantt, Kanban, and Scheduler commit their own interactions before emitting a
-`gridedit` event with `sourceMutation: 'producer'`. The demo applies the
-event's `domainChanges` to its canonical store, but does not assign a new
-source back to the component that originated the edit. This avoids a redundant
-full projection and preserves plugin-local history.
+Every planning view receives the same application-owned task records. One
+shared `ViewFieldMap` tells Gantt, Kanban, Scheduler, and Calendar which task
+properties represent identity, title, status, dates, color, progress, and
+owner. The plugins translate those fields internally, so the demo does not
+create Scheduler event objects or maintain view-specific aliases.
 
-The demo publishes a fresh task snapshot only when a consumer actually needs
-one: initial mount, view switch, filtering, reset, or explicit deletion. Grid
-cell edits follow the same rule and resolve row-index-only editor events by
-stable task ID. A real application can persist the same `domainChanges` as a
-delta and treat the server response as an acknowledgement; only normalized or
-conflicting values need to be applied back through incremental plugin APIs.
+Accepted mapped edits arrive through `gridedit` with the authored property
+names. A small generic handler applies those row patches to the demo store by
+stable task ID, refreshing only derived avatar and elapsed-duration values.
+Fresh snapshots are published on view switches, filtering, and reset without
+echoing a new source into the view that originated an edit.
+
+The demo's small `PlanningWorkspacePlugin` exposes visible rows and row
+selection through grid providers. Framework components therefore do not retain
+grid-element refs or move plugin-rendered filter badges through the DOM; the
+filter plugin keeps its badge UI in its native header slot.
+
+This compact showcase intentionally keeps structural CRUD, Gantt hierarchy
+reordering, and multiple Gantt assignments outside its cross-view contract.
+Gantt assignments are derived from the scalar `owner` field.
 
 ## Run this example
 
@@ -30,10 +38,10 @@ The repository includes `.npmrc` for the public `@revolist` trial registry, so
 no token or npm login is required. This example installs these trial packages
 under the production import names:
 
-- `@revolist/revogrid-pro` → `@revolist/rv-pro-trial@2.8.2`
-- `@revolist/kanban` → `@revolist/kanban-trial@2.8.2`
-- `@revolist/gantt` → `@revolist/gantt-trial@2.8.2`
-- `@revolist/scheduler` → `@revolist/scheduler-trial@2.8.2`
+- `@revolist/revogrid-pro` → `@revolist/rv-pro-trial@2.8.9`
+- `@revolist/kanban` → `@revolist/kanban-trial@2.8.9`
+- `@revolist/gantt` → `@revolist/gantt-trial@2.8.9`
+- `@revolist/scheduler` → `@revolist/scheduler-trial@2.8.9`
 
 ```bash
 git clone https://github.com/revolist/revogrid-demos.git
@@ -66,7 +74,6 @@ existing application instead, follow the [trial installation guide](https://pro.
 
 _Click the animated preview to open the full-quality MP4._
 
-Kanban maps the existing `workflowStatus`, `order`, `id`, and `name` task fields
-directly. Gantt Charts and Event Scheduler use their built-in context menus. The plain data
-grid keeps standard editing, range selection, resizing, filtering, sorting,
-and column-moving behavior.
+Kanban, Gantt Charts, Event Scheduler, and Calendar all map the existing task
+fields directly. The plain data grid keeps standard editing, range selection,
+resizing, filtering, sorting, and column-moving behavior.

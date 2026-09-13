@@ -57,20 +57,15 @@
                     placeholder="Quick search tasks…"
                 />
             </label>
-            <div
-                ref="filterBadgesRef"
-                class="planning-demo__filter-badge-host"
-            />
         </div>
         <div v-show="activeView === 'grid'" class="planning-demo__grid-stage">
             <RevoGrid
                 :key="gridKey"
-                ref="gridRef"
                 class="planning-demo__grid"
                 hide-attribution
                 :theme="theme"
                 :plugins="gridPlugins"
-                :source="tasks"
+                :source="visibleTasks"
                 :columns="gridColumns"
                 :column-types="gridColumnTypes"
                 :data-grid-context-menu.prop="planningDataGridContextMenu"
@@ -86,7 +81,7 @@
                 :row-select.prop="rowSelect"
                 :quick-filter.prop="quickFilter"
                 :filter-badges.prop="filterBadgeOptions"
-                @afteredit="handleGridEdit"
+                @gridedit="handlePlanningEdit"
                 @roworderapplied="handleGridRowOrder"
                 @rowselected="handleRowSelected"
                 @afterfilterapply="syncVisibleTasks"
@@ -115,6 +110,7 @@
             :source="visibleTasks"
             :columns="ganttColumns"
             :resize-row="planningRowResize"
+            :row-order.prop="false"
             :gantt.prop="ganttConfig"
             :gantt-dependencies.prop="visibleGanttDependencies"
             :gantt-resources.prop="ganttResources"
@@ -128,7 +124,7 @@
             hide-attribution
             :theme="theme"
             :plugins="schedulerPlugins"
-            :source="schedulerEvents"
+            :source="visibleTasks"
             :columns="emptySource"
             resize
             :can-move-columns="false"
@@ -140,7 +136,7 @@
         />
         <footer class="planning-demo__footer">
             <span
-                >{{ visibleTasks.length }} of {{ tasks.length }} tasks<template
+                >{{ visibleTaskCount }} of {{ tasks.length }} tasks<template
                     v-if="selectedCount"
                 >
                     · {{ selectedCount }} selected</template
@@ -161,7 +157,6 @@ const {
     calendarConfig,
     emptySource,
     filterBadgeOptions,
-    filterBadgesRef,
     ganttAssignments,
     ganttColumns,
     ganttConfig,
@@ -172,13 +167,10 @@ const {
     gridFilterConfig,
     gridKey,
     gridPlugins,
-    gridRef,
-    handleGridEdit,
     handleGridRowOrder,
     handlePlanningEdit,
     handleRowSelected,
     kanbanConfig,
-    kanbanRef,
     kanbanPlugins,
     planningDataGridContextMenu,
     planningDataGridFormatting,
@@ -190,7 +182,6 @@ const {
     rootRef,
     rowSelect,
     schedulerConfig,
-    schedulerEvents,
     schedulerPlugins,
     schedulerResources,
     selectedCount,
@@ -200,6 +191,7 @@ const {
     theme,
     toggleFullscreen,
     visibleTasks,
+    visibleTaskCount,
     visibleGanttDependencies,
     views,
 } = usePlanningWorkspace()

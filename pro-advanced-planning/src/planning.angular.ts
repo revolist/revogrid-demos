@@ -19,7 +19,6 @@ import { currentTheme } from '../../composables/useRandomData'
 import {
     activePlanningFilters,
     calendarConfig,
-    clearPlanningRowSelection,
     createPlanningDataGridContextMenu,
     createTasks,
     filterGanttDependencies,
@@ -37,14 +36,13 @@ import {
     planningDataGridFormatting,
     planningRowOrder,
     planningRowResize,
+    getPlanningVisibleSource,
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
-    toSchedulerEvents,
     PlanningWorkspaceStore,
+    PlanningWorkspacePlugin,
     type PlanningEditDetail,
-    type PlanningGridEditDetail,
-    type PlanningTask,
     type PlanningFilters,
     type PlanningView,
 } from './data'
@@ -197,7 +195,7 @@ import {
                         [resizeRow]="planningRowResize"
                         [rowOrder]="planningRowOrder"
                         [rowSelect]="rowSelect"
-                        (afteredit)="handleGridEdit($event)"
+                        (gridedit)="handlePlanningEdit($event)"
                         (roworderapplied)="handleGridRowOrder($event)"
                         (rowselected)="handleRowSelected($event)"
                     ></revo-grid>
@@ -211,6 +209,7 @@ import {
                         [source]="visibleTasks"
                         [columns]="ganttColumns"
                         [resizeRow]="planningRowResize"
+                        [rowOrder]="false"
                         [gantt]="ganttConfig"
                         [ganttDependencies]="visibleGanttDependencies"
                         [ganttResources]="ganttResources"
@@ -236,7 +235,7 @@ import {
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="schedulerPlugins"
-                        [source]="schedulerEvents"
+                        [source]="visibleTasks"
                         [columns]="empty"
                         [resize]="true"
                         [canMoveColumns]="false"
@@ -251,7 +250,7 @@ import {
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="schedulerPlugins"
-                        [source]="schedulerEvents"
+                        [source]="visibleTasks"
                         [columns]="empty"
                         [resize]="true"
                         [canMoveColumns]="false"
@@ -276,7 +275,6 @@ export class PlanningViewsGridComponent {
     tasks = this.planningStore.createSnapshot()
     filters: PlanningFilters = defaultPlanningFilters()
     selectedCount = 0
-    private grid?: HTMLRevoGridElement
     readonly planningProjects = planningProjects
     readonly gridColumns = gridColumns
     readonly gridColumnTypes = gridColumnTypes
@@ -297,6 +295,7 @@ export class PlanningViewsGridComponent {
     readonly gridPlugins = [
         RowOrderPlugin,
         RowSelectPlugin,
+        PlanningWorkspacePlugin,
         AdvanceFilterPlugin,
         DataGridFormattingPlugin,
         ColumnStretchPlugin,
@@ -314,7 +313,6 @@ export class PlanningViewsGridComponent {
         ganttDependencies,
         this.visibleTasks
     )
-    schedulerEvents = toSchedulerEvents(this.visibleTasks)
 
     refreshViewSnapshot() {
         this.tasks = this.planningStore.createSnapshot()
@@ -324,7 +322,6 @@ export class PlanningViewsGridComponent {
             ganttDependencies,
             this.visibleTasks
         )
-        this.schedulerEvents = toSchedulerEvents(this.visibleTasks)
     }
     setQuery(event: Event) {
         this.filters = {
@@ -376,30 +373,16 @@ export class PlanningViewsGridComponent {
         this.planningStore.delete(taskIds)
         this.refreshViewSnapshot()
         this.selectedCount = 0
-        void clearPlanningRowSelection(this.grid)
-    }
-
-    async handleGridEdit(event: CustomEvent) {
-        const detail = event.detail as PlanningGridEditDetail
-        const hasTaskId = detail.model?.id !== undefined
-        if (hasTaskId) this.planningStore.commitGridEdit(detail)
-        const grid = event.currentTarget as HTMLRevoGridElement
-        const visible = (await grid.getVisibleSource()) as PlanningTask[]
-        if (!hasTaskId) {
-            this.planningStore.commitGridEditFromVisibleSource(detail, visible)
-        }
     }
 
     async handleGridRowOrder(event: Event) {
-        const grid = event.currentTarget as HTMLRevoGridElement
-        const visible = (await grid.getVisibleSource()) as PlanningTask[]
+        const visible = await getPlanningVisibleSource(event)
         this.planningStore.commitVisibleOrder(visible)
     }
 
     handleRowSelected(
         event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>
     ) {
-        this.grid = event.currentTarget as HTMLRevoGridElement
         this.selectedCount = event.detail.count
     }
 

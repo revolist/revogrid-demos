@@ -276,11 +276,6 @@
     flex-wrap: wrap;
     gap: 4px;
 }
-.planning-demo__filter-badge-host {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-}
 .planning-demo__filter-badges[role='status'] {
     display: none;
 }

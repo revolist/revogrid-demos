@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { RevoGrid } from '@revolist/react-datagrid'
 import { GanttPlugin } from '@revolist/gantt'
 import { KanbanPlugin } from '@revolist/kanban'
@@ -18,7 +18,6 @@ import {
 import {
     activePlanningFilters,
     calendarConfig,
-    clearPlanningRowSelection,
     createPlanningDataGridContextMenu,
     createTasks,
     filterGanttDependencies,
@@ -36,16 +35,15 @@ import {
     planningDataGridFormatting,
     planningRowOrder,
     planningRowResize,
+    getPlanningVisibleSource,
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
-    toSchedulerEvents,
     PlanningWorkspaceStore,
+    PlanningWorkspacePlugin,
     views,
     type PlanningEditDetail,
-    type PlanningGridEditDetail,
     type PlanningView,
-    type PlanningTask,
     type PlanningFilters,
 } from './data'
 import './planning.scss'
@@ -82,7 +80,6 @@ export default function PlanningViews() {
         defaultPlanningFilters
     )
     const [selectedCount, setSelectedCount] = useState(0)
-    const gridRef = useRef<HTMLRevoGridElement>(null)
     const [isDark, setIsDark] = useState(() => currentTheme().isDark())
     const ganttPlugins = useMemo(() => [GanttPlugin], [])
     const kanbanPlugins = useMemo(() => [KanbanPlugin], [])
@@ -92,6 +89,7 @@ export default function PlanningViews() {
         () => [
             RowOrderPlugin,
             RowSelectPlugin,
+            PlanningWorkspacePlugin,
             AdvanceFilterPlugin,
             DataGridFormattingPlugin,
             ColumnStretchPlugin,
@@ -107,7 +105,6 @@ export default function PlanningViews() {
                 planningStore.delete(taskIds)
                 setTasks(planningStore.createSnapshot())
                 setSelectedCount(0)
-                void clearPlanningRowSelection(gridRef.current)
             }),
         [planningStore]
     )
@@ -123,11 +120,6 @@ export default function PlanningViews() {
         () => filterGanttDependencies(ganttDependencies, visibleTasks),
         [visibleTasks]
     )
-    const schedulerEvents = useMemo(
-        () => toSchedulerEvents(visibleTasks),
-        [visibleTasks]
-    )
-
     useEffect(() => observeCurrentTheme(setIsDark), [])
     const handlePlanningEdit = (
         event: CustomEvent<PlanningEditDetail>
@@ -331,7 +323,6 @@ export default function PlanningViews() {
             {!!visibleTasks.length && activeView === 'grid' && (
                 <PlanningGrid
                     key="grid"
-                    ref={gridRef}
                     className="planning-demo__grid"
                     theme={isDark ? 'darkCompact' : 'compact'}
                     hideAttribution
@@ -354,29 +345,10 @@ export default function PlanningViews() {
                     onRowselected={(event: CustomEvent<{ count: number }>) =>
                         setSelectedCount(event.detail.count)
                     }
-                    onAfteredit={(event) => {
-                        const detail = event.detail as PlanningGridEditDetail
-                        const hasTaskId = detail.model?.id !== undefined
-                        if (hasTaskId) planningStore.commitGridEdit(detail)
-                        const grid =
-                            event.currentTarget as unknown as HTMLRevoGridElement
-                        void grid
-                            .getVisibleSource()
-                            .then((visible: PlanningTask[]) => {
-                                if (!hasTaskId) {
-                                    planningStore.commitGridEditFromVisibleSource(
-                                        detail,
-                                        visible
-                                    )
-                                }
-                            })
-                    }}
+                    onGridedit={handlePlanningEdit}
                     onRoworderapplied={(event) => {
-                        const grid =
-                            event.currentTarget as unknown as HTMLRevoGridElement
-                        void grid
-                            .getVisibleSource()
-                            .then((visible: PlanningTask[]) =>
+                        void getPlanningVisibleSource(event)
+                            .then((visible) =>
                                 planningStore.commitVisibleOrder(visible)
                             )
                     }}
@@ -392,6 +364,7 @@ export default function PlanningViews() {
                     source={visibleTasks}
                     columns={ganttColumns}
                     resizeRow={planningRowResize}
+                    rowOrder={false}
                     gantt={ganttConfig}
                     ganttDependencies={visibleGanttDependencies}
                     ganttResources={ganttResources}
@@ -420,7 +393,7 @@ export default function PlanningViews() {
                         theme={isDark ? 'darkCompact' : 'compact'}
                         hideAttribution
                         plugins={schedulerPlugins}
-                        source={schedulerEvents}
+                        source={visibleTasks}
                         columns={emptySource}
                         resize
                         canMoveColumns={false}

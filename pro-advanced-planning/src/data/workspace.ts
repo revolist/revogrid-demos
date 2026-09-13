@@ -1,5 +1,4 @@
 import type { PlanningFilters, PlanningProjectId, PlanningTask } from './types'
-import { getOwnerAvatar, getOwnerAvatarIndex } from './fixtures'
 
 export const planningProjects: ReadonlyArray<{
     id: PlanningProjectId
@@ -69,42 +68,4 @@ export function deletePlanningTasks(
     return deleted.size
         ? tasks.filter(({ id }) => !deleted.has(id))
         : tasks
-}
-
-function readGridEditValue(value: unknown, prop: string): string {
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-        const option = value as Record<string, unknown>
-        const optionValue = option.value ?? option[prop] ?? option.label
-        if (optionValue !== undefined) return String(optionValue)
-    }
-    return String(value ?? '')
-}
-
-export function applyPlanningGridEdit(
-    tasks: PlanningTask[],
-    detail: { model?: { id?: unknown }; prop?: unknown; val?: unknown }
-): PlanningTask[] {
-    const prop = String(detail.prop ?? '')
-    if (!['name', 'owner', 'workflowStatus', 'percentDone'].includes(prop))
-        return tasks
-    const taskId = detail.model?.id
-    if (taskId === undefined || taskId === null) return tasks
-    return tasks.map((task) => {
-        if (task.id !== String(taskId)) return task
-        const value =
-            prop === 'percentDone'
-                ? Math.max(0, Math.min(100, Number(detail.val ?? 0)))
-                : readGridEditValue(detail.val, prop)
-        return {
-            ...task,
-            [prop]: value,
-            ...(prop === 'owner'
-                ? {
-                      ownerAvatar: getOwnerAvatar(String(value)),
-                      ownerAvatarIndex: getOwnerAvatarIndex(String(value)),
-                      owners: [String(value)],
-                  }
-                : {}),
-        }
-    })
 }

@@ -14,10 +14,14 @@ export {
     planningGridFormats,
 } from './formatting'
 export { planningStructuredFilterTypes } from './planning.structured'
+export { planningFields } from './fields'
 export { ganttConfig } from './gantt.config'
 export { createKanbanConfig, kanbanConfig } from './kanban.config'
 export { calendarConfig, schedulerConfig } from './scheduler.config'
-export { clearPlanningRowSelection } from './selection'
+export {
+    getPlanningVisibleSource,
+    PlanningWorkspacePlugin,
+} from './workspace.plugin'
 export {
     createTasks,
     filterGanttDependencies,
@@ -25,21 +29,15 @@ export {
     ganttResources,
     schedulerResources,
     toGanttAssignments,
-    toSchedulerEvents,
 } from './source'
 export {
-    updateFromGrid,
-    updateFromGridSource,
     updateFromPlanningEdit,
-    type PlanningDomainChange,
     type PlanningEditDetail,
-    type PlanningGridEditDetail,
 } from './sync'
 export { PlanningWorkspaceStore } from './store'
 export { views, type PlanningTask, type PlanningView } from './types'
 export {
     activePlanningFilters,
-    applyPlanningGridEdit,
     deletePlanningTasks,
     defaultPlanningFilters,
     filterPlanningTasks,

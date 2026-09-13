@@ -8,6 +8,7 @@ import type {
 import { markDataGridFormatRenderer } from '@revolist/revogrid-pro'
 import { workflowBadges } from './planning.structured'
 import type { PlanningTask } from './types'
+import { PlanningWorkspacePlugin } from './workspace.plugin'
 
 const priorityPresentation = (value: unknown) => {
     const priority = Number(value)
@@ -186,7 +187,7 @@ export function createPlanningDataGridContextMenu(
     return {
         ...planningDataGridContextMenu,
         commandHandlers: {
-            'row.delete': ({ rows }) => {
+            'row.delete': ({ menu, rows }) => {
                 const taskIds = [
                     ...new Set(
                         rows.flatMap(({ model }) =>
@@ -196,7 +197,12 @@ export function createPlanningDataGridContextMenu(
                         )
                     ),
                 ]
-                if (taskIds.length) onDelete(taskIds)
+                if (taskIds.length) {
+                    menu.providers.plugins
+                        .getByClass(PlanningWorkspacePlugin)
+                        ?.clearRowSelection()
+                    onDelete(taskIds)
+                }
             },
         },
     } satisfies DataGridContextMenuConfig<PlanningTask>

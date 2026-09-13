@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import {
     AdvanceFilterPlugin,
     ColumnHidePlugin,
@@ -22,7 +22,6 @@ import {
     activePlanningFilterConfig,
     activePlanningFilters,
     calendarConfig,
-    clearPlanningRowSelection,
     createPlanningDataGridContextMenu,
     createTasks,
     filterGanttDependencies,
@@ -34,6 +33,7 @@ import {
     planningDataGridFormatting,
     planningRowOrder,
     planningRowResize,
+    getPlanningVisibleSource,
     gridColumnTypes,
     gridColumns,
     createKanbanConfig,
@@ -41,12 +41,10 @@ import {
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
-    toSchedulerEvents,
     PlanningWorkspaceStore,
+    PlanningWorkspacePlugin,
     views,
     type PlanningEditDetail,
-    type PlanningGridEditDetail,
-    type PlanningTask,
     type PlanningView,
 } from '../data'
 
@@ -54,6 +52,7 @@ const rowSelect: RowSelectConfig = { rowOrder: true }
 const gridPlugins = [
     RowOrderPlugin,
     RowSelectPlugin,
+    PlanningWorkspacePlugin,
     AdvanceFilterPlugin,
     FilterHeaderPlugin,
     DataGridFormattingPlugin,
@@ -66,9 +65,6 @@ const schedulerPlugins = [EventSchedulerPlugin]
 const emptySource: never[] = []
 export function usePlanningWorkspace() {
     const rootRef = ref<HTMLElement>()
-    const gridRef = ref<any>()
-    const filterBadgesRef = ref<HTMLElement>()
-    const filterBadges = ref<HTMLElement>()
     const activeView = ref<PlanningView>('grid')
     const planningStore = new PlanningWorkspaceStore(createTasks())
     const tasks = ref(planningStore.createSnapshot())
@@ -83,8 +79,6 @@ export function usePlanningWorkspace() {
         debounceMs: 150,
     }))
     const kanbanConfig = computed(() => createKanbanConfig())
-    const gridElement = () =>
-        (gridRef.value?.$el ?? gridRef.value) as HTMLRevoGridElement | undefined
     const refreshViewSnapshot = () => {
         tasks.value = planningStore.createSnapshot()
     }
@@ -92,7 +86,6 @@ export function usePlanningWorkspace() {
         planningStore.delete(taskIds)
         refreshViewSnapshot()
         selectedCount.value = 0
-        void clearPlanningRowSelection(gridElement())
     }
     const dataGridContextMenu =
         createPlanningDataGridContextMenu(deleteSelectedTasks)
@@ -105,6 +98,7 @@ export function usePlanningWorkspace() {
     const isDark = ref(currentTheme().isDark())
     const theme = computed(() => (isDark.value ? 'darkCompact' : 'compact'))
     const visibleTasks = computed(() => {
+        if (activeView.value === 'grid') return tasks.value
         const ids = visibleTaskIds.value
         if (!ids) return tasks.value
         const byId = new Map(tasks.value.map((task) => [task.id, task]))
@@ -113,14 +107,14 @@ export function usePlanningWorkspace() {
             return task ? [task] : []
         })
     })
+    const visibleTaskCount = computed(
+        () => visibleTaskIds.value?.length ?? tasks.value.length
+    )
     const ganttAssignments = computed(() =>
         toGanttAssignments(visibleTasks.value)
     )
     const visibleGanttDependencies = computed(() =>
         filterGanttDependencies(ganttDependencies, visibleTasks.value)
-    )
-    const schedulerEvents = computed(() =>
-        toSchedulerEvents(visibleTasks.value)
     )
     const disconnectTheme = observeCurrentTheme((value) => {
         isDark.value = value
@@ -130,31 +124,11 @@ export function usePlanningWorkspace() {
         disconnectTheme()
     })
 
-    onMounted(() => {
-        requestAnimationFrame(moveFilterBadges)
-    })
-
-    function moveFilterBadges() {
-        const host = filterBadgesRef.value
-        if (!host) return
-        const nextBadges = gridElement()?.querySelector<HTMLElement>(
-            '.planning-demo__filter-badges'
+    async function syncVisibleTasks(event: Event) {
+        if (activeView.value !== 'grid') return
+        visibleTaskIds.value = (await getPlanningVisibleSource(event)).map(
+            ({ id }) => id
         )
-        if (nextBadges) {
-            filterBadges.value?.remove()
-            filterBadges.value = nextBadges
-        }
-        const badges = filterBadges.value
-        if (badges && badges.parentElement !== host) host.append(badges)
-    }
-
-    async function syncVisibleTasks() {
-        const grid = gridElement()
-        if (!grid) return
-        visibleTaskIds.value = (await grid.getVisibleSource()).map(
-            (task: PlanningTask) => task.id
-        )
-        moveFilterBadges()
     }
 
     async function toggleFullscreen() {
@@ -189,22 +163,8 @@ export function usePlanningWorkspace() {
         activeView.value = view
     }
 
-    async function handleGridEdit(event: CustomEvent) {
-        const detail = event.detail as PlanningGridEditDetail
-        const hasTaskId = detail.model?.id !== undefined
-        if (hasTaskId) planningStore.commitGridEdit(detail)
-        const grid = gridElement()
-        if (!grid) return
-        const visible = (await grid.getVisibleSource()) as PlanningTask[]
-        if (!hasTaskId) {
-            planningStore.commitGridEditFromVisibleSource(detail, visible)
-        }
-        visibleTaskIds.value = visible.map((task) => task.id)
-    }
-
     async function handleGridRowOrder(event: Event) {
-        const grid = event.currentTarget as HTMLRevoGridElement
-        const visible = (await grid.getVisibleSource()) as PlanningTask[]
+        const visible = await getPlanningVisibleSource(event)
         planningStore.commitVisibleOrder(visible)
         visibleTaskIds.value = visible.map((task) => task.id)
     }
@@ -225,7 +185,6 @@ export function usePlanningWorkspace() {
         calendarConfig,
         emptySource,
         filterBadgeOptions,
-        filterBadgesRef,
         ganttAssignments,
         ganttColumns,
         ganttConfig,
@@ -239,8 +198,6 @@ export function usePlanningWorkspace() {
         gridFilterConfig,
         gridKey,
         gridPlugins,
-        gridRef,
-        handleGridEdit,
         handleGridRowOrder,
         handlePlanningEdit,
         handleRowSelected,
@@ -253,7 +210,6 @@ export function usePlanningWorkspace() {
         rootRef,
         rowSelect,
         schedulerConfig,
-        schedulerEvents,
         schedulerPlugins,
         schedulerResources,
         selectedCount,
@@ -263,6 +219,7 @@ export function usePlanningWorkspace() {
         theme,
         toggleFullscreen,
         visibleTasks,
+        visibleTaskCount,
         visibleGanttDependencies,
         views,
     }

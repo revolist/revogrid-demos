@@ -1,6 +1,8 @@
 import type { EventSchedulerConfig } from '@revolist/scheduler'
+import { planningFields } from './fields'
 
 export const schedulerConfig: EventSchedulerConfig = {
+    fields: planningFields,
     view: 'resourceTimeline',
     weekStartDate: '2026-09-07',
     dateRange: { start: '2026-09-07', end: '2026-09-30' },

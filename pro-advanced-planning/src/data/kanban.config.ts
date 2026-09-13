@@ -2,6 +2,8 @@ import { renderKanbanProgress } from '@revolist/kanban'
 import type { KanbanConfig } from '@revolist/kanban'
 import { avatarTemplate } from '@revolist/revogrid-pro'
 import type { PlanningTask } from './types'
+import { planningFields } from './fields'
+import { getOwnerAvatar, getOwnerAvatarIndex } from './fixtures'
 
 export function createKanbanConfig(): KanbanConfig<PlanningTask> {
     return {
@@ -11,17 +13,14 @@ export function createKanbanConfig(): KanbanConfig<PlanningTask> {
             { prop: 'blocked', name: 'Blocked', size: 228, minSize: 216 },
             { prop: 'done', name: 'Done', size: 228, minSize: 216 },
         ],
-        columnField: 'workflowStatus',
+        fields: planningFields,
         orderField: 'order',
         swimlaneColumn: false,
+        contextMenu: {
+            hidden: { create: true, delete: true },
+        },
         card: {
-            titleField: 'name',
-            startDateField: 'startDate',
-            endDateField: 'endDate',
             dateTimeZone: 'UTC',
-            progressField: 'percentDone',
-            colorField: 'color',
-            assigneeField: 'owner',
         },
         customization: {
             cardContent: (h, { card }) =>
@@ -48,10 +47,10 @@ export function createKanbanConfig(): KanbanConfig<PlanningTask> {
                                 avatarTemplate(h, {
                                     ariaLabel: card.owner,
                                     className: 'planning-card__avatar',
-                                    index: card.ownerAvatarIndex - 1,
+                                    index: getOwnerAvatarIndex(card.owner) - 1,
                                     label: card.owner,
                                     size: 28,
-                                    value: card.ownerAvatar,
+                                    value: getOwnerAvatar(card.owner),
                                 })
                             ),
                             h(

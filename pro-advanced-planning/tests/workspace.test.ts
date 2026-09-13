@@ -8,26 +8,28 @@ import {
 } from '../src/data/fixtures'
 import {
     activePlanningFilters,
-    applyPlanningGridEdit,
     defaultPlanningFilters,
     deletePlanningTasks,
     filterPlanningTasks,
     mergeVisibleTasks,
     reorderVisibleTasks,
 } from '../src/data/workspace'
-import { clearPlanningRowSelection } from '../src/data/selection'
-import {
-    updateFromGrid,
-    updateFromGridSource,
-    updateFromPlanningEdit,
-} from '../src/data/sync'
+import { updateFromPlanningEdit } from '../src/data/sync'
 import { PlanningWorkspaceStore } from '../src/data/store'
+import {
+    getPlanningVisibleSource,
+    PlanningWorkspacePlugin,
+} from '../src/data/workspace.plugin'
+import { planningFields } from '../src/data/fields'
 import {
     filterGanttDependencies,
     schedulerResources,
     toGanttAssignments,
-    toSchedulerEvents,
 } from '../src/data/source'
+const planningFieldsSource = readFileSync(
+    new URL('../src/data/fields.ts', import.meta.url),
+    'utf8'
+)
 const ganttConfigSource = readFileSync(
     new URL('../src/data/gantt.config.ts', import.meta.url),
     'utf8'
@@ -119,14 +121,29 @@ test('uses the Pro dropdown editor with canonical owner and status values', () =
     assert.match(vueSource, /:column-types="gridColumnTypes"/)
 })
 
-test('passes the Scheduler event projection through the grid source', () => {
-    for (const source of [vueSource, vanillaSource, reactSource, angularSource]) {
-        assert.doesNotMatch(source, /eventSchedulerEvents/)
+test('shares one field map and one direct task source across planning views', () => {
+    assert.deepEqual(planningFields, {
+        id: 'id',
+        title: 'name',
+        status: 'workflowStatus',
+        start: 'startDate',
+        end: 'endDate',
+        color: 'color',
+        progress: 'percentDone',
+        resourceId: 'owner',
+    })
+    assert.match(planningFieldsSource, /satisfies ViewFieldMap/)
+    for (const source of [ganttConfigSource, kanbanConfigSource, schedulerConfigSource]) {
+        assert.match(source, /fields:\s*planningFields/)
     }
-    assert.match(vueSource, /:source="schedulerEvents"/)
-    assert.match(vanillaSource, /\? toSchedulerEvents\(visibleTasks\)\s*:\s*visibleTasks/)
-    assert.match(reactSource, /source=\{schedulerEvents\}/)
-    assert.equal((angularSource.match(/\[source\]="schedulerEvents"/g) || []).length, 2)
+    assert.doesNotMatch(kanbanConfigSource, /columnField|titleField|startField|endField|progressField|colorField|assigneeField/)
+    for (const source of [vueSource, vanillaSource, reactSource, angularSource]) {
+        assert.doesNotMatch(source, /toSchedulerEvents|schedulerEvents/)
+    }
+    assert.equal((vueSource.match(/:source="visibleTasks"/g) || []).length, 4)
+    assert.equal((reactSource.match(/source=\{visibleTasks\}/g) || []).length, 4)
+    assert.equal((vanillaSource.match(/grid\.source = visibleTasks/g) || []).length, 1)
+    assert.equal((angularSource.match(/\[source\]="visibleTasks"/g) || []).length, 5)
 })
 
 test('pins selection and task identity with space for native checkboxes', () => {
@@ -142,7 +159,7 @@ test('pins selection and task identity with space for native checkboxes', () => 
 
 test('enables native row resizing for task rows in every planning framework', () => {
     assert.match(columnsSource, /planningRowResize[\s\S]*?fullRow:\s*true/)
-    assert.equal((vueSource.match(/:resize-row\.prop="planningRowResize"/g) || []).length, 2)
+    assert.equal((vueSource.match(/:resize-row="planningRowResize"/g) || []).length, 2)
     assert.equal((reactSource.match(/resizeRow=\{planningRowResize\}/g) || []).length, 2)
     assert.equal((vanillaSource.match(/grid\.resizeRow = planningRowResize/g) || []).length, 2)
     assert.equal((angularSource.match(/\[resizeRow\]="planningRowResize"/g) || []).length, 2)
@@ -298,19 +315,13 @@ test('aligns the Gantt timeline with the planning fixture window', () => {
     )
 })
 
-test('drives Gantt and Scheduler from one canonical task duration', () => {
+test('drives Gantt and Scheduler from the same authored task fields', () => {
     const task = createTasks().find(({ type }) => type === 'task')!
-    const schedulerEvent = toSchedulerEvents([task])[0]
 
     assert.equal(task.durationUnit, 'hour')
     assert.equal(task.durationIsElapsed, true)
-    assert.equal(schedulerEvent.startDateTime, task.startDate)
-    assert.equal(schedulerEvent.endDateTime, task.endDate)
     assert.doesNotMatch(planningSource, /toGanttTasks/)
-    assert.match(vueSource, /:source="visibleTasks"/)
-    assert.match(reactSource, /source=\{visibleTasks\}/)
-    assert.match(angularSource, /\[source\]="visibleTasks"/)
-    assert.match(vanillaSource, /calendar' \? \[\] : visibleTasks/)
+    assert.doesNotMatch(planningSource, /toSchedulerEvents|getPlanningEndDate/)
     for (const source of [vueSource, vanillaSource, reactSource, angularSource]) {
         assert.match(source, /gridedit/i)
         assert.doesNotMatch(source, /gantt-before-task-change|event\.preventDefault\(\)/)
@@ -331,149 +342,135 @@ test('builds Gantt assignments directly from the visible task source', () => {
     for (const source of [vueWorkspaceSource, reactSource, angularSource, vanillaSource]) {
         assert.doesNotMatch(source, /visibleIds/)
     }
+    assert.equal('owners' in visibleTasks[0], false)
 })
 
-test('accepts the committed Gantt task from EventManager', () => {
+test('hides unsupported structural planning actions', () => {
+    assert.match(ganttConfigSource, /contextMenu:\s*\{\s*row:\s*false\s*\}/)
+    assert.match(
+        columnsSource,
+        /createDefaultTaskTableColumn\('assignees'\)[\s\S]*?readonly:\s*true/
+    )
+    assert.match(
+        columnsSource,
+        /createDefaultTaskTableColumn\('name'\)[\s\S]*?rowDrag:\s*false/
+    )
+    assert.match(
+        kanbanConfigSource,
+        /contextMenu:\s*\{\s*hidden:\s*\{\s*create:\s*true,\s*delete:\s*true\s*\}/
+    )
+    assert.match(vueSource, /:row-order\.prop="false"/)
+    assert.match(reactSource, /rowOrder=\{false\}/)
+    assert.match(vanillaSource, /grid\.rowOrder = false/)
+    assert.match(angularSource, /\[rowOrder\]="false"/)
+})
+
+test('applies mapped planning patches by stable model IDs', () => {
+    const tasks = createTasks()
+    const task = tasks[1]
+    const startDate = '2026-09-20T09:00:00.000Z'
+    const endDate = '2026-09-20T13:00:00.000Z'
+    const updated = updateFromPlanningEdit(tasks, {
+        data: {
+            0: {
+                id: 'ignored-replacement-id',
+                name: 'Mapped task',
+                workflowStatus: 'blocked',
+                startDate,
+                endDate,
+                color: '#123456',
+                percentDone: 73,
+                owner: 'Leo',
+            },
+        },
+        models: { 0: task },
+    } as Parameters<typeof updateFromPlanningEdit>[1])
+    const edited = updated.find(({ id }) => id === task.id)!
+
+    assert.equal(edited.name, 'Mapped task')
+    assert.equal(edited.id, task.id)
+    assert.equal(updated.some(({ id }) => id === 'ignored-replacement-id'), false)
+    assert.equal(edited.workflowStatus, 'blocked')
+    assert.equal(edited.startDate, startDate)
+    assert.equal(edited.endDate, endDate)
+    assert.equal(edited.color, '#123456')
+    assert.equal(edited.percentDone, 73)
+    assert.equal(edited.owner, 'Leo')
+    assert.equal(edited.ownerAvatar, getOwnerAvatar('Leo'))
+    assert.equal(edited.ownerAvatarIndex, 3)
+    assert.equal(edited.duration, 4)
+    assert.equal(updated[0], tasks[0])
+})
+
+test('falls back to a patch ID and merges multiple authored patches', () => {
+    const tasks = createTasks()
+    const task = tasks[2]
+    const updated = updateFromPlanningEdit(tasks, {
+        data: {
+            0: { id: task.id, name: 'First title' },
+            1: { id: task.id, name: 'Final title', percentDone: 42 },
+        },
+    } as Parameters<typeof updateFromPlanningEdit>[1])
+
+    assert.equal(updated[2].name, 'Final title')
+    assert.equal(updated[2].percentDone, 42)
+})
+
+test('ignores malformed authored planning patches', () => {
+    const tasks = createTasks()
+    assert.equal(updateFromPlanningEdit(tasks, {}), tasks)
+    assert.equal(
+        updateFromPlanningEdit(tasks, {
+            data: { 0: null, 1: [], 2: { name: 'Missing ID' } },
+        } as Parameters<typeof updateFromPlanningEdit>[1]),
+        tasks
+    )
+})
+
+test('recalculates elapsed duration safely for mapped date patches', () => {
     const tasks = createTasks()
     const task = tasks.find(({ type }) => type === 'task')!
-    const start = Date.parse(task.startDate)
-    const movedStart = new Date(start + 24 * 3_600_000).toISOString()
-    const moved = updateFromPlanningEdit(tasks, {
-        domainChanges: [{
-            type: 'gantt-task',
-            detail: {
-                action: 'move',
-                taskId: task.id,
-                previousTask: null,
-                task: {
-                    ...task,
-                    progressPercent: task.percentDone,
-                    wbsCode: '1',
-                    parentId: null,
-                    calendarId: 'launch-day',
-                    isCritical: false,
-                    tags: [],
-                    startDate: movedStart,
-                    endDate: new Date(
-                        Date.parse(movedStart) + task.duration * 3_600_000
-                    ).toISOString(),
-                },
-            },
-        }],
-    } as Parameters<typeof updateFromPlanningEdit>[1]).find(
-        ({ id }) => id === task.id
-    )!
-
-    assert.equal(moved.startDate, movedStart)
-    assert.equal(moved.duration, task.duration)
-    assert.equal(
-        Date.parse(moved.endDate) - Date.parse(moved.startDate),
-        task.duration * 3_600_000
-    )
-    assert.equal('progressPercent' in moved, false)
-    assert.equal('wbsCode' in moved, false)
-})
-
-test('keeps the Gantt source ordered when a row is dropped into another task', () => {
-    const tasks = createTasks()
-    const droppedTask = tasks[0]
-    const parentTask = tasks[1]
+    const milestone = tasks.find(({ type }) => type === 'milestone')!
     const updated = updateFromPlanningEdit(tasks, {
-        domainChanges: [{
-            type: 'gantt-task',
-            detail: {
-                action: 'indent',
-                taskId: droppedTask.id,
-                previousTask: null,
-                index: 1,
-                task: {
-                    ...droppedTask,
-                    parentId: parentTask.id,
-                    progressPercent: droppedTask.percentDone,
-                    wbsCode: '1.1',
-                    calendarId: 'launch-day',
-                    isCritical: false,
-                    tags: [],
-                },
-            },
-        }],
+        data: {
+            0: { endDate: 'invalid' },
+            1: { endDate: '2026-09-30T18:00:00.000Z' },
+        },
+        models: { 0: task, 1: milestone },
     } as Parameters<typeof updateFromPlanningEdit>[1])
 
-    assert.equal(updated.length, tasks.length)
-    assert.equal(updated[0].id, parentTask.id)
-    assert.equal(updated[1].id, droppedTask.id)
-    assert.equal(updated[1].parentId, parentTask.id)
+    assert.equal(updated.find(({ id }) => id === task.id)?.duration, 0)
+    assert.equal(updated.find(({ id }) => id === milestone.id)?.duration, 0)
 })
 
-test('ignores a missing Gantt task unless the action explicitly deletes it', () => {
+test('keeps mapped date patches valid for every planning view', () => {
     const tasks = createTasks()
-    const taskId = tasks[0].id
-    const malformedMove = updateFromPlanningEdit(tasks, {
-        domainChanges: [{
-            type: 'gantt-task',
-            detail: {
-                action: 'move',
-                taskId,
-                previousTask: null,
-                task: null,
-            },
-        }],
+    const milestone = tasks.find(({ type }) => type === 'milestone')!
+    const updated = updateFromPlanningEdit(tasks, {
+        data: { 0: { endDate: milestone.startDate } },
+        models: { 0: milestone },
     } as Parameters<typeof updateFromPlanningEdit>[1])
+    const next = updated.find(({ id }) => id === milestone.id)!
 
-    assert.deepEqual(malformedMove, tasks)
-
-    const deleted = updateFromPlanningEdit(tasks, {
-        domainChanges: [{
-            type: 'gantt-task',
-            detail: {
-                action: 'delete',
-                taskId,
-                previousTask: null,
-                task: null,
-            },
-        }],
-    } as Parameters<typeof updateFromPlanningEdit>[1])
-
-    assert.equal(deleted.length, tasks.length - 1)
-    assert.equal(deleted.some(({ id }) => id === taskId), false)
+    assert.equal(next.duration, 0)
+    assert.equal(Date.parse(next.endDate) - Date.parse(next.startDate), 3_600_000)
 })
 
-test('commits producer changes without mutating an already published view snapshot', () => {
+test('commits mapped patches without mutating an already published view snapshot', () => {
     const initial = createTasks()
     const store = new PlanningWorkspaceStore(initial)
     const published = store.createSnapshot()
-    const droppedTask = initial[0]
-    const parentTask = initial[1]
+    const task = initial[0]
 
     store.commitPlanningEdit({
-        sourceMutation: 'producer',
-        domainChanges: [{
-            type: 'gantt-task',
-            detail: {
-                action: 'indent',
-                taskId: droppedTask.id,
-                previousTask: null,
-                index: 1,
-                task: {
-                    ...droppedTask,
-                    parentId: parentTask.id,
-                    progressPercent: droppedTask.percentDone,
-                    wbsCode: '1.1',
-                    calendarId: 'launch-day',
-                    isCritical: false,
-                    tags: [],
-                },
-            },
-        }],
+        data: { 0: { name: 'Updated title' } },
+        models: { 0: task },
     } as Parameters<PlanningWorkspaceStore['commitPlanningEdit']>[0])
 
-    assert.equal(published[0].id, droppedTask.id)
-    assert.equal(published[0].parentId, droppedTask.parentId)
+    assert.equal(published[0].name, task.name)
 
     const next = store.createSnapshot()
-    assert.equal(next[0].id, parentTask.id)
-    assert.equal(next[1].id, droppedTask.id)
-    assert.equal(next[1].parentId, parentTask.id)
+    assert.equal(next[0].name, 'Updated title')
 })
 
 test('does not echo committed planning edits into the active framework source', () => {
@@ -506,76 +503,10 @@ test('keeps Angular planning projections as stable snapshot fields', () => {
         'visibleTasks',
         'ganttAssignments',
         'visibleGanttDependencies',
-        'schedulerEvents',
     ]) {
         assert.doesNotMatch(angularSource, new RegExp(`get ${property}\\(`))
     }
     assert.match(angularSource, /refreshViewSnapshot\(\)/)
-})
-
-test('accepts a committed Gantt resize duration', () => {
-    const tasks = createTasks()
-    const task = tasks.find(({ type }) => type === 'task')!
-    const resizedEnd = new Date(
-        Date.parse(task.endDate) + 24 * 3_600_000
-    ).toISOString()
-    const resized = updateFromPlanningEdit(tasks, {
-        domainChanges: [{
-            type: 'gantt-task',
-            detail: {
-                action: 'resize',
-                taskId: task.id,
-                previousTask: null,
-                task: {
-                    ...task,
-                    progressPercent: task.percentDone,
-                    wbsCode: '1',
-                    parentId: null,
-                    calendarId: 'launch-day',
-                    isCritical: false,
-                    tags: [],
-                    endDate: resizedEnd,
-                    duration: task.duration + 24,
-                },
-            },
-        }],
-    } as Parameters<typeof updateFromPlanningEdit>[1]).find(
-        ({ id }) => id === task.id
-    )!
-
-    assert.equal(resized.duration, task.duration + 24)
-    assert.equal(resized.endDate, resizedEnd)
-})
-
-test('accepts the committed Scheduler event from EventManager', () => {
-    const tasks = createTasks()
-    const task = tasks[0]
-    const startDateTime = '2026-09-20T09:00:00.000Z'
-    const endDateTime = '2026-09-20T13:00:00.000Z'
-    const edited = updateFromPlanningEdit(tasks, {
-        domainChanges: [{
-            type: 'event-scheduler-event',
-            detail: {
-                action: 'move',
-                eventId: task.id,
-                previousEvent: null,
-                event: {
-                    id: task.id,
-                    resourceId: 'Ava',
-                    title: 'Scheduled task',
-                    startDateTime,
-                    endDateTime,
-                    status: 'in-progress',
-                },
-            },
-        }],
-    })[0]
-
-    assert.equal(edited.name, 'Scheduled task')
-    assert.equal(edited.owner, 'Ava')
-    assert.equal(edited.startDate, startDateTime)
-    assert.equal(edited.endDate, endDateTime)
-    assert.equal(edited.duration, 4)
 })
 
 test('uses one EventManager edit handler in every Pro planning view', () => {
@@ -725,7 +656,6 @@ test('keeps quick search in a stable native input', () => {
         /planning-demo__filter-search:focus-within\s*\{[^}]*currentColor/
     )
     assert.match(vueSource, /class="planning-demo__filter-row"/)
-    assert.match(vueSource, /class="planning-demo__filter-badge-host"/)
     assert.match(
         stylesSource,
         /planning-demo__filter-row\s*\{[^}]*display:\s*flex[^}]*padding-bottom:\s*6px[^}]*border-bottom:\s*1px solid var\(--rv-ui-border\)/
@@ -751,11 +681,11 @@ test('uses one focus treatment for sidebar search, quick search, and row checkbo
     )
     assert.match(
         demoNavigationSource,
-        /demo-nav>label:focus-within\{[^}]*border-color:var\(--demo-focus-color\)[^}]*box-shadow:0 0 0 3px var\(--demo-focus-ring\)/
+        /demo-nav\s*>\s*label:focus-within\s*\{[^}]*border-color:\s*var\(--demo-focus-color\)[^}]*box-shadow:\s*0 0 0 3px var\(--demo-focus-ring\)/
     )
     assert.match(
         demoNavigationSource,
-        /demo-nav>label:focus-within\{[^}]*outline:0/
+        /demo-nav\s*>\s*label:focus-within\s*\{[^}]*outline:\s*0/
     )
 })
 
@@ -798,7 +728,7 @@ test('uses direct workspace actions without a custom actions menu', () => {
     )
     assert.match(
         vueSource,
-        /class="planning-demo__fullscreen"[\s\S]*?aria-label="Full screen"[\s\S]*?name="expand"/
+        /class="planning-demo__fullscreen"[\s\S]*?aria-label="Full screen"[\s\S]*?<span aria-hidden="true">↗<\/span>/
     )
     assert.doesNotMatch(vueSource, /<details|More/)
     assert.match(vueSource, />\s*Active tasks\s*</)
@@ -828,27 +758,29 @@ test('keeps native Grid filters mounted across planning view switches', () => {
     assert.doesNotMatch(vueSource, /Column filters|toggleColumnFilters/)
 })
 
-test('keeps native filter badges in the shared workspace row', () => {
+test('keeps filter badges owned by the filtering plugin', () => {
     const workspaceSource = readFileSync(
         new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),
         'utf8'
     )
-    assert.match(workspaceSource, /function moveFilterBadges\(\)/)
-    assert.match(workspaceSource, /filterBadgesRef/)
+    assert.match(vueSource, /:filter-badges\.prop="filterBadgeOptions"/)
+    assert.doesNotMatch(vueSource, /filterBadgesRef|filter-badge-host|ref="gridRef"/)
+    assert.doesNotMatch(
+        workspaceSource,
+        /gridRef|gridElement|moveFilterBadges|querySelector|append\(/
+    )
     assert.doesNotMatch(vueSource, /planning-demo__filter-status/)
 })
 
-test('projects zero-duration Gantt milestones as valid scheduler events', () => {
-    const tasks = createTasks()
-    const schedulerEvents = toSchedulerEvents(tasks)
+test('keeps milestones scheduler-valid in the shared task source', () => {
+    const milestone = createTasks().find(({ type }) => type === 'milestone')!
 
-    assert.equal(schedulerEvents.length, tasks.length)
-    for (const event of schedulerEvents) {
-        assert.ok(
-            Date.parse(event.endDateTime) > Date.parse(event.startDateTime),
-            `${event.id} must end after it starts`
-        )
-    }
+    assert.equal(milestone.duration, 0)
+    assert.equal(
+        Date.parse(milestone.endDate) - Date.parse(milestone.startDate),
+        3_600_000
+    )
+    assert.doesNotMatch(planningSource, /project|projection/i)
 })
 
 test('keeps the normal page surface and text color in fullscreen mode', () => {
@@ -859,8 +791,6 @@ test('keeps the normal page surface and text color in fullscreen mode', () => {
 })
 
 test('uses one compact owner renderer for Grid cells and dropdown options', () => {
-    assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revogr-/)
-    assert.doesNotMatch(stylesSource, /planning-demo__grid\s+revo-grid/)
     assert.match(
         stylesSource,
         /\.planning-demo \.avatar-cell > \.avatar-cell__image\s*\{[^}]*width:\s*var\(--avatar-cell-size\)[^}]*height:\s*var\(--avatar-cell-size\)[^}]*margin:\s*0[^}]*object-fit:\s*cover[^}]*object-position:\s*center/
@@ -905,7 +835,8 @@ test('provides a stable 100-task fixture across three projects', () => {
     assert.equal(milestones.length, 4)
     assert.ok(
         milestones.every(({ startDate, endDate, duration }) =>
-            startDate === endDate && duration === 0
+            Date.parse(endDate) - Date.parse(startDate) === 3_600_000 &&
+            duration === 0
         )
     )
     assert.ok(
@@ -1047,10 +978,9 @@ test('applies filtered and sorted edits only by stable task ID', () => {
         }),
     ].sort((a, b) => b.name.localeCompare(a.name))
     const edited = visible[0]
-    const next = applyPlanningGridEdit(tasks, {
-        model: edited,
-        prop: 'workflowStatus',
-        val: 'blocked',
+    const next = updateFromPlanningEdit(tasks, {
+        data: { 0: { workflowStatus: 'blocked' } },
+        models: { 0: edited },
     })
     assert.equal(
         next.find(({ id }) => id === edited.id)?.workflowStatus,
@@ -1058,7 +988,10 @@ test('applies filtered and sorted edits only by stable task ID', () => {
     )
     assert.equal(next.filter((task, index) => task !== tasks[index]).length, 1)
     assert.equal(
-        applyPlanningGridEdit(tasks, { prop: 'name', val: 'Wrong task' }),
+        updateFromPlanningEdit(tasks, {
+            data: { 0: { name: 'Wrong task' } },
+            models: {},
+        }),
         tasks
     )
 })
@@ -1094,32 +1027,38 @@ test('deletes every selected task from the canonical workspace', () => {
     assert.equal(remaining.some(({ id }) => deleted.includes(id)), false)
 })
 
-test('clears checkbox selection after deleting rows', async () => {
-    let selectedType = ''
-    let selectedIndexes: number[] | undefined
-    const grid = {
-        getPlugins: async () => [
-            {
-                setSelectedIndexes(type: string, indexes: Iterable<number>) {
-                    selectedType = type
-                    selectedIndexes = [...indexes]
+test('reads visible rows and clears selection through the planning plugin', async () => {
+    const visible = createTasks().slice(2, 5)
+    let clearedType = ''
+    const plugin = Object.assign(
+        Object.create(PlanningWorkspacePlugin.prototype),
+        {
+            getVisibleSource: () => visible,
+            providers: {
+                plugins: {
+                    getByClass: () => ({
+                        clearSelection(type: string) {
+                            clearedType = type
+                        },
+                    }),
                 },
             },
-        ],
-    } as unknown as HTMLRevoGridElement
+        }
+    ) as PlanningWorkspacePlugin
+    const event = {
+        currentTarget: { getPlugins: async () => [plugin] },
+    } as unknown as Event
 
-    await clearPlanningRowSelection(grid)
-
-    assert.equal(selectedType, 'rgRow')
-    assert.deepEqual(selectedIndexes, [])
+    assert.deepEqual(await getPlanningVisibleSource(event), visible)
+    plugin.clearRowSelection()
+    assert.equal(clearedType, 'rgRow')
 })
 
 test('synchronizes a grid status edit into the Kanban source', () => {
     const tasks = createTasks()
-    const edited = applyPlanningGridEdit(tasks, {
-        model: tasks[4],
-        prop: 'workflowStatus',
-        val: 'blocked',
+    const edited = updateFromPlanningEdit(tasks, {
+        data: { 4: { workflowStatus: 'blocked' } },
+        models: { 4: tasks[4] },
     })
     assert.equal(
         edited.find((task) => task.id === tasks[4].id)?.workflowStatus,
@@ -1127,125 +1066,47 @@ test('synchronizes a grid status edit into the Kanban source', () => {
     )
 })
 
-test('synchronizes a dropdown owner edit without a model into the Gantt assignment source', () => {
+test('synchronizes a mapped owner edit into the Gantt assignment source', () => {
     const tasks = createTasks()
     const rowIndex = 2
-    const edited = updateFromGridSource(
-        tasks,
-        {
-            rowIndex,
-            prop: 'owner',
-            val: 'Ava',
-        },
-        tasks
-    )
+    const edited = updateFromPlanningEdit(tasks, {
+        data: { [rowIndex]: { owner: 'Ava' } },
+        models: { [rowIndex]: tasks[rowIndex] },
+    })
 
     const task = edited.find(({ id }) => id === tasks[rowIndex].id)
     assert.equal(task?.owner, 'Ava')
-    assert.deepEqual(task?.owners, ['Ava'])
-})
-
-test('preserves every selected Gantt assignee through the controlled assignment source', () => {
-    const tasks = createTasks()
-    const taskId = tasks[0].id
-    const edited = updateFromPlanningEdit(tasks, {
-        domainChanges: [{
-            type: 'gantt-assignment',
-            detail: {
-                action: 'edit',
-                taskId,
-                previousAssignments: [
-            {
-                id: `assignment-${taskId}-Maya`,
-                taskId,
-                resourceId: 'Maya',
-                allocationUnits: 1,
-                responsibility: 'Owner',
-            },
-                ],
-                assignments: [
-            {
-                id: `assignment-${taskId}-Maya`,
-                taskId,
-                resourceId: 'Maya',
-                allocationUnits: 1,
-                responsibility: 'Owner',
-            },
-            {
-                id: `${taskId}-assignment-2`,
-                taskId,
-                resourceId: 'Ava',
-                allocationUnits: 100,
-                responsibility: 'assigned',
-            },
-                ],
-            },
-        }],
-    })
-
     assert.deepEqual(
-        toGanttAssignments(edited)
-            .filter((assignment) => assignment.taskId === taskId)
-            .map((assignment) => assignment.resourceId),
-        ['Maya', 'Ava']
+        toGanttAssignments(edited).find(({ taskId }) => taskId === task?.id)
+            ?.resourceId,
+        'Ava'
     )
 })
 
-test('keeps the canonical owner in sync for a dropdown option', () => {
-    const tasks = createTasks()
-    const edited = applyPlanningGridEdit(tasks, {
-        model: tasks[2],
-        prop: 'owner',
-        val: { value: 'Leo', label: 'Leo' },
-    })
-    const task = edited.find(({ id }) => id === tasks[2].id)
-
-    assert.equal(task?.owner, 'Leo')
-    assert.deepEqual(task?.owners, ['Leo'])
-    assert.equal(task?.ownerAvatarIndex, 3)
+test('uses the unified EventManager edit stream for Grid in every framework', () => {
+    assert.match(vueSource, /@gridedit="handlePlanningEdit"/)
+    assert.doesNotMatch(vueSource, /@afteredit=/)
+    for (const source of [vueWorkspaceSource, vanillaSource, reactSource, angularSource]) {
+        assert.match(source, /EventManagerPlugin/)
+        assert.doesNotMatch(source, /commitGridEdit|handleGridEdit|PlanningGridEditDetail/)
+    }
+    assert.match(vanillaSource, /addEventListener\('gridedit'/)
+    assert.match(reactSource, /onGridedit=\{handlePlanningEdit\}/)
+    assert.match(angularSource, /\(gridedit\)="handlePlanningEdit\(\$event\)"/)
 })
 
-test('updates the edited grid row avatar with the selected owner', () => {
+test('synchronizes EventManager-derived fields onto the authored row model', () => {
     const tasks = createTasks()
     const row = { ...tasks[2] }
-    updateFromGrid(tasks, { model: row, prop: 'owner', val: 'Leo' })
+    const edited = updateFromPlanningEdit(tasks, {
+        data: { 2: { owner: 'Leo' } },
+        models: { 2: row },
+    })
 
+    assert.equal(edited[2].ownerAvatar, getOwnerAvatar('Leo'))
     assert.equal(row.owner, 'Leo')
     assert.equal(row.ownerAvatarIndex, 3)
     assert.equal(row.ownerAvatar, getOwnerAvatar('Leo'))
-})
-
-test('uses the edited visible owner when a direct dropdown event has no value', () => {
-    const tasks = createTasks()
-    const rowIndex = 2
-    const visible = tasks.map((task, index) =>
-        index === rowIndex ? { ...task, owner: 'Leo' } : task
-    )
-    const edited = updateFromGridSource(
-        tasks,
-        { model: { id: tasks[rowIndex].id }, rowIndex, prop: 'owner' },
-        visible
-    )
-    const task = edited.find(({ id }) => id === tasks[rowIndex].id)
-
-    assert.equal(task?.owner, 'Leo')
-    assert.deepEqual(task?.owners, ['Leo'])
-})
-
-test('uses the visible source fallback for direct grid editors in every framework', () => {
-    const workspaceSource = readFileSync(
-        new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),
-        'utf8'
-    )
-    for (const source of [
-        workspaceSource,
-        vanillaSource,
-        reactSource,
-        angularSource,
-    ]) {
-        assert.match(source, /commitGridEditFromVisibleSource/)
-        assert.match(source, /getVisibleSource\(\)/)
-    }
 })
 
 test('routes context-menu row deletion through the shared task source', () => {
@@ -1261,11 +1122,13 @@ test('routes context-menu row deletion through the shared task source', () => {
     ]) {
         assert.match(source, /createPlanningDataGridContextMenu/)
         assert.match(source, /planningStore\.delete\(taskIds\)/)
-        assert.match(source, /clearPlanningRowSelection/)
+        assert.doesNotMatch(source, /gridRef|clearPlanningRowSelection/)
     }
+    assert.match(formattingSource, /getByClass\(PlanningWorkspacePlugin\)/)
+    assert.match(formattingSource, /clearRowSelection\(\)/)
 })
 
-test('reconciles a filtered Kanban move into canonical tasks', () => {
+test('reconciles a filtered mapped Kanban patch into canonical tasks', () => {
     const tasks = createTasks()
     const visible = filterPlanningTasks(tasks, {
         ...defaultPlanningFilters(),
@@ -1273,16 +1136,9 @@ test('reconciles a filtered Kanban move into canonical tasks', () => {
     })
     const card = { ...visible[0], workflowStatus: 'done' }
     const next = updateFromPlanningEdit(tasks, {
-        domainChanges: [{
-            type: 'kanban-card',
-            detail: {
-                action: 'move',
-                cardId: card.id,
-                previousCard: visible[0],
-                card,
-            },
-        }],
-    })
+        data: { 0: { workflowStatus: card.workflowStatus } },
+        models: { 0: visible[0] },
+    } as Parameters<typeof updateFromPlanningEdit>[1])
     assert.equal(
         next.find((task) => task.id === card.id)?.workflowStatus,
         'done'
@@ -1295,10 +1151,9 @@ test('reconciles a filtered Kanban move into canonical tasks', () => {
 
 test('reset fixtures and filters restore deterministic defaults', () => {
     const initial = createTasks()
-    const edited = applyPlanningGridEdit(initial, {
-        model: initial[0],
-        prop: 'name',
-        val: 'Changed',
+    const edited = updateFromPlanningEdit(initial, {
+        data: { 0: { name: 'Changed' } },
+        models: { 0: { ...initial[0] } },
     })
     assert.notDeepEqual(edited, initial)
     assert.deepEqual(createTasks(), initial)
@@ -1371,19 +1226,13 @@ test('renders Kanban ownership from the canonical owner and local portrait', () 
         /import \{ avatarTemplate \} from '@revolist\/revogrid-pro'/
     )
     assert.match(kanbanConfigSource, /planning-card__avatar-stack/)
-    assert.match(kanbanConfigSource, /assigneeField:\s*'owner'/)
-    assert.doesNotMatch(kanbanConfigSource, /assigneeField:\s*'owners'/)
-    assert.match(kanbanConfigSource, /index:\s*card\.ownerAvatarIndex - 1/)
-    assert.match(kanbanConfigSource, /value:\s*card\.ownerAvatar/)
-    assert.doesNotMatch(kanbanConfigSource, /getOwnerAvatar/)
+    assert.doesNotMatch(kanbanConfigSource, /assigneeField/)
+    assert.match(kanbanConfigSource, /index:\s*getOwnerAvatarIndex\(card\.owner\) - 1/)
+    assert.match(kanbanConfigSource, /value:\s*getOwnerAvatar\(card\.owner\)/)
     assert.doesNotMatch(kanbanConfigSource, /card\.owners/)
     assert.doesNotMatch(planningSource, /ownerAvatars/)
-    assert.match(
-        planningSource,
-        /task\.owners\.length\s*\?\s*task\.owners\s*:\s*\[task\.owner\]/
-    )
     assert.match(planningSource, /resourceId:\s*task\.owner/)
-    assert.doesNotMatch(planningSource, /task\.owners\.map/)
+    assert.doesNotMatch(planningSource, /task\.owners/)
     assert.match(
         stylesSource,
         /planning-card__title\s*\{[^}]*line-height:\s*20px/

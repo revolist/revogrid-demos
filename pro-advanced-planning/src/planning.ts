@@ -17,7 +17,6 @@ import {
 import {
     activePlanningFilters,
     calendarConfig,
-    clearPlanningRowSelection,
     createPlanningDataGridContextMenu,
     createTasks,
     filterGanttDependencies,
@@ -35,15 +34,14 @@ import {
     planningDataGridFormatting,
     planningRowOrder,
     planningRowResize,
+    getPlanningVisibleSource,
     schedulerConfig,
     schedulerResources,
     toGanttAssignments,
-    toSchedulerEvents,
     PlanningWorkspaceStore,
+    PlanningWorkspacePlugin,
     views,
     type PlanningEditDetail,
-    type PlanningGridEditDetail,
-    type PlanningTask,
     type PlanningFilters,
     type PlanningView,
 } from './data'
@@ -138,6 +136,7 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.plugins = [
                 RowOrderPlugin,
                 RowSelectPlugin,
+                PlanningWorkspacePlugin,
                 AdvanceFilterPlugin,
                 DataGridFormattingPlugin,
                 ColumnStretchPlugin,
@@ -149,9 +148,7 @@ export function load(parentSelector: string): (() => void) | undefined {
                 (taskIds) => {
                     planningStore.delete(taskIds)
                     selectedCount = 0
-                    void clearPlanningRowSelection(grid).then(() =>
-                        render(activeView)
-                    )
+                    render(activeView)
                 }
             )
             grid.dataGridFormatting = planningDataGridFormatting
@@ -164,23 +161,9 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.resizeRow = planningRowResize
             grid.rowOrder = planningRowOrder
             grid.rowSelect = { rowOrder: true }
-            grid.addEventListener('afteredit', (event) => {
-                const detail = event.detail as PlanningGridEditDetail
-                const hasTaskId = detail.model?.id !== undefined
-                if (hasTaskId) planningStore.commitGridEdit(detail)
-                void grid.getVisibleSource().then((visible: PlanningTask[]) => {
-                    if (!hasTaskId) {
-                        planningStore.commitGridEditFromVisibleSource(
-                            detail,
-                            visible
-                        )
-                    }
-                })
-            })
-            grid.addEventListener('roworderapplied', () => {
-                void grid
-                    .getVisibleSource()
-                    .then((visible: PlanningTask[]) =>
+            grid.addEventListener('roworderapplied', (event) => {
+                void getPlanningVisibleSource(event)
+                    .then((visible) =>
                         planningStore.commitVisibleOrder(visible)
                     )
             })
@@ -200,6 +183,7 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.plugins = [GanttPlugin]
             grid.columns = ganttColumns
             grid.resizeRow = planningRowResize
+            grid.rowOrder = false
             grid.gantt = ganttConfig
             grid.ganttDependencies = visibleGanttDependencies
             grid.ganttResources = ganttResources
@@ -214,19 +198,14 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.eventSchedulerResources = schedulerResources
         }
 
-        if (view !== 'grid') {
-            grid.addEventListener('gridedit', (event) => {
-                planningStore.commitPlanningEdit(
-                    event.detail as PlanningEditDetail
-                )
-            })
-        }
+        grid.addEventListener('gridedit', (event) => {
+            planningStore.commitPlanningEdit(
+                event.detail as PlanningEditDetail
+            )
+        })
 
         panel.replaceChildren(grid)
-        grid.source =
-            view === 'scheduler' || view === 'calendar'
-                ? toSchedulerEvents(visibleTasks)
-                : visibleTasks
+        grid.source = visibleTasks
         switcher.querySelectorAll('button').forEach((button) => {
             const selected = button.dataset.view === activeView
             button.classList.toggle('on', selected)

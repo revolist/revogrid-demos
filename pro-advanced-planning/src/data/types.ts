@@ -1,5 +1,3 @@
-import type { GanttTaskSourceRow } from '@revolist/gantt'
-
 export type PlanningView =
     | 'grid'
     | 'kanban'
@@ -7,19 +5,22 @@ export type PlanningView =
     | 'scheduler'
     | 'calendar'
 
-export type PlanningTask = GanttTaskSourceRow & {
+export type PlanningTask = {
     id: string
     name: string
     color?: string
     owner: string
     ownerAvatar: string
     ownerAvatarIndex: number
-    owners: string[]
     startDate: string
     endDate: string
     duration: number
     durationUnit: 'hour'
     durationIsElapsed: true
+    parentId?: string | null
+    type: 'task' | 'milestone'
+    workflowStatus: string
+    priority: number
     percentDone: number
     order: number
     projectId: PlanningProjectId
