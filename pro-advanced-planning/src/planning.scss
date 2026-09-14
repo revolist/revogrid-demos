@@ -85,6 +85,12 @@
     font: 500 11px/1 inherit;
     cursor: pointer;
 }
+.planning-demo__actions > button.on,
+.planning-demo__toolbar > button.on {
+    border-color: var(--demo-focus-color);
+    background: var(--rv-ui-surface);
+    color: var(--demo-focus-color);
+}
 .planning-demo__fullscreen {
     display: inline-flex;
     width: 32px;
@@ -141,6 +147,17 @@
 }
 .planning-demo__grid--timeline {
     margin-top: -8px;
+}
+/*
+ * FilterHeaderPlugin restores the core header padding after Gantt has made
+ * the timeline header edge-to-edge. Keep the header ticks on the same x-axis
+ * as the timeline background and task bars.
+ */
+.planning-demo__grid--timeline.gantt-plugin.filter-header
+    revogr-viewport-scroll.colPinEnd
+    revogr-header
+    .header-content {
+    padding: 0 !important;
 }
 .planning-demo__grid--kanban {
     overflow-x: auto;

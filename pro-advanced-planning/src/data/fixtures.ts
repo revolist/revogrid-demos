@@ -54,14 +54,26 @@ export const planningPeople: readonly PlanningPerson[] = [
     },
 ]
 
+function findPlanningPerson(owner: string): PlanningPerson | undefined {
+    const normalizedOwner = owner.trim().toLocaleLowerCase()
+    return planningPeople.find(
+        ({ id }) => id.toLocaleLowerCase() === normalizedOwner
+    )
+}
+
 export function getOwnerAvatar(owner: string): string {
-    const person = planningPeople.find(({ id }) => id === owner)
+    const person = findPlanningPerson(owner)
     return person?.avatarUrl ?? owner
+}
+
+export function getOwnerName(owner: string): string {
+    return findPlanningPerson(owner)?.name ?? owner
 }
 
 /** A stable native-avatar color index for grid cells and selection filters. */
 export function getOwnerAvatarIndex(owner: string): number {
-    const index = planningPeople.findIndex(({ id }) => id === owner)
+    const person = findPlanningPerson(owner)
+    const index = person ? planningPeople.indexOf(person) : -1
     return index >= 0 ? index + 1 : 1
 }
 

@@ -57,6 +57,16 @@ export function updateFromPlanningEdit(
         const key = String(id)
         const authoredPatch = { ...patch }
         delete authoredPatch.id
+        // The currently bundled Gantt trial emits its internal field name for
+        // timeline-handle edits. Keep every demo framework on the authored
+        // task contract until the package-level translation is released.
+        if (
+            'progressPercent' in authoredPatch &&
+            !('percentDone' in authoredPatch)
+        ) {
+            authoredPatch.percentDone = authoredPatch.progressPercent
+            delete authoredPatch.progressPercent
+        }
         if (!Object.keys(authoredPatch).length) continue
         patches.set(key, {
             ...(patches.get(key) ?? {}),

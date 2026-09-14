@@ -4,7 +4,6 @@ export {
     gridColumns,
     gridColumnTypes,
     planningRowOrder,
-    planningRowResize,
     planningFilterConfig,
 } from './columns'
 export {
@@ -14,6 +13,11 @@ export {
     planningGridFormats,
 } from './formatting'
 export { planningStructuredFilterTypes } from './planning.structured'
+export {
+    createPlanningViewFilters,
+    planningFilterConfigFor,
+    type PlanningViewFilters,
+} from './filter-state'
 export { planningFields } from './fields'
 export { ganttConfig } from './gantt.config'
 export { createKanbanConfig, kanbanConfig } from './kanban.config'

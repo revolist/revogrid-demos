@@ -3,7 +3,7 @@ import type {
     DataGridCellFormat,
     DataGridAdvancedFormatDefinition,
     DataGridContextMenuConfig,
-    DataGridFormattingPresetState,
+    DataGridFormattingConfig,
 } from '@revolist/revogrid-pro'
 import { markDataGridFormatRenderer } from '@revolist/revogrid-pro'
 import { workflowBadges } from './planning.structured'
@@ -117,6 +117,12 @@ const text = {
 
 export const planningGridFormats = {
     name: text,
+    owner: {
+        presentation: {
+            id: 'avatar-with-text',
+            options: { avatarSize: 18 },
+        },
+    },
     workflowStatus: {
         presentation: {
             id: 'workflow-status-badge',
@@ -170,7 +176,18 @@ export const planningGridFormats = {
 
 /** Application-owned formatting state; column formats remain the stable defaults. */
 export const planningDataGridFormatting =
-    {} as const satisfies DataGridFormattingPresetState
+    {
+        protectedColumnProps: [
+            'name',
+            'owner',
+            'workflowStatus',
+            'priority',
+            'endDate',
+            'percentDone',
+            'budget',
+            'activityAt',
+        ],
+    } as const satisfies DataGridFormattingConfig
 
 /** One declarative registration shared by every framework implementation. */
 export const planningDataGridContextMenu = {

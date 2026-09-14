@@ -1,17 +1,23 @@
 import type {
     ColumnFilterConfig,
     ColumnRegular,
-    RowResizeConfig,
 } from '@revolist/revogrid'
 import {
+    avatarTemplate,
     avatarWithTextRenderer,
     ColumnDropdown,
     FIlTER_SELECTION,
     FIlTER_SLIDER,
     type RowOrderPluginConfig,
+    type SelectionItemTemplate,
 } from '@revolist/revogrid-pro'
 import { createDefaultTaskTableColumn } from '@revolist/gantt'
-import { getOwnerAvatar, getOwnerAvatarIndex, planningPeople } from './fixtures'
+import {
+    getOwnerAvatar,
+    getOwnerAvatarIndex,
+    getOwnerName,
+    planningPeople,
+} from './fixtures'
 import {
     FILTER_CALENDAR_RANGE,
     FILTER_CHIP_BADGE_TOGGLES,
@@ -33,13 +39,29 @@ const ownerEditorOptions = planningPeople.map(({ id, name }) => ({
     ownerAvatarIndex: getOwnerAvatarIndex(id),
 }))
 
+const ganttAssigneeFilterItems = planningPeople.map(({ id, name }) => ({
+    // Gantt projects resource IDs in lowercase; keep that matching value while
+    // presenting the canonical person name in the selection popup.
+    value: id.toLocaleLowerCase(),
+    label: name,
+}))
+
+const ganttAssigneeFilterItemTemplate: SelectionItemTemplate = (h, { value }) => {
+    const owner = getOwnerName(value)
+    return h('span', { class: 'avatar-cell-with-text' }, [
+        avatarTemplate(h, {
+            value: getOwnerAvatar(value),
+            index: getOwnerAvatarIndex(value) - 1,
+            label: owner,
+            size: 20,
+        }),
+        h('span', { class: 'avatar-cell-with-text__label' }, owner),
+    ])
+}
+
 export const planningRowOrder: RowOrderPluginConfig = {
     prop: 'name',
     preview: 'compact',
-}
-
-export const planningRowResize: RowResizeConfig = {
-    fullRow: true,
 }
 
 const ownerAvatarRenderer: ColumnRegular['cellTemplate'] = (
@@ -108,12 +130,17 @@ export const planningFilterConfig = {
     selection: {
         getItems: {
             priority: () => priorityFilterItems,
+            assignees: () => ganttAssigneeFilterItems,
         },
         itemTemplate: {
             priority: priorityFilterItemTemplate,
+            assignees: ganttAssigneeFilterItemTemplate,
         },
         syncCellTemplate: {
             owner: true,
+            // Gantt exposes the resource column as `assignees`; reuse its
+            // avatar cell template in the corresponding selection filter.
+            assignees: true,
         },
     },
 } satisfies ColumnFilterConfig
@@ -178,9 +205,9 @@ export const gridColumns: ColumnRegular[] = [
         avatarProp: 'ownerAvatar',
         avatarIndexProp: 'ownerAvatarIndex',
         avatarLabelProp: 'owner',
-        avatarSize: 20,
         cellTemplate: ownerAvatarRenderer,
         cellProperties: paddedCellProperties,
+        dataGridFormat: planningGridFormats.owner,
     },
     {
         prop: 'workflowStatus',
@@ -196,6 +223,7 @@ export const gridColumns: ColumnRegular[] = [
             cellTemplate: workflowStatusBadgeRenderer,
         },
         cellProperties: paddedCellProperties,
+        dataGridFormat: planningGridFormats.workflowStatus,
     },
     {
         prop: 'priority',

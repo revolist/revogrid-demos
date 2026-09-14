@@ -26,6 +26,8 @@
                 <button
                     type="button"
                     data-demo-action="apply_active_tasks"
+                    :class="{ on: isActiveTasksPreset }"
+                    :aria-pressed="isActiveTasksPreset"
                     @click="applyActiveTasksPreset"
                 >
                     Active tasks
@@ -48,57 +50,53 @@
                 </button>
             </div>
         </div>
-        <div class="planning-demo__filter-row">
-            <label class="planning-demo__filter-search">
-                <input
-                    v-model="quickSearch"
-                    type="search"
-                    aria-label="Quick search tasks"
-                    placeholder="Quick search tasks…"
-                />
-            </label>
-        </div>
-        <div v-show="activeView === 'grid'" class="planning-demo__grid-stage">
+        <div v-if="activeView === 'grid'" class="planning-demo__grid-stage">
             <RevoGrid
                 :key="gridKey"
                 class="planning-demo__grid"
                 hide-attribution
                 :theme="theme"
                 :plugins="gridPlugins"
-                :source="visibleTasks"
+                :source="tasks"
                 :columns="gridColumns"
                 :column-types="gridColumnTypes"
                 :data-grid-context-menu.prop="planningDataGridContextMenu"
                 :data-grid-formatting.prop="planningDataGridFormatting"
+                :range-selection-limit.prop="'column'"
                 :filter.prop="gridFilterConfig"
                 :row-size="40"
-                :resize-row="planningRowResize"
                 :row-order.prop="planningRowOrder"
                 :stretch="1"
                 range
                 resize
                 can-move-columns
                 :row-select.prop="rowSelect"
-                :quick-filter.prop="quickFilter"
                 :filter-badges.prop="filterBadgeOptions"
                 @gridedit="handlePlanningEdit"
                 @roworderapplied="handleGridRowOrder"
-                @rowselected="handleRowSelected"
-                @afterfilterapply="syncVisibleTasks"
-                @afterquickfilterapply="syncVisibleTasks"
+                @filterastchange="
+                    $event.detail.origin === 'ui' &&
+                    (viewFilters.grid.filterAst = $event.detail.filterAst)
+                "
             />
         </div>
         <RevoGrid
-            v-if="activeView === 'kanban'"
+            v-else-if="activeView === 'kanban'"
             key="kanban"
             class="planning-demo__grid planning-demo__grid--kanban"
             hide-attribution
             :theme="theme"
             :plugins="kanbanPlugins"
-            :source="visibleTasks"
+            :source="tasks"
             :columns="gridColumns"
             :kanban.prop="kanbanConfig"
+            :filter.prop="kanbanFilterConfig"
+            :filter-badges.prop="filterBadgeOptions"
             @gridedit="handlePlanningEdit"
+            @filterastchange="
+                $event.detail.origin === 'ui' &&
+                (viewFilters.kanban.filterAst = $event.detail.filterAst)
+            "
         />
         <RevoGrid
             v-else-if="activeView === 'gantt'"
@@ -107,15 +105,20 @@
             hide-attribution
             :theme="theme"
             :plugins="ganttPlugins"
-            :source="visibleTasks"
+            :source="tasks"
             :columns="ganttColumns"
-            :resize-row="planningRowResize"
             :row-order.prop="false"
             :gantt.prop="ganttConfig"
             :gantt-dependencies.prop="visibleGanttDependencies"
             :gantt-resources.prop="ganttResources"
             :gantt-assignments.prop="ganttAssignments"
+            :filter.prop="ganttFilterConfig"
+            :filter-badges.prop="filterBadgeOptions"
             @gridedit="handlePlanningEdit"
+            @filterastchange="
+                $event.detail.origin === 'ui' &&
+                (viewFilters.gantt.filterAst = $event.detail.filterAst)
+            "
         />
         <RevoGrid
             v-else-if="activeView === 'scheduler' || activeView === 'calendar'"
@@ -124,7 +127,7 @@
             hide-attribution
             :theme="theme"
             :plugins="schedulerPlugins"
-            :source="visibleTasks"
+            :source="tasks"
             :columns="emptySource"
             resize
             :can-move-columns="false"
@@ -135,13 +138,7 @@
             @gridedit="handlePlanningEdit"
         />
         <footer class="planning-demo__footer">
-            <span
-                >{{ visibleTaskCount }} of {{ tasks.length }} tasks<template
-                    v-if="selectedCount"
-                >
-                    · {{ selectedCount }} selected</template
-                ></span
-            ><span class="planning-demo__footer-meta">Changes stay in this demo</span>
+            <span class="planning-demo__footer-meta">Changes stay in this demo</span>
         </footer>
     </section>
 </template>
@@ -160,39 +157,35 @@ const {
     ganttAssignments,
     ganttColumns,
     ganttConfig,
+    ganttFilterConfig,
     ganttPlugins,
     ganttResources,
     gridColumnTypes,
     gridColumns,
     gridFilterConfig,
+    isActiveTasksPreset,
     gridKey,
     gridPlugins,
     handleGridRowOrder,
     handlePlanningEdit,
-    handleRowSelected,
     kanbanConfig,
+    kanbanFilterConfig,
     kanbanPlugins,
     planningDataGridContextMenu,
     planningDataGridFormatting,
     planningRowOrder,
-    planningRowResize,
-    quickFilter,
-    quickSearch,
     resetWorkspace,
     rootRef,
     rowSelect,
     schedulerConfig,
     schedulerPlugins,
     schedulerResources,
-    selectedCount,
     selectPlanningView,
-    syncVisibleTasks,
     tasks,
     theme,
     toggleFullscreen,
-    visibleTasks,
-    visibleTaskCount,
     visibleGanttDependencies,
+    viewFilters,
     views,
 } = usePlanningWorkspace()
 </script>

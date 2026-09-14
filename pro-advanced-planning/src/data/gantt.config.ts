@@ -41,7 +41,6 @@ export const ganttConfig: GanttPluginConfig = {
         levels: planningTimelineZoomLevels,
         defaultLevelId: dayWeekMediumZoomLevel.id,
     },
-    timelinePrecision: 'day',
     weekStartsOn: 1,
     timelineRange: { startDate: '2026-09-07', endDate: '2026-10-09' },
     allowTaskCreate: false,

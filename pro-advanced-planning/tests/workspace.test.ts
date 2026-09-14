@@ -106,6 +106,39 @@ test('keeps all Planning framework variants free of guided tips', () => {
     assert.doesNotMatch(stylesSource, /planning-demo__(tip|completion)|planning-card--updated/)
 })
 
+test('keeps task counts out of every Planning framework variant', () => {
+    for (const source of [
+        `${vueSource}\n${vueWorkspaceSource}`,
+        vanillaSource,
+        reactSource,
+        angularSource,
+    ]) {
+        assert.doesNotMatch(source, /planning-demo__count|selectedCount/)
+    }
+})
+
+test('marks the Active tasks preset while it is applied in every framework', () => {
+    assert.match(vueWorkspaceSource, /const isActiveTasksPreset = ref\(false\)/)
+    assert.match(vueSource, /:class="\{ on: isActiveTasksPreset \}"/)
+    assert.match(vueSource, /:aria-pressed="isActiveTasksPreset"/)
+
+    assert.match(vanillaSource, /let isActiveTasksPreset = false/)
+    assert.match(vanillaSource, /activeTasks\.classList\.toggle\('on', isActiveTasksPreset\)/)
+    assert.match(vanillaSource, /activeTasks\.ariaPressed = String\(isActiveTasksPreset\)/)
+
+    assert.match(reactSource, /const \[isActiveTasksPreset, setIsActiveTasksPreset\] = useState\(false\)/)
+    assert.match(reactSource, /className=\{isActiveTasksPreset \? 'on' : undefined\}/)
+    assert.match(reactSource, /aria-pressed=\{isActiveTasksPreset\}/)
+
+    assert.match(angularSource, /isActiveTasksPreset = false/)
+    assert.match(angularSource, /\[class\.on\]="isActiveTasksPreset"/)
+    assert.match(angularSource, /\[attr\.aria-pressed\]="isActiveTasksPreset"/)
+    assert.match(
+        stylesSource,
+        /planning-demo__actions > button\.on,[\s\S]*?planning-demo__toolbar > button\.on\s*\{[\s\S]*?background: var\(--rv-ui-surface\)/
+    )
+})
+
 test('uses the Pro dropdown editor with canonical owner and status values', () => {
     assert.match(
         columnsSource,
@@ -158,12 +191,16 @@ test('pins selection and task identity with space for native checkboxes', () => 
     )
 })
 
-test('enables native row resizing for task rows in every planning framework', () => {
-    assert.match(columnsSource, /planningRowResize[\s\S]*?fullRow:\s*true/)
-    assert.equal((vueSource.match(/:resize-row="planningRowResize"/g) || []).length, 2)
-    assert.equal((reactSource.match(/resizeRow=\{planningRowResize\}/g) || []).length, 2)
-    assert.equal((vanillaSource.match(/grid\.resizeRow = planningRowResize/g) || []).length, 2)
-    assert.equal((angularSource.match(/\[resizeRow\]="planningRowResize"/g) || []).length, 2)
+test('disables native row resizing in every planning framework', () => {
+    for (const source of [
+        columnsSource,
+        vueSource,
+        reactSource,
+        vanillaSource,
+        angularSource,
+    ]) {
+        assert.doesNotMatch(source, /planningRowResize|resizeRow|resize-row/)
+    }
 })
 
 test('enables shared Pro row ordering for every planning Grid variant', () => {
@@ -559,6 +596,10 @@ test('passes only dependencies whose tasks are visible to Gantt', () => {
 
 test('uses declarative data-grid formats for every planning value type', () => {
     assert.match(formattingSource, /name:\s*text/)
+    assert.match(
+        formattingSource,
+        /owner:\s*\{[\s\S]*?id:\s*'avatar-with-text'[\s\S]*?avatarSize:\s*18/
+    )
     assert.match(formattingSource, /id:\s*'workflow-status-badge'/)
     assert.match(formattingSource, /id:\s*'planning-priority-indicator'/)
     assert.match(
@@ -570,7 +611,10 @@ test('uses declarative data-grid formats for every planning value type', () => {
         columnsSource,
         /prop: 'workflowStatus'[\s\S]*?syncCellTemplate: true,[\s\S]*?cellTemplate: workflowStatusBadgeRenderer/
     )
-    assert.doesNotMatch(columnsSource, /dataGridFormat: planningGridFormats\.workflowStatus/)
+    assert.match(
+        columnsSource,
+        /prop: 'workflowStatus'[\s\S]*?dataGridFormat: planningGridFormats\.workflowStatus/
+    )
     assert.match(
         columnsSource,
         /prop: 'owner'[\s\S]*?avatarProp: 'ownerAvatar'[\s\S]*?avatarIndexProp: 'ownerAvatarIndex'/
@@ -579,6 +623,10 @@ test('uses declarative data-grid formats for every planning value type', () => {
     assert.match(
         columnsSource,
         /prop: 'owner'[\s\S]*?dropdown: \{[\s\S]*?cellTemplate: ownerAvatarRenderer/
+    )
+    assert.match(
+        columnsSource,
+        /prop: 'owner'[\s\S]*?dataGridFormat: planningGridFormats\.owner/
     )
     assert.match(
         formattingSource,
@@ -604,9 +652,9 @@ test('uses declarative data-grid formats for every planning value type', () => {
     )
     for (const prop of [
         'name',
+        'owner',
         'priority',
         'endDate',
-        'percentDone',
         'budget',
         'activityAt',
     ]) {
@@ -638,6 +686,28 @@ test('pads owner and status cell content without changing global grid styles', (
         columnsSource,
         /prop: 'workflowStatus'[\s\S]*?cellProperties: paddedCellProperties/
     )
+})
+
+test('keeps formatting and range selections inside Planning Grid columns', () => {
+    assert.match(
+        formattingSource,
+        /protectedColumnProps:\s*\[[\s\S]*?'name',[\s\S]*?'owner',[\s\S]*?'workflowStatus',[\s\S]*?'priority',[\s\S]*?'endDate',[\s\S]*?'percentDone',[\s\S]*?'budget',[\s\S]*?'activityAt'/
+    )
+
+    assert.match(vueWorkspaceSource, /RangeSelectionLimitPlugin/)
+    assert.match(
+        vueSource,
+        /:range-selection-limit\.prop="'column'"/
+    )
+
+    assert.match(vanillaSource, /RangeSelectionLimitPlugin/)
+    assert.match(vanillaSource, /grid\.rangeSelectionLimit = 'column'/)
+
+    assert.match(reactSource, /RangeSelectionLimitPlugin/)
+    assert.match(reactSource, /rangeSelectionLimit="column"/)
+
+    assert.match(angularSource, /RangeSelectionLimitPlugin/)
+    assert.match(angularSource, /\[rangeSelectionLimit\]="'column'"/)
 })
 
 test('keeps quick search in a stable native input', () => {
@@ -802,7 +872,7 @@ test('uses one compact owner renderer for Grid cells and dropdown options', () =
     )
     assert.match(
         columnsSource,
-        /prop: 'owner'[\s\S]*?avatarSize: 20,[\s\S]*?cellTemplate: ownerAvatarRenderer/
+        /prop: 'owner'[\s\S]*?avatarSize: 18,[\s\S]*?cellTemplate: ownerAvatarRenderer/
     )
 })
 
@@ -1088,6 +1158,40 @@ test('synchronizes a mapped owner edit into the Gantt assignment source', () => 
     )
 })
 
+test('maps a Gantt progress-handle edit onto the authored progress field', () => {
+    const tasks = createTasks()
+    const task = tasks[2]
+    const updated = updateFromPlanningEdit(tasks, {
+        data: { 0: { progressPercent: 73 } },
+        models: { 0: task },
+    } as Parameters<typeof updateFromPlanningEdit>[1])
+
+    const edited = updated.find(({ id }) => id === task.id)!
+    assert.equal(edited.percentDone, 73)
+    assert.equal('progressPercent' in edited, false)
+})
+
+test('receives Gantt progress edits through the authored progress field', () => {
+    const ganttPluginSource = readFileSync(
+        new URL(
+            '../../../../../packages/gantt/src/gantt/grid/gantt-plugin.ts',
+            import.meta.url
+        ),
+        'utf8'
+    )
+
+    const taskMutationHandler = ganttPluginSource.match(
+        /collectTaskMutation: \(detail,[\s\S]*?this\.collectEdit\(withGanttDomainChanges\(detail, domainChanges\)\);/
+    )?.[0]
+
+    assert.ok(taskMutationHandler)
+    assert.match(taskMutationHandler, /this\.translateGridEditDetailToAuthored\(detail\)/)
+    assert.match(
+        ganttPluginSource,
+        /getAuthoredGanttTaskField\(field, this\.sourceFields\)/
+    )
+})
+
 test('uses the unified EventManager edit stream for Grid in every framework', () => {
     assert.match(vueSource, /@gridedit="handlePlanningEdit"/)
     assert.doesNotMatch(vueSource, /@afteredit=/)
@@ -1098,6 +1202,62 @@ test('uses the unified EventManager edit stream for Grid in every framework', ()
     assert.match(vanillaSource, /addEventListener\('gridedit'/)
     assert.match(reactSource, /onGridedit=\{handlePlanningEdit\}/)
     assert.match(angularSource, /\(gridedit\)="handlePlanningEdit\(\$event\)"/)
+})
+
+test('synchronizes every mounted planning view while an edit commits', () => {
+    const handler = vanillaSource.match(
+        /grid\.addEventListener\('gridedit',[\s\S]*?\}, \{ signal: activeGridAbort\.signal \}\)/
+    )?.[0]
+
+    assert.ok(handler)
+    assert.match(handler, /planningStore\.commitPlanningEdit/)
+    assert.match(handler, /syncActiveGrid\(\)/)
+    assert.doesNotMatch(handler, /render\(activeView\)/)
+
+    const frameworkEditHandlers = [
+        [
+            vueWorkspaceSource.match(/function handlePlanningEdit\([\s\S]*?\n    \}/)?.[0],
+            /refreshViewSnapshot\(\)/,
+        ],
+        [
+            reactSource.match(/const handlePlanningEdit = \([\s\S]*?\n    \}/)?.[0],
+            /setTasks\(planningStore\.createSnapshot\(\)\)/,
+        ],
+        [
+            angularSource.match(/\n    handlePlanningEdit\([\s\S]*?\n    \}/)?.[0],
+            /this\.refreshViewSnapshot\(\)/,
+        ],
+    ]
+
+    for (const [frameworkHandler, expectedSynchronization] of frameworkEditHandlers) {
+        assert.ok(frameworkHandler)
+        assert.match(frameworkHandler, /planningStore\.commitPlanningEdit/)
+        assert.match(frameworkHandler, expectedSynchronization)
+    }
+})
+
+test('synchronizes Vanilla planning actions without reconstructing the active view', () => {
+    assert.match(vanillaSource, /function syncActiveGrid\(\)/)
+    assert.match(vanillaSource, /activeGrid\.source = allTasks/)
+    assert.match(vanillaSource, /activeGrid\.ganttAssignments = toGanttAssignments\(allTasks\)/)
+    assert.match(vanillaSource, /activeGrid\.ganttDependencies = filterGanttDependencies/)
+
+    for (const action of ['input', 'change', 'click']) {
+        assert.match(vanillaSource, new RegExp(`addEventListener\\('${action}'`))
+    }
+    const searchHandler = vanillaSource.match(
+        /search\.addEventListener\('input',[\s\S]*?\n    \}\)/
+    )?.[0]
+    const resetHandler = vanillaSource.match(
+        /reset\.addEventListener\('click',[\s\S]*?\n    \}\)/
+    )?.[0]
+
+    assert.ok(searchHandler)
+    assert.ok(resetHandler)
+    assert.match(searchHandler, /syncActiveGrid\(\)/)
+    assert.match(resetHandler, /syncActiveGrid\(\)/)
+    assert.doesNotMatch(searchHandler, /render\(activeView\)/)
+    assert.doesNotMatch(resetHandler, /render\(activeView\)/)
 })
 
 test('synchronizes EventManager-derived fields onto the authored row model', () => {

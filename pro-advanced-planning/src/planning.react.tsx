@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { RevoGrid } from '@revolist/react-datagrid'
+import type { ColumnFilterConfig } from '@revolist/revogrid'
 import { GanttPlugin } from '@revolist/gantt'
 import { KanbanPlugin } from '@revolist/kanban'
 import { EventSchedulerPlugin } from '@revolist/scheduler'
@@ -9,8 +10,10 @@ import {
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
     EventManagerPlugin,
+    FilterHeaderPlugin,
     RowSelectPlugin,
     RowOrderPlugin,
+    RangeSelectionLimitPlugin,
 } from '@revolist/revogrid-pro'
 import {
     currentTheme,
@@ -35,7 +38,6 @@ import {
     planningFilterConfig,
     planningDataGridFormatting,
     planningRowOrder,
-    planningRowResize,
     getPlanningVisibleSource,
     schedulerConfig,
     schedulerResources,
@@ -58,14 +60,14 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     eventSchedulerResources?: typeof schedulerResources
     kanban?: ReturnType<typeof createKanbanConfig>
     rowSelect?: { rowOrder: boolean }
-    filter?: typeof planningFilterConfig
-    onRowselected?: (
-        event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>
-    ) => void
+    filter?: ColumnFilterConfig
     onGridedit?: (
         event: CustomEvent<PlanningEditDetail>
     ) => void
     onRoworderapplied?: (event: CustomEvent) => void
+    onFilterastchange?: (event: CustomEvent) => void
+    filterBadges?: object
+    rangeSelectionLimit?: 'column'
 }
 
 const PlanningGrid = RevoGrid as React.ComponentType<PlanningGridProps>
@@ -80,10 +82,27 @@ export default function PlanningViews() {
     const [filters, setFilters] = useState<PlanningFilters>(
         defaultPlanningFilters
     )
-    const [selectedCount, setSelectedCount] = useState(0)
+    const [isActiveTasksPreset, setIsActiveTasksPreset] = useState(false)
+    const filterConfigs = useMemo<Record<'grid' | 'kanban' | 'gantt', ColumnFilterConfig>>(
+        () => ({
+            grid: {
+                ...planningFilterConfig,
+                multiFilterItems: { ...planningFilterConfig.multiFilterItems },
+            },
+            kanban: {
+                ...planningFilterConfig,
+                multiFilterItems: { ...planningFilterConfig.multiFilterItems },
+            },
+            gantt: {
+                ...planningFilterConfig,
+                multiFilterItems: { ...planningFilterConfig.multiFilterItems },
+            },
+        }),
+        []
+    )
     const [isDark, setIsDark] = useState(() => currentTheme().isDark())
-    const ganttPlugins = useMemo(() => [GanttPlugin], [])
-    const kanbanPlugins = useMemo(() => [KanbanPlugin], [])
+    const ganttPlugins = useMemo(() => [GanttPlugin, AdvanceFilterPlugin, FilterHeaderPlugin], [])
+    const kanbanPlugins = useMemo(() => [KanbanPlugin, AdvanceFilterPlugin], [])
     const schedulerPlugins = useMemo(() => [EventSchedulerPlugin], [])
     const emptySource = useMemo<never[]>(() => [], [])
     const gridPlugins = useMemo(
@@ -94,6 +113,7 @@ export default function PlanningViews() {
             EventManagerPlugin,
             AdvanceFilterPlugin,
             DataGridFormattingPlugin,
+            RangeSelectionLimitPlugin,
             ColumnStretchPlugin,
             ColumnHidePlugin,
         ],
@@ -106,26 +126,34 @@ export default function PlanningViews() {
             createPlanningDataGridContextMenu((taskIds) => {
                 planningStore.delete(taskIds)
                 setTasks(planningStore.createSnapshot())
-                setSelectedCount(0)
             }),
         [planningStore]
+    )
+    const ganttAssignments = useMemo(
+        () => toGanttAssignments(tasks),
+        [tasks]
+    )
+    const visibleGanttDependencies = useMemo(
+        () => filterGanttDependencies(ganttDependencies, tasks),
+        [tasks]
     )
     const visibleTasks = useMemo(
         () => filterPlanningTasks(tasks, filters),
         [tasks, filters]
     )
-    const ganttAssignments = useMemo(
-        () => toGanttAssignments(visibleTasks),
-        [visibleTasks]
-    )
-    const visibleGanttDependencies = useMemo(
-        () => filterGanttDependencies(ganttDependencies, visibleTasks),
-        [visibleTasks]
-    )
     useEffect(() => observeCurrentTheme(setIsDark), [])
     const handlePlanningEdit = (
         event: CustomEvent<PlanningEditDetail>
-    ) => planningStore.commitPlanningEdit(event.detail)
+    ) => {
+        planningStore.commitPlanningEdit(event.detail)
+        setTasks(planningStore.createSnapshot())
+    }
+    const filterBadgeOptions = useMemo(() => ({
+        className: 'planning-demo__filter-badges',
+        badgeClassName: 'planning-demo__filter-badge',
+        emptyClassName: 'planning-demo__filter-badges--empty',
+        renderEmpty: () => '',
+    }), [])
 
     const selectPlanningView = (view: PlanningView) => {
         if (view === activeView) return
@@ -136,8 +164,11 @@ export default function PlanningViews() {
     const changeFilters = (
         update: React.SetStateAction<PlanningFilters>
     ) => {
-        setTasks(planningStore.createSnapshot())
-        setFilters(update)
+        setIsActiveTasksPreset(false)
+        setFilters((current) => {
+            const next = typeof update === 'function' ? update(current) : update
+            return next
+        })
     }
 
     return (
@@ -290,7 +321,12 @@ export default function PlanningViews() {
                 </details>
                 <button
                     type="button"
-                    onClick={() => changeFilters(activePlanningFilters())}
+                    className={isActiveTasksPreset ? 'on' : undefined}
+                    aria-pressed={isActiveTasksPreset}
+                    onClick={() => {
+                        setIsActiveTasksPreset(true)
+                        setFilters(activePlanningFilters())
+                    }}
                 >
                     Active tasks
                 </button>
@@ -299,30 +335,15 @@ export default function PlanningViews() {
                     onClick={() => {
                         planningStore.replace(createTasks())
                         setTasks(planningStore.createSnapshot())
+                        setIsActiveTasksPreset(false)
                         setFilters(defaultPlanningFilters())
-                        setSelectedCount(0)
                     }}
                 >
                     Reset
                 </button>
-                <span className="planning-demo__count">
-                    {visibleTasks.length} of {tasks.length} tasks ·{' '}
-                    {selectedCount} selected
-                </span>
             </div>
 
-            {!visibleTasks.length && (
-                <div className="planning-demo__empty">
-                    <strong>No tasks match your filters</strong>
-                    <button
-                        type="button"
-                        onClick={() => changeFilters(defaultPlanningFilters())}
-                    >
-                        Clear filters
-                    </button>
-                </div>
-            )}
-            {!!visibleTasks.length && activeView === 'grid' && (
+            {activeView === 'grid' && (
                 <PlanningGrid
                     key="grid"
                     className="planning-demo__grid"
@@ -336,27 +357,31 @@ export default function PlanningViews() {
                     dataGridContextMenu={dataGridContextMenu}
                     dataGridFormatting={dataGridFormatting}
                     range
+                    rangeSelectionLimit="column"
                     resize
                     canMoveColumns
                     rowSize={40}
-                    resizeRow={planningRowResize}
                     stretch={1}
                     rowOrder={planningRowOrder}
                     rowSelect={{ rowOrder: true }}
-                    filter={planningFilterConfig}
-                    onRowselected={(event: CustomEvent<{ count: number }>) =>
-                        setSelectedCount(event.detail.count)
-                    }
+                    filter={filterConfigs.grid}
+                    filterBadges={filterBadgeOptions}
+                    onFilterastchange={(event) => {
+                        if (event.detail.origin === 'ui') {
+                            filterConfigs.grid.filterAst = event.detail.filterAst
+                        }
+                    }}
                     onGridedit={handlePlanningEdit}
                     onRoworderapplied={(event) => {
                         void getPlanningVisibleSource(event)
-                            .then((visible) =>
+                            .then((visible) => {
                                 planningStore.commitVisibleOrder(visible)
-                            )
+                                setTasks(planningStore.createSnapshot())
+                            })
                     }}
                 />
             )}
-            {!!visibleTasks.length && activeView === 'gantt' && (
+            {activeView === 'gantt' && (
                 <PlanningGrid
                     key="gantt"
                     className="planning-demo__grid planning-demo__grid--timeline"
@@ -365,16 +390,22 @@ export default function PlanningViews() {
                     plugins={ganttPlugins}
                     source={visibleTasks}
                     columns={ganttColumns}
-                    resizeRow={planningRowResize}
                     rowOrder={false}
                     gantt={ganttConfig}
                     ganttDependencies={visibleGanttDependencies}
                     ganttResources={ganttResources}
                     ganttAssignments={ganttAssignments}
+                    filter={filterConfigs.gantt}
+                    filterBadges={filterBadgeOptions}
+                    onFilterastchange={(event) => {
+                        if (event.detail.origin === 'ui') {
+                            filterConfigs.gantt.filterAst = event.detail.filterAst
+                        }
+                    }}
                     onGridedit={handlePlanningEdit}
                 />
             )}
-            {!!visibleTasks.length && activeView === 'kanban' && (
+            {activeView === 'kanban' && (
                 <PlanningGrid
                     key="kanban"
                     className="planning-demo__grid"
@@ -384,18 +415,24 @@ export default function PlanningViews() {
                     source={visibleTasks}
                     columns={gridColumns}
                     kanban={kanbanConfig}
+                    filter={filterConfigs.kanban}
+                    filterBadges={filterBadgeOptions}
+                    onFilterastchange={(event) => {
+                        if (event.detail.origin === 'ui') {
+                            filterConfigs.kanban.filterAst = event.detail.filterAst
+                        }
+                    }}
                     onGridedit={handlePlanningEdit}
                 />
             )}
-            {!!visibleTasks.length &&
-                (activeView === 'scheduler' || activeView === 'calendar') && (
+            {(activeView === 'scheduler' || activeView === 'calendar') && (
                     <PlanningGrid
                         key={activeView}
                         className="planning-demo__grid planning-demo__grid--timeline"
                         theme={isDark ? 'darkCompact' : 'compact'}
                         hideAttribution
                         plugins={schedulerPlugins}
-                        source={visibleTasks}
+                        source={tasks}
                         columns={emptySource}
                         resize
                         canMoveColumns={false}

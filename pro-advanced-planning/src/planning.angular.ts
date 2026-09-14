@@ -4,6 +4,7 @@ import {
     ViewEncapsulation,
 } from '@angular/core'
 import { RevoGrid } from '@revolist/angular-datagrid'
+import type { ColumnFilterConfig } from '@revolist/revogrid'
 import { GanttPlugin } from '@revolist/gantt'
 import { KanbanPlugin } from '@revolist/kanban'
 import { EventSchedulerPlugin } from '@revolist/scheduler'
@@ -13,8 +14,10 @@ import {
     ColumnStretchPlugin,
     DataGridFormattingPlugin,
     EventManagerPlugin,
+    FilterHeaderPlugin,
     RowSelectPlugin,
     RowOrderPlugin,
+    RangeSelectionLimitPlugin,
 } from '@revolist/revogrid-pro'
 import { currentTheme } from '../../composables/useRandomData'
 import {
@@ -36,7 +39,6 @@ import {
     planningFilterConfig,
     planningDataGridFormatting,
     planningRowOrder,
-    planningRowResize,
     getPlanningVisibleSource,
     schedulerConfig,
     schedulerResources,
@@ -163,16 +165,15 @@ import {
                         <option value="900">Critical</option>
                     </select></label
                 >
-                <button type="button" (click)="applyActiveTasksPreset()">
+                <button
+                    type="button"
+                    [class.on]="isActiveTasksPreset"
+                    [attr.aria-pressed]="isActiveTasksPreset"
+                    (click)="applyActiveTasksPreset()"
+                >
                     Active tasks
                 </button>
                 <button type="button" (click)="resetWorkspace()">Reset</button>
-                <span class="planning-demo__count"
-                    >{{ visibleTasks.length }} of {{ tasks.length }} tasks
-                    @if (selectedCount) {
-                        · {{ selectedCount }} selected
-                    }
-                </span>
             </div>
 
             @switch (activeView) {
@@ -182,23 +183,27 @@ import {
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="gridPlugins"
-                        [source]="visibleTasks"
+                        [source]="tasks"
                         [columns]="gridColumns"
                         [columnTypes]="gridColumnTypes"
                         [dataGridContextMenu]="planningDataGridContextMenu"
                         [dataGridFormatting]="planningDataGridFormatting"
                         [stretch]="1"
-                        [filter]="planningFilterConfig"
+                        [filter]="gridFilterConfig"
+                        [filterBadges]="filterBadgeOptions"
                         [range]="true"
+                        [rangeSelectionLimit]="'column'"
                         [resize]="true"
                         [canMoveColumns]="true"
                         [rowSize]="40"
-                        [resizeRow]="planningRowResize"
                         [rowOrder]="planningRowOrder"
                         [rowSelect]="rowSelect"
                         (gridedit)="handlePlanningEdit($event)"
                         (roworderapplied)="handleGridRowOrder($event)"
-                        (rowselected)="handleRowSelected($event)"
+                        (filterastchange)="
+                            $any($event).detail.origin === 'ui' &&
+                            (gridFilterConfig.filterAst = $any($event).detail.filterAst)
+                        "
                     ></revo-grid>
                 }
                 @case ('gantt') {
@@ -207,15 +212,20 @@ import {
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="ganttPlugins"
-                        [source]="visibleTasks"
+                        [source]="tasks"
                         [columns]="ganttColumns"
-                        [resizeRow]="planningRowResize"
                         [rowOrder]="false"
                         [gantt]="ganttConfig"
                         [ganttDependencies]="visibleGanttDependencies"
                         [ganttResources]="ganttResources"
                         [ganttAssignments]="ganttAssignments"
+                        [filter]="ganttFilterConfig"
+                        [filterBadges]="filterBadgeOptions"
                         (gridedit)="handlePlanningEdit($event)"
+                        (filterastchange)="
+                            $any($event).detail.origin === 'ui' &&
+                            (ganttFilterConfig.filterAst = $any($event).detail.filterAst)
+                        "
                     ></revo-grid>
                 }
                 @case ('kanban') {
@@ -224,10 +234,16 @@ import {
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="kanbanPlugins"
-                        [source]="visibleTasks"
+                        [source]="tasks"
                         [columns]="gridColumns"
                         [kanban]="kanbanConfig"
+                        [filter]="kanbanFilterConfig"
+                        [filterBadges]="filterBadgeOptions"
                         (gridedit)="handlePlanningEdit($event)"
+                        (filterastchange)="
+                            $any($event).detail.origin === 'ui' &&
+                            (kanbanFilterConfig.filterAst = $any($event).detail.filterAst)
+                        "
                     ></revo-grid>
                 }
                 @case ('scheduler') {
@@ -236,7 +252,7 @@ import {
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="schedulerPlugins"
-                        [source]="visibleTasks"
+                        [source]="tasks"
                         [columns]="empty"
                         [resize]="true"
                         [canMoveColumns]="false"
@@ -251,7 +267,7 @@ import {
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="schedulerPlugins"
-                        [source]="visibleTasks"
+                        [source]="tasks"
                         [columns]="empty"
                         [resize]="true"
                         [canMoveColumns]="false"
@@ -275,11 +291,28 @@ export class PlanningViewsGridComponent {
     private readonly planningStore = new PlanningWorkspaceStore(createTasks())
     tasks = this.planningStore.createSnapshot()
     filters: PlanningFilters = defaultPlanningFilters()
-    selectedCount = 0
+    isActiveTasksPreset = false
     readonly planningProjects = planningProjects
     readonly gridColumns = gridColumns
     readonly gridColumnTypes = gridColumnTypes
-    readonly planningFilterConfig = planningFilterConfig
+    readonly gridFilterConfig: ColumnFilterConfig = {
+        ...planningFilterConfig,
+        multiFilterItems: { ...planningFilterConfig.multiFilterItems },
+    }
+    readonly kanbanFilterConfig: ColumnFilterConfig = {
+        ...planningFilterConfig,
+        multiFilterItems: { ...planningFilterConfig.multiFilterItems },
+    }
+    readonly ganttFilterConfig: ColumnFilterConfig = {
+        ...planningFilterConfig,
+        multiFilterItems: { ...planningFilterConfig.multiFilterItems },
+    }
+    readonly filterBadgeOptions = {
+        className: 'planning-demo__filter-badges',
+        badgeClassName: 'planning-demo__filter-badge',
+        emptyClassName: 'planning-demo__filter-badges--empty',
+        renderEmpty: () => '',
+    }
     readonly planningDataGridContextMenu = createPlanningDataGridContextMenu(
         (taskIds) => this.deleteSelectedTasks(taskIds)
     )
@@ -292,7 +325,7 @@ export class PlanningViewsGridComponent {
     readonly schedulerConfig = schedulerConfig
     readonly calendarConfig = calendarConfig
     readonly schedulerResources = schedulerResources
-    readonly ganttPlugins = [GanttPlugin]
+    readonly ganttPlugins = [GanttPlugin, AdvanceFilterPlugin, FilterHeaderPlugin]
     readonly gridPlugins = [
         RowOrderPlugin,
         RowSelectPlugin,
@@ -300,29 +333,30 @@ export class PlanningViewsGridComponent {
         EventManagerPlugin,
         AdvanceFilterPlugin,
         DataGridFormattingPlugin,
+        RangeSelectionLimitPlugin,
         ColumnStretchPlugin,
         ColumnHidePlugin,
     ]
     readonly rowSelect = { rowOrder: true }
     readonly planningRowOrder = planningRowOrder
-    readonly planningRowResize = planningRowResize
-    readonly kanbanPlugins = [KanbanPlugin]
+    readonly kanbanPlugins = [KanbanPlugin, AdvanceFilterPlugin]
     readonly schedulerPlugins = [EventSchedulerPlugin]
     readonly empty: never[] = []
-    visibleTasks = filterPlanningTasks(this.tasks, this.filters)
-    ganttAssignments = toGanttAssignments(this.visibleTasks)
+    ganttAssignments = toGanttAssignments(this.tasks)
     visibleGanttDependencies = filterGanttDependencies(
         ganttDependencies,
-        this.visibleTasks
+        this.tasks
     )
 
     refreshViewSnapshot() {
-        this.tasks = this.planningStore.createSnapshot()
-        this.visibleTasks = filterPlanningTasks(this.tasks, this.filters)
-        this.ganttAssignments = toGanttAssignments(this.visibleTasks)
+        this.tasks = filterPlanningTasks(
+            this.planningStore.createSnapshot(),
+            this.filters
+        )
+        this.ganttAssignments = toGanttAssignments(this.tasks)
         this.visibleGanttDependencies = filterGanttDependencies(
             ganttDependencies,
-            this.visibleTasks
+            this.tasks
         )
     }
     setQuery(event: Event) {
@@ -330,7 +364,7 @@ export class PlanningViewsGridComponent {
             ...this.filters,
             query: (event.target as HTMLInputElement).value,
         }
-        this.refreshViewSnapshot()
+        this.applyToolbarFilters()
     }
     setProject(event: Event) {
         this.filters = {
@@ -338,12 +372,12 @@ export class PlanningViewsGridComponent {
             projectId: (event.target as HTMLSelectElement)
                 .value as PlanningFilters['projectId'],
         }
-        this.refreshViewSnapshot()
+        this.applyToolbarFilters()
     }
     setStatus(event: Event) {
         const value = (event.target as HTMLSelectElement).value
         this.filters = { ...this.filters, statuses: value ? [value] : [] }
-        this.refreshViewSnapshot()
+        this.applyToolbarFilters()
     }
     setPriority(event: Event) {
         const value = (event.target as HTMLSelectElement).value
@@ -351,12 +385,12 @@ export class PlanningViewsGridComponent {
             ...this.filters,
             priorities: value ? [Number(value)] : [],
         }
-        this.refreshViewSnapshot()
+        this.applyToolbarFilters()
     }
     resetWorkspace() {
         this.planningStore.replace(createTasks())
         this.filters = defaultPlanningFilters()
-        this.selectedCount = 0
+        this.isActiveTasksPreset = false
         this.refreshViewSnapshot()
     }
 
@@ -368,29 +402,30 @@ export class PlanningViewsGridComponent {
 
     applyActiveTasksPreset() {
         this.filters = activePlanningFilters()
+        this.isActiveTasksPreset = true
         this.refreshViewSnapshot()
     }
 
     deleteSelectedTasks(taskIds: readonly string[]) {
         this.planningStore.delete(taskIds)
         this.refreshViewSnapshot()
-        this.selectedCount = 0
     }
 
     async handleGridRowOrder(event: Event) {
         const visible = await getPlanningVisibleSource(event)
         this.planningStore.commitVisibleOrder(visible)
-    }
-
-    handleRowSelected(
-        event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>
-    ) {
-        this.selectedCount = event.detail.count
+        this.refreshViewSnapshot()
     }
 
     handlePlanningEdit(
         event: CustomEvent<PlanningEditDetail>
     ) {
         this.planningStore.commitPlanningEdit(event.detail)
+        this.refreshViewSnapshot()
+    }
+
+    private applyToolbarFilters() {
+        this.isActiveTasksPreset = false
+        this.refreshViewSnapshot()
     }
 }
