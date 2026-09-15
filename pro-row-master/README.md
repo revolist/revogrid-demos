@@ -10,12 +10,14 @@ and Angular. It migrates the maintained Row Master example into the standalone
 - Tree Data and Row Master working together in one hierarchy
 - Expand controls on leaf initiatives while parent rows retain tree controls
 - Async project risk, review, and staffing details
+- A temporary source-refresh control that preserves open master details
 - Responsive detail cards with milestones, progress, ownership, and team data
 - Direct `masterRow` and `tree` property configuration
 
 ## Run it
 
 ```bash
+pnpm -C ../../.. build:pro # required before `pnpm dev` to use the local Row Master implementation
 pnpm dev
 pnpm dev:react
 pnpm dev:vue

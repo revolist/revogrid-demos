@@ -12,12 +12,15 @@ import {
   createMasterRowConfig,
   createMasterRows,
   createMasterTreeConfig,
+  cloneMasterRows,
+  preserveExpandedMastersOnSource,
   type MasterProjectRow,
 } from './row-master.shared';
 import './row-master.scss';
 
 export default function RowMaster({ rows }: { rows?: MasterProjectRow[] }) {
-  const source = useMemo(() => rows?.length ? rows : createMasterRows(), [rows]);
+  const initialSource = useMemo(() => rows?.length ? rows : createMasterRows(), [rows]);
+  const [source, setSource] = useState(initialSource);
   const columns = useMemo(() => createMasterColumns(source), [source]);
   const plugins = useMemo(() => [
     TreeDataPlugin,
@@ -30,9 +33,19 @@ export default function RowMaster({ rows }: { rows?: MasterProjectRow[] }) {
   const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
 
   useEffect(() => observeCurrentTheme(setDarkTheme), []);
+  useEffect(() => setSource(initialSource), [initialSource]);
 
   return (
     <section className="row-master-showcase" aria-label="Row Master portfolio explorer">
+      <div className="row-master-source-update">
+        <button
+          className="row-master-source-update__button"
+          type="button"
+          onClick={() => setSource(current => cloneMasterRows(current))}
+        >
+          Refresh source and preserve details
+        </button>
+      </div>
       <RevoGrid
         className="row-master-grid"
         theme={darkTheme ? 'darkMaterial' : 'material'}
@@ -41,6 +54,7 @@ export default function RowMaster({ rows }: { rows?: MasterProjectRow[] }) {
         plugins={plugins}
         masterRow={masterRow}
         tree={tree}
+        onBeforerowmastercollapse={preserveExpandedMastersOnSource}
         readonly={true}
         stretch="last"
         hideAttribution={true}

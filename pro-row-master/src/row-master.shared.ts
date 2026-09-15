@@ -1,5 +1,10 @@
 import { dispatchByEvent, type ColumnRegular, type DataType } from '@revolist/revogrid';
-import { ROW_MASTER, type RowMasterConfig, type TreeConfig } from '@revolist/revogrid-pro';
+import {
+  BEFORE_ROW_MASTER_COLLAPSE,
+  ROW_MASTER,
+  type RowMasterConfig,
+  type TreeConfig,
+} from '@revolist/revogrid-pro';
 
 export type MasterProjectRow = DataType & {
   id: string;
@@ -110,7 +115,18 @@ const MASTER_ROWS: MasterProjectRow[] = [
 ];
 
 export function createMasterRows(): MasterProjectRow[] {
-  return MASTER_ROWS.map(row => ({ ...row, milestones: [...row.milestones], team: [...row.team] }));
+  return cloneMasterRows(MASTER_ROWS);
+}
+
+export function cloneMasterRows(rows: MasterProjectRow[]): MasterProjectRow[] {
+  return rows.map(row => ({ ...row, milestones: [...row.milestones], team: [...row.team] }));
+}
+
+export function preserveExpandedMastersOnSource(event: Event) {
+  const detail = (event as CustomEvent<HTMLRevoGridElementEventMap[typeof BEFORE_ROW_MASTER_COLLAPSE]>).detail;
+  if (detail.reason === 'source') {
+    event.preventDefault();
+  }
 }
 
 export function createMasterTreeConfig(): TreeConfig {

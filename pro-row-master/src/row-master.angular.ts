@@ -12,9 +12,10 @@ import {
   createMasterRowConfig,
   createMasterRows,
   createMasterTreeConfig,
+  cloneMasterRows,
+  preserveExpandedMastersOnSource,
   type MasterProjectRow,
 } from './row-master.shared';
-import './row-master.scss';
 
 @Component({
   selector: 'row-master-grid',
@@ -22,8 +23,14 @@ import './row-master.scss';
   imports: [RevoGrid],
   encapsulation: ViewEncapsulation.None,
   schemas: [NO_ERRORS_SCHEMA],
+  styleUrls: ['./row-master.scss'],
   template: `
     <section class="row-master-showcase" aria-label="Row Master portfolio explorer">
+      <div class="row-master-source-update">
+        <button class="row-master-source-update__button" type="button" (click)="refreshSource()">
+          Refresh source and preserve details
+        </button>
+      </div>
       <revo-grid
         class="row-master-grid"
         [theme]="theme"
@@ -32,6 +39,7 @@ import './row-master.scss';
         [plugins]="plugins"
         [masterRow]="masterRow"
         [tree]="tree"
+        (beforerowmastercollapse)="preserveExpandedMastersOnSource($event)"
         [readonly]="true"
         [stretch]="'last'"
         [hideAttribution]="true"
@@ -55,6 +63,13 @@ export class RowMasterGridComponent implements OnDestroy {
   readonly tree = createMasterTreeConfig();
   source = createMasterRows();
   columns = createMasterColumns(this.source);
+
+  readonly preserveExpandedMastersOnSource = preserveExpandedMastersOnSource;
+
+  refreshSource() {
+    this.source = cloneMasterRows(this.source);
+    this.columns = createMasterColumns(this.source);
+  }
 
   ngOnDestroy() {
     this.disconnectTheme();

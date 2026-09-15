@@ -8,6 +8,8 @@ import {
   createMasterRowConfig,
   createMasterRows,
   createMasterTreeConfig,
+  cloneMasterRows,
+  preserveExpandedMastersOnSource,
 } from '../src/row-master.shared.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../src');
@@ -24,6 +26,19 @@ test('portfolio rows form a deterministic hierarchy with expandable leaves', () 
   assert.ok(rows.filter(row => row.parentId !== null).every(row => ids.has(row.parentId)));
   assert.ok(leaves.length >= 7);
   assert.notStrictEqual(createMasterRows()[0], rows[0]);
+  assert.notStrictEqual(cloneMasterRows(rows)[0], rows[0]);
+});
+
+test('source refresh preserves master details only for source replacements', () => {
+  const sourceEvent = new Event('beforerowmastercollapse', { cancelable: true });
+  Object.defineProperty(sourceEvent, 'detail', { value: { reason: 'source' } });
+  preserveExpandedMastersOnSource(sourceEvent);
+  assert.equal(sourceEvent.defaultPrevented, true);
+
+  const filterEvent = new Event('beforerowmastercollapse', { cancelable: true });
+  Object.defineProperty(filterEvent, 'detail', { value: { reason: 'filter' } });
+  preserveExpandedMastersOnSource(filterEvent);
+  assert.equal(filterEvent.defaultPrevented, false);
 });
 
 test('shared configuration uses direct Tree and Row Master contracts', () => {
@@ -53,6 +68,8 @@ test('all framework variants preserve plugin composition and lifecycle conventio
     assert.match(source, /TreeDataPlugin/);
     assert.match(source, /CellColumnFocusVerifyPlugin/);
     assert.match(source, /masterRow/);
+    assert.match(source, /Refresh source and preserve details/);
+    assert.match(source, /preserveExpandedMastersOnSource/);
     assert.doesNotMatch(source, /Portfolio explorer|Tree \+ master detail|row-master-toolbar/);
     assert.doesNotMatch(source, /additionalData/);
   }
@@ -81,11 +98,18 @@ test('all framework variants react to the resolved host theme', async () => {
   assert.doesNotMatch(styles, /@media \(prefers-color-scheme: dark\)/);
 });
 
-test('showcase renders only the borderless grid workspace', async () => {
+test('showcase renders a borderless grid workspace with a source-refresh control', async () => {
   const styles = await readSource('row-master.scss');
 
   assert.match(styles, /\.row-master-showcase\s*\{[^}]*background:\s*transparent/);
   assert.match(styles, /\.row-master-showcase\s*\{[^}]*border:\s*0/);
   assert.match(styles, /\.row-master-showcase\s*\{[^}]*border-radius:\s*0/);
   assert.doesNotMatch(styles, /\.row-master-toolbar(?:__badge)?\b/);
+  assert.match(styles, /\.row-master-source-update__button/);
+});
+
+test('master detail uses its Row Master scrollbar without making the overlay scrollable', async () => {
+  const styles = await readSource('row-master.scss');
+
+  assert.doesNotMatch(styles, /\.row-master-grid\s+\.rv-overlay\s*\{[^}]*overflow(?:-y)?:\s*(?:auto|scroll)/s);
 });
