@@ -47,6 +47,7 @@ import {
     views,
     type PlanningEditDetail,
     type PlanningView,
+    updateFromGanttDependencies,
 } from '../data'
 
 const rowSelect: RowSelectConfig = { rowOrder: true }
@@ -74,6 +75,7 @@ export function usePlanningWorkspace() {
     const planningStore = new PlanningWorkspaceStore(createTasks())
     const filters = ref(defaultPlanningFilters())
     const isActiveTasksPreset = ref(false)
+    const ganttDependencyState = ref([...ganttDependencies])
     const tasks = ref(filterPlanningTasks(planningStore.createSnapshot(), filters.value))
     const gridKey = ref(0)
     const viewFilters = createPlanningViewFilters()
@@ -107,7 +109,7 @@ export function usePlanningWorkspace() {
         toGanttAssignments(tasks.value)
     )
     const visibleGanttDependencies = computed(() =>
-        filterGanttDependencies(ganttDependencies, tasks.value)
+        filterGanttDependencies(ganttDependencyState.value, tasks.value)
     )
     const disconnectTheme = observeCurrentTheme((value) => {
         isDark.value = value
@@ -131,6 +133,7 @@ export function usePlanningWorkspace() {
 
     function resetWorkspace() {
         planningStore.replace(createTasks())
+        ganttDependencyState.value = [...ganttDependencies]
         filters.value = defaultPlanningFilters()
         isActiveTasksPreset.value = false
         refreshViewSnapshot()
@@ -151,6 +154,10 @@ export function usePlanningWorkspace() {
     function handlePlanningEdit(
         event: CustomEvent<PlanningEditDetail>
     ) {
+        ganttDependencyState.value = updateFromGanttDependencies(
+            ganttDependencyState.value,
+            event.detail
+        )
         planningStore.commitPlanningEdit(event.detail)
         refreshViewSnapshot()
     }

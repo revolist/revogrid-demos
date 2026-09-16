@@ -54,7 +54,7 @@ export const ganttConfig: GanttPluginConfig = {
     dateFormats: {
         locale: 'en-US',
         timeZone: 'UTC',
-        table: { dateStyle: 'medium', timeStyle: 'short' },
+        table: { dateStyle: 'medium' },
     },
     calendars: [
         {

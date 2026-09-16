@@ -1,7 +1,6 @@
 import { Component, Input, NO_ERRORS_SCHEMA, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import {
-  AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
@@ -77,7 +76,6 @@ export class DataGridContextMenuGridComponent implements OnDestroy {
     DataGridContextMenuPlugin,
     HistoryPlugin,
     DialogPlugin,
-    AdvanceFilterPlugin,
     AutoSizeColumnPlugin,
     RowSelectPlugin,
     ColumnCollapsePlugin,

@@ -35,6 +35,7 @@ export {
     toGanttAssignments,
 } from './source'
 export {
+    updateFromGanttDependencies,
     updateFromPlanningEdit,
     type PlanningEditDetail,
 } from './sync'

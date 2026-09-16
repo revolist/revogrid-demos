@@ -247,7 +247,7 @@ test('all framework variants install the same universal menu capabilities', asyn
       /\[\s*DataGridContextMenuPlugin,\s*HistoryPlugin,/,
     );
     assert.match(source, /DialogPlugin/);
-    assert.match(source, /AdvanceFilterPlugin/);
+    assert.doesNotMatch(source, /AdvanceFilterPlugin/);
     assert.match(source, /ColumnCollapsePlugin/);
     assert.match(source, /MultiRangeSelectionPlugin/);
     assert.match(source, /ExportExcelPlugin/);

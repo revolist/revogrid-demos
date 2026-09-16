@@ -1,12 +1,43 @@
 import type { EventManagerEvent } from '@revolist/revogrid-pro'
+import type { DependencyEntity } from '@revolist/gantt'
 import { getOwnerAvatar, getOwnerAvatarIndex } from './fixtures'
 import type { PlanningTask } from './types'
 
 export type PlanningEditDetail = Partial<
-    Pick<EventManagerEvent, 'data' | 'models'>
+    Pick<EventManagerEvent, 'data' | 'domainChanges' | 'models'>
 >
 
 const HOUR_IN_MS = 3_600_000
+
+/** Applies Gantt's producer-owned dependency mutations to this demo's source. */
+export function updateFromGanttDependencies(
+    dependencies: readonly DependencyEntity[],
+    detail: Pick<EventManagerEvent, 'domainChanges'>
+): DependencyEntity[] {
+    let next = [...dependencies]
+
+    for (const change of detail.domainChanges ?? []) {
+        if (change.type !== 'gantt-dependency') continue
+        const { dependencyId, dependency } = change.detail as {
+            dependencyId?: DependencyEntity['id']
+            dependency?: DependencyEntity | null
+        }
+        if (!dependencyId) continue
+
+        if (!dependency) {
+            next = next.filter(({ id }) => id !== dependencyId)
+            continue
+        }
+
+        const index = next.findIndex(({ id }) => id === dependencyId)
+        if (index < 0) next = [...next, dependency]
+        else next = next.map((item, itemIndex) =>
+            itemIndex === index ? dependency : item
+        )
+    }
+
+    return next
+}
 
 function applyDerivedPlanningFields(
     task: PlanningTask,

@@ -47,6 +47,7 @@ import {
     type PlanningEditDetail,
     type PlanningFilters,
     type PlanningView,
+    updateFromGanttDependencies,
 } from './data'
 import './planning.scss'
 
@@ -71,6 +72,7 @@ export function load(parentSelector: string): (() => void) | undefined {
     const planningStore = new PlanningWorkspaceStore(createTasks())
     let activeView: PlanningView = 'grid'
     let filters: PlanningFilters = defaultPlanningFilters()
+    let currentGanttDependencies = [...ganttDependencies]
     let isActiveTasksPreset = false
     const filterConfigs: Record<'grid' | 'kanban' | 'gantt', ColumnFilterConfig> = {
         grid: {
@@ -156,7 +158,7 @@ export function load(parentSelector: string): (() => void) | undefined {
         if (activeView === 'gantt') {
             activeGrid.ganttAssignments = toGanttAssignments(allTasks)
             activeGrid.ganttDependencies = filterGanttDependencies(
-                ganttDependencies,
+                currentGanttDependencies,
                 allTasks
             )
         }
@@ -175,7 +177,7 @@ export function load(parentSelector: string): (() => void) | undefined {
             filters
         )
         const visibleGanttDependencies = filterGanttDependencies(
-            ganttDependencies,
+            currentGanttDependencies,
             allTasks
         )
         const grid = document.createElement('revo-grid') as PlanningGridElement
@@ -247,6 +249,10 @@ export function load(parentSelector: string): (() => void) | undefined {
         }
 
         grid.addEventListener('gridedit', (event) => {
+            currentGanttDependencies = updateFromGanttDependencies(
+                currentGanttDependencies,
+                (event as CustomEvent<PlanningEditDetail>).detail
+            )
             planningStore.commitPlanningEdit(
                 event.detail as PlanningEditDetail
             )
@@ -307,6 +313,7 @@ export function load(parentSelector: string): (() => void) | undefined {
     reset.addEventListener('click', () => {
         setActiveTasksPreset(false)
         planningStore.replace(createTasks())
+        currentGanttDependencies = [...ganttDependencies]
         filters = defaultPlanningFilters()
         search.value = ''
         project.value = 'all'

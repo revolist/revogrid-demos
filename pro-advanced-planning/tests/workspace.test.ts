@@ -14,7 +14,10 @@ import {
     mergeVisibleTasks,
     reorderVisibleTasks,
 } from '../src/data/workspace'
-import { updateFromPlanningEdit } from '../src/data/sync'
+import {
+    updateFromGanttDependencies,
+    updateFromPlanningEdit,
+} from '../src/data/sync'
 import { PlanningWorkspaceStore } from '../src/data/store'
 import {
     getPlanningVisibleSource,
@@ -24,6 +27,7 @@ import { planningFields } from '../src/data/fields'
 import { createKanbanConfig } from '../src/data/kanban.config'
 import {
     filterGanttDependencies,
+    ganttDependencies,
     schedulerResources,
     toGanttAssignments,
 } from '../src/data/source'
@@ -381,6 +385,14 @@ test('builds Gantt assignments directly from the visible task source', () => {
         assert.doesNotMatch(source, /visibleIds/)
     }
     assert.equal('owners' in visibleTasks[0], false)
+})
+
+test('shows dates without times in the Planning Gantt task table', () => {
+    assert.match(
+        ganttConfigSource,
+        /table:\s*\{\s*dateStyle:\s*'medium'\s*\}/
+    )
+    assert.doesNotMatch(ganttConfigSource, /table:[\s\S]*?timeStyle/)
 })
 
 test('hides unsupported structural planning actions', () => {
@@ -879,7 +891,7 @@ test('uses one compact owner renderer for Grid cells and dropdown options', () =
 test('renders Progress as a slider and Budget as a histogram brush', () => {
     assert.match(
         columnsSource,
-        /\.\.\.percentDoneColumn[\s\S]*?filter: \[FIlTER_SLIDER\][\s\S]*?min: 0[\s\S]*?max: 100[\s\S]*?step: 5/
+        /\.\.\.percentDoneColumn[\s\S]*?filter: \[FIlTER_SLIDER\][\s\S]*?min: 0[\s\S]*?max: 100[\s\S]*?step: 1/
     )
     assert.match(
         columnsSource,
@@ -1169,6 +1181,31 @@ test('maps a Gantt progress-handle edit onto the authored progress field', () =>
     const edited = updated.find(({ id }) => id === task.id)!
     assert.equal(edited.percentDone, 73)
     assert.equal('progressPercent' in edited, false)
+})
+
+test('persists a deleted Gantt dependency from the unified edit stream', () => {
+    const deleted = ganttDependencies[0]
+    const updated = updateFromGanttDependencies(ganttDependencies, {
+        domainChanges: [{
+            type: 'gantt-dependency',
+            detail: {
+                action: 'delete',
+                dependencyId: deleted.id,
+                previousDependency: deleted,
+                dependency: null,
+            },
+        }],
+    })
+
+    assert.equal(updated.some(({ id }) => id === deleted.id), false)
+    assert.equal(updated.length, ganttDependencies.length - 1)
+})
+
+test('keeps the editable Gantt dependency collection controlled in every framework', () => {
+    for (const source of [vueWorkspaceSource, vanillaSource, reactSource, angularSource]) {
+        assert.match(source, /updateFromGanttDependencies/)
+        assert.match(source, /currentGanttDependencies|ganttDependencyState/)
+    }
 })
 
 test('receives Gantt progress edits through the authored progress field', () => {

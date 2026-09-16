@@ -254,7 +254,7 @@ export const gridColumns: ColumnRegular[] = [
         filter: [FIlTER_SLIDER],
         min: 0,
         max: 100,
-        step: 5,
+        step: 1,
         dataGridFormat: planningGridFormats.percentDone,
     },
     {

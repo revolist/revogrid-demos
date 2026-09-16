@@ -48,6 +48,7 @@ import {
     type PlanningEditDetail,
     type PlanningFilters,
     type PlanningView,
+    updateFromGanttDependencies,
 } from './data'
 
 @Component({
@@ -319,7 +320,7 @@ export class PlanningViewsGridComponent {
     readonly planningDataGridFormatting = planningDataGridFormatting
     readonly ganttColumns = ganttColumns
     readonly ganttConfig = ganttConfig
-    readonly ganttDependencies = ganttDependencies
+    ganttDependencyState = [...ganttDependencies]
     readonly kanbanConfig = createKanbanConfig()
     readonly ganttResources = ganttResources
     readonly schedulerConfig = schedulerConfig
@@ -344,7 +345,7 @@ export class PlanningViewsGridComponent {
     readonly empty: never[] = []
     ganttAssignments = toGanttAssignments(this.tasks)
     visibleGanttDependencies = filterGanttDependencies(
-        ganttDependencies,
+        this.ganttDependencyState,
         this.tasks
     )
 
@@ -355,7 +356,7 @@ export class PlanningViewsGridComponent {
         )
         this.ganttAssignments = toGanttAssignments(this.tasks)
         this.visibleGanttDependencies = filterGanttDependencies(
-            ganttDependencies,
+            this.ganttDependencyState,
             this.tasks
         )
     }
@@ -389,6 +390,7 @@ export class PlanningViewsGridComponent {
     }
     resetWorkspace() {
         this.planningStore.replace(createTasks())
+        this.ganttDependencyState = [...ganttDependencies]
         this.filters = defaultPlanningFilters()
         this.isActiveTasksPreset = false
         this.refreshViewSnapshot()
@@ -420,6 +422,10 @@ export class PlanningViewsGridComponent {
     handlePlanningEdit(
         event: CustomEvent<PlanningEditDetail>
     ) {
+        this.ganttDependencyState = updateFromGanttDependencies(
+            this.ganttDependencyState,
+            event.detail
+        )
         this.planningStore.commitPlanningEdit(event.detail)
         this.refreshViewSnapshot()
     }

@@ -23,7 +23,6 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import {
-  AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
@@ -58,7 +57,6 @@ const plugins = [
   DataGridContextMenuPlugin,
   HistoryPlugin,
   DialogPlugin,
-  AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
   RowSelectPlugin,
   ColumnCollapsePlugin,

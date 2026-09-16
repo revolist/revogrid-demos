@@ -1,6 +1,5 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import {
-  AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
@@ -29,7 +28,6 @@ const plugins = [
   DataGridContextMenuPlugin,
   HistoryPlugin,
   DialogPlugin,
-  AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
   RowSelectPlugin,
   ColumnCollapsePlugin,

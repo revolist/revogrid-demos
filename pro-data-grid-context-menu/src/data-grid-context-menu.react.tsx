@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import {
-  AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
@@ -33,7 +32,6 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
     DataGridContextMenuPlugin,
     HistoryPlugin,
     DialogPlugin,
-    AdvanceFilterPlugin,
     AutoSizeColumnPlugin,
     RowSelectPlugin,
     ColumnCollapsePlugin,

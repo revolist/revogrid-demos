@@ -48,6 +48,7 @@ import {
     type PlanningEditDetail,
     type PlanningView,
     type PlanningFilters,
+    updateFromGanttDependencies,
 } from './data'
 import './planning.scss'
 
@@ -79,6 +80,9 @@ export default function PlanningViews() {
     )
     const [activeView, setActiveView] = useState<PlanningView>('grid')
     const [tasks, setTasks] = useState(() => planningStore.createSnapshot())
+    const [currentGanttDependencies, setCurrentGanttDependencies] = useState(
+        () => [...ganttDependencies]
+    )
     const [filters, setFilters] = useState<PlanningFilters>(
         defaultPlanningFilters
     )
@@ -134,8 +138,8 @@ export default function PlanningViews() {
         [tasks]
     )
     const visibleGanttDependencies = useMemo(
-        () => filterGanttDependencies(ganttDependencies, tasks),
-        [tasks]
+        () => filterGanttDependencies(currentGanttDependencies, tasks),
+        [currentGanttDependencies, tasks]
     )
     const visibleTasks = useMemo(
         () => filterPlanningTasks(tasks, filters),
@@ -145,6 +149,9 @@ export default function PlanningViews() {
     const handlePlanningEdit = (
         event: CustomEvent<PlanningEditDetail>
     ) => {
+        setCurrentGanttDependencies((current) =>
+            updateFromGanttDependencies(current, event.detail)
+        )
         planningStore.commitPlanningEdit(event.detail)
         setTasks(planningStore.createSnapshot())
     }
@@ -334,6 +341,7 @@ export default function PlanningViews() {
                     type="button"
                     onClick={() => {
                         planningStore.replace(createTasks())
+                        setCurrentGanttDependencies([...ganttDependencies])
                         setTasks(planningStore.createSnapshot())
                         setIsActiveTasksPreset(false)
                         setFilters(defaultPlanningFilters())
