@@ -29,7 +29,7 @@ export const HR_PERFORMANCE_METRICS = {
   },
   scroll: {
     label: 'Scroll FPS',
-    description: 'Animation frames delivered during a sufficiently long, active grid viewport scroll. The maximum depends on the display refresh rate and browser; lower values are reported as measured and can indicate delayed or dropped frames. Results depend on the device and page workload.',
+    description: 'Animation frames delivered during a sufficiently long, active grid viewport scroll, normalized to a 60 Hz maximum for comparable results across displays. Lower values are reported as measured and can indicate delayed or dropped frames. Results depend on the device, browser, and page workload.',
   },
   memory: {
     label: 'Page JS heap',
@@ -75,7 +75,7 @@ export function formatDuration(duration: number | null) {
 }
 
 export function formatFrameRate(fps: number | null) {
-  return fps === null ? 'Scroll to measure' : `${Math.round(fps)} FPS`;
+  return fps === null ? 'Scroll to measure' : `${Math.round(Math.min(fps, 60))} FPS`;
 }
 
 export function formatMemory(bytes: number | undefined) {

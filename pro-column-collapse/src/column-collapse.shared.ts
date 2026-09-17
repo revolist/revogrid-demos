@@ -41,11 +41,20 @@ export function createColumnCollapseColumns(): ColumnData {
       columnTemplate: columnTypeRenderer,
       children: [
         {
+          prop: '_selected',
+          name: '',
+          size: 48,
+          sealed: true,
+          pin: 'colPinStart',
+          filter: false,
+          readonly: true,
+          rowSelect: true,
+        },
+        {
           prop: 'age',
           name: 'Age',
           size: 125,
           sealed: true,
-          rowSelect: true,
           filterPlaceholder: 'Age?',
           pin: 'colPinStart',
         },

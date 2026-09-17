@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import {
-  AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
@@ -33,7 +32,6 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
     DataGridContextMenuPlugin,
     HistoryPlugin,
     DialogPlugin,
-    AdvanceFilterPlugin,
     AutoSizeColumnPlugin,
     RowSelectPlugin,
     ColumnCollapsePlugin,
@@ -41,6 +39,7 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
     ExportExcelPlugin,
   ], []);
   const dataGridContextMenu = useMemo(() => createDataGridContextMenuConfig(), []);
+  const history = useMemo(() => ({ clearOnSourceChange: false }), []);
   const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
 
   useEffect(() => observeCurrentTheme(setDarkTheme), []);
@@ -57,6 +56,7 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
         dataGridFormatting={dataGridFormatting}
         dataGridFormattingPanel
         dataGridContextMenu={dataGridContextMenu}
+        history={history}
         rowHeaders={rowHeaders}
         range
         resize

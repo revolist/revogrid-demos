@@ -16,9 +16,10 @@ async function loadShared() {
 
 test('ships a useful local prompt catalog and filters it', async () => {
   const { PROMPTS, filterPrompts } = await loadShared();
-  assert.ok(PROMPTS.length >= 18);
-  assert.equal(filterPrompts(PROMPTS, 'sql', 'All').length, 1);
-  assert.ok(filterPrompts(PROMPTS, '', 'Engineering').length >= 4);
+  assert.equal(PROMPTS.length, 100);
+  assert.equal(filterPrompts(PROMPTS, 'quickstart', 'All').length, 1);
+  assert.equal(filterPrompts(PROMPTS, '', 'Extensions').length, 20);
+  assert.equal(filterPrompts(PROMPTS, '  MINIMAL GRID STARTER  ', 'Setup').length, 1);
 });
 
 test('loads a large predefined prompt catalog from bundled JSON', async () => {
@@ -28,9 +29,13 @@ test('loads a large predefined prompt catalog from bundled JSON', async () => {
   const categories = new Set(prompts.map(prompt => prompt.category));
 
   assert.match(shared, /from ['"]\.\/prompts\.json['"]/);
-  assert.ok(prompts.length >= 100);
+  assert.equal(prompts.length, 100);
   assert.equal(ids.size, prompts.length);
-  assert.deepEqual(categories, new Set(['Content', 'Engineering', 'Research', 'Operations', 'Learning']));
+  assert.deepEqual(categories, new Set(['Setup', 'Data', 'Interaction', 'Performance', 'Extensions']));
+  assert.ok(prompts.every(prompt => /RevoGrid/i.test(prompt.prompt)));
+  for (const category of categories) {
+    assert.equal(prompts.filter(prompt => prompt.category === category).length, 20);
+  }
 });
 
 test('all four framework entry points are present', async () => {

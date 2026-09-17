@@ -12,10 +12,10 @@ test('core demo separates preparation, grid paint, and scroll measurements', asy
   const metrics = page.getByRole('region', { name: 'Browser performance metrics' });
   await expect(metrics).toBeVisible({ timeout: 15_000 });
   await page.getByRole('button', { name: 'Reset view' }).click();
-  await expect(page.locator('.hr-select').first()).toHaveValue('10000');
+  await expect(page.locator('.hr-select').first()).toHaveValue('100000');
   await expect(metrics.locator('.hr-performance-metric', { hasText: 'Data preparation' }).locator('strong')).not.toHaveText('N/A');
   await expect(metrics.locator('.hr-performance-metric', { hasText: 'Grid apply to paint' }).locator('strong')).not.toHaveText('N/A');
-  await expect(metrics.locator('.hr-performance-metric', { hasText: 'Dataset' }).locator('strong')).toHaveText('10,000 × 100');
+  await expect(metrics.locator('.hr-performance-metric', { hasText: 'Dataset' }).locator('strong')).toHaveText('100,000 × 100');
   const scrollMetric = metrics.locator('.hr-performance-metric', { hasText: 'Scroll' }).locator('strong');
   await expect(scrollMetric).toHaveText('Scroll to measure');
 
@@ -25,7 +25,7 @@ test('core demo separates preparation, grid paint, and scroll measurements', asy
   await expect(metrics.getByRole('tooltip').first()).toBeVisible();
 
   await page.locator('.hr-select').first().selectOption('1000');
-  await expect(metrics.locator('.hr-performance-metric', { hasText: 'Dataset' }).locator('strong')).toHaveText('1,000 × 100');
+  await expect(metrics.locator('.hr-performance-metric', { hasText: 'Dataset' }).locator('strong')).toHaveText('1,000 × 1,000');
 
   await page.getByRole('button', { name: 'Save view' }).click();
   await expect(page.getByText('Saved locally')).toBeVisible();
@@ -45,7 +45,7 @@ test('core demo separates preparation, grid paint, and scroll measurements', asy
   await expect(scrollMetric).toHaveText(measuredScrollFps ?? '');
 
   await page.getByRole('button', { name: 'Reset view' }).click();
-  await expect(page.locator('.hr-select').first()).toHaveValue('10000');
+  await expect(page.locator('.hr-select').first()).toHaveValue('100000');
   await expect(page.getByText('View reset')).toBeVisible();
   expect(errors).toEqual([]);
 });

@@ -1,7 +1,6 @@
 import { Component, Input, NO_ERRORS_SCHEMA, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import {
-  AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
@@ -44,6 +43,7 @@ defineCustomElements();
         [dataGridFormatting]="dataGridFormatting"
         [dataGridFormattingPanel]="true"
         [dataGridContextMenu]="dataGridContextMenu"
+        [history]="history"
         [rowHeaders]="rowHeaders"
         [range]="true"
         [resize]="true"
@@ -76,7 +76,6 @@ export class DataGridContextMenuGridComponent implements OnDestroy {
     DataGridContextMenuPlugin,
     HistoryPlugin,
     DialogPlugin,
-    AdvanceFilterPlugin,
     AutoSizeColumnPlugin,
     RowSelectPlugin,
     ColumnCollapsePlugin,
@@ -85,6 +84,7 @@ export class DataGridContextMenuGridComponent implements OnDestroy {
   ];
   readonly dataGridFormatting = createDataGridFormattingPresets();
   readonly dataGridContextMenu = createDataGridContextMenuConfig();
+  readonly history = { clearOnSourceChange: false };
   source = createTeamRows();
 
   ngOnDestroy() {

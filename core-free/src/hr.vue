@@ -36,7 +36,6 @@
         :column-types="columnTypes"
         :filter="workspaceState.filter ?? true"
         :sorting="workspaceState.sorting"
-        :plugins="plugins"
         range
         resize
         row-headers
@@ -45,18 +44,6 @@
         :row-size="36"
       />
       <div v-if="loading" class="hr-loading-overlay" aria-live="polite">
-        <div class="hr-loading-counter" :aria-label="`${progressPercent} percent complete`">
-          <div class="hr-loading-counter-line">
-            <span
-              v-for="(digit, index) in loadingDigits"
-              :key="`${digit}-${index}-${progressPercent}`"
-              class="hr-loading-counter-digit"
-            >
-              {{ digit }}
-            </span>
-            <span class="hr-loading-counter-symbol">%</span>
-          </div>
-        </div>
         <div class="hr-loading-label">{{ loadingLabel }}</div>
       </div>
     </div>
@@ -122,15 +109,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, onBeforeUnmount, nextTick } from 'vue';
-import { VGrid, type ColumnGrouping, type ColumnRegular, BasePlugin, type PluginProviders } from '@revolist/vue3-datagrid';
+import { VGrid, type ColumnGrouping, type ColumnRegular } from '@revolist/vue3-datagrid';
 import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_COMPANY_OPTIONS, HR_OPTIONS } from './sys-data/hr.data';
-import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 import { getBaseHRColumns, getExtraHRColumns, withHRShortDate } from './sys-data/hr.columns';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import { renderHrColorPill } from './hr-color-select';
 import { renderHrCompanyCell } from './hr-company-avatar';
 import { renderHrAgeCell } from './hr-age-indicator';
-import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
 import { getInitialHRTheme, HR_THEME_DEFINITIONS, HR_THEME_OPTIONS } from './hr-themes';
 import {
   createHRPerformanceMonitor,
@@ -162,7 +147,7 @@ const initialWorkspace = loadHRWorkspace();
 const workspaceState = ref<HRWorkspaceState>(initialWorkspace);
 const workspaceStatus = ref(Object.keys(initialWorkspace).length ? 'Saved locally' : 'View not saved');
 const loading = ref(false);
-const loadingLabel = ref('Preparing rows…');
+const loadingLabel = 'Preparing rows…';
 const currentSize = ref(getHRWorkspaceRowCount(initialWorkspace, HR_OPTIONS.map(option => option.value)));
 const options = HR_OPTIONS;
 const themeOptions = HR_THEME_OPTIONS;
@@ -171,14 +156,11 @@ const rows = ref<any[]>([]);
 const gridRef = ref<HTMLRevoGridElement | { $el: HTMLRevoGridElement } | null>(null);
 const performanceState = ref(createInitialHRPerformanceState());
 const metricDefinitions = HR_PERFORMANCE_METRICS;
-const progress = ref<HRGenerationProgress>({ loaded: 0, total: currentSize.value });
 const defaultTheme = () => getInitialHRTheme(props.isDark === true || pageIsDark.value);
 const selectedTheme = ref(HR_THEME_OPTIONS.some(option => option.value === initialWorkspace.theme)
   ? initialWorkspace.theme!
   : defaultTheme());
 const gridTheme = computed(() => selectedTheme.value);
-const progressPercent = computed(() => getHRProgressPercent(progress.value));
-const loadingDigits = computed(() => getHRLoadingDigits(progress.value));
 let activeController: AbortController | undefined;
 let disconnectTheme: (() => void) | undefined;
 let performanceMonitor: HRPerformanceMonitor | undefined;
@@ -186,20 +168,6 @@ let workspaceController: HRWorkspaceController | undefined;
 
 // column types
 const columnTypes = ref<any>({});
-
-// custom plugin for row drag text
-const plugins = [
-  class HRPlugin extends BasePlugin {
-    constructor(r: HTMLRevoGridElement, p: PluginProviders) {
-      super(r, p);
-      this.addEventListener('rowdragstart', (e) => {
-        if (e.detail.model) {
-          e.detail.text = e.detail.model['name'];
-        }
-      });
-    }
-  },
-];
 
 const columns = computed(() => {
   const baseCols = getBaseHRColumns(HR_COMPANY_OPTIONS);
@@ -227,22 +195,14 @@ async function loadData() {
   const controller = new AbortController();
   activeController = controller;
   loading.value = true;
-  loadingLabel.value = `Preparing ${currentSize.value.toLocaleString()} rows…`;
-  progress.value = { loaded: 0, total: currentSize.value };
   const preparationStartedAt = performance.now();
   try {
-    const data = await getHRData(currentSize.value, {
-      signal: controller.signal,
-      onProgress: nextProgress => {
-        progress.value = nextProgress;
-      },
-    });
+    const data = await getHRData(currentSize.value, { signal: controller.signal });
     performanceMonitor?.setPreparationResult(
       performance.now() - preparationStartedAt,
       currentSize.value,
       getHRVisibleColumnsCount(currentSize.value),
     );
-    loadingLabel.value = 'Rendering RevoGrid…';
     if (performanceMonitor) {
       await performanceMonitor.measureGridUpdate(() => {
         rows.value = data;

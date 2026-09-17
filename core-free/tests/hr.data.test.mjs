@@ -54,16 +54,16 @@ test('company avatar metadata follows an edited company value', () => {
 test('data source options expose the requested row and total-column dimensions', () => {
   assert.deepEqual(HR_OPTIONS.map(option => option.label), [
     '100 rows × 1,000 columns',
-    '1,000 rows × 100 columns',
+    '1,000 rows × 1,000 columns',
     '10,000 rows × 100 columns',
     '100,000 rows × 100 columns',
     '1,000,000 rows × 10 columns',
   ]);
   assert.deepEqual(HR_OPTIONS.map(option => getHRVisibleColumnsCount(option.value)), [
-    1_000, 100, 100, 100, 10,
+    1_000, 1_000, 100, 100, 10,
   ]);
   assert.deepEqual(HR_OPTIONS.map(option => getHRColumnsCount(option.value)), [
-    993, 93, 93, 93, 3,
+    993, 993, 93, 93, 3,
   ]);
 });
 
@@ -80,7 +80,7 @@ test('generated rows expose the selected monthly range instead of synthetic metr
 
 test('resets cached rows when the workload column shape changes', async () => {
   const [wideRow] = await getHRData(100);
-  const [balancedRow] = await getHRData(1_000);
+  const [balancedRow] = await getHRData(10_000);
 
   assert.notEqual(balancedRow, wideRow);
   assert.equal('hours210809' in wideRow, true);

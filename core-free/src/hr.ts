@@ -1,6 +1,5 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_COMPANY_OPTIONS, HR_OPTIONS } from './sys-data/hr.data';
-import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 import { getBaseHRColumns, getExtraHRColumns, withHRShortDate } from './sys-data/hr.columns';
 import { renderHrColorPill } from './hr-color-select';
 import { renderHrCompanyCell } from './hr-company-avatar';
@@ -49,13 +48,12 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
   let currentSize = getHRWorkspaceRowCount(workspaceState, HR_OPTIONS.map(option => option.value));
   let rows: any[] = [];
   let loading = false;
-  let loadingLabel = 'Preparing rows…';
+  const loadingLabel = 'Preparing rows…';
   const defaultTheme = getInitialHRTheme(isDark);
   let currentTheme = HR_THEME_OPTIONS.some(option => option.value === workspaceState.theme)
     ? workspaceState.theme!
     : defaultTheme;
   let activeController: AbortController | undefined;
-  let progress: HRGenerationProgress = { loaded: 0, total: currentSize };
 
   const container = document.createElement('div');
   container.className = 'hr-demo grow h-full flex flex-col';
@@ -107,19 +105,6 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
   grid.filter = workspaceState.filter ?? true;
   grid.sorting = workspaceState.sorting;
 
-  const { BasePlugin } = await import('@revolist/revogrid');
-  grid.plugins = [
-    class HRPlugin extends BasePlugin {
-      constructor(r: any, p: any) {
-        super(r, p);
-        this.addEventListener('rowdragstart', (e: any) => {
-          if (e.detail.model) {
-            e.detail.text = e.detail.model['name'];
-          }
-        });
-      }
-    }
-  ];
   gridContainer.appendChild(grid);
 
   const workspaceController = createHRWorkspaceController(grid, workspaceState, () => {
@@ -173,29 +158,18 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
     const controller = new AbortController();
     activeController = controller;
     loading = true;
-    loadingLabel = `Preparing ${size.toLocaleString()} rows…`;
-    progress = { loaded: 0, total: size };
     const preparationStartedAt = performance.now();
     loadingIndicator.textContent = loadingLabel;
     loadingIndicator.style.display = 'inline-block';
     select.disabled = true;
     renderLoadingOverlay();
     try {
-      const data = await getHRData(size, {
-        signal: controller.signal,
-        onProgress: nextProgress => {
-          progress = nextProgress;
-          renderLoadingOverlay();
-        },
-      });
+      const data = await getHRData(size, { signal: controller.signal });
       performanceMonitor.setPreparationResult(
         performance.now() - preparationStartedAt,
         size,
         getHRVisibleColumnsCount(size),
       );
-      loadingLabel = 'Rendering RevoGrid…';
-      loadingIndicator.textContent = loadingLabel;
-      renderLoadingOverlay();
       await performanceMonitor.measureGridUpdate(() => {
         rows = data;
         grid.source = rows;
@@ -227,7 +201,7 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
       overlayElement = document.createElement('div');
       gridContainer.appendChild(overlayElement);
     }
-    overlayElement.outerHTML = getHRLoadingOverlayHtml(progress, loadingLabel);
+    overlayElement.outerHTML = getHRLoadingOverlayHtml(loadingLabel);
     overlayElement = gridContainer.querySelector('.hr-loading-overlay') as HTMLElement | undefined;
   };
 

@@ -13,6 +13,7 @@ const {
   applyHRWorkspaceToColumns,
   clearHRWorkspace,
   getHRWorkspaceRowCount,
+  HR_DEFAULT_ROW_COUNT,
   HR_WORKSPACE_STORAGE_KEY,
   loadHRWorkspace,
 } = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
@@ -34,8 +35,9 @@ test('loads valid state and safely ignores invalid storage', () => {
 
 test('validates saved row counts against the demo choices', () => {
   assert.equal(getHRWorkspaceRowCount({ rowCount: 1000 }, [100, 1000]), 1000);
-  assert.equal(getHRWorkspaceRowCount({ rowCount: 999 }, [100, 1000, 10_000]), 10_000);
-  assert.equal(getHRWorkspaceRowCount({}, [100, 1000, 10_000]), 10_000);
+  assert.equal(getHRWorkspaceRowCount({ rowCount: 999 }, [100, 1000, 100_000]), 100_000);
+  assert.equal(getHRWorkspaceRowCount({}, [100, 1000, 100_000]), 100_000);
+  assert.equal(HR_DEFAULT_ROW_COUNT, 100_000);
 });
 
 test('reapplies grouped column order, widths, and sorting without losing groups', () => {

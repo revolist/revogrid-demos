@@ -10,7 +10,7 @@ complete formatting dialog.
 `DataGridContextMenuPlugin` automatically installs the formatting runtime, so
 the menu, selection targeting, stored formats, and editor work as one feature.
 Formatting changes presentation metadata only: source values remain unchanged
-for editing, sorting, filtering, formulas, and application code.
+for editing, sorting, formulas, and application code.
 
 ## Context-menu showcase
 
@@ -35,7 +35,7 @@ The example demonstrates the configuration paths applications commonly need:
   format is `date`, plus one built-in format disabled and another configured
   through the advanced registry;
 - optional row pinning and application-owned column schema creation;
-- filtering, column auto-size, grouped columns, and CSV/XLSX export capabilities.
+- column auto-size, grouped columns, and CSV/XLSX export capabilities.
 
 The built-in **Inspect cell** and **Inspect column** actions expose technical
 details such as raw values, coordinates, schema, and readonly metadata. The

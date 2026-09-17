@@ -1,14 +1,12 @@
 import './hr.css';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { RevoGrid, BasePlugin, type PluginProviders } from '@revolist/react-datagrid';
+import { RevoGrid } from '@revolist/react-datagrid';
 import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_COMPANY_OPTIONS, HR_OPTIONS } from './sys-data/hr.data';
-import type { HRGenerationProgress } from './sys-data/hr.data.generator';
 import { getBaseHRColumns, getExtraHRColumns, withHRShortDate } from './sys-data/hr.columns';
 import { renderHrColorPill } from './hr-color-select';
 import { renderHrCompanyCell } from './hr-company-avatar';
 import { renderHrAgeCell } from './hr-age-indicator';
-import { getHRLoadingDigits, getHRProgressPercent } from './hr-loading';
 import { getInitialHRTheme, HR_THEME_DEFINITIONS, HR_THEME_OPTIONS } from './hr-themes';
 import DateCol from '@revolist/revogrid-column-date';
 import NumeralCol from '@revolist/revogrid-column-numeral';
@@ -62,52 +60,32 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
   const [workspaceStatus, setWorkspaceStatus] = useState(() => Object.keys(loadHRWorkspace()).length ? 'Saved locally' : 'View not saved');
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loadingLabel, setLoadingLabel] = useState('Preparing rows…');
+  const loadingLabel = 'Preparing rows…';
   const [currentSize, setCurrentSize] = useState(() => getHRWorkspaceRowCount(loadHRWorkspace(), HR_OPTIONS.map(option => option.value)));
   const [selectedTheme, setSelectedTheme] = useState(() => {
     const saved = loadHRWorkspace().theme;
     return HR_THEME_OPTIONS.some(option => option.value === saved) ? saved! : getInitialHRTheme(isDark);
   });
   const [columnTypes, setColumnTypes] = useState<any>({});
-  const [progress, setProgress] = useState<HRGenerationProgress>({ loaded: 0, total: 100 });
   const [performanceState, setPerformanceState] = useState(createInitialHRPerformanceState);
   const activeController = useRef<AbortController | null>(null);
   const gridRef = useRef<HTMLRevoGridElement>(null);
   const performanceMonitor = useRef<HRPerformanceMonitor | null>(null);
   const workspaceController = useRef<HRWorkspaceController | null>(null);
 
-  const plugins = useMemo(() => [
-    class HRPlugin extends BasePlugin {
-      constructor(r: HTMLRevoGridElement, p: PluginProviders) {
-        super(r, p);
-        this.addEventListener('rowdragstart', (e) => {
-          if (e.detail.model) {
-            e.detail.text = e.detail.model['name'];
-          }
-        });
-      }
-    },
-  ], []);
-  
   const loadData = async (size: number) => {
     activeController.current?.abort();
     const controller = new AbortController();
     activeController.current = controller;
     setLoading(true);
-    setLoadingLabel(`Preparing ${size.toLocaleString()} rows…`);
-    setProgress({ loaded: 0, total: size });
     const preparationStartedAt = performance.now();
     try {
-      const data = await getHRData(size, {
-        signal: controller.signal,
-        onProgress: setProgress,
-      });
+      const data = await getHRData(size, { signal: controller.signal });
       performanceMonitor.current?.setPreparationResult(
         performance.now() - preparationStartedAt,
         size,
         getHRVisibleColumnsCount(size),
       );
-      setLoadingLabel('Rendering RevoGrid…');
       if (performanceMonitor.current) {
         await performanceMonitor.current.measureGridUpdate(() => setRows(data));
       } else {
@@ -204,9 +182,6 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
     loadData(HR_DEFAULT_ROW_COUNT);
   };
 
-  const progressPercent = getHRProgressPercent(progress);
-  const loadingDigits = getHRLoadingDigits(progress);
-
   return (
     <div className="hr-demo grow h-full flex flex-col">
       <div className="hr-toolbar">
@@ -254,7 +229,6 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
           source={rows}
           columns={columns}
           columnTypes={columnTypes}
-          plugins={plugins}
           filter={workspaceState.filter ?? true}
           sorting={workspaceState.sorting}
           range={true}
@@ -266,19 +240,6 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
         />
         {loading && (
           <div className="hr-loading-overlay" aria-live="polite">
-            <div className="hr-loading-counter" aria-label={`${progressPercent} percent complete`}>
-              <div className="hr-loading-counter-line">
-                {loadingDigits.map((digit, index) => (
-                  <span
-                    key={`${digit}-${index}-${progressPercent}`}
-                    className="hr-loading-counter-digit"
-                  >
-                    {digit}
-                  </span>
-                ))}
-                <span className="hr-loading-counter-symbol">%</span>
-              </div>
-            </div>
             <div className="hr-loading-label">{loadingLabel}</div>
           </div>
         )}

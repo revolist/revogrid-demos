@@ -1,0 +1,85 @@
+import { renderKanbanProgress } from '@revolist/kanban'
+import type { KanbanConfig } from '@revolist/kanban'
+import { avatarTemplate } from '@revolist/revogrid-pro'
+import type { PlanningTask } from './types'
+import { planningFields } from './fields'
+import {
+    getOwnerAvatar,
+    getOwnerAvatarIndex,
+    planningPeople,
+} from './fixtures'
+
+export function createKanbanConfig(): KanbanConfig<PlanningTask> {
+    return {
+        columns: [
+            { prop: 'not-started', name: 'Planned', size: 228, minSize: 216 },
+            { prop: 'in-progress', name: 'In progress', size: 228, minSize: 216 },
+            { prop: 'blocked', name: 'Blocked', size: 228, minSize: 216 },
+            { prop: 'done', name: 'Done', size: 228, minSize: 216 },
+        ],
+        resources: planningPeople,
+        fields: planningFields,
+        orderField: 'order',
+        swimlaneColumn: false,
+        contextMenu: {
+            hidden: { create: true, delete: true },
+        },
+        card: {
+            dateTimeZone: 'UTC',
+        },
+        customization: {
+            cardContent: (h, { card }) =>
+                h(
+                    'div',
+                    { class: 'planning-card' },
+                    [
+                h(
+                    'strong',
+                    { class: 'planning-card__title', title: card.name },
+                    card.name
+                ),
+                h('div', { class: 'planning-card__meta' }, [
+                    h(
+                        'span',
+                        {
+                            class: 'planning-card__owner',
+                            title: card.owner,
+                        },
+                        [
+                            h(
+                                'span',
+                                { class: 'planning-card__avatar-stack' },
+                                avatarTemplate(h, {
+                                    ariaLabel: card.owner,
+                                    className: 'planning-card__avatar',
+                                    index: getOwnerAvatarIndex(card.owner) - 1,
+                                    label: card.owner,
+                                    size: 28,
+                                    value: getOwnerAvatar(card.owner),
+                                })
+                            ),
+                            h(
+                                'span',
+                                { class: 'planning-card__owner-label' },
+                                card.owner
+                            ),
+                        ]
+                    ),
+                    h(
+                        'span',
+                        {},
+                        `$${Number(card.budget).toLocaleString('en-US')}`
+                    ),
+                ]),
+                renderKanbanProgress(h, {
+                    value: card.percentDone,
+                    label: 'Progress',
+                }),
+                    ]
+                ),
+        },
+        cardRowHeight: 144,
+    }
+}
+
+export const kanbanConfig = createKanbanConfig()

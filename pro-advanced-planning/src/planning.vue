@@ -1,181 +1,191 @@
 <template>
-  <section class="planning-demo">
-    <nav class="planning-demo__switch rv-segmented-switch" role="tablist" aria-label="Planning view">
-      <button
-        v-for="view in views"
-        :key="view"
-        type="button"
-        class="rv-segmented-switch-item"
-        :class="{ on: activeView === view }"
-        role="tab"
-        :aria-selected="activeView === view"
-        @click="activeView = view"
-      >
-        {{ view }}
-      </button>
-    </nav>
-
-    <RevoGrid
-      v-if="activeView === 'grid'"
-      key="grid"
-      class="planning-demo__grid"
-      hide-attribution
-      :theme="theme"
-      :source="tasks"
-      :columns="gridColumns"
-      range
-      resize
-      row-headers
-      filter
-      can-move-columns
-      @afteredit="handleGridEdit"
-    />
-    <RevoGrid
-      v-else-if="activeView === 'kanban'"
-      key="kanban"
-      class="planning-demo__grid"
-      hide-attribution
-      :theme="theme"
-      :plugins="kanbanPlugins"
-      :source="tasks"
-      :columns="gridColumns"
-      :kanban.prop="kanbanConfig"
-      @kanbancardmove="handleKanbanMove"
-      @kanbancardcreate="handleKanbanCreate"
-      @kanbancardupdate="handleKanbanUpdate"
-      @kanbancarddelete="handleKanbanDelete"
-    />
-    <RevoGrid
-      v-else-if="activeView === 'gantt'"
-      key="gantt"
-      class="planning-demo__grid"
-      hide-attribution
-      :theme="theme"
-      :plugins="ganttPlugins"
-      :source="tasks"
-      :columns="ganttColumns"
-      :gantt.prop="ganttConfig"
-      :gantt-resources.prop="ganttResources"
-      :gantt-assignments.prop="ganttAssignments"
-      @gantt-before-task-change="handleGanttEdit"
-      @gantt-before-assignment-change="handleGanttAssignmentEdit"
-    />
-    <RevoGrid
-      v-else
-      :key="activeView"
-      class="planning-demo__grid"
-      hide-attribution
-      :theme="theme"
-      :plugins="schedulerPlugins"
-      :source="[]"
-      :columns="[]"
-      resize
-      filter
-      :event-scheduler.prop="activeView === 'calendar' ? calendarConfig : schedulerConfig"
-      :event-scheduler-resources.prop="schedulerResources"
-      :event-scheduler-events.prop="schedulerEvents"
-      @event-scheduler-event-changed="handleSchedulerEdit"
-    />
-  </section>
+    <section
+        ref="rootRef"
+        class="planning-demo planning-demo--filter-toolbar"
+    >
+        <div class="planning-demo__topbar">
+            <nav
+                class="planning-demo__switch"
+                role="tablist"
+                aria-label="Planning view"
+            >
+                <button
+                    v-for="view in views"
+                    :key="view"
+                    type="button"
+                    :class="{ on: activeView === view }"
+                    role="tab"
+                    :aria-selected="activeView === view"
+                    :data-demo-action="`view_${view}`"
+                    @click="selectPlanningView(view)"
+                >
+                    {{ view }}
+                </button>
+            </nav>
+            <div class="planning-demo__actions">
+                <button
+                    type="button"
+                    data-demo-action="apply_active_tasks"
+                    :class="{ on: isActiveTasksPreset }"
+                    :aria-pressed="isActiveTasksPreset"
+                    @click="applyActiveTasksPreset"
+                >
+                    Active tasks
+                </button>
+                <button
+                    type="button"
+                    data-demo-action="reset_workspace"
+                    @click="resetWorkspace"
+                >
+                    Reset
+                </button>
+                <button
+                    class="planning-demo__fullscreen"
+                    type="button"
+                    aria-label="Full screen"
+                    title="Full screen"
+                    @click="toggleFullscreen"
+                >
+                    <span aria-hidden="true">↗</span>
+                </button>
+            </div>
+        </div>
+        <div v-if="activeView === 'grid'" class="planning-demo__grid-stage">
+            <RevoGrid
+                :key="gridKey"
+                class="planning-demo__grid"
+                hide-attribution
+                :theme="theme"
+                :plugins="gridPlugins"
+                :source="tasks"
+                :columns="gridColumns"
+                :column-types="gridColumnTypes"
+                :data-grid-context-menu.prop="planningDataGridContextMenu"
+                :data-grid-formatting.prop="planningDataGridFormatting"
+                :range-selection-limit.prop="'column'"
+                :filter.prop="gridFilterConfig"
+                :row-size="40"
+                :row-order.prop="planningRowOrder"
+                :stretch="1"
+                range
+                resize
+                can-move-columns
+                :row-select.prop="rowSelect"
+                :filter-badges.prop="filterBadgeOptions"
+                @gridedit="handlePlanningEdit"
+                @roworderapplied="handleGridRowOrder"
+                @filterastchange="
+                    $event.detail.origin === 'ui' &&
+                    (viewFilters.grid.filterAst = $event.detail.filterAst)
+                "
+            />
+        </div>
+        <RevoGrid
+            v-else-if="activeView === 'kanban'"
+            key="kanban"
+            class="planning-demo__grid planning-demo__grid--kanban"
+            hide-attribution
+            :theme="theme"
+            :plugins="kanbanPlugins"
+            :source="tasks"
+            :columns="gridColumns"
+            :kanban.prop="kanbanConfig"
+            :filter.prop="kanbanFilterConfig"
+            :filter-badges.prop="filterBadgeOptions"
+            @gridedit="handlePlanningEdit"
+            @filterastchange="
+                $event.detail.origin === 'ui' &&
+                (viewFilters.kanban.filterAst = $event.detail.filterAst)
+            "
+        />
+        <RevoGrid
+            v-else-if="activeView === 'gantt'"
+            key="gantt"
+            class="planning-demo__grid planning-demo__grid--timeline"
+            hide-attribution
+            :theme="theme"
+            :plugins="ganttPlugins"
+            :source="tasks"
+            :columns="ganttColumns"
+            :row-order.prop="false"
+            :gantt.prop="ganttConfig"
+            :gantt-dependencies.prop="visibleGanttDependencies"
+            :gantt-resources.prop="ganttResources"
+            :gantt-assignments.prop="ganttAssignments"
+            :filter.prop="ganttFilterConfig"
+            :filter-badges.prop="filterBadgeOptions"
+            @gridedit="handlePlanningEdit"
+            @filterastchange="
+                $event.detail.origin === 'ui' &&
+                (viewFilters.gantt.filterAst = $event.detail.filterAst)
+            "
+        />
+        <RevoGrid
+            v-else-if="activeView === 'scheduler' || activeView === 'calendar'"
+            :key="activeView"
+            class="planning-demo__grid planning-demo__grid--timeline"
+            hide-attribution
+            :theme="theme"
+            :plugins="schedulerPlugins"
+            :source="tasks"
+            :columns="emptySource"
+            resize
+            :can-move-columns="false"
+            :event-scheduler.prop="
+                activeView === 'calendar' ? calendarConfig : schedulerConfig
+            "
+            :event-scheduler-resources.prop="schedulerResources"
+            @gridedit="handlePlanningEdit"
+        />
+        <footer class="planning-demo__footer">
+            <span class="planning-demo__footer-meta">Changes stay in this demo</span>
+        </footer>
+    </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue';
-import RevoGrid from '@revolist/vue3-datagrid';
-import {
-  GanttPlugin,
-  type GanttBeforeAssignmentChangeDetail,
-  type GanttBeforeTaskChangeDetail,
-} from '@revolist/gantt';
-import {
-  KanbanPlugin,
-  type KanbanCardCreateDetail,
-  type KanbanCardDeleteDetail,
-  type KanbanCardMoveDetail,
-  type KanbanCardUpdateDetail,
-} from '@revolist/kanban';
-import {
-  EventSchedulerPlugin,
-  type EventSchedulerEventChangedDetail,
-} from '@revolist/scheduler';
-import {
-  currentTheme,
-  observeCurrentTheme,
-} from '../../composables/useRandomData';
-import {
-  calendarConfig,
-  createTasks,
-  ganttColumns,
-  ganttConfig,
-  ganttResources,
-  gridColumns,
-  kanbanConfig,
-  schedulerConfig,
-  schedulerResources,
-  toGanttAssignments,
-  toSchedulerEvents,
-  updateFromGantt,
-  updateFromGanttAssignment,
-  updateFromGrid,
-  updateFromKanban,
-  updateFromKanbanCreate,
-  updateFromKanbanDelete,
-  updateFromKanbanUpdate,
-  updateFromScheduler,
-  views,
-  type PlanningView,
-  type PlanningTask,
-} from './data';
-import './planning.scss';
+import RevoGrid from '@revolist/vue3-datagrid'
+import { usePlanningWorkspace } from './composables/usePlanningWorkspace'
+import './planning.scss'
 
-const activeView = ref<PlanningView>('grid');
-const tasks = ref(createTasks());
-const isDark = ref(currentTheme().isDark());
-const theme = computed(() => (isDark.value ? 'darkCompact' : 'compact'));
-const ganttPlugins = [GanttPlugin];
-const kanbanPlugins = [KanbanPlugin];
-const schedulerPlugins = [EventSchedulerPlugin];
-const ganttAssignments = computed(() => toGanttAssignments(tasks.value));
-const schedulerEvents = computed(() => toSchedulerEvents(tasks.value));
-const disconnectTheme = observeCurrentTheme((value) => {
-  isDark.value = value;
-});
-
-onBeforeUnmount(disconnectTheme);
-
-function handleGridEdit(event: CustomEvent) {
-  tasks.value = updateFromGrid(tasks.value, event.detail);
-}
-
-function handleKanbanMove(event: CustomEvent<KanbanCardMoveDetail<PlanningTask>>) {
-  tasks.value = updateFromKanban(tasks.value, event.detail);
-}
-
-function handleKanbanCreate(event: CustomEvent<KanbanCardCreateDetail<PlanningTask>>) {
-  tasks.value = updateFromKanbanCreate(tasks.value, event.detail);
-}
-
-function handleKanbanUpdate(event: CustomEvent<KanbanCardUpdateDetail<PlanningTask>>) {
-  tasks.value = updateFromKanbanUpdate(tasks.value, event.detail);
-}
-
-function handleKanbanDelete(event: CustomEvent<KanbanCardDeleteDetail<PlanningTask>>) {
-  tasks.value = updateFromKanbanDelete(tasks.value, event.detail);
-}
-
-function handleGanttEdit(event: CustomEvent<GanttBeforeTaskChangeDetail>) {
-  tasks.value = updateFromGantt(tasks.value, event.detail);
-}
-
-function handleGanttAssignmentEdit(
-  event: CustomEvent<GanttBeforeAssignmentChangeDetail>,
-) {
-  tasks.value = updateFromGanttAssignment(tasks.value, event.detail);
-}
-
-function handleSchedulerEdit(
-  event: CustomEvent<EventSchedulerEventChangedDetail>,
-) {
-  tasks.value = updateFromScheduler(tasks.value, event.detail);
-}
+const {
+    activeView,
+    applyActiveTasksPreset,
+    calendarConfig,
+    emptySource,
+    filterBadgeOptions,
+    ganttAssignments,
+    ganttColumns,
+    ganttConfig,
+    ganttFilterConfig,
+    ganttPlugins,
+    ganttResources,
+    gridColumnTypes,
+    gridColumns,
+    gridFilterConfig,
+    isActiveTasksPreset,
+    gridKey,
+    gridPlugins,
+    handleGridRowOrder,
+    handlePlanningEdit,
+    kanbanConfig,
+    kanbanFilterConfig,
+    kanbanPlugins,
+    planningDataGridContextMenu,
+    planningDataGridFormatting,
+    planningRowOrder,
+    resetWorkspace,
+    rootRef,
+    rowSelect,
+    schedulerConfig,
+    schedulerPlugins,
+    schedulerResources,
+    selectPlanningView,
+    tasks,
+    theme,
+    toggleFullscreen,
+    visibleGanttDependencies,
+    viewFilters,
+    views,
+} = usePlanningWorkspace()
 </script>

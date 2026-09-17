@@ -2,7 +2,7 @@ import type { HRGenerationOptions } from './hr.data.generator';
 
 export const HR_OPTIONS = [
   { label: '100 rows × 1,000 columns', value: 100, columns: 1_000 },
-  { label: '1,000 rows × 100 columns', value: 1_000, columns: 100 },
+  { label: '1,000 rows × 1,000 columns', value: 1_000, columns: 1_000 },
   { label: '10,000 rows × 100 columns', value: 10_000, columns: 100 },
   { label: '100,000 rows × 100 columns', value: 100_000, columns: 100 },
   { label: '1,000,000 rows × 10 columns', value: 1_000_000, columns: 10 },

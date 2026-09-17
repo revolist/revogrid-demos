@@ -19,17 +19,28 @@ test('contact data and grouped column definitions are deterministic', () => {
   assert.equal(columns.length, 3);
   assert.deepEqual(columns.map(group => group.name), ['Personal Information', 'Address', 'Contact']);
   assert.equal(columns.filter(group => group.collapsed).length, 2);
-  assert.equal(columns.flatMap(group => group.children ?? []).filter(column => column.sealed).length, 3);
+  assert.equal(columns.flatMap(group => group.children ?? []).filter(column => column.sealed).length, 4);
   const personalColumns = columns[0].children ?? [];
-  assert.equal(personalColumns[0].prop, 'age');
+  assert.equal(personalColumns[0].prop, '_selected');
   assert.deepEqual(
     personalColumns.map(column => column.prop),
-    ['age', 'firstName', 'lastName'],
+    ['_selected', 'age', 'firstName', 'lastName'],
   );
-  assert.equal(personalColumns[0].sealed, true);
-  assert.equal(personalColumns[0].pin, 'colPinStart');
-  assert.equal(personalColumns[0].rowSelect, true);
-  assert.equal(personalColumns[0].size, 125);
+  assert.deepEqual(personalColumns[0], {
+    prop: '_selected',
+    name: '',
+    size: 48,
+    sealed: true,
+    pin: 'colPinStart',
+    filter: false,
+    readonly: true,
+    rowSelect: true,
+  });
+  assert.equal(personalColumns[1].prop, 'age');
+  assert.equal(personalColumns[1].sealed, true);
+  assert.equal(personalColumns[1].pin, 'colPinStart');
+  assert.equal(personalColumns[1].rowSelect, undefined);
+  assert.equal(personalColumns[1].size, 125);
   assert.notStrictEqual(createColumnCollapseRows()[0], rows[0]);
 });
 
@@ -98,4 +109,15 @@ test('showcase renders only the borderless grid workspace', async () => {
   assert.doesNotMatch(showcaseBlock, /(?:^|\s)border:/);
   assert.doesNotMatch(showcaseBlock, /border-radius:/);
   assert.doesNotMatch(styles, /background:\s*#(?:fff|ffffff|f8fafc)/i);
+});
+
+test('column and group titles truncate without hiding their type icons', async () => {
+  const styles = await readFile(
+    join(root, '../../../../../packages/pro/plugins/charts/column-type.style.css'),
+    'utf8',
+  );
+
+  assert.match(styles, /\.column-type-container\s*\{[^}]*min-width:\s*0/s);
+  assert.match(styles, /\.column-icon\s*\{[^}]*flex:\s*0\s+0\s+auto/s);
+  assert.match(styles, /\.column-label\s*\{[^}]*min-width:\s*0[^}]*overflow:\s*hidden[^}]*text-overflow:\s*ellipsis[^}]*white-space:\s*nowrap/s);
 });

@@ -10,6 +10,7 @@
       :data-grid-formatting.prop="dataGridFormatting"
       :data-grid-formatting-panel.prop="true"
       :data-grid-context-menu.prop="dataGridContextMenu"
+      :history.prop="history"
       :row-headers="rowHeaders"
       :range="true"
       :resize="true"
@@ -22,7 +23,6 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import {
-  AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
   ColumnCollapsePlugin,
   DataGridContextMenuPlugin,
@@ -51,11 +51,12 @@ const columns = createContextMenuColumns();
 const rowHeaders = createContextMenuRowHeaders();
 const dataGridFormatting = createDataGridFormattingPresets();
 const dataGridContextMenu = createDataGridContextMenuConfig();
+// Editing updates the grid source, so retain the freshly captured edit for undo.
+const history = { clearOnSourceChange: false };
 const plugins = [
   DataGridContextMenuPlugin,
   HistoryPlugin,
   DialogPlugin,
-  AdvanceFilterPlugin,
   AutoSizeColumnPlugin,
   RowSelectPlugin,
   ColumnCollapsePlugin,

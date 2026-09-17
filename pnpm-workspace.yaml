@@ -15,3 +15,14 @@ packages:
   - "pro-data-grid-context-menu"
   - "pro-row-master"
   - "pro-audit-history"
+minimumReleaseAgeExclude:
+  - '@revolist/angular-datagrid@4.28.0'
+  - '@revolist/gantt-trial@2.9.1'
+  - '@revolist/kanban-trial@2.9.1'
+  - '@revolist/react-datagrid@4.28.0'
+  - '@revolist/revogrid-column-date@2.0.27'
+  - '@revolist/revogrid@4.28.0'
+  - '@revolist/rv-pro-trial@2.9.1'
+  - '@revolist/scheduler-trial@2.9.1'
+  - '@revolist/svelte-datagrid@4.28.0'
+  - '@revolist/vue3-datagrid@4.28.0'

@@ -1,0 +1,226 @@
+import type { CellTemplate } from '@revolist/revogrid'
+import type {
+    DataGridCellFormat,
+    DataGridAdvancedFormatDefinition,
+    DataGridContextMenuConfig,
+    DataGridFormattingConfig,
+} from '@revolist/revogrid-pro'
+import { markDataGridFormatRenderer } from '@revolist/revogrid-pro'
+import { workflowBadges } from './planning.structured'
+import type { PlanningTask } from './types'
+import { PlanningWorkspacePlugin } from './workspace.plugin'
+
+const priorityPresentation = (value: unknown) => {
+    const priority = Number(value)
+    if (priority >= 900) return { label: 'Critical', color: '#c85f63' }
+    if (priority >= 700) return { label: 'High', color: '#c28a2b' }
+    return { label: 'Normal', color: '#3d8c6c' }
+}
+
+/**
+ * Keep workflow values canonical for filtering and planning engines while the
+ * grid and dropdowns use the same solid, high-contrast visual treatment.
+ */
+export const workflowStatusBadgeRenderer = markDataGridFormatRenderer(
+    ((h, props) => {
+        const { label, color } = workflowBadges[String(props.value)] ?? {
+            label: String(props.value ?? ''),
+            color: '#475569',
+        }
+        return h(
+            'span',
+            {
+                class: 'badge-cell',
+                style: {
+                    backgroundColor: `var(--badge-cell-appearance-background-color, ${color})`,
+                    color: 'var(--badge-cell-appearance-color, #ffffff)',
+                },
+            },
+            label
+        )
+    }) as CellTemplate,
+    'workflow-status-badge'
+)
+
+const workflowStatusBadgeFormat = {
+    id: 'workflow-status-badge',
+    label: 'Workflow status badge',
+    group: 'Planning',
+    valueKind: 'text',
+    cellTemplate: workflowStatusBadgeRenderer,
+    replaceAuthoredTemplate: true,
+    appearanceSections: {
+        colors: true,
+        colorVariables: {
+            fill: '--badge-cell-appearance-background-color',
+            text: '--badge-cell-appearance-color',
+        },
+    },
+} as const satisfies DataGridAdvancedFormatDefinition
+
+export const priorityIndicatorRenderer = markDataGridFormatRenderer(
+    ((h, props) => {
+        const { label, color } = priorityPresentation(props.value)
+        return h(
+            'span',
+            {
+                style: {
+                    alignItems: 'center',
+                    color: 'var(--planning-priority-label-color, var(--rg-theme-text, var(--revo-grid-text, #475569)))',
+                    display: 'inline-flex',
+                    fontWeight: '500',
+                    gap: '8px',
+                },
+            },
+            [
+                h('span', {
+                    'aria-hidden': 'true',
+                    style: {
+                        backgroundColor: `var(--planning-priority-color, ${color})`,
+                        borderRadius: '50%',
+                        height: '7px',
+                        width: '7px',
+                    },
+                }),
+                label,
+            ]
+        )
+    }) as CellTemplate,
+    'planning-priority-indicator'
+)
+
+const priorityIndicatorFormat = {
+    id: 'planning-priority-indicator',
+    label: 'Priority indicator',
+    group: 'Planning',
+    valueKind: 'number',
+    cellTemplate: priorityIndicatorRenderer,
+    replaceAuthoredTemplate: true,
+    appearanceSections: {
+        colors: true,
+        colorVariables: {
+            fill: '--planning-priority-color',
+            text: '--planning-priority-label-color',
+        },
+    },
+} as const satisfies DataGridAdvancedFormatDefinition
+
+const text = {
+    value: {
+        kind: 'preset',
+        preset: 'text',
+    },
+    appearance: {
+        horizontal: 'left',
+    },
+} as const satisfies DataGridCellFormat
+
+export const planningGridFormats = {
+    name: text,
+    owner: {
+        presentation: {
+            id: 'avatar-with-text',
+            options: { avatarSize: 18 },
+        },
+    },
+    workflowStatus: {
+        presentation: {
+            id: 'workflow-status-badge',
+        },
+    },
+    priority: {
+        presentation: {
+            id: 'planning-priority-indicator',
+        },
+    },
+    endDate: {
+        value: {
+            kind: 'preset',
+            preset: 'date',
+            locale: 'en-US',
+            dateStyle: 'medium',
+            timeZone: 'UTC',
+        },
+    },
+    percentDone: {
+        value: {
+            kind: 'preset',
+            preset: 'number',
+            locale: 'en-US',
+        },
+        presentation: {
+            id: 'progress-line',
+            options: { minValue: 0, maxValue: 100 },
+        },
+    },
+    budget: {
+        value: {
+            kind: 'preset',
+            preset: 'currency',
+            locale: 'en-US',
+            currency: 'USD',
+            decimalPlaces: 0,
+        },
+    },
+    activityAt: {
+        value: {
+            kind: 'preset',
+            preset: 'datetime',
+            locale: 'en-US',
+            dateStyle: 'short',
+            timeStyle: 'short',
+            timeZone: 'UTC',
+        },
+    },
+} as const satisfies Record<string, DataGridCellFormat>
+
+/** Application-owned formatting state; column formats remain the stable defaults. */
+export const planningDataGridFormatting =
+    {
+        protectedColumnProps: [
+            'name',
+            'owner',
+            'workflowStatus',
+            'priority',
+            'endDate',
+            'percentDone',
+            'budget',
+            'activityAt',
+        ],
+    } as const satisfies DataGridFormattingConfig
+
+/** One declarative registration shared by every framework implementation. */
+export const planningDataGridContextMenu = {
+    formatting: {
+        advancedFormats: {
+            customFormats: [workflowStatusBadgeFormat, priorityIndicatorFormat],
+        },
+    },
+} as const satisfies DataGridContextMenuConfig
+
+export function createPlanningDataGridContextMenu(
+    onDelete: (taskIds: readonly string[]) => void
+) {
+    return {
+        ...planningDataGridContextMenu,
+        commandHandlers: {
+            'row.delete': ({ menu, rows }) => {
+                const taskIds = [
+                    ...new Set(
+                        rows.flatMap(({ model }) =>
+                            model.id === undefined || model.id === null
+                                ? []
+                                : [String(model.id)]
+                        )
+                    ),
+                ]
+                if (taskIds.length) {
+                    menu.providers.plugins
+                        .getByClass(PlanningWorkspacePlugin)
+                        ?.clearRowSelection()
+                    onDelete(taskIds)
+                }
+            },
+        },
+    } satisfies DataGridContextMenuConfig<PlanningTask>
+}

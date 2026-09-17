@@ -21,7 +21,7 @@ function riskTemplate(h: HyperFunc<VNode>, { value }: { value: string }) { retur
 export const PROJECT_COLUMNS: ColumnRegular[] = [
   { name: 'Project', prop: 'project', size: 250, sortable: true },
   { name: 'Owner', prop: 'owner', size: 170, sortable: true },
-  { name: 'Progress', prop: 'progress', size: 190, sortable: true, cellTemplate: progressTemplate },
+  { name: 'Progress', prop: 'progress', size: 152, sortable: true, cellTemplate: progressTemplate },
   { name: 'Status', prop: 'status', size: 135, sortable: true, cellTemplate: statusTemplate },
   { name: 'Budget', prop: 'budget', size: 110, sortable: true, cellTemplate: budgetTemplate },
   { name: 'Target', prop: 'target', size: 110, sortable: true },
