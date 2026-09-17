@@ -10,6 +10,7 @@
       :data-grid-formatting.prop="dataGridFormatting"
       :data-grid-formatting-panel.prop="true"
       :data-grid-context-menu.prop="dataGridContextMenu"
+      :grid-notes.prop="gridNotes"
       :history.prop="history"
       :row-headers="rowHeaders"
       :range="true"
@@ -28,6 +29,7 @@ import {
   DataGridContextMenuPlugin,
   DialogPlugin,
   ExportExcelPlugin,
+  GridNotesPlugin,
   HistoryPlugin,
   MultiRangeSelectionPlugin,
   RowSelectPlugin,
@@ -39,6 +41,7 @@ import {
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
+  createDataGridContextMenuNotes,
   createTeamRows,
   getDataGridContextMenuTheme,
   type TeamRow,
@@ -51,6 +54,7 @@ const columns = createContextMenuColumns();
 const rowHeaders = createContextMenuRowHeaders();
 const dataGridFormatting = createDataGridFormattingPresets();
 const dataGridContextMenu = createDataGridContextMenuConfig();
+const gridNotes = createDataGridContextMenuNotes();
 // Editing updates the grid source, so retain the freshly captured edit for undo.
 const history = { clearOnSourceChange: false };
 const plugins = [
@@ -62,6 +66,7 @@ const plugins = [
   ColumnCollapsePlugin,
   MultiRangeSelectionPlugin,
   ExportExcelPlugin,
+  GridNotesPlugin,
 ];
 const darkTheme = ref(currentTheme().isDark());
 const gridTheme = computed(() => getDataGridContextMenuTheme(darkTheme.value));

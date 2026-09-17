@@ -36,6 +36,12 @@ The example demonstrates the configuration paths applications commonly need:
   through the advanced registry;
 - optional row pinning and application-owned column schema creation;
 - column auto-size, grouped columns, and CSV/XLSX export capabilities.
+- seeded **cell notes** with visible corner markers, note history, severity,
+  and an in-memory adapter suitable for a standalone demo; application data
+  remains untouched.
+
+Advanced column filtering is intentionally disabled so the showcase stays
+focused on formatting, context-menu actions, and cell notes.
 
 The built-in **Inspect cell** and **Inspect column** actions expose technical
 details such as raw values, coordinates, schema, and readonly metadata. The

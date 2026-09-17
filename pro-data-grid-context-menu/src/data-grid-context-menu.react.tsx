@@ -6,6 +6,7 @@ import {
   DataGridContextMenuPlugin,
   DialogPlugin,
   ExportExcelPlugin,
+  GridNotesPlugin,
   HistoryPlugin,
   MultiRangeSelectionPlugin,
   RowSelectPlugin,
@@ -17,6 +18,7 @@ import {
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
+  createDataGridContextMenuNotes,
   createTeamRows,
   getDataGridContextMenuTheme,
   type TeamRow,
@@ -37,8 +39,10 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
     ColumnCollapsePlugin,
     MultiRangeSelectionPlugin,
     ExportExcelPlugin,
+    GridNotesPlugin,
   ], []);
   const dataGridContextMenu = useMemo(() => createDataGridContextMenuConfig(), []);
+  const gridNotes = useMemo(() => createDataGridContextMenuNotes(), []);
   const history = useMemo(() => ({ clearOnSourceChange: false }), []);
   const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
 
@@ -56,6 +60,7 @@ export default function DataGridContextMenu({ rows }: { rows?: TeamRow[] }) {
         dataGridFormatting={dataGridFormatting}
         dataGridFormattingPanel
         dataGridContextMenu={dataGridContextMenu}
+        gridNotes={gridNotes}
         history={history}
         rowHeaders={rowHeaders}
         range
