@@ -5,6 +5,7 @@ import {
   DataGridContextMenuPlugin,
   DialogPlugin,
   ExportExcelPlugin,
+  GridNotesPlugin,
   HistoryPlugin,
   MultiRangeSelectionPlugin,
   RowSelectPlugin,
@@ -16,6 +17,7 @@ import {
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
+  createDataGridContextMenuNotes,
   createTeamRows,
   getDataGridContextMenuTheme,
   type TeamRow,
@@ -33,6 +35,7 @@ const plugins = [
   ColumnCollapsePlugin,
   MultiRangeSelectionPlugin,
   ExportExcelPlugin,
+  GridNotesPlugin,
 ];
 
 export function load(parentSelector: string, rows?: TeamRow[]) {
@@ -53,6 +56,7 @@ export function load(parentSelector: string, rows?: TeamRow[]) {
   grid.dataGridFormatting = createDataGridFormattingPresets();
   grid.dataGridFormattingPanel = true;
   grid.dataGridContextMenu = createDataGridContextMenuConfig();
+  grid.gridNotes = createDataGridContextMenuNotes();
   grid.rowHeaders = createContextMenuRowHeaders();
   grid.range = true;
   grid.resize = true;

@@ -113,10 +113,10 @@ const SPREADSHEET_ADVANCED_FORMAT_IDS = {
 } as const;
 
 const SPREADSHEET_STATUS_BADGE_STYLES = {
-  Committed: { backgroundColor: '#eaf6ee' },
-  Forecast: { backgroundColor: '#eef2ff' },
-  Watch: { backgroundColor: '#fff7ed' },
-  Blocked: { backgroundColor: '#fef2f2' },
+  Committed: { backgroundColor: '#eaf6ee', color: '#166534' },
+  Forecast: { backgroundColor: '#eef2ff', color: '#4338ca' },
+  Watch: { backgroundColor: '#fff7ed', color: '#9a3412' },
+  Blocked: { backgroundColor: '#fef2f2', color: '#b91c1c' },
 } as const;
 
 const SPREADSHEET_RANGE_CONTROLS = [

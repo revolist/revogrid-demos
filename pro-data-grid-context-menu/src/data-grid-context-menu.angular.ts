@@ -6,6 +6,7 @@ import {
   DataGridContextMenuPlugin,
   DialogPlugin,
   ExportExcelPlugin,
+  GridNotesPlugin,
   HistoryPlugin,
   MultiRangeSelectionPlugin,
   RowSelectPlugin,
@@ -17,6 +18,7 @@ import {
   createContextMenuRowHeaders,
   createDataGridFormattingPresets,
   createDataGridContextMenuConfig,
+  createDataGridContextMenuNotes,
   createTeamRows,
   getDataGridContextMenuTheme,
   type TeamRow,
@@ -43,6 +45,7 @@ defineCustomElements();
         [dataGridFormatting]="dataGridFormatting"
         [dataGridFormattingPanel]="true"
         [dataGridContextMenu]="dataGridContextMenu"
+        [gridNotes]="gridNotes"
         [history]="history"
         [rowHeaders]="rowHeaders"
         [range]="true"
@@ -81,9 +84,11 @@ export class DataGridContextMenuGridComponent implements OnDestroy {
     ColumnCollapsePlugin,
     MultiRangeSelectionPlugin,
     ExportExcelPlugin,
+    GridNotesPlugin,
   ];
   readonly dataGridFormatting = createDataGridFormattingPresets();
   readonly dataGridContextMenu = createDataGridContextMenuConfig();
+  readonly gridNotes = createDataGridContextMenuNotes();
   readonly history = { clearOnSourceChange: false };
   source = createTeamRows();
 

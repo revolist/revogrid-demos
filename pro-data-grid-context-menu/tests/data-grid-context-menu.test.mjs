@@ -108,6 +108,10 @@ test('showcase keeps column defaults and coordinate-owned cell overrides', async
   const shared = await readSource('data-grid-context-menu.shared.ts');
   assert.match(shared, /import DateColumnType from '@revolist\/revogrid-column-date'/);
   assert.match(shared, /presetEditors:\s*\{\s*date:\s*dateColumnType\.editor\s*\}/);
+  assert.match(shared, /InMemoryGridNoteAdapter\(CELL_NOTES\)/);
+  assert.match(shared, /target: \{ kind: 'cell', rowKey: '101', colProp: 'score' \}/);
+  assert.match(shared, /target: \{ kind: 'cell', rowKey: '105', colProp: 'status' \}/);
+  assert.match(shared, /getRowId: row => row\.id/);
 });
 
 test('showcase dropdown formats own their renderers and editors per cell', () => {
@@ -251,7 +255,10 @@ test('all framework variants install the same universal menu capabilities', asyn
     assert.match(source, /ColumnCollapsePlugin/);
     assert.match(source, /MultiRangeSelectionPlugin/);
     assert.match(source, /ExportExcelPlugin/);
+    assert.match(source, /GridNotesPlugin/);
     assert.match(source, /createDataGridContextMenuConfig/);
+    assert.match(source, /createDataGridContextMenuNotes/);
+    assert.match(source, /gridNotes|grid-notes/);
     assert.match(source, /dataGridFormatting/);
     assert.match(source, /createDataGridFormattingPresets/);
     assert.match(source, /dataGridFormattingPanel|data-grid-formatting-panel/);
@@ -274,15 +281,18 @@ test('framework variants follow standalone demo lifecycle conventions', async ()
   assert.match(react, /dataGridFormatting=\{dataGridFormatting\}/);
   assert.match(react, /dataGridFormattingPanel/);
   assert.match(react, /dataGridContextMenu=\{dataGridContextMenu\}/);
+  assert.match(react, /gridNotes=\{gridNotes\}/);
   assert.doesNotMatch(react, /additionalData/);
   assert.match(vue, /const rows = computed/);
   assert.match(vue, /:data-grid-formatting\.prop="dataGridFormatting"/);
   assert.match(vue, /:data-grid-formatting-panel\.prop="true"/);
   assert.match(vue, /:data-grid-context-menu\.prop="dataGridContextMenu"/);
+  assert.match(vue, /:grid-notes\.prop="gridNotes"/);
   assert.doesNotMatch(vue, /additional-data|additionalData/);
   assert.match(angular, /standalone: true/);
   assert.match(angular, /encapsulation: ViewEncapsulation.None/);
   assert.match(angular, /\[dataGridFormatting\]="dataGridFormatting"/);
+  assert.match(angular, /\[gridNotes\]="gridNotes"/);
   assert.match(angular, /\[dataGridFormattingPanel\]="true"/);
   assert.match(angular, /\[dataGridContextMenu\]="dataGridContextMenu"/);
   assert.doesNotMatch(angular, /additionalData/);
