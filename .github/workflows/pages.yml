@@ -36,6 +36,7 @@ jobs:
         run: pnpm run setup:fresh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_USER_AGENT: "npm/{npm-version} node/{node-version} {platform} {arch} rv-grid-statistics-exclude/1"
 
       - name: Build recursive gallery
         run: pnpm build
