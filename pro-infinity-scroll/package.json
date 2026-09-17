@@ -28,7 +28,7 @@
     "@revolist/angular-datagrid": "4.28.0",
     "@revolist/react-datagrid": "4.28.0",
     "@revolist/revogrid": "4.28.0",
-    "@revolist/revogrid-pro": "npm:@revolist/rv-pro-trial@2.9.1",
+    "@revolist/revogrid-pro": "npm:@revolist/rv-pro-trial@2.9.3",
     "@revolist/vue3-datagrid": "4.28.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
