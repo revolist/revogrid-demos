@@ -333,6 +333,10 @@ test('grows resource timeline rows for concurrent scheduler events by default', 
     assert.match(schedulerConfigSource, /resourceTimelineRowSizing:\s*true/)
 })
 
+test('keeps Planning scheduler resource assignment exclusive', () => {
+    assert.match(schedulerConfigSource, /allowMultiResourceAssignment:\s*false/)
+})
+
 test('keeps generated scheduler timeline columns in chronological order', () => {
     assert.match(vueSource, /:can-move-columns="false"/)
     assert.match(vanillaSource, /grid\.canMoveColumns = false/)
