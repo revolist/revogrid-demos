@@ -31,6 +31,7 @@
       :filter="filterConfig"
       :data-grid-formatting.prop="TREE_DATA_GRID_FORMATTING"
       :data-grid-context-menu.prop="TREE_DATA_GRID_CONTEXT_MENU"
+      @tree-state-changed="handleTreeState"
       :stretch="true"
       hide-attribution
     />
@@ -65,6 +66,7 @@ import './tree.scss';
 const gridRef = ref<{ $el: HTMLRevoGridElement } | HTMLRevoGridElement | null>(null);
 const rows = ref(createTreeRows());
 const stickyParents = ref(true);
+const expandedRowIds = ref<Set<string> | undefined>();
 const columns = computed(() => createTreeColumns(rows.value, stickyParents.value));
 const filterConfig = computed(() => createTreeFilterConfig(rows.value));
 const plugins = [...TREE_PLUGINS];
@@ -72,6 +74,7 @@ const columnTypes = TREE_COLUMN_TYPES;
 const exporting = ref(false);
 const darkTheme = ref(typeof window !== 'undefined' && currentTheme().isDark());
 const treeConfig = computed(() => createTreeConfig(rows.value, {
+  expandedRowIds: expandedRowIds.value,
   stickyParents: stickyParents.value,
 }));
 let disconnectTheme: (() => void) | undefined;
@@ -97,6 +100,10 @@ function expandAll() {
 
 function collapseAll() {
   getGrid()?.dispatchEvent(new CustomEvent(TREE_COLLAPSE_ALL_EVENT));
+}
+
+function handleTreeState(event: CustomEvent<{ expandedRowIds: Set<string> }>) {
+  expandedRowIds.value = new Set(event.detail.expandedRowIds);
 }
 
 async function exportToExcel() {

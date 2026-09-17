@@ -244,13 +244,14 @@ test('frameworks configure tree plugins declaratively without readiness workarou
   }
 });
 
-test('framework variants reset to their default expansion state after a sticky-parent refresh', async () => {
+test('framework variants retain expansion state after reactive tree refreshes', async () => {
   const files = ['tree.ts', 'tree.react.tsx', 'tree.vue', 'tree.angular.ts'];
   const sources = await Promise.all(files.map(readSource));
 
   for (const source of sources) {
-    assert.doesNotMatch(source, /TREE_STATE_CHANGED_EVENT|syncTreeState|expandedRowIds/);
-    assert.match(source, /createTreeConfig\([\s\S]*?stickyParents/);
+    assert.match(source, /TREE_STATE_CHANGED_EVENT|[Tt]ree-state-changed|onTreeStateChanged/);
+    assert.match(source, /expandedRowIds/);
+    assert.match(source, /createTreeConfig\([\s\S]*?expandedRowIds/);
   }
 });
 

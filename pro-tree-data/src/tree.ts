@@ -3,6 +3,7 @@ import {
   ExportExcelPlugin,
   TREE_COLLAPSE_ALL_EVENT,
   TREE_EXPAND_ALL_EVENT,
+  TREE_STATE_CHANGED_EVENT,
 } from '@revolist/revogrid-pro';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
 import {
@@ -38,6 +39,7 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
 
   const source = rows?.length ? rows : createTreeRows();
   let treeConfig = createTreeConfig(source);
+  let expandedRowIds = new Set(treeConfig.expandedRowIds);
   const container = document.createElement('section');
   container.className = 'tree-showcase';
   container.setAttribute('aria-label', 'Tree Data organization explorer');
@@ -82,10 +84,16 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   const collapseAll = () => grid.dispatchEvent(new CustomEvent(TREE_COLLAPSE_ALL_EVENT));
   const toggleSticky = () => {
     treeConfig = createTreeConfig(source, {
+      expandedRowIds,
       stickyParents: stickyInput.checked,
     });
     grid.tree = treeConfig;
     grid.columns = createTreeColumns(source, stickyInput.checked);
+  };
+  const syncTreeState = (event: Event) => {
+    expandedRowIds = new Set(
+      (event as CustomEvent<{ expandedRowIds: Set<string> }>).detail.expandedRowIds,
+    );
   };
   const exportToExcel = async () => {
     exportButton.disabled = true;
@@ -104,6 +112,7 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   collapseButton.addEventListener('click', collapseAll);
   exportButton.addEventListener('click', exportToExcel);
   stickyInput.addEventListener('change', toggleSticky);
+  grid.addEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
   container.append(toolbar, grid);
   parent.appendChild(container);
   grid.source = source;
@@ -117,6 +126,7 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
     collapseButton.removeEventListener('click', collapseAll);
     exportButton.removeEventListener('click', exportToExcel);
     stickyInput.removeEventListener('change', toggleSticky);
+    grid.removeEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
     container.remove();
   };
 }

@@ -61,6 +61,7 @@ import {
         [filter]="filterConfig"
         [dataGridFormatting]="dataGridFormatting"
         [dataGridContextMenu]="dataGridContextMenu"
+        (tree-state-changed)="handleTreeState($event)"
         [stretch]="true"
         [hideAttribution]="true"
       ></revo-grid>
@@ -85,6 +86,7 @@ export class TreeDataGridComponent implements OnDestroy {
   readonly rowSelect = TREE_ROW_SELECT_CONFIG;
   readonly stickyCells = TREE_STICKY_CELLS_CONFIG;
   stickyParents = true;
+  expandedRowIds: Set<string> | undefined;
   exporting = false;
   treeConfig = createTreeConfig(this.rows);
 
@@ -103,9 +105,18 @@ export class TreeDataGridComponent implements OnDestroy {
   setStickyParents(event: Event) {
     this.stickyParents = (event.target as HTMLInputElement).checked;
     this.treeConfig = createTreeConfig(this.rows, {
+      expandedRowIds: this.expandedRowIds,
       stickyParents: this.stickyParents,
     });
     this.columns = createTreeColumns(this.rows, this.stickyParents);
+  }
+
+  handleTreeState(event: CustomEvent<{ expandedRowIds: Set<string> }>) {
+    this.expandedRowIds = new Set(event.detail.expandedRowIds);
+    this.treeConfig = createTreeConfig(this.rows, {
+      expandedRowIds: this.expandedRowIds,
+      stickyParents: this.stickyParents,
+    });
   }
 
   async exportToExcel() {

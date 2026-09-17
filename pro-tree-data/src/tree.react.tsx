@@ -27,6 +27,7 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
   const source = useMemo(() => rows?.length ? rows : createTreeRows(), [rows]);
   const [stickyParents, setStickyParents] = useState(true);
+  const [expandedRowIds, setExpandedRowIds] = useState<Set<string> | undefined>();
   const columns = useMemo(() => createTreeColumns(source, stickyParents), [source, stickyParents]);
   const filterConfig = useMemo(() => createTreeFilterConfig(source), [source]);
   const dataGridFormatting = useMemo(() => TREE_DATA_GRID_FORMATTING, []);
@@ -38,13 +39,17 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
   const [exporting, setExporting] = useState(false);
   const [darkTheme, setDarkTheme] = useState(() => currentTheme().isDark());
   const tree = useMemo(() => createTreeConfig(source, {
+    expandedRowIds,
     stickyParents,
-  }), [source, stickyParents]);
+  }), [expandedRowIds, source, stickyParents]);
   const pluginProps = useMemo(() => ({
     rowOrder,
     rowSelect,
     stickyCells: TREE_STICKY_CELLS_CONFIG,
     tree,
+    'onTree-state-changed': (event: CustomEvent<{ expandedRowIds: Set<string> }>) => {
+      setExpandedRowIds(new Set(event.detail.expandedRowIds));
+    },
   }) as any, [rowOrder, rowSelect, tree]);
   useEffect(() => {
     const disconnectTheme = observeCurrentTheme(setDarkTheme);
