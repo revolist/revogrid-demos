@@ -1,10 +1,5 @@
 <template>
   <section class="row-master-showcase" aria-label="Row Master portfolio explorer">
-    <div class="row-master-source-update">
-      <button class="row-master-source-update__button" type="button" @click="refreshSource">
-        Refresh source and preserve details
-      </button>
-    </div>
     <RevoGrid
       class="row-master-grid"
       :theme="darkTheme ? 'darkMaterial' : 'material'"
@@ -13,7 +8,6 @@
       :plugins="plugins"
       :master-row.prop="masterRow"
       :tree.prop="tree"
-      @beforerowmastercollapse="preserveExpandedMastersOnSource"
       :readonly="true"
       stretch="last"
       hide-attribution
@@ -36,8 +30,6 @@ import {
   createMasterRowConfig,
   createMasterRows,
   createMasterTreeConfig,
-  cloneMasterRows,
-  preserveExpandedMastersOnSource,
   type MasterProjectRow,
 } from './row-master.shared';
 import './row-master.scss';
@@ -50,10 +42,6 @@ const masterRow = createMasterRowConfig();
 const tree = createMasterTreeConfig();
 const darkTheme = ref(typeof window !== 'undefined' && currentTheme().isDark());
 let disconnectTheme: (() => void) | undefined;
-
-function refreshSource() {
-  rows.value = cloneMasterRows(rows.value);
-}
 
 onMounted(() => {
   disconnectTheme = observeCurrentTheme((isDark) => {
