@@ -208,7 +208,10 @@ test('disables native row resizing in every planning framework', () => {
 })
 
 test('enables shared Pro row ordering for every planning Grid variant', () => {
-    assert.match(columnsSource, /planningRowOrder[\s\S]*?prop:\s*'name'[\s\S]*?preview:\s*'compact'/)
+    assert.match(
+        columnsSource,
+        /planningRowOrder[\s\S]*?prop:\s*'name'[\s\S]*?preview:\s*'compact'[\s\S]*?previewProp:\s*'name'/
+    )
     assert.match(columnsSource, /prop: 'name',[\s\S]*?rowDrag: true/)
     assert.match(vueSource, /:row-order\.prop="planningRowOrder"/)
     assert.match(vueSource, /:row-select\.prop="rowSelect"/)

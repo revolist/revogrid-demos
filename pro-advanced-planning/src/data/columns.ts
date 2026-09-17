@@ -62,6 +62,7 @@ const ganttAssigneeFilterItemTemplate: SelectionItemTemplate = (h, { value }) =>
 export const planningRowOrder: RowOrderPluginConfig = {
     prop: 'name',
     preview: 'compact',
+    previewProp: 'name',
 }
 
 const ownerAvatarRenderer: ColumnRegular['cellTemplate'] = (

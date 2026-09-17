@@ -912,6 +912,15 @@ revo-grid.spreadsheet-grid {
   flex: 0 0 auto;
 }
 
+/* Filter-header slider values are positioned above their handles. */
+.spreadsheet-workbench revo-grid revogr-header .header-content:has(.filter-header-slider) {
+  overflow: visible;
+}
+
+.spreadsheet-workbench revo-grid revogr-header .rgHeaderCell:has(.filter-header-slider) {
+  z-index: 1;
+}
+
 .spreadsheet-workbench revo-grid revogr-header input,
 .spreadsheet-workbench revo-grid revogr-header select,
 .spreadsheet-workbench revo-grid revogr-header .filter-input {
