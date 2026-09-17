@@ -82,7 +82,7 @@ export const priorityIndicatorRenderer = markDataGridFormatRenderer(
                         width: '7px',
                     },
                 }),
-                label,
+                h('span', {}, label),
             ]
         )
     }) as CellTemplate,

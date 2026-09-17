@@ -1,5 +1,4 @@
 import type {
-    ColumnFilterConfig,
     ColumnRegular,
 } from '@revolist/revogrid'
 import {
@@ -10,6 +9,7 @@ import {
     FIlTER_SLIDER,
     type RowOrderPluginConfig,
     type SelectionItemTemplate,
+    type AdvancedFilterConfig,
 } from '@revolist/revogrid-pro'
 import { createDefaultTaskTableColumn } from '@revolist/gantt'
 import {
@@ -66,12 +66,13 @@ export const planningRowOrder: RowOrderPluginConfig = {
 
 const ownerAvatarRenderer: ColumnRegular['cellTemplate'] = (
     h,
-    { value, column, model }
+    props
 ) => {
+    const { value, model } = props
     const owner = String(value ?? model.owner ?? '')
     return avatarWithTextRenderer(h, {
+        ...props,
         value: owner,
-        column,
         model: {
             ...model,
             owner,
@@ -143,7 +144,7 @@ export const planningFilterConfig = {
             assignees: true,
         },
     },
-} satisfies ColumnFilterConfig
+} satisfies AdvancedFilterConfig
 
 export const activePlanningFilterConfig = {
     ...planningFilterConfig,
@@ -151,7 +152,9 @@ export const activePlanningFilterConfig = {
         workflowStatus: [
             {
                 id: 0,
-                type: 'chipBadgeSelection',
+                // This operator is registered by the Pro filter plugin rather
+                // than the core filter-name registry.
+                type: 'chipBadgeSelection' as any,
                 value: {
                     values: ['in-progress', 'blocked', 'not-started'],
                     includeBlanks: false,
@@ -160,7 +163,7 @@ export const activePlanningFilterConfig = {
             },
         ],
     },
-} satisfies ColumnFilterConfig
+} satisfies AdvancedFilterConfig
 
 const percentDoneColumn = createDefaultTaskTableColumn('percentDone')
 

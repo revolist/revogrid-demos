@@ -1,5 +1,4 @@
-import type { FilterAst } from '@revolist/revogrid-pro'
-import type { ColumnFilterConfig } from '@revolist/revogrid'
+import type { AdvancedFilterConfig, FilterAst } from '@revolist/revogrid-pro'
 import { planningFilterConfig } from './columns'
 
 export type PlanningFilterView = 'grid' | 'kanban' | 'gantt'
@@ -17,7 +16,7 @@ export function createPlanningViewFilters(): PlanningViewFilters {
 export function planningFilterConfigFor(
     filters: PlanningViewFilters,
     view: PlanningFilterView
-): ColumnFilterConfig {
+): AdvancedFilterConfig {
     return Object.defineProperty(
         {
             ...planningFilterConfig,
@@ -28,5 +27,5 @@ export function planningFilterConfigFor(
             enumerable: true,
             get: () => filters[view].filterAst,
         }
-    ) as ColumnFilterConfig
+    ) as AdvancedFilterConfig
 }

@@ -4,7 +4,7 @@ import {
     ViewEncapsulation,
 } from '@angular/core'
 import { RevoGrid } from '@revolist/angular-datagrid'
-import type { ColumnFilterConfig } from '@revolist/revogrid'
+import type { AdvancedFilterConfig } from '@revolist/revogrid-pro'
 import { GanttPlugin } from '@revolist/gantt'
 import { KanbanPlugin } from '@revolist/kanban'
 import { EventSchedulerPlugin } from '@revolist/scheduler'
@@ -296,15 +296,15 @@ export class PlanningViewsGridComponent {
     readonly planningProjects = planningProjects
     readonly gridColumns = gridColumns
     readonly gridColumnTypes = gridColumnTypes
-    readonly gridFilterConfig: ColumnFilterConfig = {
+    readonly gridFilterConfig: AdvancedFilterConfig = {
         ...planningFilterConfig,
         multiFilterItems: { ...planningFilterConfig.multiFilterItems },
     }
-    readonly kanbanFilterConfig: ColumnFilterConfig = {
+    readonly kanbanFilterConfig: AdvancedFilterConfig = {
         ...planningFilterConfig,
         multiFilterItems: { ...planningFilterConfig.multiFilterItems },
     }
-    readonly ganttFilterConfig: ColumnFilterConfig = {
+    readonly ganttFilterConfig: AdvancedFilterConfig = {
         ...planningFilterConfig,
         multiFilterItems: { ...planningFilterConfig.multiFilterItems },
     }
