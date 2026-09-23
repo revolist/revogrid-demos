@@ -8,6 +8,7 @@ packages:
   - "pro-construction-operations"
   - "pro-construction-gantt-simple"
   - "pro-advanced-planning"
+  - "pro-pivot-operations"
   - "pro-filtering"
   - "pro-tree-data"
   - "pro-infinity-scroll"
