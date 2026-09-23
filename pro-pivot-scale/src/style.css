@@ -1,0 +1,22 @@
+:root { font-family: Inter, system-ui, sans-serif; color: #203047; background: #f5f8fb; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.scale-demo { max-width: 1600px; margin: auto; padding: 24px; }
+.scale-header h1 { margin: 5px 0; font-size: clamp(1.6rem, 3vw, 2.5rem); }
+.scale-header p { max-width: 780px; }
+.eyebrow { color: #127453; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-size: .75rem; }
+.scale-controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; }
+button { border: 1px solid #b8c8d7; border-radius: 7px; background: white; color: #203047; padding: 9px 12px; font: inherit; cursor: pointer; }
+button:hover { border-color: #127453; }
+button:focus-visible { outline: 3px solid #3da77c; outline-offset: 2px; }
+button:disabled { opacity: .6; cursor: wait; }
+.scale-meta, .grid-host { background: white; border: 1px solid #dce5ec; border-radius: 10px; padding: 14px; }
+.scale-meta dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.scale-meta dl div { padding: 10px; border-radius: 6px; background: #f2f7f6; }
+.scale-meta dt { font-size: .75rem; color: #58706c; }
+.scale-meta dd { margin: 5px 0 0; font-weight: 700; }
+#status { font-weight: 700; }
+#environment { overflow-wrap: anywhere; font-size: .75rem; }
+.scale-note, .scale-footer { color: #526479; font-size: .85rem; }
+.grid-host { height: min(70vh, 740px); margin-top: 12px; overflow: hidden; }
+.scale-grid { display: block; width: 100%; height: 100%; }

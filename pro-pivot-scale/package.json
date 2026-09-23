@@ -1,0 +1,23 @@
+{
+  "name": "revogrid-demo-pro-pivot-scale",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.22.3" },
+  "scripts": {
+    "dev": "vite --configLoader runner --mode ts",
+    "build": "vite build --configLoader runner --mode ts",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "backend": "node server/server.mjs"
+  },
+  "dependencies": {
+    "@revolist/pivot": "npm:@revolist/pivot-trial@2.9.5",
+    "@revolist/revogrid": "4.28.0",
+    "@revolist/revogrid-pro": "npm:@revolist/rv-pro-trial@2.9.5"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3",
+    "vite": "^6.3.5"
+  }
+}
