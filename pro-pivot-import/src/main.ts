@@ -1,6 +1,8 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import { PivotPlugin, type PivotConfig } from '@revolist/pivot';
 import { inferFields, parseCsv, parseJson, prepareRows, type FieldSetting, type RawRow } from './import-data';
+import { rankImportedRows } from './top-bottom';
+import { installTopBottomControls } from './top-bottom-ui';
 import '@revolist/revogrid-pro/styles.css';
 import '@revolist/pivot/styles.css';
 import './style.css';
@@ -18,6 +20,7 @@ app.innerHTML = `<section class="import-demo">
   </section><section id="report" hidden><div class="section-head"><h2>2. Explore the report</h2><span id="report-meta"></span></div><div id="grid-host"></div></section>
   <p class="privacy">Files are parsed in browser memory and are never uploaded. Clear or reload this page to remove the imported data.</p>
 </section>`;
+const ranking = installTopBottomControls(app);
 
 const get = <T extends HTMLElement>(selector: string) => app.querySelector<T>(selector)!;
 const status = get<HTMLElement>('#status');
@@ -109,6 +112,9 @@ get<HTMLButtonElement>('#create').addEventListener('click', () => {
   if (!row || !measure || row === column || row === measure || column === measure) { status.textContent = 'Choose distinct row, column, and measure fields.'; return; }
   const prepared = prepareRows(rawRows, fields);
   if (measure !== prepared.countField && !fields.some(field => field.name === measure && field.type === 'number')) { status.textContent = 'Choose a numeric measure or record count.'; return; }
+  let ranked;
+  try { ranked = rankImportedRows(prepared.rows, row, measure, ranking.read()); }
+  catch (error) { status.textContent = error instanceof Error ? error.message : String(error); return; }
   const config: PivotConfig = {
     dimensions: prepared.columns.map(prop => ({ prop, name: prop })),
     rows: [row], columns: column ? [column] : [], values: [{ prop: measure, aggregator: 'sum', label: measure }],
@@ -118,9 +124,9 @@ get<HTMLButtonElement>('#create').addEventListener('click', () => {
   grid = document.createElement('revo-grid');
   grid.plugins = [PivotPlugin]; grid.pivot = config; grid.readonly = true; grid.resize = true; grid.hideAttribution = true;
   get<HTMLElement>('#grid-host').append(grid);
-  grid.source = prepared.rows;
+  grid.source = ranked.rows;
   report.hidden = false;
-  get<HTMLElement>('#report-meta').textContent = `${prepared.rows.length.toLocaleString()} records · ${prepared.invalid} invalid values treated as blank`;
+  get<HTMLElement>('#report-meta').textContent = `${ranked.rows.length.toLocaleString()} of ${prepared.rows.length.toLocaleString()} source records · ${prepared.invalid} invalid values treated as blank${ranked.keptMembers ? ` · ${ranked.keptMembers} ranked members${ranked.remainderMembers ? ranked.otherLabel ? ` + ${ranked.otherLabel}` : ' (remainder excluded from total)' : ''}` : ''}`;
   status.textContent = 'Pivot report created from browser-local data.';
   report.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
