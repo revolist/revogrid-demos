@@ -1,11 +1,10 @@
 import type { HRGenerationOptions } from './hr.data.generator';
 
 export const HR_OPTIONS = [
-  { label: '100 rows × 1,000 columns', value: 100, columns: 1_000 },
-  { label: '1,000 rows × 1,000 columns', value: 1_000, columns: 1_000 },
+  { label: '1,000 rows × 100 columns', value: 1_000, columns: 100 },
   { label: '10,000 rows × 100 columns', value: 10_000, columns: 100 },
   { label: '100,000 rows × 100 columns', value: 100_000, columns: 100 },
-  { label: '1,000,000 rows × 10 columns', value: 1_000_000, columns: 10 },
+  { label: '1,000,000 rows × 100 columns', value: 1_000_000, columns: 100 },
 ] as const;
 
 const HR_BASE_COLUMN_COUNT = 7;
@@ -66,11 +65,27 @@ let preparedMonthColumnCount: number | undefined;
 const GENERATION_BUDGET_MS = 8;
 const PROGRESS_INTERVAL_MS = 50;
 
-function createHRRow(index: number, monthColumns: ReturnType<typeof getHRMonthColumns>) {
+function createHRMonthValues(monthColumns: ReturnType<typeof getHRMonthColumns>) {
+  const values: Record<string, unknown> = {};
+  for (const [monthIndex, month] of monthColumns.entries()) {
+    const { prop } = month;
+    Object.defineProperty(values, prop, {
+      get(this: Record<string, unknown>) {
+        return 120 + (((Number(this.id) - 1) * 7 + monthIndex * 11) % 61);
+      },
+      set(this: Record<string, unknown>, value: unknown) {
+        Object.defineProperty(this, prop, { configurable: true, enumerable: true, value, writable: true });
+      },
+    });
+  }
+  return values;
+}
+
+function createHRRow(index: number, monthValues: Record<string, unknown>) {
   const firstName = FIRST_NAMES[index % FIRST_NAMES.length];
   const lastName = LAST_NAMES[Math.floor(index / FIRST_NAMES.length) % LAST_NAMES.length];
   const company = HR_COMPANY_OPTIONS[index % HR_COMPANY_OPTIONS.length];
-  const row: Record<string, unknown> = {
+  const row: Record<string, unknown> = Object.assign(Object.create(monthValues), {
     id: index + 1,
     name: `${firstName} ${lastName}`,
     age: 20 + ((index * 7) % 46),
@@ -80,11 +95,7 @@ function createHRRow(index: number, monthColumns: ReturnType<typeof getHRMonthCo
     eyeColor: EYE_COLORS[index % EYE_COLORS.length],
     joined: new Date(2018 + (index % 8), index % 12, 1 + (index % 27)),
     salary: 48_000 + ((index * 1_379) % 92_000),
-  };
-
-  for (const [monthIndex, month] of monthColumns.entries()) {
-    row[month.prop] = 120 + ((index * 7 + monthIndex * 11) % 61);
-  }
+  });
   return row;
 }
 
@@ -115,13 +126,14 @@ export async function getHRData(
     preparedRows.length = 0;
     preparedMonthColumnCount = monthColumnCount;
   }
+  const monthValues = createHRMonthValues(monthColumns);
   let lastProgressAt = performance.now();
 
   while (preparedRows.length < size) {
     const sliceStartedAt = performance.now();
     do {
       throwIfAborted(options.signal);
-      preparedRows.push(createHRRow(preparedRows.length, monthColumns));
+      preparedRows.push(createHRRow(preparedRows.length, monthValues));
     } while (
       preparedRows.length < size
       && performance.now() - sliceStartedAt < GENERATION_BUDGET_MS

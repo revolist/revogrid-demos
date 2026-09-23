@@ -53,17 +53,16 @@ test('company avatar metadata follows an edited company value', () => {
 
 test('data source options expose the requested row and total-column dimensions', () => {
   assert.deepEqual(HR_OPTIONS.map(option => option.label), [
-    '100 rows × 1,000 columns',
-    '1,000 rows × 1,000 columns',
+    '1,000 rows × 100 columns',
     '10,000 rows × 100 columns',
     '100,000 rows × 100 columns',
-    '1,000,000 rows × 10 columns',
+    '1,000,000 rows × 100 columns',
   ]);
   assert.deepEqual(HR_OPTIONS.map(option => getHRVisibleColumnsCount(option.value)), [
-    1_000, 1_000, 100, 100, 10,
+    100, 100, 100, 100,
   ]);
   assert.deepEqual(HR_OPTIONS.map(option => getHRColumnsCount(option.value)), [
-    993, 993, 93, 93, 3,
+    93, 93, 93, 93,
   ]);
 });
 
@@ -71,21 +70,20 @@ test('generated rows expose the selected monthly range instead of synthetic metr
   const [row] = await getHRData(1);
   const monthColumns = getHRMonthColumns(getHRColumnsCount(1));
 
-  assert.equal(monthColumns.length, 993);
+  assert.equal(monthColumns.length, 93);
   assert.equal(monthColumns[0].label, 'Jan 2026');
-  assert.equal(monthColumns.at(-1).label, 'Sep 2108');
+  assert.equal(monthColumns.at(-1).label, 'Sep 2033');
   assert.ok(monthColumns.every(month => typeof row[month.prop] === 'number'));
+  assert.equal(Object.hasOwn(row, monthColumns[0].prop), false);
   assert.equal('metric1' in row, false);
 });
 
-test('resets cached rows when the workload column shape changes', async () => {
-  const [wideRow] = await getHRData(100);
-  const [balancedRow] = await getHRData(10_000);
+test('keeps cached rows when workloads share the same column shape', async () => {
+  const [smallRow] = await getHRData(1_000);
+  const [largeRow] = await getHRData(10_000);
 
-  assert.notEqual(balancedRow, wideRow);
-  assert.equal('hours210809' in wideRow, true);
-  assert.equal('hours210809' in balancedRow, false);
-  assert.equal('hours203309' in balancedRow, true);
+  assert.equal(largeRow, smallRow);
+  assert.equal('hours203309' in largeRow, true);
 });
 
 test('reuses rows that were already prepared', async () => {

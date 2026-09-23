@@ -12,7 +12,14 @@ test('core demo separates preparation, grid paint, and scroll measurements', asy
   const metrics = page.getByRole('region', { name: 'Browser performance metrics' });
   await expect(metrics).toBeVisible({ timeout: 15_000 });
   await page.getByRole('button', { name: 'Reset view' }).click();
-  await expect(page.locator('.hr-select').first()).toHaveValue('100000');
+  const rowCountSelect = page.locator('.hr-select').first();
+  await expect(rowCountSelect).toHaveValue('100000');
+  await expect(rowCountSelect.locator('option')).toHaveText([
+    '1,000 rows × 100 columns',
+    '10,000 rows × 100 columns',
+    '100,000 rows × 100 columns',
+    '1,000,000 rows × 100 columns',
+  ]);
   await expect(metrics.locator('.hr-performance-metric', { hasText: 'Data preparation' }).locator('strong')).not.toHaveText('N/A');
   await expect(metrics.locator('.hr-performance-metric', { hasText: 'Grid apply to paint' }).locator('strong')).not.toHaveText('N/A');
   await expect(metrics.locator('.hr-performance-metric', { hasText: 'Dataset' }).locator('strong')).toHaveText('100,000 × 100');
@@ -25,7 +32,7 @@ test('core demo separates preparation, grid paint, and scroll measurements', asy
   await expect(metrics.getByRole('tooltip').first()).toBeVisible();
 
   await page.locator('.hr-select').first().selectOption('1000');
-  await expect(metrics.locator('.hr-performance-metric', { hasText: 'Dataset' }).locator('strong')).toHaveText('1,000 × 1,000');
+  await expect(metrics.locator('.hr-performance-metric', { hasText: 'Dataset' }).locator('strong')).toHaveText('1,000 × 100');
 
   await page.getByRole('button', { name: 'Save view' }).click();
   await expect(page.getByText('Saved locally')).toBeVisible();

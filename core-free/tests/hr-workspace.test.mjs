@@ -34,9 +34,11 @@ test('loads valid state and safely ignores invalid storage', () => {
 });
 
 test('validates saved row counts against the demo choices', () => {
-  assert.equal(getHRWorkspaceRowCount({ rowCount: 1000 }, [100, 1000]), 1000);
-  assert.equal(getHRWorkspaceRowCount({ rowCount: 999 }, [100, 1000, 100_000]), 100_000);
-  assert.equal(getHRWorkspaceRowCount({}, [100, 1000, 100_000]), 100_000);
+  const choices = [1_000, 10_000, 100_000, 1_000_000];
+  assert.equal(getHRWorkspaceRowCount({ rowCount: 1_000 }, choices), 1_000);
+  assert.equal(getHRWorkspaceRowCount({ rowCount: 100 }, choices), 100_000);
+  assert.equal(getHRWorkspaceRowCount({ rowCount: 999 }, choices), 100_000);
+  assert.equal(getHRWorkspaceRowCount({}, choices), 100_000);
   assert.equal(HR_DEFAULT_ROW_COUNT, 100_000);
 });
 
