@@ -54,6 +54,27 @@ export function ticketsInScope(tickets: Ticket[], scope: TicketScope): Ticket[] 
   );
 }
 
+/** Resolve the public Pivot row/column axis paths for this fixed Team × Priority report. */
+export function ticketsForPivotCell(
+  source: Ticket[],
+  cell: { rowPath: readonly unknown[]; columnPath: readonly unknown[] },
+): Ticket[] {
+  const { rowPath, columnPath } = cell;
+  if (rowPath.length > 1 || columnPath.length > 1) return [];
+  const team = rowPath[0];
+  const priority = columnPath[0];
+  if (team !== undefined && !TEAMS.includes(team as TicketTeam)) return [];
+  if (priority !== undefined && !PRIORITIES.includes(priority as TicketPriority)) return [];
+  return source.filter(ticket =>
+    (team === undefined || ticket.Team === team) &&
+    (priority === undefined || ticket.Priority === priority),
+  );
+}
+
+export function pageTickets(tickets: Ticket[], page: number, pageSize: number): Ticket[] {
+  return tickets.slice(page * pageSize, (page + 1) * pageSize);
+}
+
 /** Open tickets have no resolution time and must not lower the resolved-ticket average. */
 export function averageResolvedHours(values: Array<number | null | undefined>): number | undefined {
   const resolved = values.filter((value): value is number => typeof value === 'number' && Number.isFinite(value));

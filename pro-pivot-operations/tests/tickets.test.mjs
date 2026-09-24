@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { averageResolvedHours, createTickets, summarizeTickets, ticketsInScope } from '../src/tickets.ts';
+import { averageResolvedHours, createTickets, pageTickets, summarizeTickets, ticketsForPivotCell, ticketsInScope } from '../src/tickets.ts';
 
 test('fixture is deterministic, unique, and internally consistent', () => {
   const a = createTickets();
@@ -37,4 +37,22 @@ test('empty and all-open scopes do not invent a resolution average', () => {
   assert.equal(summarizeTickets(open).averageResolutionHours, null);
   assert.equal(averageResolvedHours([null, 5, undefined, 15]), 10);
   assert.equal(averageResolvedHours([null, undefined]), undefined);
+});
+
+test('focused Team × Priority cell returns exact filtered source records and pages', () => {
+  const source = ticketsInScope(createTickets(), { team: 'Platform', priority: 'Critical' });
+  const cell = ticketsForPivotCell(source, { rowPath: ['Platform'], columnPath: ['Critical'] });
+  assert.equal(cell.length, 40);
+  assert.equal(cell[0]['Ticket ID'], 'SUP-00001');
+  assert.equal(pageTickets(cell, 0, 15).length, 15);
+  assert.equal(pageTickets(cell, 1, 15)[0]['Ticket ID'], cell[15]['Ticket ID']);
+  assert.equal(pageTickets(cell, 2, 15).length, 10);
+  assert.equal(ticketsForPivotCell(source, { rowPath: ['Payments'], columnPath: ['Critical'] }).length, 0);
+});
+
+test('grand-total paths include all records of the selected source and reject unknown paths', () => {
+  const source = ticketsInScope(createTickets(), { team: 'Platform', priority: 'All' });
+  assert.equal(ticketsForPivotCell(source, { rowPath: [], columnPath: [] }).length, source.length);
+  assert.equal(ticketsForPivotCell(source, { rowPath: ['Platform'], columnPath: [] }).length, source.length);
+  assert.equal(ticketsForPivotCell(source, { rowPath: ['Unknown'], columnPath: [] }).length, 0);
 });
