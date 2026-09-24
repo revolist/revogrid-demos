@@ -1,7 +1,5 @@
-import '../../demo-host.css';
-import '@revolist/revogrid-pro/dist/revogrid-pro.css';
-import '@revolist/pivot/dist/pivot.css';
-import { createApp } from 'vue';
-import Demo from './OperationsPivot.vue';
+import { mountOperationsDemo } from './operations-demo';
 
-createApp(Demo).mount('#app');
+const app = document.querySelector<HTMLElement>('#app');
+if (!app) throw new Error('Missing operations demo root');
+mountOperationsDemo(app);
