@@ -370,25 +370,6 @@ importers:
         specifier: ^2.2.10
         version: 2.2.12(typescript@6.0.3)
 
-  pro-pivot-import:
-    dependencies:
-      '@revolist/pivot':
-        specifier: npm:@revolist/pivot-trial@2.9.5
-        version: '@revolist/pivot-trial@2.9.5'
-      '@revolist/revogrid':
-        specifier: 4.28.0
-        version: 4.28.0
-      '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@2.9.5
-        version: '@revolist/rv-pro-trial@2.9.5'
-    devDependencies:
-      typescript:
-        specifier: ~6.0.3
-        version: 6.0.3
-      vite:
-        specifier: ^6.3.5
-        version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13)
-
   pro-audit-history:
     dependencies:
       '@angular/common':
@@ -2785,9 +2766,6 @@ packages:
 
   '@revolist/kanban-trial@2.9.5':
     resolution: {integrity: sha512-q2w5Ao0vj+V2D7vg7hZb/8pTREya4UeyRe8itjJgYCRIsHIYKBtmSBFKzsnj7VkuI8DXZzcPRXoTTt2Ekd90yw==, tarball: https://trial.rv-grid.com/@revolist/kanban-trial/-/7a19829c046755096069d8a4aa0e80cb21602226}
-
-  '@revolist/pivot-trial@2.9.5':
-    resolution: {integrity: sha512-PwbzUqqnNh8EQbqXWCaM1+xAj9Yk8bSqGLbOzWyf1zrUia2e6XND4VNjwLkpLoPLDV2miq+QlyiHjJQTsOj/sQ==, tarball: https://trial.rv-grid.com/@revolist/pivot-trial/-/9a986c119b3d0869e1c9a4f14af278fe68b9df0b}
 
   '@revolist/react-datagrid@4.28.0':
     resolution: {integrity: sha512-CAD2gdpcZ6ks6EICb2Wrow0TKBFvSQ59IOXcBu3SM/o/AudphwE/STK4BcDFw9hZFBHpkg84l+EC8lNPF0/StQ==}
@@ -6016,12 +5994,6 @@ snapshots:
       '@revolist/rv-pro-trial': 2.9.5
 
   '@revolist/kanban-trial@2.9.5':
-    dependencies:
-      '@fortawesome/fontawesome-free': 7.3.1
-      '@revolist/revogrid': 4.28.0
-      '@revolist/rv-pro-trial': 2.9.5
-
-  '@revolist/pivot-trial@2.9.5':
     dependencies:
       '@fortawesome/fontawesome-free': 7.3.1
       '@revolist/revogrid': 4.28.0
