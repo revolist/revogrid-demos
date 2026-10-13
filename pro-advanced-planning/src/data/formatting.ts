@@ -6,15 +6,15 @@ import type {
     DataGridFormattingConfig,
 } from '@revolist/revogrid-pro'
 import { markDataGridFormatRenderer } from '@revolist/revogrid-pro'
-import { workflowBadges } from './planning.structured'
+import { planningPalette, workflowBadges } from './palette'
 import type { PlanningTask } from './types'
 import { PlanningWorkspacePlugin } from './workspace.plugin'
 
 const priorityPresentation = (value: unknown) => {
     const priority = Number(value)
-    if (priority >= 900) return { label: 'Critical', color: '#c85f63' }
-    if (priority >= 700) return { label: 'High', color: '#c28a2b' }
-    return { label: 'Normal', color: '#3d8c6c' }
+    if (priority >= 900) return { label: 'Critical', color: planningPalette.pink }
+    if (priority >= 700) return { label: 'High', color: planningPalette.orange }
+    return { label: 'Normal', color: planningPalette.blue }
 }
 
 /**
@@ -23,9 +23,10 @@ const priorityPresentation = (value: unknown) => {
  */
 export const workflowStatusBadgeRenderer = markDataGridFormatRenderer(
     ((h, props) => {
-        const { label, color } = workflowBadges[String(props.value)] ?? {
+        const { label, color, textColor } = workflowBadges[String(props.value)] ?? {
             label: String(props.value ?? ''),
             color: '#475569',
+            textColor: '#ffffff',
         }
         return h(
             'span',
@@ -33,7 +34,7 @@ export const workflowStatusBadgeRenderer = markDataGridFormatRenderer(
                 class: 'badge-cell',
                 style: {
                     backgroundColor: `var(--badge-cell-appearance-background-color, ${color})`,
-                    color: 'var(--badge-cell-appearance-color, #ffffff)',
+                    color: `var(--badge-cell-appearance-color, ${textColor})`,
                 },
             },
             label
