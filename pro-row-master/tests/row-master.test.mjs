@@ -54,7 +54,8 @@ test('all framework variants preserve plugin composition and lifecycle conventio
     assert.match(source, /CellColumnFocusVerifyPlugin/);
     assert.match(source, /masterRow/);
     assert.doesNotMatch(source, /Portfolio explorer|Tree \+ master detail|row-master-toolbar/);
-    assert.doesNotMatch(source, /Refresh source and preserve details|preserveExpandedMastersOnSource|cloneMasterRows/);
+    assert.doesNotMatch(source, /Refresh source|row-master-refresh|refreshSource/);
+    assert.doesNotMatch(source, /preserveExpandedMastersOnSource|cloneMasterRows/);
     assert.doesNotMatch(source, /additionalData/);
   }
 
@@ -82,7 +83,7 @@ test('all framework variants react to the resolved host theme', async () => {
   assert.doesNotMatch(styles, /@media \(prefers-color-scheme: dark\)/);
 });
 
-test('showcase renders a borderless grid workspace without source-refresh controls', async () => {
+test('showcase keeps a borderless grid workspace', async () => {
   const styles = await readSource('row-master.scss');
 
   assert.match(styles, /\.row-master-showcase\s*\{[^}]*background:\s*transparent/);

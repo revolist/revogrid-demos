@@ -172,6 +172,7 @@ function fetchProjectDetail(row: MasterProjectRow, delayMs: number): Promise<Pro
 export function createMasterRowConfig(delayMs = 500): RowMasterConfig {
   return {
     rowHeight: 440,
+    preserveExpandedOnSourceChange: true,
     template: (h, data) => {
       const row = data.model as MasterProjectRow;
       let panelElement: HTMLElement | undefined;
@@ -216,6 +217,15 @@ export function createMasterRowConfig(delayMs = 500): RowMasterConfig {
             h('span', { class: 'row-master-badge' }, `Owner: ${row.owner}`),
             h('span', { class: 'row-master-badge' }, `Timeline: ${row.timeline}`),
             h('span', { class: 'row-master-badge' }, `Budget: ${row.budget}`),
+          ]),
+          h('label', { class: 'row-master-draft' }, [
+            h('span', { class: 'row-master-kicker' }, 'Draft note'),
+            h('input', {
+              type: 'text',
+              placeholder: 'Type a note to test detail state',
+              'aria-label': `Draft note for ${row.name}`,
+            }),
+            h('small', {}, 'Local to this open detail; not saved to the row data.'),
           ]),
         ]),
         h('section', { class: 'row-master-side' }, [
