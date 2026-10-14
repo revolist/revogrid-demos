@@ -21,7 +21,7 @@ minimumReleaseAgeExclude:
   - '@revolist/kanban-trial@2.9.5'
   - '@revolist/react-datagrid@4.28.0'
   - '@revolist/revogrid-column-date@2.0.27'
-  - '@revolist/revogrid@4.28.0'
+  - '@revolist/revogrid@4.28.3'
   - '@revolist/rv-pro-trial@2.9.5'
   - '@revolist/scheduler-trial@2.9.5'
   - '@revolist/svelte-datagrid@4.28.0'
