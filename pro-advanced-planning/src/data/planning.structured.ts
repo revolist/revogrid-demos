@@ -9,21 +9,14 @@ import {
     createHistogramBrushStructuredFilterType,
     createTimeMatrixStructuredFilterType,
 } from '@revolist/revogrid-pro'
+import { workflowBadges } from './palette'
+export { workflowBadges } from './palette'
 
 export {
     FILTER_CALENDAR_RANGE,
     FILTER_CHIP_BADGE_TOGGLES,
     FILTER_HISTOGRAM_BRUSH,
     FILTER_TIME_MATRIX,
-}
-
-export const workflowBadges: Readonly<
-    Record<string, { label: string; color: string }>
-> = {
-    'not-started': { label: 'Planned', color: '#59697c' },
-    'in-progress': { label: 'In progress', color: '#5864b8' },
-    blocked: { label: 'Blocked', color: '#a84f4f' },
-    done: { label: 'Done', color: '#467a62' },
 }
 
 const configuredTypes = new Map([

@@ -2,7 +2,6 @@
   <section class="audit-showcase" aria-label="Invoice audit history workspace">
     <div class="audit-workspace">
       <RevoGrid
-        ref="gridRef"
         class="audit-grid"
         :theme="darkTheme ? 'darkMaterial' : 'material'"
         :source="rows"
@@ -13,6 +12,7 @@
         :range="true"
         stretch="last"
         hide-attribution
+        @aftergridinit="mountAuditPanel"
       />
       <aside ref="panelRef" class="audit-panel-host"></aside>
     </div>
@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import {
   AuditHistoryPlugin,
@@ -73,25 +73,23 @@ if (props.example === 'records' || props.example === 'storage' || props.example 
 }
 const cellFlash = createCellFlashConfig();
 const darkTheme = ref(currentTheme().isDark());
-const gridRef = ref<{ $el?: HTMLRevoGridElement } | HTMLRevoGridElement | null>(null);
 const panelRef = ref<HTMLElement | null>(null);
 let panelHandle: ReturnType<typeof defineAuditHistoryPanel> | undefined;
 let disposed = false;
 let disconnectTheme: (() => void) | undefined;
 
-onMounted(async () => {
+async function mountAuditPanel(event: Event) {
+  // The functional wrapper has no component ref; use the native readiness event.
+  await nextTick();
+  if (disposed || panelHandle || !panelRef.value) return;
+  panelHandle = defineAuditHistoryPanel(panelRef.value, event.target as HTMLRevoGridElement, panelOptions);
+}
+
+onMounted(() => {
   disconnectTheme = observeCurrentTheme((isDark) => {
     darkTheme.value = isDark;
   });
 });
-
-watch([gridRef, panelRef], async () => {
-  await nextTick();
-  if (disposed || panelHandle) return;
-  const reference = gridRef.value;
-  const grid = ((reference as { $el?: HTMLRevoGridElement } | null)?.$el ?? reference) as HTMLRevoGridElement | undefined;
-  if (grid && panelRef.value) panelHandle = defineAuditHistoryPanel(panelRef.value, grid, panelOptions);
-}, { flush: 'post' });
 
 onUnmounted(() => {
   disposed = true;

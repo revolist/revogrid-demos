@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
+import { planningPalette, workflowBadges } from '../src/data/palette'
 import {
     createTasks,
     getOwnerAvatar,
@@ -1031,23 +1032,13 @@ test('maps priority filter choices to the formatted Priority column labels', () 
     assert.match(columnsSource, /value:\s*'900',\s*label:\s*'Critical'/)
 })
 
-test('uses restrained Status badge defaults with readable labels', () => {
-    assert.match(
-        structuredSource,
-        /'not-started':\s*\{\s*label:\s*'Planned',\s*color:\s*'#59697c'/
-    )
-    assert.match(
-        structuredSource,
-        /'in-progress':\s*\{\s*label:\s*'In progress',\s*color:\s*'#5864b8'/
-    )
-    assert.match(
-        structuredSource,
-        /blocked:\s*\{\s*label:\s*'Blocked',\s*color:\s*'#a84f4f'/
-    )
-    assert.match(
-        structuredSource,
-        /done:\s*\{\s*label:\s*'Done',\s*color:\s*'#467a62'/
-    )
+test('shares Pivot-inspired status colors across task fixtures and badges', () => {
+    assert.match(structuredSource, /import \{ workflowBadges \} from '\.\/palette'/)
+    for (const task of createTasks()) {
+        assert.equal(task.color, workflowBadges[String(task.workflowStatus)].color)
+    }
+    assert.equal(workflowBadges['in-progress'].color, planningPalette.purple)
+    assert.equal(workflowBadges.blocked.color, planningPalette.orange)
     assert.match(
         formattingSource,
         /colorVariables:\s*\{[\s\S]*?fill:\s*'--badge-cell-appearance-background-color'[\s\S]*?text:\s*'--badge-cell-appearance-color'/
@@ -1059,7 +1050,7 @@ test('uses restrained Status badge defaults with readable labels', () => {
     )
     assert.match(
         formattingSource,
-        /color:\s*'var\(--badge-cell-appearance-color, #ffffff\)'/
+        /color:\s*`var\(--badge-cell-appearance-color, \$\{textColor\}\)`/
     )
 })
 
@@ -1079,6 +1070,10 @@ test('applies filtered and sorted edits only by stable task ID', () => {
     assert.equal(
         next.find(({ id }) => id === edited.id)?.workflowStatus,
         'blocked'
+    )
+    assert.equal(
+        next.find(({ id }) => id === edited.id)?.color,
+        workflowBadges.blocked.color
     )
     assert.equal(next.filter((task, index) => task !== tasks[index]).length, 1)
     assert.equal(

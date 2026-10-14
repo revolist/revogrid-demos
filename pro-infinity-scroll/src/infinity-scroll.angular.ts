@@ -62,7 +62,7 @@ export class InfinityScrollGridComponent implements OnDestroy {
   theme: HTMLRevoGridElement['theme'] = currentTheme().isDark() ? 'darkMaterial' : 'material';
   private readonly disconnectTheme = observeCurrentTheme((isDark) => {
     this.theme = isDark ? 'darkMaterial' : 'material';
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   });
   readonly source: InfinityScrollUser[] = [];
   readonly columns = createInfinityScrollColumns();
