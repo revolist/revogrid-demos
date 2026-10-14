@@ -1,7 +1,9 @@
 @use "sass:list";
 @use "./tokens" as *;
 
-[data-theme="dark"] {
+[data-theme="dark"],
+.dark,
+.project-grid-host:has(revo-grid.project-tracker-grid[theme^="dark"]) {
   --rv-column-add-popup-bg: #{token(dark-elevated)};
   --rv-column-add-popup-text: #{token(dark-text)};
   --rv-column-add-popup-muted: #{token(dark-muted)};
@@ -81,6 +83,12 @@
     revogr-data .rgRow.groupingRow:not(revo-grid.project-tracker-grid revo-grid .rgRow):hover .rgCell,
     revogr-data .rgRow.groupingRow:not(revo-grid.project-tracker-grid revo-grid .rgRow):hover .project-group-label {
       background: var(--revo-grid-row-hover) !important;
+    }
+
+    @each $name, $color in $semantic-colors {
+      .project-group-label--#{"" + $name} .project-group-title {
+        color: color-mix(in srgb, $color 55%, #{token(dark-text)});
+      }
     }
 
     .project-group-count,

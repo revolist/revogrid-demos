@@ -22,8 +22,13 @@
     background: var(--vp-c-bg);
     color: var(--vp-c-text-1);
 }
-.dark .planning-demo {
+.dark .planning-demo,
+.planning-demo[data-theme='dark'] {
     --planning-accent: #a997ff;
+    --rv-segmented-bg: #1b2434;
+    --rv-segmented-border: #3a465a;
+    --rv-segmented-active-bg: #303c52;
+    --rv-segmented-active-color: #c6baff;
 }
 .planning-demo * {
     box-sizing: border-box;

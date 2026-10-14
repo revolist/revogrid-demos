@@ -59,7 +59,7 @@ import {
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./planning.scss'],
     template: `
-        <section class="planning-demo">
+        <section class="planning-demo" [attr.data-theme]="theme === 'darkCompact' ? 'dark' : 'light'">
             <nav
                 class="planning-demo__switch rv-segmented-switch"
                 role="tablist"

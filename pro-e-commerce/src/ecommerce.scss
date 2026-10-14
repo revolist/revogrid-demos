@@ -922,6 +922,11 @@ revo-grid.ecommerce-grid {
   .ecommerce-toolbar {
     align-items: stretch;
     flex-direction: column;
+    padding: 10px 12px;
+
+    &__main {
+      flex: 0 1 auto;
+    }
 
     &__main,
     &__aside {

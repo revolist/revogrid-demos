@@ -335,6 +335,7 @@ export function load(parentSelector: string): (() => void) | undefined {
     }
 
     const disconnectTheme = observeCurrentTheme((isDark) => {
+        root.dataset.theme = isDark ? 'dark' : 'light'
         const grid = panel.querySelector(
             'revo-grid'
         ) as PlanningGridElement | null

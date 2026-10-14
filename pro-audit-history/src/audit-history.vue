@@ -2,7 +2,6 @@
   <section class="audit-showcase" aria-label="Invoice audit history workspace">
     <div class="audit-workspace">
       <RevoGrid
-        ref="gridRef"
         class="audit-grid"
         :theme="darkTheme ? 'darkMaterial' : 'material'"
         :source="rows"
@@ -13,6 +12,7 @@
         :range="true"
         stretch="last"
         hide-attribution
+        @aftergridinit="mountAuditPanel"
       />
       <aside ref="panelRef" class="audit-panel-host"></aside>
     </div>
@@ -46,21 +46,26 @@ const plugins = [EventManagerPlugin, AuditHistoryPlugin, CellFlashPlugin];
 const auditHistory = createAuditHistoryConfig();
 const cellFlash = createCellFlashConfig();
 const darkTheme = ref(currentTheme().isDark());
-const gridRef = ref<{ $el?: HTMLRevoGridElement } | null>(null);
 const panelRef = ref<HTMLElement | null>(null);
 let panelHandle: ReturnType<typeof defineAuditHistoryPanel> | undefined;
 let disconnectTheme: (() => void) | undefined;
+let disposed = false;
 
-onMounted(async () => {
+async function mountAuditPanel(event: Event) {
+  // The functional wrapper has no component ref; use the native readiness event.
+  await nextTick();
+  if (disposed || panelHandle || !panelRef.value) return;
+  panelHandle = defineAuditHistoryPanel(panelRef.value, event.target as HTMLRevoGridElement, createPanelOptions());
+}
+
+onMounted(() => {
   disconnectTheme = observeCurrentTheme((isDark) => {
     darkTheme.value = isDark;
   });
-  await nextTick();
-  const grid = gridRef.value?.$el;
-  if (grid && panelRef.value) panelHandle = defineAuditHistoryPanel(panelRef.value, grid, createPanelOptions());
 });
 
 onUnmounted(() => {
+  disposed = true;
   disconnectTheme?.();
   panelHandle?.destroy();
 });

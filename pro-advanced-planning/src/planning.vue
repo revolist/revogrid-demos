@@ -2,6 +2,7 @@
     <section
         ref="rootRef"
         class="planning-demo planning-demo--filter-toolbar"
+        :data-theme="theme === 'darkCompact' ? 'dark' : 'light'"
     >
         <div class="planning-demo__topbar">
             <nav

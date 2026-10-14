@@ -179,7 +179,7 @@ export default function PlanningViews() {
     }
 
     return (
-        <section className="planning-demo">
+        <section className="planning-demo" data-theme={isDark ? 'dark' : 'light'}>
             <nav
                 className="planning-demo__switch rv-segmented-switch"
                 role="tablist"
