@@ -1,4 +1,4 @@
-import { addDays, formatIsoDate } from '@revolist/revogrid-pro';
+import { addDays, formatIsoDate } from '@revolist/dates';
 
 export type OrderStatus = 'Processing' | 'Pending Review' | 'Payment Hold' | 'Shipped' | 'Delivered';
 export type OrderRegion = 'Europe' | 'North America' | 'Asia Pacific' | 'Latin America';
