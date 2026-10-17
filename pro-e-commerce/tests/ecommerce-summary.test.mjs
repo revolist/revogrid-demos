@@ -7,8 +7,8 @@ import {
   ExportExcelPlugin,
   FilterHeaderPlugin,
   SummaryChartHeaderPlugin,
+  validateFilterAst,
 } from '@revolist/revogrid-pro';
-import { validateFilterAst } from '../../../../packages/pro/plugins/filter/ast/validation.ts';
 
 import {
   ECOMMERCE_COLUMNS,
