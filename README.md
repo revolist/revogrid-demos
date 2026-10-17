@@ -131,10 +131,10 @@ then choose the feature you want to run:
 
 ```bash
 pnpm config set @revolist:registry https://trial.rv-grid.com --location=project
-pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@3.0.6 @revolist/pivot@npm:@revolist/pivot-trial@3.0.6
-pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@3.0.6 @revolist/gantt@npm:@revolist/gantt-trial@3.0.6
-pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@3.0.6 @revolist/kanban@npm:@revolist/kanban-trial@3.0.6
-pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@3.0.6 @revolist/scheduler@npm:@revolist/scheduler-trial@3.0.6
+pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@3.0.9 @revolist/pivot@npm:@revolist/pivot-trial@3.0.9
+pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@3.0.9 @revolist/gantt@npm:@revolist/gantt-trial@3.0.9
+pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@3.0.9 @revolist/kanban@npm:@revolist/kanban-trial@3.0.9
+pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@npm:@revolist/rv-pro-trial@3.0.9 @revolist/scheduler@npm:@revolist/scheduler-trial@3.0.9
 ```
 
 ### Pro version
@@ -144,10 +144,10 @@ matching production packages instead:
 
 ```bash
 pnpm config delete @revolist:registry --location=project
-pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@3.0.6 @revolist/pivot@3.0.6
-pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@3.0.6 @revolist/gantt@3.0.6
-pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@3.0.6 @revolist/kanban@3.0.6
-pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@3.0.6 @revolist/scheduler@3.0.6
+pnpm --dir pro-advanced-pivot i @revolist/revogrid-pro@3.0.9 @revolist/pivot@3.0.9
+pnpm --dir pro-advanced-gantt i @revolist/revogrid-pro@3.0.9 @revolist/gantt@3.0.9
+pnpm --dir pro-advanced-kanban i @revolist/revogrid-pro@3.0.9 @revolist/kanban@3.0.9
+pnpm --dir pro-advanced-scheduler i @revolist/revogrid-pro@3.0.9 @revolist/scheduler@3.0.9
 ```
 
 No source imports change between editions. RevoGrid core and framework wrappers
