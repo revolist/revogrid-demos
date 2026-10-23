@@ -101,7 +101,7 @@
   },
   "pnpm": {
     "overrides": {
-      "@revolist/revogrid": "4.29.0"
+      "@revolist/revogrid": "4.29.1"
     }
   }
 }
