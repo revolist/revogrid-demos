@@ -345,3 +345,52 @@
         transition: none !important;
     }
 }
+
+.planning-demo__toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    position: relative;
+}
+.planning-demo__toolbar input,
+.planning-demo__toolbar select,
+.planning-demo__toolbar > button,
+.planning-demo__filter-wrap > summary {
+    min-height: 30px;
+    padding: 4px 9px;
+    border: 1px solid var(--rv-ui-border, #dce1e8);
+    border-radius: 6px;
+    background: var(--rv-ui-surface, #fff);
+    color: inherit;
+    font: inherit;
+}
+.planning-demo__search {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.planning-demo__filter-wrap {
+    position: relative;
+}
+.planning-demo__filter-wrap > summary {
+    cursor: pointer;
+}
+.planning-demo__filter-popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 100;
+    width: min(320px, 85vw);
+    padding: 12px;
+    border: 1px solid var(--rv-ui-border, #dce1e8);
+    border-radius: 8px;
+    background: var(--rv-ui-surface, #fff);
+    box-shadow: 0 8px 24px #0002;
+}
+.planning-demo__filter-popover fieldset {
+    display: grid;
+    gap: 6px;
+    margin: 0 0 8px;
+    border: 0;
+}
