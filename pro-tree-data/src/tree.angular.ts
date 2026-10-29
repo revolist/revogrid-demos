@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { UiControlDirective } from '@revolist/ui/angular-control';
 import { Component, ElementRef, NO_ERRORS_SCHEMA, type OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import {
@@ -24,7 +26,7 @@ import {
 @Component({
   selector: 'tree-data-grid',
   standalone: true,
-  imports: [RevoGrid],
+  imports: [UiControlDirective, RevoGrid],
   schemas: [NO_ERRORS_SCHEMA],
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./tree.scss'],
@@ -32,13 +34,13 @@ import {
     <section class="tree-showcase" aria-label="Tree Data organization explorer">
       <div class="tree-toolbar">
         <div class="tree-toolbar__actions">
-          <button class="tree-button" type="button" (click)="expandAll()">Expand all</button>
-          <button class="tree-button" type="button" (click)="collapseAll()">Collapse all</button>
-          <button class="tree-button" type="button" [disabled]="exporting" (click)="exportToExcel()">
+          <button rvControl class="tree-button" type="button" (click)="expandAll()">Expand all</button>
+          <button rvControl class="tree-button" type="button" (click)="collapseAll()">Collapse all</button>
+          <button rvControl class="tree-button" type="button" [disabled]="exporting" (click)="exportToExcel()">
             {{ exporting ? 'Exporting…' : 'Export to Excel' }}
           </button>
           <label class="tree-sticky">
-            <input type="checkbox" [checked]="stickyParents" (change)="setStickyParents($event)" />
+            <input rvControl type="checkbox" [checked]="stickyParents" (change)="setStickyParents($event)" />
             Sticky parents
           </label>
         </div>

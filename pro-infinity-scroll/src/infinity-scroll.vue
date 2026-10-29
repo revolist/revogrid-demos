@@ -5,7 +5,7 @@
         <strong>Remote user directory</strong>
         <span class="infinity-status">{{ status }}</span>
       </div>
-      <button class="infinity-button" type="button" :disabled="exporting" @click="exportAll">
+      <button v-rv-control class="infinity-button" type="button" :disabled="exporting" @click="exportAll">
         {{ exporting ? 'Preparing export…' : 'Export all to Excel' }}
       </button>
     </div>
@@ -26,6 +26,8 @@
 </template>
 
 <script setup lang="ts">
+import { vRvControl } from '@revolist/ui/vue-control';
+import '@revolist/ui/styles.css';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import type { ColumnProp, FilterCollectionItem, MultiFilterItem } from '@revolist/revogrid';

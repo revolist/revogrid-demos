@@ -127,30 +127,7 @@
         color: list.nth($pair, 2);
         -webkit-text-fill-color: list.nth($pair, 2);
 
-        button {
-          color: list.nth($pair, 2);
-          -webkit-text-fill-color: list.nth($pair, 2);
-        }
-      }
-    }
-
-    .timeline-editor {
-      &__container,
-      &__timeline-bar {
-        border-color: #334055;
-        background: #20283a;
-      }
-
-      &__date-range {
-        background: #111827;
-        color: #f6f8fb;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.36);
-      }
-
-      &__date-picker-icon {
-        background: rgba(246, 248, 251, 0.12);
-        color: #dce5f3;
-      }
+              }
     }
 
     .project-progress-editor {
@@ -170,56 +147,10 @@
     }
   }
 
-  .project-grid-menu__panel,
-  .project-grid-menu__panel button,
-  .project-grid-menu__panel label,
-  .project-modal,
-  .project-modal__close,
-  .project-modal__field input,
-  .project-modal__field select,
-  .project-modal-select__preview,
-  .project-modal__footer button {
-    border-color: token(dark-border);
-    background: token(dark-elevated);
-    color: token(dark-text);
-  }
-
-  .project-grid-select,
-  .project-grid-menu summary,
-  .project-grid-menu__trigger {
-    border-color: transparent;
-    background: transparent;
-    color: token(dark-text);
-  }
-
-  .project-grid-select:hover,
-  .project-grid-menu summary:hover,
-  .project-grid-menu__trigger:hover,
-  .project-grid-select:focus-within,
-  .project-grid-menu[open] summary,
-  .project-grid-menu.is-open .project-grid-menu__trigger {
-    border-color: transparent;
-    background: #20283a;
-  }
-
   .project-grid-menu__panel {
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38);
 
-    button:hover,
-    label:hover {
-      background: #20283a;
-    }
-  }
-
-  .project-grid-menu__option.is-selected {
-    background: #18345c;
-    color: #8fbeff;
-
-    .project-grid-menu__check {
-      border-color: #7db3ff;
-      background: #2f7df1;
-    }
-  }
+      }
 
   .project-grid-menu__type-icon {
     background: rgba(125, 179, 255, 0.16);
@@ -258,23 +189,6 @@
     color: token(dark-muted);
   }
 
-  .project-bulk-action {
-    color: token(dark-muted);
-    background: transparent !important;
-
-    &:disabled {
-      border-color: transparent !important;
-      background: transparent !important;
-      color: #7f8ba0;
-      opacity: 0.6;
-    }
-
-    &:hover:not(:disabled) {
-      background: #20283a;
-      color: token(dark-text);
-    }
-  }
-
   .rv-column-add-popup__item.is-selected {
     background: #18345c;
     box-shadow: inset 0 0 0 1px #315f9e;
@@ -285,18 +199,8 @@
   }
 
   revo-grid.color-grid revogr-header .rgHeaderCell .filter-input input[type="text"] {
-    border-color: token(dark-border) !important;
-    background: token(dark-elevated) !important;
-    color: token(dark-text);
-    -webkit-text-fill-color: token(dark-text);
 
-    &:disabled {
-      border-color: token(dark-border) !important;
-      background: token(dark-elevated) !important;
-      color: token(dark-text);
-      -webkit-text-fill-color: token(dark-text);
-    }
-  }
+      }
 
   revo-grid.color-grid revogr-header .rgHeaderCell .filter-header-selection-trigger.rv-filter {
     border-color: transparent !important;
@@ -357,13 +261,6 @@
       color: token(dark-text);
     }
 
-    .filter .search-input,
-    .multi-filter-list input[type="text"] {
-      border-color: #3a4558;
-      background: #333333 !important;
-      color: token(dark-text) !important;
-    }
-
     .filter-list-grid {
       --revo-grid-background: transparent;
       --revo-grid-foreground: transparent;
@@ -391,27 +288,19 @@
       color: #ffffff;
     }
 
-    button {
-      color: token(dark-text);
-    }
-  }
+      }
 
   .revo-dropdown-menu .dropdown-option[class*="theme-dark"] {
     .project-owner-option,
     .project-owner-filter-option {
       color: token(dark-text) !important;
-      -webkit-text-fill-color: token(dark-text);
     }
 
     .project-skill-option {
       border-color: #334055;
       background: #20283a;
       color: token(dark-text);
-      -webkit-text-fill-color: token(dark-text);
 
-      input {
-        accent-color: #7db3ff;
-      }
-    }
+          }
   }
 }

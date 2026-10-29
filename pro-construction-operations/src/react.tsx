@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { ButtonControl as UiButton, Select as UiSelect } from '@revolist/ui/react-control';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
@@ -35,14 +37,14 @@ function Button({ children, active = false, iconOnly = false, kind = 'default', 
   title?: string;
   onClick: () => void;
 }>) {
-  return <button
+  return <UiButton
     type="button"
-    className={`construction-fabrication__button construction-fabrication__button--${kind}${iconOnly ? ' construction-fabrication__button--icon-only' : ''}`}
+    className={"rv-choice-chip " + (`construction-fabrication__button construction-fabrication__button--${kind}${iconOnly ? ' construction-fabrication__button--icon-only' : ''}`)}
     aria-label={iconOnly ? title : undefined}
     aria-pressed={active}
     title={title}
     onClick={onClick}
-  >{children}</button>;
+  >{children}</UiButton>;
 }
 
 export default function ConstructionFabricationGanttDemo() {
@@ -185,10 +187,10 @@ export default function ConstructionFabricationGanttDemo() {
                   </div>
                   {view === 'lookahead' && <label className="construction-fabrication__control-group">
                     <span className="construction-fabrication__toolbar-label">Work area</span>
-                    <select className="construction-fabrication__select" value={filters.workArea} onChange={(event) => setFilters((current) => ({ ...current, workArea: event.target.value }))}>
+                    <UiSelect className="construction-fabrication__select" value={filters.workArea} onChange={(event) => setFilters((current) => ({ ...current, workArea: event.target.value }))}>
                       <option value="all">All work areas</option>
                       {constructionWorkAreas(state).map((area) => <option key={area}>{area}</option>)}
-                    </select>
+                    </UiSelect>
                   </label>}
                 </div>
               </div>}

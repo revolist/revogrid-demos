@@ -4,7 +4,9 @@
   "description": "RevoGrid Core AI prompt library demo for TypeScript, React, Vue, and Angular.",
   "private": true,
   "type": "module",
-  "engines": { "node": "^22.22.3 || ^24.15.0 || >=26.0.0" },
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
+  },
   "scripts": {
     "dev": "pnpm dev:ts",
     "dev:ts": "vite --mode ts",
@@ -32,7 +34,9 @@
     "rxjs": "~7.8.0",
     "tslib": "^2.4.0",
     "vue": "^3.5.21",
-    "zone.js": "~0.15.0"
+    "zone.js": "~0.15.0",
+    "@revolist/ui": "file:../vendor/revolist-ui-3.0.14.tgz",
+    "preact": "10.29.1"
   },
   "devDependencies": {
     "@angular/build": "^22.1.0",

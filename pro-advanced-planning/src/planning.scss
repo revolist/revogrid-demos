@@ -63,21 +63,10 @@
 }
 .planning-demo__switch button {
     display: inline-flex;
-    height: 52px;
     align-items: center;
     gap: 5px;
-    padding: 0 12px;
-    border: 0;
-    border-bottom: 2px solid transparent;
-    background: transparent;
-    color: inherit;
-    font: 500 13px/1 inherit;
     text-transform: capitalize;
     white-space: nowrap;
-}
-.planning-demo__switch button.on {
-    color: var(--planning-accent);
-    border-bottom-color: currentColor;
 }
 .planning-demo__actions {
     display: flex;
@@ -87,36 +76,11 @@
     padding-right: 4px;
     white-space: nowrap;
 }
-.planning-demo__actions > button:not(.planning-demo__fullscreen) {
-    height: 30px;
-    padding: 0 9px;
-    border: 1px solid var(--rv-ui-border);
-    border-radius: 6px;
-    background: transparent;
-    color: inherit;
-    font: 500 11px/1 inherit;
-    cursor: pointer;
-}
-.planning-demo__actions > button.on,
-.planning-demo__toolbar > button.on {
-    border-color: var(--demo-focus-color);
-    background: var(--rv-ui-surface);
-    color: var(--demo-focus-color);
-}
 .planning-demo__fullscreen {
     display: inline-flex;
     width: 32px;
-    height: 32px;
     align-items: center;
     justify-content: center;
-    border: 0;
-    border-radius: 6px;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-}
-.planning-demo__fullscreen:hover {
-    background: var(--rv-ui-surface);
 }
 .planning-demo__grid {
     height: 100%;
@@ -189,6 +153,7 @@
     padding: 0;
 }
 .planning-card__title {
+    font-weight: 400;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -290,10 +255,6 @@
 .planning-demo__filter-search input {
     width: 100%;
     min-width: 0;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: inherit;
 }
 .planning-demo__filter-search:focus-within {
     border-color: var(--demo-focus-color);
@@ -320,16 +281,7 @@
     font-weight: 500;
     line-height: 1;
 }
-.planning-demo__filter-badge button {
-    border: 0;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-}
 @media (max-width: 900px) {
-    .planning-demo__switch button {
-        padding-inline: 9px;
-    }
     .planning-demo__footer {
         padding-right: 2px;
     }
@@ -346,51 +298,86 @@
     }
 }
 
+// Layout only: field, search, button and focus presentation come from @revolist/ui.
 .planning-demo__toolbar {
+    --rv-control-height: 32px;
+    --rv-control-padding: 5px 10px;
+    --rv-search-input-height: 32px;
+    --rv-search-input-bg: var(--rv-ui-surface);
+    --rv-ui-accent: var(--planning-accent);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    flex: 0 0 auto;
+    gap: 8px;
+    min-width: 0;
+    padding: 4px 0 8px;
+    border-bottom: 1px solid var(--rv-ui-border);
+    font-size: 13px;
+}
+.planning-demo__search {
+    flex: 0 1 280px;
+    width: 280px;
+    min-width: 160px;
+    max-width: 100%;
+}
+.planning-demo__search .rv-search-input-icon :is(img, svg) {
+    display: block;
+    width: 14px;
+    height: 14px;
+    opacity: .55;
+    fill: currentColor;
+}
+.planning-demo[data-theme='dark'] .rv-search-input-icon img {
+    filter: invert(1);
+}
+.planning-demo__filters {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
-    position: relative;
+    min-width: 0;
+    padding-inline-end: 12px;
+    border-inline-end: 1px solid var(--rv-ui-border);
 }
-.planning-demo__toolbar input,
-.planning-demo__toolbar select,
-.planning-demo__toolbar > button,
-.planning-demo__filter-wrap > summary {
-    min-height: 30px;
-    padding: 4px 9px;
-    border: 1px solid var(--rv-ui-border, #dce1e8);
+.planning-demo__filters .rv-control {
+    --rv-control-height: 32px;
+    --rv-control-padding: 5px 10px;
+    width: 150px;
+    height: 32px;
+    font-size: 13px;
+}
+.planning-demo__filters .rv-control[aria-label='Project'] {
+    width: 170px;
+}
+.planning-demo__select { display: contents; }
+.planning-demo__toolbar .planning-demo__active {
+    height: 32px;
+    min-height: 32px;
+    margin-inline-start: 4px;
+    padding-inline: 12px;
+    border: 1px solid var(--rv-ui-border);
     border-radius: 6px;
-    background: var(--rv-ui-surface, #fff);
-    color: inherit;
-    font: inherit;
+    font-size: 13px;
 }
-.planning-demo__search {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+.planning-demo__toolbar .planning-demo__reset {
+    margin-inline-start: auto;
+    height: 32px;
+    min-height: 32px;
+    padding: 4px 10px;
+    font-size: 13px;
+    color: var(--rv-ui-text-muted);
 }
-.planning-demo__filter-wrap {
-    position: relative;
+.planning-demo__switch {
+    flex-shrink: 0;
 }
-.planning-demo__filter-wrap > summary {
-    cursor: pointer;
-}
-.planning-demo__filter-popover {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    z-index: 100;
-    width: min(320px, 85vw);
-    padding: 12px;
-    border: 1px solid var(--rv-ui-border, #dce1e8);
-    border-radius: 8px;
-    background: var(--rv-ui-surface, #fff);
-    box-shadow: 0 8px 24px #0002;
-}
-.planning-demo__filter-popover fieldset {
-    display: grid;
-    gap: 6px;
-    margin: 0 0 8px;
-    border: 0;
+@media (max-width: 700px) {
+    .planning-demo__search { flex: 1 1 100%; width: 100%; }
+    .planning-demo__filters { flex: 1 1 100%; padding-inline-end: 0; border-inline-end: 0; }
+    .planning-demo__filters .rv-control,
+    .planning-demo__filters .rv-control[aria-label='Project'] {
+        flex: 1 1 110px;
+        width: 110px;
+    }
+    .planning-demo__toolbar .planning-demo__active { margin-inline-start: 0; }
 }

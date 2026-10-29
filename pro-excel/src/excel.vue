@@ -8,32 +8,21 @@
   >
     <div class="spreadsheet-ribbon">
       <span class="spreadsheet-ribbon-group">
-        <button class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" @click="exportWorkbook">
+        <button v-rv-control class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" @click="exportWorkbook">
           <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.export"></span>
           Export XLSX
         </button>
       </span>
       <span class="spreadsheet-ribbon-group">
-        <button class="spreadsheet-btn" type="button" :disabled="!historyState.canUndo" @click="runHistory('undo')">
+        <button v-rv-control class="spreadsheet-btn" type="button" :disabled="!historyState.canUndo" @click="runHistory('undo')">
           <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.undo"></span>
           Undo {{ historyState.undoStackSize }}
         </button>
-        <button class="spreadsheet-btn" type="button" :disabled="!historyState.canRedo" @click="runHistory('redo')">
+        <button v-rv-control class="spreadsheet-btn" type="button" :disabled="!historyState.canRedo" @click="runHistory('redo')">
           <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.redo"></span>
           Redo {{ historyState.redoStackSize }}
         </button>
       </span>
-    </div>
-
-    <div class="spreadsheet-sheet-tabs" data-testid="spreadsheet-sheet-tabs">
-      <button
-        class="spreadsheet-sheet-tab is-active"
-        type="button"
-        data-testid="spreadsheet-sheet-budget"
-      >
-        Budget
-      </button>
-      <span class="spreadsheet-tab-spacer" aria-hidden="true"></span>
       <span class="spreadsheet-collab" aria-label="Live collaborators">
         <span class="spreadsheet-live-dot" title="Live data"></span>
         <span
@@ -43,7 +32,8 @@
           :style="{ '--spreadsheet-avatar-color': user.color }"
           :title="`${user.name} - ${user.activity ?? 'viewing'}`"
         >
-          {{ user.initials }}
+          <img v-if="getSpreadsheetCollaboratorPhoto(user.id)" :src="getSpreadsheetCollaboratorPhoto(user.id)" :alt="user.name" />
+          <template v-else>{{ user.initials }}</template>
         </span>
       </span>
     </div>
@@ -104,6 +94,8 @@
 </template>
 
 <script setup lang="ts">
+import { vRvControl } from '@revolist/ui/vue-control';
+import '@revolist/ui/styles.css';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { VGrid } from '@revolist/vue3-datagrid';
 import {
@@ -174,6 +166,7 @@ import {
   createSpreadsheetPresenceUsers,
   flashSpreadsheetPresenceEdit,
 } from './spreadsheet.presence';
+import { getSpreadsheetCollaboratorPhoto } from './spreadsheet.presence';
 import {
   applySpreadsheetFeedFlashStep,
   flashSpreadsheetFeedEdit,

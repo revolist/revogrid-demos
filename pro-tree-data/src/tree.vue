@@ -2,13 +2,13 @@
   <section class="tree-showcase" aria-label="Tree Data organization explorer">
     <div class="tree-toolbar">
       <div class="tree-toolbar__actions">
-        <button class="tree-button" type="button" @click="expandAll">Expand all</button>
-        <button class="tree-button" type="button" @click="collapseAll">Collapse all</button>
-        <button class="tree-button" type="button" :disabled="exporting" @click="exportToExcel">
+        <button v-rv-control class="tree-button" type="button" @click="expandAll">Expand all</button>
+        <button v-rv-control class="tree-button" type="button" @click="collapseAll">Collapse all</button>
+        <button v-rv-control class="tree-button" type="button" :disabled="exporting" @click="exportToExcel">
           {{ exporting ? 'Exporting…' : 'Export to Excel' }}
         </button>
         <label class="tree-sticky">
-          <input v-model="stickyParents" type="checkbox" />
+          <input v-rv-control v-model="stickyParents" type="checkbox" />
           Sticky parents
         </label>
       </div>
@@ -39,6 +39,8 @@
 </template>
 
 <script setup lang="ts">
+import { vRvControl } from '@revolist/ui/vue-control';
+import '@revolist/ui/styles.css';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import {

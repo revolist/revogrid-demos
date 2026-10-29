@@ -24,11 +24,6 @@
   background: transparent;
 }
 
-.tree-button,
-.tree-sticky {
-  @include demo-controls.scheduler-button;
-}
-
 .tree-toolbar__actions {
   display: flex;
   flex-wrap: wrap;
@@ -44,8 +39,6 @@
 
 .tree-sticky input {
   width: 15px;
-  height: 15px;
-  accent-color: #2563eb;
 }
 
 .tree-grid {

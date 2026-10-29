@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { ButtonControl as UiButton, Select as UiSelect } from '@revolist/ui/react-control';
 import './hr.css';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -43,12 +45,12 @@ function HRMetricLabel({ metric }: { metric: HRPerformanceMetricKey }) {
     <div className="hr-performance-label">
       <span>{definition.label}</span>
       <span className="hr-metric-help">
-        <button
+        <UiButton
           type="button"
           className="hr-metric-help-trigger"
           aria-label={`About ${definition.label}`}
           aria-describedby={tooltipId}
-        >?</button>
+        >?</UiButton>
         <span className="hr-metric-tooltip" id={tooltipId} role="tooltip">{definition.description}</span>
       </span>
     </div>
@@ -186,7 +188,7 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
     <div className="hr-demo grow h-full flex flex-col">
       <div className="hr-toolbar">
         <span className="text-sm font-medium">Data Source</span>
-        <select
+        <UiSelect
           className="hr-select"
           value={currentSize}
           onChange={onSizeChange}
@@ -197,9 +199,9 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
               {opt.label}
             </option>
           ))}
-        </select>
+        </UiSelect>
         <span className="text-sm font-medium">Theme</span>
-        <select
+        <UiSelect
           className="hr-select"
           value={selectedTheme}
           onChange={event => {
@@ -212,9 +214,9 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
               {option.label}
             </option>
           ))}
-        </select>
-        <button type="button" className="hr-button" onClick={saveView}>Save view</button>
-        <button type="button" className="hr-button hr-button-secondary" onClick={resetView}>Reset view</button>
+        </UiSelect>
+        <UiButton type="button" className="hr-button" onClick={saveView}>Save view</UiButton>
+        <UiButton type="button" className="hr-button hr-button-secondary" onClick={resetView}>Reset view</UiButton>
         <span className="hr-workspace-status">{workspaceStatus}</span>
         {loading && <div className="text-sm opacity-50 animate-pulse ml-2">{loadingLabel}</div>}
       </div>

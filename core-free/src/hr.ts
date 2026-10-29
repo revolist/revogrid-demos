@@ -1,3 +1,5 @@
+import { applyControlPresentation } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_COMPANY_OPTIONS, HR_OPTIONS } from './sys-data/hr.data';
 import { getBaseHRColumns, getExtraHRColumns, withHRShortDate } from './sys-data/hr.columns';
@@ -82,6 +84,7 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
       <div class="hr-performance-metric">${metricLabel('dataset')}<strong data-metric="dataset">0 × 0</strong></div>
     </section>
   `;
+  applyControlPresentation(container);
   parent.appendChild(container);
 
   const gridContainer = container.querySelector('#grid-container')!;

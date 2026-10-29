@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { ButtonControl as UiButton, Input as UiInput, Select as UiSelect } from '@revolist/ui/react-control';
 import './project-tracker.scss';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
@@ -25,9 +27,7 @@ import {
   openProjectStatusHeaderFilter,
   projectOwnerProfiles,
   resolveProjectSortValueFromConfig,
-  projectSkillOptions,
   syncProjectCellEdit,
-  tagTone,
   updateProjectCollapsedGroups,
   defineProjectTrackerToolbarElement,
   PROJECT_TRACKER_TOOLBAR_ACTION_EVENT,
@@ -250,12 +250,12 @@ function Color() {
                   <p>New project</p>
                   <h2>Pipeline details</h2>
                 </div>
-                <button type="button" className="project-modal__close" aria-label="Close task dialog" onClick={() => setTaskModalOpen(false)}>×</button>
+                <UiButton type="button" className="project-modal__close" aria-label="Close task dialog" onClick={() => setTaskModalOpen(false)}>×</UiButton>
               </div>
 
               <label className="project-modal__field project-modal__field--wide">
                 <span>Project</span>
-                <input
+                <UiInput
                   required
                   placeholder="Describe the project"
                   value={taskDraft.task}
@@ -264,7 +264,7 @@ function Color() {
               </label>
               <label className="project-modal__field project-modal__field--wide">
                 <span>AI summary</span>
-                <input
+                <UiInput
                   required
                   placeholder="Short project summary"
                   value={taskDraft.summary}
@@ -281,7 +281,7 @@ function Color() {
                 <DraftSelect kind="department" label="Department" value={taskDraft.department} options={options.departments} onChange={(department) => setTaskDraft((next) => ({ ...next, department }))} />
                 <label className="project-modal__field">
                   <span>Progress</span>
-                  <input
+                  <UiInput
                     value={taskDraft.progress}
                     type="number"
                     min="0"
@@ -291,15 +291,15 @@ function Color() {
                 </label>
                 <label className="project-modal__field">
                   <span>Start</span>
-                  <input value={taskDraft.from} type="date" onChange={(event) => setTaskDraft((next) => ({ ...next, from: event.target.value }))} />
+                  <UiInput value={taskDraft.from} type="date" onChange={(event) => setTaskDraft((next) => ({ ...next, from: event.target.value }))} />
                 </label>
                 <label className="project-modal__field">
                   <span>End</span>
-                  <input value={taskDraft.to} type="date" onChange={(event) => setTaskDraft((next) => ({ ...next, to: event.target.value }))} />
+                  <UiInput value={taskDraft.to} type="date" onChange={(event) => setTaskDraft((next) => ({ ...next, to: event.target.value }))} />
                 </label>
                 <label className="project-modal__field">
                   <span>Budget</span>
-                  <input
+                  <UiInput
                     value={taskDraft.budget}
                     type="number"
                     min="0"
@@ -309,7 +309,7 @@ function Color() {
                 </label>
                 <label className="project-modal__field">
                   <span>Rating</span>
-                  <input
+                  <UiInput
                     value={taskDraft.rating}
                     type="number"
                     min="0"
@@ -328,8 +328,8 @@ function Color() {
               </div>
 
               <div className="project-modal__footer">
-                <button type="button" onClick={() => setTaskModalOpen(false)}>Cancel</button>
-                <button type="submit" className="project-grid-primary">Create project</button>
+                <UiButton type="button" onClick={() => setTaskModalOpen(false)}>Cancel</UiButton>
+                <UiButton type="submit" className="project-grid-primary">Create project</UiButton>
               </div>
             </form>
           </div>
@@ -363,12 +363,12 @@ function DraftChecks({
       <div>
         {options.map((option) => (
           <label key={option}>
-            <input
+            <UiInput
               type="checkbox"
               checked={value.includes(option)}
               onChange={(event) => toggle(option, event.target.checked)}
             />
-            <span className={`project-modal-skill project-skill--${modalSkillTone(option)}`}>{option}</span>
+            <span >{option}</span>
           </label>
         ))}
       </div>
@@ -393,78 +393,13 @@ function DraftSelect({
     <label className="project-modal__field project-modal__field--select">
       <span>{label}</span>
       <span className="project-modal-select">
-        {renderDraftSelectPreview(kind, value)}
-        <select className="project-modal-select__native" value={value} onChange={(event) => onChange(event.target.value)}>
-          {options.map((option) => <option key={option} value={option}>{option}</option>)}
-        </select>
+        <UiSelect className="project-modal-select__native" value={value} onChange={(event) => onChange(event.target.value)}>
+          {options.map((option) => <option key={option} value={option}>{kind === 'owner' ? projectOwnerProfiles.find(owner => owner.value === option)?.label ?? option : option}</option>)}
+        </UiSelect>
       </span>
     </label>
   );
 }
 
-function renderDraftSelectPreview(kind: 'plain' | 'owner' | 'block' | 'department' | 'section', value: string) {
-  if (kind === 'owner') {
-    const profile = projectOwnerProfiles.find((owner) => owner.value === value);
-    const index = Math.max(0, projectOwnerProfiles.findIndex((owner) => owner.value === value));
-    return (
-      <span className="project-modal-select__preview">
-        <span className="project-modal-owner">
-          <span className={`avatar-cell avatar-cell--${index % 8} project-avatar`}>{value.slice(0, 1)}</span>
-          <span className="project-modal-select__text">{profile?.label ?? value}</span>
-        </span>
-      </span>
-    );
-  }
-
-  if (kind === 'block') {
-    return (
-      <span className="project-modal-select__preview">
-        <span className={`project-modal-block project-filter-block--${modalBlockTone(value)}`}>{value}</span>
-      </span>
-    );
-  }
-
-  if (kind === 'department') {
-    return (
-      <span className="project-modal-select__preview">
-        <span className={`project-modal-pill project-filter-department--${tagTone(value)}`}>{value}</span>
-      </span>
-    );
-  }
-
-  if (kind === 'section') {
-    return (
-      <span className="project-modal-select__preview">
-        <span className="project-modal-section" style={{ '--project-modal-section-color': modalSectionColor(value) } as React.CSSProperties}>
-          <span className="project-modal-section__dot" />
-          <span className="project-modal-select__text">{value}</span>
-        </span>
-      </span>
-    );
-  }
-
-  return <span className="project-modal-select__preview"><span className="project-modal-select__text">{value}</span></span>;
-}
-
-function modalBlockTone(value: string) {
-  const normalized = value.toLowerCase();
-  if (normalized.includes('blocked') || normalized.includes('high')) return 'red';
-  if (normalized.includes('review') || normalized.includes('medium')) return 'orange';
-  if (normalized.includes('ready') || normalized.includes('low')) return 'green';
-  if (normalized.includes('new')) return 'blue';
-  return 'violet';
-}
-
-function modalSectionColor(value: string) {
-  const normalized = value.toLowerCase();
-  if (normalized.includes('review')) return '#ff8b00';
-  if (normalized.includes('ready')) return '#00c875';
-  if (normalized.includes('blocked')) return '#ff4d5e';
-  return '#1f7aff';
-}
-
-function modalSkillTone(value: string) {
-  return projectSkillOptions.find((skill) => skill.value === value)?.tone ?? tagTone(value);
-}
 
 export default Color;

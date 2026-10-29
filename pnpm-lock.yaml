@@ -56,9 +56,15 @@ importers:
       '@revolist/revogrid':
         specifier: 4.29.1
         version: 4.29.1
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.29.1
         version: 4.29.1
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -80,7 +86,7 @@ importers:
     devDependencies:
       '@angular/build':
         specifier: ^22.1.0
-        version: 22.1.8(@angular/compiler-cli@22.1.6(@angular/compiler@22.1.6)(typescript@6.0.3))(@angular/compiler@22.1.6)(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.6(@angular/common@22.1.6(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@5.0.0)(postcss@8.5.28)(rollup@4.63.3)(sass-embedded@1.104.1)(tslib@2.8.1)(tsx@4.23.13)(typescript@6.0.3)(vitest@4.1.11(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.101.0)(tsx@4.23.13)))
+        version: 22.1.8(@angular/compiler-cli@22.1.6(@angular/compiler@22.1.6)(typescript@6.0.3))(@angular/compiler@22.1.6)(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.6(@angular/common@22.1.6(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@5.0.0)(postcss@8.5.28)(rollup@4.63.3)(sass-embedded@1.104.1)(tslib@2.8.1)(tsx@4.23.13)(typescript@6.0.3)(vitest@4.1.11(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13)))
       '@angular/cli':
         specifier: ^22.1.0
         version: 22.1.8(chokidar@5.0.0)
@@ -95,16 +101,16 @@ importers:
         version: 18.3.7(@types/react@18.3.31)
       '@vitejs/plugin-react':
         specifier: ^4.3.4
-        version: 4.7.0(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.101.0)(tsx@4.23.13))
+        version: 4.7.0(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13))
       '@vitejs/plugin-vue':
         specifier: ^5.2.1
-        version: 5.2.4(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.101.0)(tsx@4.23.13))(vue@3.5.42(typescript@6.0.3))
+        version: 5.2.4(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13))(vue@3.5.42(typescript@6.0.3))
       typescript:
         specifier: ~6.0.3
         version: 6.0.3
       vite:
         specifier: ^6.3.5
-        version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.101.0)(tsx@4.23.13)
+        version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13)
       vue-tsc:
         specifier: ^2.2.10
         version: 2.2.12(typescript@6.0.3)
@@ -147,9 +153,15 @@ importers:
       '@revolist/revogrid-column-select':
         specifier: ^3.1.20
         version: 3.2.4
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.29.1
         version: 4.29.1
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -226,9 +238,15 @@ importers:
       '@revolist/revogrid':
         specifier: 4.29.1
         version: 4.29.1
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.29.1
         version: 4.29.1
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -296,6 +314,9 @@ importers:
       '@angular/platform-browser-dynamic':
         specifier: ^22.1.0
         version: 22.1.6(@angular/common@22.1.6(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/compiler@22.1.6)(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.6(@angular/common@22.1.6(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1)))
+      '@fortawesome/fontawesome-free':
+        specifier: 7.3.1
+        version: 7.3.1
       '@revolist/angular-datagrid':
         specifier: 4.29.1
         version: 4.29.1
@@ -317,9 +338,15 @@ importers:
       '@revolist/scheduler':
         specifier: npm:@revolist/scheduler-trial@3.0.18
         version: '@revolist/scheduler-trial@3.0.18'
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.29.1
         version: 4.29.1
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -341,7 +368,7 @@ importers:
     devDependencies:
       '@angular/build':
         specifier: ^22.1.0
-        version: 22.1.8(@angular/compiler-cli@22.1.6(@angular/compiler@22.1.6)(typescript@6.0.3))(@angular/compiler@22.1.6)(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.6(@angular/common@22.1.6(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@5.0.0)(postcss@8.5.28)(rollup@4.63.3)(sass-embedded@1.104.1)(tslib@2.8.1)(tsx@4.23.13)(typescript@6.0.3)(vitest@4.1.11(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13)))
+        version: 22.1.8(@angular/compiler-cli@22.1.6(@angular/compiler@22.1.6)(typescript@6.0.3))(@angular/compiler@22.1.6)(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.6(@angular/common@22.1.6(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1)))(chokidar@5.0.0)(postcss@8.5.28)(rollup@4.63.3)(sass-embedded@1.104.1)(tslib@2.8.1)(tsx@4.23.13)(typescript@6.0.3)(vitest@4.1.11(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.101.0)(tsx@4.23.13)))
       '@angular/cli':
         specifier: ^22.1.0
         version: 22.1.8(chokidar@5.0.0)
@@ -356,10 +383,10 @@ importers:
         version: 18.3.7(@types/react@18.3.31)
       '@vitejs/plugin-react':
         specifier: ^4.3.4
-        version: 4.7.0(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13))
+        version: 4.7.0(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.101.0)(tsx@4.23.13))
       '@vitejs/plugin-vue':
         specifier: ^5.2.1
-        version: 5.2.4(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13))(vue@3.5.42(typescript@6.0.3))
+        version: 5.2.4(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.101.0)(tsx@4.23.13))(vue@3.5.42(typescript@6.0.3))
       sass-embedded:
         specifier: ^1.83.4
         version: 1.104.1
@@ -368,7 +395,7 @@ importers:
         version: 6.0.3
       vite:
         specifier: ^6.3.5
-        version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13)
+        version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.101.0)(tsx@4.23.13)
       vue-tsc:
         specifier: ^2.2.10
         version: 2.2.12(typescript@6.0.3)
@@ -651,9 +678,15 @@ importers:
       '@revolist/scheduler':
         specifier: npm:@revolist/scheduler-trial@3.0.18
         version: '@revolist/scheduler-trial@3.0.18'
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.29.1
         version: 4.29.1
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -824,9 +857,15 @@ importers:
       '@revolist/revogrid-pro':
         specifier: npm:@revolist/rv-pro-trial@3.0.18
         version: '@revolist/rv-pro-trial@3.0.18'
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.29.1
         version: 4.29.1
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -900,9 +939,15 @@ importers:
       '@revolist/revogrid-pro':
         specifier: npm:@revolist/rv-pro-trial@3.0.18
         version: '@revolist/rv-pro-trial@3.0.18'
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.29.1
         version: 4.29.1
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -991,12 +1036,18 @@ importers:
       '@revolist/revogrid-pro':
         specifier: npm:@revolist/rv-pro-trial@3.0.18
         version: '@revolist/rv-pro-trial@3.0.18'
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.29.1
         version: 4.29.1
       numeral:
         specifier: ^2.0.6
         version: 2.0.6
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -1067,9 +1118,15 @@ importers:
       '@revolist/revogrid-pro':
         specifier: npm:@revolist/rv-pro-trial@3.0.18
         version: '@revolist/rv-pro-trial@3.0.18'
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.29.1
         version: 4.29.1
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -1149,12 +1206,18 @@ importers:
       '@revolist/svelte-datagrid':
         specifier: 4.29.1
         version: 4.29.1
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.29.1
         version: 4.29.1
       numeral:
         specifier: ^2.0.6
         version: 2.0.6
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -1222,9 +1285,15 @@ importers:
       '@revolist/revogrid-pro':
         specifier: npm:@revolist/rv-pro-trial@3.0.18
         version: '@revolist/rv-pro-trial@3.0.18'
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.29.1
         version: 4.29.1
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -1292,9 +1361,15 @@ importers:
       '@revolist/revogrid-pro':
         specifier: npm:@revolist/rv-pro-trial@3.0.18
         version: '@revolist/rv-pro-trial@3.0.18'
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.29.1
         version: 4.29.1
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -2229,6 +2304,134 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
+  '@lexical/a11y@0.52.0':
+    resolution: {integrity: sha512-FxcKnksrgeoPDxQgwHqTz81Tbv7vZnP2i09m7uU+zusNRt4g1dgbwSEq4Uee9yfLJ9qxM5P9YOGQTe0A6lAuAg==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/clipboard@0.52.0':
+    resolution: {integrity: sha512-SwUpKUEzTfl3dZlCXkYZN4CAU6AENzzuO3AtWCgbdtxG1HBnyUtMd6MP1XFUtYh0fhMGXw+QObzp+3+h0g3WTw==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/code-core@0.52.0':
+    resolution: {integrity: sha512-4ofNvUXEal2tm6DLGHtjJUc7C1qQP2RHUO4v/RHSSdWEHLKM1kITgIUUvWkf6FHnQNrTvrL2U5vxACv2bo0HVQ==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/code@0.52.0':
+    resolution: {integrity: sha512-pAARDF1XTvKn/FBxlFIMAiUYr0bE5EPCiSY5JZF6cOYG1xRN8GL2N9G+r0phhKdBc6LlMssA2AxuOABaP3tZqQ==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/dragon@0.52.0':
+    resolution: {integrity: sha512-XiNrujvAoywb41GRaRYFhPc/T7jxkFMf/bR9uE8S2t4fMERUFF1xM7Mos6NQ+skdDrF3KfxnLFzLCZ+4Oc9VyA==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/extension@0.52.0':
+    resolution: {integrity: sha512-do7uvUxg6mJK0702XlD0Z8UMCtr1Yij4/WpJ7+GY5CL2jKVercMeeYBBEE7cWc/OXQJgzVx3ClNXC7XAHI6Fvw==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/history@0.52.0':
+    resolution: {integrity: sha512-UJWmTcru+4KWkk8YtBSQ4dNLYuOJVCyCMFGsaCp/jVJEobwdY//jCTj9idOfE4b3H39kAixe9yQG/FNNOj4ujg==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/html@0.52.0':
+    resolution: {integrity: sha512-lRyntwgHnISsUKZHh3T+g9qU1CwTOH5hlnc1UzWE7/RXrvtnSmJTTcJu+sfFdRCiBAlkiIhKuJBCCYu99LeI7Q==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/internal@0.52.0':
+    resolution: {integrity: sha512-Y7jKqeh4Irf/FwNmAqHIk3b05HpMsHv2RyWPQ8+M7FAdEbT9N2mksjc8ZUZ3tHqDMi7FNiLkjZN/DwbdekUb1g==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/link@0.52.0':
+    resolution: {integrity: sha512-9hl/SxbkK5P0q1Rn4rTnaLHetTnf4zb+zgJjQwHAkqmeS561gLq34RcoO2i1zhibe8b6xk8gyhIe2cOpPeAC7w==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/list@0.52.0':
+    resolution: {integrity: sha512-B3+CdxWsdj6jBKtXiY7v4OSkyXBwotWyiD+75Baw0lvmjvniV33mvuMDgnPEQgEpFcGpBRmiu8M8kQdclQzXmQ==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/markdown@0.52.0':
+    resolution: {integrity: sha512-ntNi3SdjfcWoH7wi/D6rlO2Hw8MjDRkxuObAAQwJKLzJPvohNPKuzDoqM47uXNSs0XCS/HupI4mWShyrEZkDtA==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/rich-text@0.52.0':
+    resolution: {integrity: sha512-P3Y4SM6JSCBG6uFwLpPVEZiShhfC/GCJA//lQU1ZljxPDnCb4ueVCfWSBBdw0nSejYg8KvDQsijc4Fczyjqqtw==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/selection@0.52.0':
+    resolution: {integrity: sha512-O1hgwqUvoF/R2DxXIOJJvCqXxNM7kOWq1TBxqnbjT4TXNlDokEdpkO5EpetAWYWZj5UE2BUphfGUZAPQjvcUKQ==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/text@0.52.0':
+    resolution: {integrity: sha512-TuXd6a4MO18rQwU0Bl8VHNzWGD4o5pHnf3NKXwTRynImpeMJ8BGumVC6r27cGbh0kgBkvmX8Sb4EEbBQC9BYnQ==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@lexical/utils@0.52.0':
+    resolution: {integrity: sha512-3Azoh0EQckRcMd6CGOAuKue/UHDvkorrheXZFu9KpxhCBNQy+ic55jl0WQZFTOv2iO3NWReAMSuOAK0pWR2JPg==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   '@listr2/prompt-adapter-inquirer@4.2.5':
     resolution: {integrity: sha512-pYGy9dTdTwXdasPgyohkr0HoQ4FrkAzFnsUZl/gcnadDArbpZ8e+fgr+F9WBdNEl2y00mb9bCM4WgmoBkZJ27A==}
     engines: {node: '>=22.13.0'}
@@ -2769,6 +2972,9 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  '@preact/signals-core@1.14.4':
+    resolution: {integrity: sha512-HNB6HYeYKhQbJ1aKl+YRjrS4+QWHLKX6qKoUsfS/m0vqzsVaEBiZiaKbG/e+NKk2ch5ALQr/ihWaMHxiCuuWHA==}
+
   '@revolist/angular-datagrid@4.29.1':
     resolution: {integrity: sha512-rblhYQQdl4cPJrQIX9TdRV+q0NWvwjGMyZnzsOxPoZNPG0lQ88t/5X0ktkak7XyaRcvOC1CoTpr/l/9EyytbUg==}
 
@@ -2804,6 +3010,22 @@ packages:
 
   '@revolist/svelte-datagrid@4.29.1':
     resolution: {integrity: sha512-CHHvDgaH/G0ZPP2IFreTWo1u8dmYnMSZvIs0NoEP4eKr2eZ6eF4GkcrfjPSFHqkNtyXFUm/AUaeHVqpB/M/DSg==}
+
+  '@revolist/ui@file:vendor/revolist-ui-3.0.14.tgz':
+    resolution: {integrity: sha512-90Q3oINjtA3dpV0WskudhvyE4OWax2QxyXQ35+sKrJdeSUE++KEfglih+2qrnJ/NdSI/i7uKq5wlxxeyGJFnnQ==, tarball: file:vendor/revolist-ui-3.0.14.tgz}
+    version: 3.0.14
+    peerDependencies:
+      '@angular/core': '>=20'
+      preact: ^10.29.1
+      react: '>=18'
+      vue: ^3.5.0
+    peerDependenciesMeta:
+      '@angular/core':
+        optional: true
+      react:
+        optional: true
+      vue:
+        optional: true
 
   '@revolist/vue3-datagrid@4.29.1':
     resolution: {integrity: sha512-X/5IjQnOW1NSwW34MPNQpzBa4DBtfjbMlVtdG2roA4n3VVrCgiYz8qJwGFsWMptvocml+ywauvkJVa/uMSetuw==}
@@ -3212,6 +3434,9 @@ packages:
 
   '@types/react@18.3.31':
     resolution: {integrity: sha512-vfEqpXTvwT91yhmwdfouStN2hSKwTvyRs8qpLfADyrq/kxDw0hZM7Wk9Ug1FELj8hIby+S/+kQCSRFF32nv2Qw==}
+
+  '@types/trusted-types@2.0.7':
+    resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
 
   '@vitejs/plugin-basic-ssl@2.3.0':
     resolution: {integrity: sha512-bdyo8rB3NnQbikdMpHaML9Z1OZPBu6fFOBo+OtxsBlvMJtysWskmBcnbIDhUqgC8tcxNv/a+BcV5U+2nQMm1OQ==}
@@ -3859,6 +4084,14 @@ packages:
   jstat@1.9.6:
     resolution: {integrity: sha512-rPBkJbK2TnA8pzs93QcDDPlKcrtZWuuCo2dVR0TFLOJSxhqfWOVCSp8aV3/oSbn+4uY4yw1URtLpHQedtmXfug==}
 
+  lexical@0.52.0:
+    resolution: {integrity: sha512-mePejqwCDaW0GR89IoofJTTlk/EiwwlGhbs1D8qOx/Iw6ieG5D3nh7PSPLv0Csia0UC58HpuV91DilJjqeAWSw==}
+    peerDependencies:
+      typescript: '>=5.2'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   lightningcss-android-arm64@1.33.0:
     resolution: {integrity: sha512-gEpRTalKdosp4Bb8qWtc2iOgE5SeIHlpS1up9bFq2wAyYhl1UdTObYiHe98zEM9SQvSoqQZ1IQD0JNpg3Ml5pg==}
     engines: {node: '>= 12.0.0'}
@@ -4172,13 +4405,8 @@ packages:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
 
-  preact@10.29.8:
-    resolution: {integrity: sha512-ej2aVZ+vZ8WO7tvlQWRM9N63A0KzF9q4mWJfDUHgYaIofWY9hu74QdnQrjoPMmZi2/nZ5gN0bJCQF49xQqx09Q==}
-    peerDependencies:
-      preact-render-to-string: '>=5'
-    peerDependenciesMeta:
-      preact-render-to-string:
-        optional: true
+  preact@10.29.1:
+    resolution: {integrity: sha512-gQCLc/vWroE8lIpleXtdJhTFDogTdZG9AjMUpVkDf2iTCNwYNWA+u16dL41TqUDJO4gm2IgrcMv3uTpjd4Pwmg==}
 
   proc-log@7.0.0:
     resolution: {integrity: sha512-FYgfaA69XZ93zaXLoMNQ+ViDXGGBgR8aLh03txzcFhV+9xOXx7+8DLCULrKKpR9+GsH9ZfHm82aSUPpozX0Ztg==}
@@ -5712,6 +5940,153 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
 
+  '@lexical/a11y@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/extension': 0.52.0(typescript@6.0.3)
+      '@lexical/utils': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/clipboard@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/extension': 0.52.0(typescript@6.0.3)
+      '@lexical/html': 0.52.0(typescript@6.0.3)
+      '@lexical/internal': 0.52.0(typescript@6.0.3)
+      '@lexical/list': 0.52.0(typescript@6.0.3)
+      '@lexical/selection': 0.52.0(typescript@6.0.3)
+      '@lexical/utils': 0.52.0(typescript@6.0.3)
+      '@types/trusted-types': 2.0.7
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/code-core@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/extension': 0.52.0(typescript@6.0.3)
+      '@lexical/html': 0.52.0(typescript@6.0.3)
+      '@lexical/internal': 0.52.0(typescript@6.0.3)
+      '@lexical/utils': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/code@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/code-core': 0.52.0(typescript@6.0.3)
+      '@lexical/extension': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/dragon@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/extension': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/extension@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/internal': 0.52.0(typescript@6.0.3)
+      '@lexical/utils': 0.52.0(typescript@6.0.3)
+      '@preact/signals-core': 1.14.4
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/history@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/extension': 0.52.0(typescript@6.0.3)
+      '@lexical/utils': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/html@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/extension': 0.52.0(typescript@6.0.3)
+      '@lexical/internal': 0.52.0(typescript@6.0.3)
+      '@lexical/selection': 0.52.0(typescript@6.0.3)
+      '@lexical/utils': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/internal@0.52.0(typescript@6.0.3)':
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/link@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/a11y': 0.52.0(typescript@6.0.3)
+      '@lexical/extension': 0.52.0(typescript@6.0.3)
+      '@lexical/html': 0.52.0(typescript@6.0.3)
+      '@lexical/internal': 0.52.0(typescript@6.0.3)
+      '@lexical/utils': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/list@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/extension': 0.52.0(typescript@6.0.3)
+      '@lexical/html': 0.52.0(typescript@6.0.3)
+      '@lexical/internal': 0.52.0(typescript@6.0.3)
+      '@lexical/utils': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/markdown@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/code-core': 0.52.0(typescript@6.0.3)
+      '@lexical/internal': 0.52.0(typescript@6.0.3)
+      '@lexical/link': 0.52.0(typescript@6.0.3)
+      '@lexical/list': 0.52.0(typescript@6.0.3)
+      '@lexical/rich-text': 0.52.0(typescript@6.0.3)
+      '@lexical/selection': 0.52.0(typescript@6.0.3)
+      '@lexical/text': 0.52.0(typescript@6.0.3)
+      '@lexical/utils': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/rich-text@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/a11y': 0.52.0(typescript@6.0.3)
+      '@lexical/clipboard': 0.52.0(typescript@6.0.3)
+      '@lexical/dragon': 0.52.0(typescript@6.0.3)
+      '@lexical/extension': 0.52.0(typescript@6.0.3)
+      '@lexical/html': 0.52.0(typescript@6.0.3)
+      '@lexical/selection': 0.52.0(typescript@6.0.3)
+      '@lexical/utils': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/selection@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/internal': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/text@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/internal': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
+  '@lexical/utils@0.52.0(typescript@6.0.3)':
+    dependencies:
+      '@lexical/internal': 0.52.0(typescript@6.0.3)
+      '@lexical/selection': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
   '@listr2/prompt-adapter-inquirer@4.2.5(@inquirer/prompts@8.5.2)(listr2@11.0.0)':
     dependencies:
       '@inquirer/prompts': 8.5.2
@@ -6072,6 +6447,8 @@ snapshots:
     dependencies:
       playwright: 1.59.1
 
+  '@preact/signals-core@1.14.4': {}
+
   '@revolist/angular-datagrid@4.29.1':
     dependencies:
       '@revolist/revogrid': 4.29.1
@@ -6085,16 +6462,12 @@ snapshots:
       '@revolist/revogrid-column-date': 2.0.27
       '@revolist/revogrid-column-select': 3.2.4
       '@revolist/rv-pro-trial': 3.0.18
-    transitivePeerDependencies:
-      - preact-render-to-string
 
   '@revolist/kanban-trial@3.0.18':
     dependencies:
       '@fortawesome/fontawesome-free': 7.3.1
       '@revolist/revogrid': 4.29.1
       '@revolist/rv-pro-trial': 3.0.18
-    transitivePeerDependencies:
-      - preact-render-to-string
 
   '@revolist/react-datagrid@4.29.1':
     dependencies:
@@ -6119,10 +6492,8 @@ snapshots:
     dependencies:
       '@formulajs/formulajs': 4.6.1
       '@revolist/revogrid': 4.29.1
-      preact: 10.29.8
+      preact: 10.29.1
       write-excel-file: 4.1.1
-    transitivePeerDependencies:
-      - preact-render-to-string
 
   '@revolist/scheduler-trial@3.0.18':
     dependencies:
@@ -6130,12 +6501,29 @@ snapshots:
       '@revolist/revogrid': 4.29.1
       '@revolist/rv-pro-trial': 3.0.18
       pdfmake: 0.3.9
-    transitivePeerDependencies:
-      - preact-render-to-string
 
   '@revolist/svelte-datagrid@4.29.1':
     dependencies:
       '@revolist/revogrid': 4.29.1
+
+  '@revolist/ui@file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))':
+    dependencies:
+      '@lexical/code': 0.52.0(typescript@6.0.3)
+      '@lexical/history': 0.52.0(typescript@6.0.3)
+      '@lexical/link': 0.52.0(typescript@6.0.3)
+      '@lexical/list': 0.52.0(typescript@6.0.3)
+      '@lexical/markdown': 0.52.0(typescript@6.0.3)
+      '@lexical/rich-text': 0.52.0(typescript@6.0.3)
+      '@lexical/selection': 0.52.0(typescript@6.0.3)
+      '@lexical/utils': 0.52.0(typescript@6.0.3)
+      lexical: 0.52.0(typescript@6.0.3)
+      preact: 10.29.1
+    optionalDependencies:
+      '@angular/core': 22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1)
+      react: 18.3.1
+      vue: 3.5.42(typescript@6.0.3)
+    transitivePeerDependencies:
+      - typescript
 
   '@revolist/vue3-datagrid@4.29.1':
     dependencies:
@@ -6417,6 +6805,8 @@ snapshots:
     dependencies:
       '@types/prop-types': 15.7.15
       csstype: 3.2.3
+
+  '@types/trusted-types@2.0.7': {}
 
   '@vitejs/plugin-basic-ssl@2.3.0(vite@8.1.5(esbuild@0.28.2)(sass-embedded@1.104.1)(sass@1.101.0)(tsx@4.23.13))':
     dependencies:
@@ -7189,6 +7579,12 @@ snapshots:
 
   jstat@1.9.6: {}
 
+  lexical@0.52.0(typescript@6.0.3):
+    dependencies:
+      '@lexical/internal': 0.52.0(typescript@6.0.3)
+    optionalDependencies:
+      typescript: 6.0.3
+
   lightningcss-android-arm64@1.33.0:
     optional: true
 
@@ -7540,7 +7936,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  preact@10.29.8: {}
+  preact@10.29.1: {}
 
   proc-log@7.0.0: {}
 

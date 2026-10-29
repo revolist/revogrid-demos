@@ -10,7 +10,7 @@
         </span>
         <label class="ecommerce-filter" for="customerSearch">
           <span aria-hidden="true">⌕</span>
-          <input
+          <input v-rv-control
             id="customerSearch"
             v-model="quickSearch"
             type="search"
@@ -21,7 +21,7 @@
         </label>
         <label class="ecommerce-preset">
           <span class="sr-only">Advanced filter example</span>
-          <select aria-label="Advanced filter example" @change="applyPreset">
+          <select v-rv-control aria-label="Advanced filter example" @change="applyPreset">
             <option value="">Advanced examples</option>
             <option v-for="(preset, id) in ECOMMERCE_FILTER_PRESETS" :key="id" :value="id">
               {{ preset.label }}
@@ -35,7 +35,7 @@
           <span>Spend</span>
           <strong>{{ totalSpend }}</strong>
         </span>
-        <button
+        <button v-rv-control
           type="button"
           class="ecommerce-button ecommerce-button--export"
           @click="exportToExcel"
@@ -74,6 +74,8 @@
 </template>
 
 <script setup lang="ts">
+import { vRvControl } from '@revolist/ui/vue-control';
+import '@revolist/ui/styles.css';
 import './ecommerce.scss';
 import { currentEcommerceThemeVue } from './ecommerce.theme';
 import RevoGrid from '@revolist/vue3-datagrid';

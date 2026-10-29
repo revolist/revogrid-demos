@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { ButtonControl as UiButton } from '@revolist/ui/react-control';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import {
@@ -67,6 +69,7 @@ import {
   createSpreadsheetPresenceUsers,
   flashSpreadsheetPresenceEdit,
 } from './spreadsheet.presence';
+import { getSpreadsheetCollaboratorPhoto } from './spreadsheet.presence';
 import {
   applySpreadsheetFeedFlashStep,
   flashSpreadsheetFeedEdit,
@@ -408,28 +411,21 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     >
       <div className="spreadsheet-ribbon">
         <span className="spreadsheet-ribbon-group">
-          <button className="spreadsheet-btn" type="button" data-testid="spreadsheet-export" onClick={exportWorkbook}>
+          <UiButton className="spreadsheet-btn" type="button" data-testid="spreadsheet-export" onClick={exportWorkbook}>
             <ActionIcon icon={SPREADSHEET_ACTION_ICONS.export} />
             Export XLSX
-          </button>
+          </UiButton>
         </span>
         <span className="spreadsheet-ribbon-group">
-          <button className="spreadsheet-btn" type="button" disabled={!historyState.canUndo} onClick={() => void runHistory('undo')}>
+          <UiButton className="spreadsheet-btn" type="button" disabled={!historyState.canUndo} onClick={() => void runHistory('undo')}>
             <ActionIcon icon={SPREADSHEET_ACTION_ICONS.undo} />
             Undo {historyState.undoStackSize}
-          </button>
-          <button className="spreadsheet-btn" type="button" disabled={!historyState.canRedo} onClick={() => void runHistory('redo')}>
+          </UiButton>
+          <UiButton className="spreadsheet-btn" type="button" disabled={!historyState.canRedo} onClick={() => void runHistory('redo')}>
             <ActionIcon icon={SPREADSHEET_ACTION_ICONS.redo} />
             Redo {historyState.redoStackSize}
-          </button>
+          </UiButton>
         </span>
-      </div>
-
-      <div className="spreadsheet-sheet-tabs" data-testid="spreadsheet-sheet-tabs">
-        <button className="spreadsheet-sheet-tab is-active" type="button" data-testid="spreadsheet-sheet-budget">
-          Budget
-        </button>
-        <span className="spreadsheet-tab-spacer" aria-hidden="true" />
         <span className="spreadsheet-collab" aria-label="Live collaborators">
           <span className="spreadsheet-live-dot" title="Live data" />
           {presenceUsers.map(user => (
@@ -439,7 +435,9 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
               style={{ '--spreadsheet-avatar-color': user.color } as React.CSSProperties}
               title={`${user.name} - ${user.activity ?? 'viewing'}`}
             >
-              {user.initials}
+              {getSpreadsheetCollaboratorPhoto(user.id)
+                ? <img src={getSpreadsheetCollaboratorPhoto(user.id)} alt={user.name} />
+                : user.initials}
             </span>
           ))}
         </span>

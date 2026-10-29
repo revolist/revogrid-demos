@@ -227,10 +227,7 @@ revo-grid.project-tracker-grid {
     justify-content: center;
     padding: 0 !important;
 
-    input[type="checkbox"]:not(.rv-checkbox) {
-      @include project-checkbox;
-    }
-  }
+      }
 
   .cell-header-checkbox-container {
     display: flex;
@@ -243,15 +240,7 @@ revo-grid.project-tracker-grid {
     padding: 0 !important;
     box-shadow: none !important;
 
-    input[type="checkbox"]:not(.rv-checkbox) {
-      @include project-checkbox;
-    }
-  }
-
-  .project-dropdown-option input[type="checkbox"],
-  .project-checkbox-preview input[type="checkbox"] {
-    @include project-checkbox;
-  }
+      }
 
   .project-section-rail {
     position: relative;
@@ -712,147 +701,6 @@ revo-grid.project-tracker-grid {
 
     .project-linked-items {
       justify-content: flex-start;
-    }
-  }
-
-  .timeline-editor {
-    &__container {
-      position: relative;
-      display: flex;
-      width: 100%;
-      height: 28px;
-      max-height: 28px;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-      overflow: hidden;
-      border: 1px solid #d8dfeb;
-      border-radius: radius(pill);
-      background: #eef2f7;
-
-      > div {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        min-width: 0;
-      }
-    }
-
-    &__timeline-bar {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      height: 100%;
-      border-radius: radius(pill);
-      background: #eef2f7;
-      pointer-events: none;
-    }
-
-    &__progress-bar {
-      position: absolute;
-      inset: 0 auto 0 0;
-      z-index: 1;
-      display: flex;
-      min-width: 30px;
-      height: 100%;
-      align-items: center;
-      justify-content: flex-start;
-      border-radius: radius(pill);
-      background: var(--pipeline-blue);
-      overflow: visible;
-      pointer-events: none;
-
-      &.low {
-        background: var(--pipeline-red);
-      }
-
-      &.medium {
-        background: var(--pipeline-orange);
-      }
-
-      &.info {
-        background: var(--pipeline-blue);
-      }
-
-      &.high {
-        background: var(--pipeline-green);
-      }
-    }
-
-    &__date-range {
-      position: relative;
-      z-index: 2;
-      display: inline-flex;
-      height: 20px;
-      width: max-content;
-      flex: 0 0 auto;
-      align-items: center;
-      justify-content: center;
-      overflow: visible;
-      max-width: none;
-      margin-left: 6px;
-      border-radius: radius(pill);
-      background: #252a33;
-      color: token(surface);
-      font-size: 11px;
-      font-weight: 500;
-      line-height: 1;
-      padding: 0 8px;
-      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.18);
-      text-shadow: none;
-      white-space: nowrap;
-      pointer-events: none;
-    }
-
-    &__date-inputs {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: -1;
-      width: 0;
-      height: 0;
-      overflow: hidden;
-      opacity: 0;
-      pointer-events: none;
-
-      input[type="date"] {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        margin: 0;
-        padding: 0;
-        border: 0;
-        opacity: 0;
-      }
-    }
-
-    &__date-picker-icons {
-      position: absolute;
-      inset: 0;
-      z-index: 3;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 3px;
-      pointer-events: auto;
-    }
-
-    &__date-picker-icon {
-      display: flex;
-      width: 22px;
-      height: 22px;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      background: rgba(17, 24, 39, 0.18);
-      color: token(surface);
-      opacity: 0;
-      transition: opacity 0.16s ease, background-color 0.16s ease;
-      pointer-events: auto;
-    }
-
-    &__container:hover .timeline-editor__date-picker-icon {
-      opacity: 0.82;
     }
   }
 

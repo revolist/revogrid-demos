@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { UiControlDirective } from '@revolist/ui/angular-control';
 import { ChangeDetectorRef, Component, Input, NO_ERRORS_SCHEMA, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import type { ColumnProp, FilterCollectionItem, MultiFilterItem } from '@revolist/revogrid';
@@ -26,7 +28,7 @@ import './infinity-scroll.scss';
 @Component({
   selector: 'infinity-scroll-grid',
   standalone: true,
-  imports: [RevoGrid],
+  imports: [UiControlDirective, RevoGrid],
   encapsulation: ViewEncapsulation.None,
   schemas: [NO_ERRORS_SCHEMA],
   template: `
@@ -36,7 +38,7 @@ import './infinity-scroll.scss';
           <strong>Remote user directory</strong>
           <span class="infinity-status">{{ status }}</span>
         </div>
-        <button class="infinity-button" type="button" [disabled]="exporting" (click)="exportAll()">
+        <button rvControl class="infinity-button" type="button" [disabled]="exporting" (click)="exportAll()">
           {{ exporting ? 'Preparing export…' : 'Export all to Excel' }}
         </button>
       </div>

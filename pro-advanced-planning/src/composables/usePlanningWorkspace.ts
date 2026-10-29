@@ -47,6 +47,7 @@ import {
     views,
     type PlanningEditDetail,
     type PlanningView,
+    type PlanningFilters,
     updateFromGanttDependencies,
 } from '../data'
 
@@ -126,8 +127,15 @@ export function usePlanningWorkspace() {
     }
 
     function applyActiveTasksPreset() {
-        filters.value = activePlanningFilters()
-        isActiveTasksPreset.value = true
+        const active = !isActiveTasksPreset.value
+        filters.value = active ? activePlanningFilters() : defaultPlanningFilters()
+        isActiveTasksPreset.value = active
+        refreshViewSnapshot()
+    }
+
+    function changeFilters(next: PlanningFilters) {
+        filters.value = next
+        isActiveTasksPreset.value = false
         refreshViewSnapshot()
     }
 
@@ -164,6 +172,8 @@ export function usePlanningWorkspace() {
 
     return {
         activeView,
+        filters,
+        changeFilters,
         applyActiveTasksPreset,
         calendarConfig,
         emptySource,

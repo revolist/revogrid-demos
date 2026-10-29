@@ -29,35 +29,7 @@ revo-grid.color-grid {
         padding: space(2) space(4) !important;
 
         input[type="text"] {
-          width: 100%;
-          height: control(filter-height);
-          border-color: #d8dfeb !important;
-          border-radius: 6px;
-          background: token(surface) !important;
-          color: #243047;
-          font-size: 12px;
-          font-weight: 400;
-          outline: none;
-          transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
-
-          &::placeholder {
-            color: token(header-placeholder);
-            opacity: 0.9;
-          }
-
-          &:focus {
-            border-color: var(--pipeline-blue) !important;
-            box-shadow: 0 0 0 3px rgba(31, 122, 255, 0.14);
-          }
-
-          &:disabled {
-            border-color: #e2e7f1 !important;
-            background: #f8faff !important;
-            opacity: 1;
-            color: #243047;
-            font-weight: 400;
-            -webkit-text-fill-color: #243047;
-          }
+          width: 100%
         }
       }
 
@@ -182,7 +154,6 @@ revo-grid.color-grid {
       min-height: 0;
       width: 100%;
     }
-
 
     $h: 50px;
     .filter-header-content {

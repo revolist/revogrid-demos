@@ -1,3 +1,5 @@
+import { controlAttributes, createControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import {
   ExportExcelPlugin,
@@ -26,9 +28,9 @@ import './tree.scss';
 defineCustomElements();
 
 function createButton(label: string) {
-  const button = document.createElement('button');
+  const button = createControl(document, 'button', { type: 'button' });
   button.type = 'button';
-  button.className = 'tree-button';
+  button.className = controlAttributes('button', { class: 'tree-button' }).class;
   button.textContent = label;
   return button;
 }
@@ -53,7 +55,7 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   const exportButton = createButton('Export to Excel');
   const stickyLabel = document.createElement('label');
   stickyLabel.className = 'tree-sticky';
-  const stickyInput = document.createElement('input');
+  const stickyInput = createControl(document, 'input', { type: 'checkbox' });
   stickyInput.type = 'checkbox';
   stickyInput.checked = true;
   stickyLabel.append(stickyInput, document.createTextNode('Sticky parents'));

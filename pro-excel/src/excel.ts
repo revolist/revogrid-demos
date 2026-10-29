@@ -1,3 +1,5 @@
+import { controlAttributes, createControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 defineCustomElements();
 
@@ -63,6 +65,7 @@ import {
   createSpreadsheetPresenceUsers,
   flashSpreadsheetPresenceEdit,
 } from './spreadsheet.presence';
+import { getSpreadsheetCollaboratorPhoto } from './spreadsheet.presence';
 import {
   applySpreadsheetFeedFlashStep,
   flashSpreadsheetFeedEdit,
@@ -97,9 +100,6 @@ export function load(parentSelector: string) {
 
   const ribbon = document.createElement('div');
   ribbon.className = 'spreadsheet-ribbon';
-  const sheetTabs = document.createElement('div');
-  sheetTabs.className = 'spreadsheet-sheet-tabs';
-  sheetTabs.dataset.testid = 'spreadsheet-sheet-tabs';
   const formulaRow = document.createElement('div');
   formulaRow.className = 'spreadsheet-formula-row';
   const main = document.createElement('div');
@@ -132,13 +132,6 @@ export function load(parentSelector: string) {
     group(undoButton, redoButton),
   );
 
-  const budgetSheetTab = button('Budget', () => {});
-  budgetSheetTab.className = 'spreadsheet-sheet-tab is-active';
-  budgetSheetTab.dataset.testid = 'spreadsheet-sheet-budget';
-  sheetTabs.append(budgetSheetTab);
-  const tabSpacer = document.createElement('span');
-  tabSpacer.className = 'spreadsheet-tab-spacer';
-  tabSpacer.setAttribute('aria-hidden', 'true');
   const collab = document.createElement('span');
   collab.className = 'spreadsheet-collab';
   collab.setAttribute('aria-label', 'Live collaborators');
@@ -146,7 +139,7 @@ export function load(parentSelector: string) {
   liveDot.className = 'spreadsheet-live-dot';
   liveDot.title = 'Live data';
   collab.append(liveDot);
-  sheetTabs.append(tabSpacer, collab);
+  ribbon.append(collab);
 
   const formulaBadge = document.createElement('span');
   formulaBadge.className = 'spreadsheet-cell-badge';
@@ -166,7 +159,7 @@ export function load(parentSelector: string) {
 
   gridWrap.append(grid);
   main.append(gridWrap);
-  shell.append(ribbon, sheetTabs, formulaRow, main, statusRow);
+  shell.append(ribbon, formulaRow, main, statusRow);
   parent.appendChild(shell);
 
   grid.addEventListener('historychanged', onHistoryChanged as EventListener);
@@ -203,8 +196,8 @@ export function load(parentSelector: string) {
   };
 
   function button(label: string, onClick: (event: MouseEvent) => void | Promise<void>, icon?: string) {
-    const item = document.createElement('button');
-    item.className = 'spreadsheet-btn';
+    const item = createControl(document, 'button', { type: 'button' });
+    item.className = controlAttributes('button', { class: 'spreadsheet-btn' }).class;
     item.type = 'button';
     setButtonContent(item, label, icon);
     item.addEventListener('click', (event) => {
@@ -440,7 +433,13 @@ export function load(parentSelector: string) {
       avatar.className = 'spreadsheet-avatar spreadsheet-avatar-presence';
       avatar.style.setProperty('--spreadsheet-avatar-color', user.color ?? '#2563eb');
       avatar.title = `${user.name} - ${user.activity ?? 'viewing'}`;
-      avatar.textContent = user.initials ?? user.name.slice(0, 2).toUpperCase();
+      const photo = getSpreadsheetCollaboratorPhoto(user.id);
+      if (photo) {
+        const image = document.createElement('img');
+        image.src = photo;
+        image.alt = user.name;
+        avatar.append(image);
+      } else avatar.textContent = user.initials ?? user.name.slice(0, 2).toUpperCase();
       return avatar;
     });
     collab.replaceChildren(liveDot, ...avatars);

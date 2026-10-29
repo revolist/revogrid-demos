@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { ButtonControl as UiButton, Input as UiInput, Select as UiSelect } from '@revolist/ui/react-control';
 // src/components/showcase/ECommerce.tsx
 
 import './ecommerce.scss';
@@ -161,7 +163,7 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
           </span>
           <label className="ecommerce-filter">
             <span aria-hidden="true">⌕</span>
-            <input
+            <UiInput
               id="customerSearch"
               type="search"
               aria-label="Search customers"
@@ -172,7 +174,7 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
           </label>
           <label className="ecommerce-preset">
             <span className="sr-only">Advanced filter example</span>
-            <select
+            <UiSelect
               aria-label="Advanced filter example"
               defaultValue=""
               onChange={async (event) => {
@@ -191,7 +193,7 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
               {Object.entries(ECOMMERCE_FILTER_PRESETS).map(([id, preset]) => (
                 <option key={id} value={id}>{preset.label}</option>
               ))}
-            </select>
+            </UiSelect>
           </label>
         </div>
         <div className="ecommerce-toolbar__aside">
@@ -199,13 +201,13 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
             <span>Spend</span>
             <strong>{totalSpend}</strong>
           </span>
-          <button
+          <UiButton
             type="button"
             className="ecommerce-button ecommerce-button--export"
             onClick={exportToExcel}
           >
             Export
-          </button>
+          </UiButton>
         </div>
       </div>
       <RevoGrid

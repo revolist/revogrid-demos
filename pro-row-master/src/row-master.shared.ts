@@ -1,3 +1,5 @@
+import { renderControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import { dispatchByEvent, type ColumnRegular, type DataType } from '@revolist/revogrid';
 import { ROW_MASTER, type RowMasterConfig, type TreeConfig } from '@revolist/revogrid-pro';
 
@@ -127,7 +129,7 @@ export function createMasterColumns(rows: MasterProjectRow[]): ColumnRegular[] {
     const children = [h('span', { class: 'row-master-initiative__name' }, row.name)];
 
     if (!hasProjectChildren(rows, row)) {
-      children.unshift(h('button', {
+      children.unshift(renderControl(h, 'button', {
         class: { 'expand-button': true, 'row-master-initiative__expand': true },
         title: `Open details for ${row.name}`,
         'aria-label': `Open details for ${row.name}`,
@@ -220,7 +222,7 @@ export function createMasterRowConfig(delayMs = 500): RowMasterConfig {
           ]),
           h('label', { class: 'row-master-draft' }, [
             h('span', { class: 'row-master-kicker' }, 'Draft note'),
-            h('input', {
+            renderControl(h, 'input', {
               type: 'text',
               placeholder: 'Type a note to test detail state',
               'aria-label': `Draft note for ${row.name}`,

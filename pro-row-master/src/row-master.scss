@@ -273,7 +273,6 @@
   to { transform: rotate(360deg); }
 }
 
-
 .row-master-draft {
   display: grid;
   gap: 6px;
@@ -283,12 +282,6 @@
 .row-master-draft input {
   box-sizing: border-box;
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--revo-grid-cell-border);
-  border-radius: 6px;
-  background: var(--revo-grid-background);
-  color: var(--revo-grid-foreground);
-  font: inherit;
 }
 
 .row-master-draft small {

@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { UiControlDirective } from '@revolist/ui/angular-control';
 import {
   AfterViewInit,
   Component,
@@ -78,6 +80,7 @@ import {
   createSpreadsheetPresenceUsers,
   flashSpreadsheetPresenceEdit,
 } from './spreadsheet.presence';
+import { getSpreadsheetCollaboratorPhoto } from './spreadsheet.presence';
 import {
   applySpreadsheetFeedFlashStep,
   flashSpreadsheetFeedEdit,
@@ -90,7 +93,7 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
 @Component({
   selector: 'spreadsheet-workbench-grid',
   standalone: true,
-  imports: [CommonModule, RevoGrid],
+  imports: [UiControlDirective, CommonModule, RevoGrid],
   template: `
     <section
       #workbenchShell
@@ -101,28 +104,21 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
     >
       <div class="spreadsheet-ribbon">
         <span class="spreadsheet-ribbon-group">
-          <button class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" (click)="exportWorkbook()">
+          <button rvControl class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" (click)="exportWorkbook()">
             <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.export"></span>
             Export XLSX
           </button>
         </span>
         <span class="spreadsheet-ribbon-group">
-          <button class="spreadsheet-btn" type="button" [disabled]="!historyState.canUndo" (click)="runHistory('undo')">
+          <button rvControl class="spreadsheet-btn" type="button" [disabled]="!historyState.canUndo" (click)="runHistory('undo')">
             <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.undo"></span>
             Undo {{ historyState.undoStackSize }}
           </button>
-          <button class="spreadsheet-btn" type="button" [disabled]="!historyState.canRedo" (click)="runHistory('redo')">
+          <button rvControl class="spreadsheet-btn" type="button" [disabled]="!historyState.canRedo" (click)="runHistory('redo')">
             <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.redo"></span>
             Redo {{ historyState.redoStackSize }}
           </button>
         </span>
-      </div>
-
-      <div class="spreadsheet-sheet-tabs" data-testid="spreadsheet-sheet-tabs">
-        <button class="spreadsheet-sheet-tab is-active" type="button" data-testid="spreadsheet-sheet-budget">
-          Budget
-        </button>
-        <span class="spreadsheet-tab-spacer" aria-hidden="true"></span>
         <span class="spreadsheet-collab" aria-label="Live collaborators">
           <span class="spreadsheet-live-dot" title="Live data"></span>
           <span
@@ -131,7 +127,8 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
             [style.--spreadsheet-avatar-color]="user.color"
             [title]="user.name + ' - ' + (user.activity || 'viewing')"
           >
-            {{ user.initials }}
+            <img *ngIf="collaboratorPhoto(user.id) as photo; else collaboratorInitials" [src]="photo" [alt]="user.name" />
+            <ng-template #collaboratorInitials>{{ user.initials }}</ng-template>
           </span>
         </span>
       </div>
@@ -195,6 +192,7 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
   schemas: [NO_ERRORS_SCHEMA],
 })
 export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestroy {
+  readonly collaboratorPhoto = getSpreadsheetCollaboratorPhoto;
   readonly actionIcons = SPREADSHEET_ACTION_ICONS;
   @Input() theme: 'dark' | 'light' | string = isSpreadsheetDarkTheme() ? 'dark' : 'light';
 

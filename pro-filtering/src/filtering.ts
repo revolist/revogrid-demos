@@ -1,3 +1,5 @@
+import { controlAttributes, createControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import type { MultiFilterItem } from '@revolist/revogrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
@@ -21,9 +23,9 @@ import './filtering.scss';
 defineCustomElements();
 
 function createButton(label: string, onClick: () => void, className = 'rv-btn') {
-  const button = document.createElement('button');
+  const button = createControl(document, 'button', { type: 'button' });
   button.type = 'button';
-  button.className = className;
+  button.className = controlAttributes('button', { class: className }).class;
   button.textContent = label;
   button.addEventListener('click', onClick);
   return button;
@@ -88,8 +90,8 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
   });
   const search = document.createElement('div');
   search.className = 'order-explorer__search';
-  const searchInput = document.createElement('input');
-  searchInput.className = 'order-explorer__search-input';
+  const searchInput = createControl(document, 'input', { type: 'search' });
+  searchInput.className = controlAttributes('input', { type: searchInput.type, class: 'order-explorer__search-input' }).class;
   searchInput.type = 'search';
   searchInput.placeholder = 'Global search — try “Lisbon pending”';
   searchInput.setAttribute('aria-label', 'Search all visible columns');

@@ -1,3 +1,5 @@
+import { applyControlPresentation } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import './project-tracker.scss';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import type { ColumnProp } from '@revolist/revogrid';
@@ -24,9 +26,7 @@ import {
   openProjectStatusHeaderFilter,
   projectOwnerProfiles,
   resolveProjectSortValueFromConfig,
-  projectSkillOptions,
   syncProjectCellEdit,
-  tagTone,
   toProjectHiddenColumns,
   updateProjectCollapsedGroups,
   defineProjectTrackerToolbarElement,
@@ -60,6 +60,7 @@ export function load(parentSelector: string) {
   const container = document.createElement('div');
   container.className = 'project-grid-host';
   container.innerHTML = renderTracker();
+  applyControlPresentation(container);
 
   const parent = document.querySelector(parentSelector);
   parent?.appendChild(container);
@@ -338,6 +339,7 @@ function openTaskModal(
       </div>
     </form>
   `;
+  applyControlPresentation(backdrop);
 
   const close = () => backdrop.remove();
   backdrop.addEventListener('click', (event) => {
@@ -345,9 +347,6 @@ function openTaskModal(
   });
   backdrop.querySelector<HTMLButtonElement>('.project-modal__close')?.addEventListener('click', close);
   backdrop.querySelector<HTMLButtonElement>('[data-close]')?.addEventListener('click', close);
-  backdrop.querySelectorAll<HTMLSelectElement>('.project-modal-select__native').forEach((select) => {
-    select.addEventListener('change', () => updateModalSelectPreview(select));
-  });
   backdrop.querySelector<HTMLFormElement>('form')?.addEventListener('submit', (event) => {
     event.preventDefault();
     const nextDraft = readTaskDraft(backdrop, draft);
@@ -366,7 +365,7 @@ function renderModalCheckboxes(name: string, label: string, options: string[], v
         ${options.map((option) => `
           <label>
             <input type="checkbox" name="${name}" value="${escapeAttr(option)}"${values.includes(option) ? ' checked' : ''} />
-            <span class="project-modal-skill project-skill--${modalSkillTone(option)}">${option}</span>
+            <span>${option}</span>
           </label>
         `).join('')}
       </div>
@@ -381,83 +380,14 @@ function renderModalSelect(id: string, label: string, options: string[], value: 
     <label class="project-modal__field project-modal__field--select">
       <span>${label}</span>
       <span class="project-modal-select">
-        ${renderModalSelectPreview(kind, value)}
         <select id="${id}" class="project-modal-select__native" data-modal-select-kind="${kind}">
           ${options
-            .map((option) => `<option value="${escapeAttr(option)}"${option === value ? ' selected' : ''}>${option}</option>`)
+            .map((option) => `<option value="${escapeAttr(option)}"${option === value ? ' selected' : ''}>${escapeHtml(kind === 'owner' ? (projectOwnerProfiles.find(profile => profile.value === option)?.label ?? option) : option)}</option>`)
             .join('')}
         </select>
       </span>
     </label>
   `;
-}
-
-function updateModalSelectPreview(select: HTMLSelectElement) {
-  const wrapper = select.closest('.project-modal-select');
-  const preview = wrapper?.querySelector('.project-modal-select__preview');
-  if (!preview) return;
-  preview.outerHTML = renderModalSelectPreview((select.dataset.modalSelectKind as ModalSelectKind) || 'plain', select.value);
-}
-
-function renderModalSelectPreview(kind: ModalSelectKind, value: string) {
-  if (kind === 'owner') {
-    const profile = projectOwnerProfiles.find((owner) => owner.value === value);
-    const index = Math.max(0, projectOwnerProfiles.findIndex((owner) => owner.value === value));
-    return `
-      <span class="project-modal-select__preview">
-        <span class="project-modal-owner">
-          <span class="avatar-cell avatar-cell--${index % 8} project-avatar">${escapeAttr(value.slice(0, 1))}</span>
-          <span class="project-modal-select__text">${escapeHtml(profile?.label ?? value)}</span>
-        </span>
-      </span>
-    `;
-  }
-  if (kind === 'block') {
-    return `
-      <span class="project-modal-select__preview">
-        <span class="project-modal-block project-filter-block--${modalBlockTone(value)}">${escapeHtml(value)}</span>
-      </span>
-    `;
-  }
-  if (kind === 'department') {
-    return `
-      <span class="project-modal-select__preview">
-        <span class="project-modal-pill project-filter-department--${tagTone(value)}">${escapeHtml(value)}</span>
-      </span>
-    `;
-  }
-  if (kind === 'section') {
-    return `
-      <span class="project-modal-select__preview">
-        <span class="project-modal-section" style="--project-modal-section-color: ${modalSectionColor(value)}">
-          <span class="project-modal-section__dot"></span>
-          <span class="project-modal-select__text">${escapeHtml(value)}</span>
-        </span>
-      </span>
-    `;
-  }
-  return `<span class="project-modal-select__preview"><span class="project-modal-select__text">${escapeHtml(value)}</span></span>`;
-}
-
-function modalBlockTone(value: string) {
-  const normalized = value.toLowerCase();
-  if (normalized.includes('blocked') || normalized.includes('high')) return 'red';
-  if (normalized.includes('review') || normalized.includes('medium')) return 'orange';
-  if (normalized.includes('ready') || normalized.includes('low')) return 'green';
-  if (normalized.includes('new')) return 'blue';
-  return 'violet';
-}
-
-function modalSectionColor(value: string) {
-  const normalized = value.toLowerCase();
-  if (normalized.includes('review')) return '#ff8b00';
-  if (normalized.includes('ready')) return '#00c875';
-  if (normalized.includes('blocked')) return '#ff4d5e';
-  return '#1f7aff';
-}
-
-function modalSkillTone(value: string) {
-  return projectSkillOptions.find((skill) => skill.value === value)?.tone ?? tagTone(value);
 }
 
 function readTaskDraft(root: HTMLElement, draft: ProjectTaskDraft): ProjectTaskDraft {

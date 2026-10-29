@@ -163,21 +163,9 @@ $dark-badges: (
   input {
     width: 100%;
     min-width: 0;
-    height: 24px;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: var(--ecommerce-text-1);
-    font: inherit;
-    font-size: 14px;
-    line-height: 24px;
-    overflow: hidden;
-    padding: 0;
+                                    overflow: hidden;
 
-    &::placeholder {
-      color: var(--ecommerce-text-4);
-    }
-  }
+      }
 }
 
 .ecommerce-preset {
@@ -185,21 +173,8 @@ $dark-badges: (
 
   select {
     width: 100%;
-    height: 36px;
-    border: 1px solid var(--ecommerce-border);
-    border-radius: 8px;
-    outline: 0;
-    background: var(--ecommerce-surface);
-    color: var(--ecommerce-text-2);
-    font: inherit;
-    font-size: 13px;
-    padding: 0 30px 0 10px;
 
-    &:focus-visible {
-      border-color: var(--ecommerce-accent);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--ecommerce-accent) 24%, transparent);
-    }
-  }
+      }
 }
 
 .analytics-blank {
@@ -232,44 +207,14 @@ $dark-badges: (
 
 .ecommerce-button {
   display: inline-flex;
-  height: 36px;
-  flex: 0 0 auto;
+    flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--ecommerce-border);
-  border-radius: 8px;
-  background: var(--ecommerce-surface);
-  color: var(--ecommerce-text-2);
-  cursor: pointer;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1;
-  padding: 0 12px;
-  transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease,
-    box-shadow 160ms ease;
-  white-space: nowrap;
-
-  &:hover {
-    border-color: var(--ecommerce-border-strong);
-    background: var(--ecommerce-surface-3);
-    color: var(--ecommerce-text-1);
-  }
+                        white-space: nowrap;
 
   &--export {
-    border-color: rgba(22, 163, 74, 0.28);
-    background: #15803d;
-    color: #fff;
 
-    &:hover {
-      border-color: #166534;
-      background: #166534;
-      color: #fff;
-    }
-  }
+      }
 
 }
 
@@ -356,8 +301,7 @@ revo-grid.ecommerce-grid {
       overflow: hidden;
 
       input[type='text'] {
-        padding-right: 38px !important;
-        overflow: hidden;
+                overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
@@ -824,10 +768,6 @@ revo-grid.ecommerce-grid {
 }
 
 [data-theme='dark'] {
-  .ecommerce-button--export {
-    border-color: rgba(74, 222, 128, 0.24);
-    background: #166534;
-  }
 
   revo-grid.ecommerce-grid,
   .revo-dropdown-menu {

@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { UiControlDirective } from '@revolist/ui/angular-control';
 import {
   type AfterViewInit,
   ChangeDetectorRef,
@@ -28,7 +30,7 @@ import {
 @Component({
   selector: 'filtering-grid',
   standalone: true,
-  imports: [RevoGrid],
+  imports: [UiControlDirective, RevoGrid],
   schemas: [NO_ERRORS_SCHEMA],
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./filtering.scss'],
@@ -37,12 +39,12 @@ import {
       <div class="order-explorer__toolbar">
         <div class="order-explorer__presets" aria-label="Filter presets">
           <p class="order-explorer__eyebrow">Presets</p>
-          <button class="rv-btn" type="button" (click)="applyPreset('high-value-europe')">High-value Europe</button>
-          <button class="rv-btn" type="button" (click)="applyPreset('recent-expedited')">Recent expedited</button>
-          <button class="rv-btn" type="button" (click)="applyPreset('review-queue')">Review queue</button>
+          <button rvControl class="rv-btn" type="button" (click)="applyPreset('high-value-europe')">High-value Europe</button>
+          <button rvControl class="rv-btn" type="button" (click)="applyPreset('recent-expedited')">Recent expedited</button>
+          <button rvControl class="rv-btn" type="button" (click)="applyPreset('review-queue')">Review queue</button>
         </div>
         <div class="order-explorer__search">
-          <input
+          <input rvControl
             class="order-explorer__search-input"
             type="search"
             [value]="quickText"
@@ -50,13 +52,13 @@ import {
             aria-label="Search all visible columns"
             (input)="onQuickInput($event)"
           />
-          <button class="rv-btn" type="button" (click)="applyQuickFilter(quickFilterExample)">Try example</button>
+          <button rvControl class="rv-btn" type="button" (click)="applyQuickFilter(quickFilterExample)">Try example</button>
         </div>
         <div class="order-explorer__summary">
           <span class="order-explorer__count" aria-live="polite">
             {{ visibleCount.toLocaleString() }} of {{ source.length.toLocaleString() }} orders
           </span>
-          <button class="rv-btn-secondary" type="button" (click)="clearAll()">Clear All</button>
+          <button rvControl class="rv-btn-secondary" type="button" (click)="clearAll()">Clear All</button>
         </div>
       </div>
       <div class="order-explorer__grid">

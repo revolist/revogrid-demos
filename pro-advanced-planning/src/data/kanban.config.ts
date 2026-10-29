@@ -34,7 +34,7 @@ export function createKanbanConfig(): KanbanConfig<PlanningTask> {
                     { class: 'planning-card' },
                     [
                 h(
-                    'strong',
+                    'span',
                     { class: 'planning-card__title', title: card.name },
                     card.name
                 ),

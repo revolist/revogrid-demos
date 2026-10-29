@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { ButtonControl as UiButton } from '@revolist/ui/react-control';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import type { ColumnProp, FilterCollectionItem, MultiFilterItem } from '@revolist/revogrid';
@@ -89,9 +91,9 @@ export default function InfinityScroll({ rows }: { rows?: InfinityScrollUser[] }
           <strong>Remote user directory</strong>
           <span className="infinity-status">{status}</span>
         </div>
-        <button className="infinity-button" type="button" disabled={exporting} onClick={exportAll}>
+        <UiButton className="infinity-button" type="button" disabled={exporting} onClick={exportAll}>
           {exporting ? 'Preparing export…' : 'Export all to Excel'}
-        </button>
+        </UiButton>
       </div>
       <RevoGrid
         className="infinity-grid"

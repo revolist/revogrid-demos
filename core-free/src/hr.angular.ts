@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { UiControlDirective } from '@revolist/ui/angular-control';
 import { 
   Component, 
   Input, 
@@ -43,14 +45,14 @@ import './hr.css';
 @Component({
   selector: 'hr-demo-grid',
   standalone: true,
-  imports: [RevoGrid, FormsModule, CommonModule],
+  imports: [UiControlDirective, RevoGrid, FormsModule, CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="hr-demo grow h-full flex flex-col">
       <div class="hr-toolbar">
         <span class="text-sm font-medium">Data Source</span>
-        <select
+        <select rvControl
           class="hr-select"
           [disabled]="loading()"
           (change)="onSizeChange($event)"
@@ -60,13 +62,13 @@ import './hr.css';
           }
         </select>
         <span class="text-sm font-medium">Theme</span>
-        <select class="hr-select" [value]="selectedTheme()" (change)="onThemeChange($event)">
+        <select rvControl class="hr-select" [value]="selectedTheme()" (change)="onThemeChange($event)">
           @for (opt of themeOptions; track opt.value) {
             <option [value]="opt.value">{{ opt.label }}</option>
           }
         </select>
-        <button type="button" class="hr-button" (click)="saveView()">Save view</button>
-        <button type="button" class="hr-button hr-button-secondary" (click)="resetView()">Reset view</button>
+        <button rvControl type="button" class="hr-button" (click)="saveView()">Save view</button>
+        <button rvControl type="button" class="hr-button hr-button-secondary" (click)="resetView()">Reset view</button>
         <span class="hr-workspace-status">{{ workspaceStatus() }}</span>
         @if (loading()) {
             <div class="text-sm opacity-50 animate-pulse ml-2">{{ loadingLabel() }}</div>
@@ -108,7 +110,7 @@ import './hr.css';
           <div class="hr-performance-label">
             <span>{{ metricDefinitions.preparation.label }}</span>
             <span class="hr-metric-help">
-              <button type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.preparation.label" [attr.aria-describedby]="getHRMetricTooltipId('preparation')">?</button>
+              <button rvControl type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.preparation.label" [attr.aria-describedby]="getHRMetricTooltipId('preparation')">?</button>
               <span class="hr-metric-tooltip" [id]="getHRMetricTooltipId('preparation')" role="tooltip">{{ metricDefinitions.preparation.description }}</span>
             </span>
           </div>
@@ -118,7 +120,7 @@ import './hr.css';
           <div class="hr-performance-label">
             <span>{{ metricDefinitions.grid.label }}</span>
             <span class="hr-metric-help">
-              <button type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.grid.label" [attr.aria-describedby]="getHRMetricTooltipId('grid')">?</button>
+              <button rvControl type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.grid.label" [attr.aria-describedby]="getHRMetricTooltipId('grid')">?</button>
               <span class="hr-metric-tooltip" [id]="getHRMetricTooltipId('grid')" role="tooltip">{{ metricDefinitions.grid.description }}</span>
             </span>
           </div>
@@ -128,7 +130,7 @@ import './hr.css';
           <div class="hr-performance-label">
             <span>{{ metricDefinitions.scroll.label }}</span>
             <span class="hr-metric-help">
-              <button type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.scroll.label" [attr.aria-describedby]="getHRMetricTooltipId('scroll')">?</button>
+              <button rvControl type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.scroll.label" [attr.aria-describedby]="getHRMetricTooltipId('scroll')">?</button>
               <span class="hr-metric-tooltip" [id]="getHRMetricTooltipId('scroll')" role="tooltip">{{ metricDefinitions.scroll.description }}</span>
             </span>
           </div>
@@ -138,7 +140,7 @@ import './hr.css';
           <div class="hr-performance-label">
             <span>{{ metricDefinitions.memory.label }}</span>
             <span class="hr-metric-help">
-              <button type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.memory.label" [attr.aria-describedby]="getHRMetricTooltipId('memory')">?</button>
+              <button rvControl type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.memory.label" [attr.aria-describedby]="getHRMetricTooltipId('memory')">?</button>
               <span class="hr-metric-tooltip" [id]="getHRMetricTooltipId('memory')" role="tooltip">{{ metricDefinitions.memory.description }}</span>
             </span>
           </div>
@@ -148,7 +150,7 @@ import './hr.css';
           <div class="hr-performance-label">
             <span>{{ metricDefinitions.dataset.label }}</span>
             <span class="hr-metric-help">
-              <button type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.dataset.label" [attr.aria-describedby]="getHRMetricTooltipId('dataset')">?</button>
+              <button rvControl type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.dataset.label" [attr.aria-describedby]="getHRMetricTooltipId('dataset')">?</button>
               <span class="hr-metric-tooltip" [id]="getHRMetricTooltipId('dataset')" role="tooltip">{{ metricDefinitions.dataset.description }}</span>
             </span>
           </div>

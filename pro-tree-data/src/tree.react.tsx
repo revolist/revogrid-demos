@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { ButtonControl as UiButton, Input as UiInput } from '@revolist/ui/react-control';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import {
@@ -76,13 +78,13 @@ export default function TreeData({ rows }: { rows?: TreeDataRow[] }) {
     <section className="tree-showcase" aria-label="Tree Data organization explorer">
       <div className="tree-toolbar">
         <div className="tree-toolbar__actions">
-          <button className="tree-button" type="button" onClick={expandAll}>Expand all</button>
-          <button className="tree-button" type="button" onClick={collapseAll}>Collapse all</button>
-          <button className="tree-button" type="button" disabled={exporting} onClick={exportToExcel}>
+          <UiButton className="tree-button" type="button" onClick={expandAll}>Expand all</UiButton>
+          <UiButton className="tree-button" type="button" onClick={collapseAll}>Collapse all</UiButton>
+          <UiButton className="tree-button" type="button" disabled={exporting} onClick={exportToExcel}>
             {exporting ? 'Exporting…' : 'Export to Excel'}
-          </button>
+          </UiButton>
           <label className="tree-sticky">
-            <input type="checkbox" checked={stickyParents} onChange={(event) => setStickyParents(event.currentTarget.checked)} />
+            <UiInput type="checkbox" checked={stickyParents} onChange={(event) => setStickyParents(event.currentTarget.checked)} />
             Sticky parents
           </label>
         </div>

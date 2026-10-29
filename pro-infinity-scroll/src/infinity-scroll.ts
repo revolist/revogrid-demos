@@ -1,3 +1,5 @@
+import { controlAttributes, createControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import type { ColumnProp, FilterCollectionItem, MultiFilterItem } from '@revolist/revogrid';
 import {
@@ -51,9 +53,9 @@ export function load(parentSelector: string, rows?: InfinityScrollUser[]) {
   status.className = 'infinity-status';
   status.textContent = 'Initializing remote source…';
   copy.append(title, status);
-  const exportButton = document.createElement('button');
+  const exportButton = createControl(document, 'button', { type: 'button' });
   exportButton.type = 'button';
-  exportButton.className = 'infinity-button';
+  exportButton.className = controlAttributes('button', { class: 'infinity-button' }).class;
   exportButton.textContent = 'Export all to Excel';
   toolbar.append(copy, exportButton);
 

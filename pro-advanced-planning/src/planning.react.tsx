@@ -1,3 +1,6 @@
+import searchIcon from './assets/search.svg'
+import '@revolist/ui/styles.css';
+import { ButtonControl as UiButton, Input as UiInput, Select as UiSelect } from '@revolist/ui/react-control';
 import React, { useEffect, useMemo, useState } from 'react'
 import { RevoGrid } from '@revolist/react-datagrid'
 import type { ColumnFilterConfig } from '@revolist/revogrid'
@@ -186,23 +189,23 @@ export default function PlanningViews() {
                 aria-label="Planning view"
             >
                 {views.map((view) => (
-                    <button
+                    <UiButton
                         key={view}
                         type="button"
-                        className={`rv-segmented-switch-item${activeView === view ? ' on' : ''}`}
+                        className={"rv-segmented-switch-item " + (`rv-segmented-switch-item${activeView === view ? ' on' : ''}`) + ((activeView === view) ? ' on' : '')}
                         role="tab"
                         aria-selected={activeView === view}
                         onClick={() => selectPlanningView(view)}
                     >
                         {view}
-                    </button>
+                    </UiButton>
                 ))}
             </nav>
 
-            <div className="planning-demo__toolbar">
-                <label className="planning-demo__search">
-                    <span aria-hidden="true">⌕</span>
-                    <input
+            <div className="planning-demo__toolbar" role="group" aria-label="Task filters">
+                <label className="planning-demo__search rv-search-input rv-search-input--no-shortcut">
+                    <span className="rv-search-input-icon" aria-hidden="true"><img src={searchIcon} alt="" /></span>
+                    <UiInput
                         aria-label="Search tasks"
                         type="search"
                         placeholder="Search tasks…"
@@ -215,8 +218,9 @@ export default function PlanningViews() {
                         }
                     />
                 </label>
-                <label className="planning-demo__select">
-                    <select
+                <div className="planning-demo__filters">
+                    <UiSelect
+                        className="rv-control--compact"
                         aria-label="Project"
                         value={filters.projectId}
                         onChange={(event) =>
@@ -227,117 +231,38 @@ export default function PlanningViews() {
                             }))
                         }
                     >
-                        <option value="all">All projects</option>
+                        <option value="all">Project: All</option>
                         {planningProjects.map((project) => (
                             <option key={project.id} value={project.id}>
                                 {project.label}
                             </option>
                         ))}
-                    </select>
-                </label>
-                <details className="planning-demo__filter-wrap">
-                    <summary>
-                        Filter ·{' '}
-                        {filters.statuses.length + filters.priorities.length}
-                    </summary>
-                    <div className="planning-demo__filter-popover">
-                        <fieldset>
-                            <legend>Status</legend>
-                            {(
-                                [
-                                    ['not-started', 'Planned'],
-                                    ['in-progress', 'In progress'],
-                                    ['blocked', 'Blocked'],
-                                    ['done', 'Done'],
-                                ] as const
-                            ).map(([value, label]) => (
-                                <label key={value}>
-                                    <input
-                                        type="checkbox"
-                                        checked={filters.statuses.includes(
-                                            value
-                                        )}
-                                        onChange={() =>
-                                            changeFilters((current) => ({
-                                                ...current,
-                                                statuses:
-                                                    current.statuses.includes(
-                                                        value
-                                                    )
-                                                        ? current.statuses.filter(
-                                                              (item) =>
-                                                                  item !== value
-                                                          )
-                                                        : [
-                                                              ...current.statuses,
-                                                              value,
-                                                          ],
-                                            }))
-                                        }
-                                    />
-                                    {label}
-                                </label>
-                            ))}
-                        </fieldset>
-                        <fieldset>
-                            <legend>Priority</legend>
-                            {[
-                                [500, 'Normal'],
-                                [700, 'High'],
-                                [900, 'Critical'],
-                            ].map(([value, label]) => (
-                                <label key={value}>
-                                    <input
-                                        type="checkbox"
-                                        checked={filters.priorities.includes(
-                                            Number(value)
-                                        )}
-                                        onChange={() =>
-                                            changeFilters((current) => ({
-                                                ...current,
-                                                priorities:
-                                                    current.priorities.includes(
-                                                        Number(value)
-                                                    )
-                                                        ? current.priorities.filter(
-                                                              (item) =>
-                                                                  item !==
-                                                                  Number(value)
-                                                          )
-                                                        : [
-                                                              ...current.priorities,
-                                                              Number(value),
-                                                          ],
-                                            }))
-                                        }
-                                    />
-                                    {label}
-                                </label>
-                            ))}
-                        </fieldset>
-                        <button
-                            type="button"
-                            className="planning-demo__clear"
-                            onClick={() =>
-                                changeFilters(defaultPlanningFilters())
-                            }
-                        >
-                            Clear filters
-                        </button>
-                    </div>
-                </details>
-                <button
+                    </UiSelect>
+                    {activeView === 'kanban' && <>
+                        <UiSelect className="rv-control--compact" aria-label="Status" value={filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''}
+                            onChange={event => changeFilters(current => ({ ...current, statuses: event.target.value ? [event.target.value] : [] }))}>
+                            <option value="">Status: All</option>{filters.statuses.length > 1 && <option value="active" disabled>Status: Active</option>}
+                            <option value="not-started">Planned</option><option value="in-progress">In progress</option><option value="blocked">Blocked</option><option value="done">Done</option>
+                        </UiSelect>
+                        <UiSelect className="rv-control--compact" aria-label="Priority" value={filters.priorities[0] || ''}
+                            onChange={event => changeFilters(current => ({ ...current, priorities: event.target.value ? [Number(event.target.value)] : [] }))}>
+                            <option value="">Priority: All</option><option value="500">Normal</option><option value="700">High</option><option value="900">Critical</option>
+                        </UiSelect>
+                    </>}
+                </div>
+                <UiButton
                     type="button"
-                    className={isActiveTasksPreset ? 'on' : undefined}
+                    className={"rv-choice-chip planning-demo__active " + (isActiveTasksPreset ? 'on' : undefined)}
                     aria-pressed={isActiveTasksPreset}
                     onClick={() => {
-                        setIsActiveTasksPreset(true)
-                        setFilters(activePlanningFilters())
+                        setIsActiveTasksPreset(!isActiveTasksPreset)
+                        setFilters(isActiveTasksPreset ? defaultPlanningFilters() : activePlanningFilters())
                     }}
                 >
                     Active tasks
-                </button>
-                <button
+                </UiButton>
+                <UiButton
+                    className="rv-btn-ghost planning-demo__reset"
                     type="button"
                     onClick={() => {
                         planningStore.replace(createTasks())
@@ -348,7 +273,7 @@ export default function PlanningViews() {
                     }}
                 >
                     Reset
-                </button>
+                </UiButton>
             </div>
 
             {activeView === 'grid' && (

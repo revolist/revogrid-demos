@@ -2,7 +2,7 @@
   <div class="hr-demo">
     <div class="hr-toolbar">
       <span class="text-sm font-medium">Data Source</span>
-      <select
+      <select v-rv-control
         class="hr-select"
         v-model="currentSize"
         @change="onSizeChange"
@@ -13,13 +13,13 @@
         </option>
       </select>
       <span class="text-sm font-medium">Theme</span>
-      <select class="hr-select" v-model="selectedTheme" @change="workspaceStatus = 'Unsaved changes'">
+      <select v-rv-control class="hr-select" v-model="selectedTheme" @change="workspaceStatus = 'Unsaved changes'">
         <option v-for="opt in themeOptions" :key="opt.value" :value="opt.value">
           {{ opt.label }}
         </option>
       </select>
-      <button type="button" class="hr-button" @click="saveView">Save view</button>
-      <button type="button" class="hr-button hr-button-secondary" @click="resetView">Reset view</button>
+      <button v-rv-control type="button" class="hr-button" @click="saveView">Save view</button>
+      <button v-rv-control type="button" class="hr-button hr-button-secondary" @click="resetView">Reset view</button>
       <span class="hr-workspace-status">{{ workspaceStatus }}</span>
       <div v-if="loading" class="text-sm opacity-50 animate-pulse ml-2">{{ loadingLabel }}</div>
     </div>
@@ -57,7 +57,7 @@
         <div class="hr-performance-label">
           <span>{{ metricDefinitions.preparation.label }}</span>
           <span class="hr-metric-help">
-            <button type="button" class="hr-metric-help-trigger" :aria-label="`About ${metricDefinitions.preparation.label}`" :aria-describedby="getHRMetricTooltipId('preparation')">?</button>
+            <button v-rv-control type="button" class="hr-metric-help-trigger" :aria-label="`About ${metricDefinitions.preparation.label}`" :aria-describedby="getHRMetricTooltipId('preparation')">?</button>
             <span class="hr-metric-tooltip" :id="getHRMetricTooltipId('preparation')" role="tooltip">{{ metricDefinitions.preparation.description }}</span>
           </span>
         </div>
@@ -67,7 +67,7 @@
         <div class="hr-performance-label">
           <span>{{ metricDefinitions.grid.label }}</span>
           <span class="hr-metric-help">
-            <button type="button" class="hr-metric-help-trigger" :aria-label="`About ${metricDefinitions.grid.label}`" :aria-describedby="getHRMetricTooltipId('grid')">?</button>
+            <button v-rv-control type="button" class="hr-metric-help-trigger" :aria-label="`About ${metricDefinitions.grid.label}`" :aria-describedby="getHRMetricTooltipId('grid')">?</button>
             <span class="hr-metric-tooltip" :id="getHRMetricTooltipId('grid')" role="tooltip">{{ metricDefinitions.grid.description }}</span>
           </span>
         </div>
@@ -77,7 +77,7 @@
         <div class="hr-performance-label">
           <span>{{ metricDefinitions.scroll.label }}</span>
           <span class="hr-metric-help">
-            <button type="button" class="hr-metric-help-trigger" :aria-label="`About ${metricDefinitions.scroll.label}`" :aria-describedby="getHRMetricTooltipId('scroll')">?</button>
+            <button v-rv-control type="button" class="hr-metric-help-trigger" :aria-label="`About ${metricDefinitions.scroll.label}`" :aria-describedby="getHRMetricTooltipId('scroll')">?</button>
             <span class="hr-metric-tooltip" :id="getHRMetricTooltipId('scroll')" role="tooltip">{{ metricDefinitions.scroll.description }}</span>
           </span>
         </div>
@@ -87,7 +87,7 @@
         <div class="hr-performance-label">
           <span>{{ metricDefinitions.memory.label }}</span>
           <span class="hr-metric-help">
-            <button type="button" class="hr-metric-help-trigger" :aria-label="`About ${metricDefinitions.memory.label}`" :aria-describedby="getHRMetricTooltipId('memory')">?</button>
+            <button v-rv-control type="button" class="hr-metric-help-trigger" :aria-label="`About ${metricDefinitions.memory.label}`" :aria-describedby="getHRMetricTooltipId('memory')">?</button>
             <span class="hr-metric-tooltip" :id="getHRMetricTooltipId('memory')" role="tooltip">{{ metricDefinitions.memory.description }}</span>
           </span>
         </div>
@@ -97,7 +97,7 @@
         <div class="hr-performance-label">
           <span>{{ metricDefinitions.dataset.label }}</span>
           <span class="hr-metric-help">
-            <button type="button" class="hr-metric-help-trigger" :aria-label="`About ${metricDefinitions.dataset.label}`" :aria-describedby="getHRMetricTooltipId('dataset')">?</button>
+            <button v-rv-control type="button" class="hr-metric-help-trigger" :aria-label="`About ${metricDefinitions.dataset.label}`" :aria-describedby="getHRMetricTooltipId('dataset')">?</button>
             <span class="hr-metric-tooltip" :id="getHRMetricTooltipId('dataset')" role="tooltip">{{ metricDefinitions.dataset.description }}</span>
           </span>
         </div>
@@ -108,6 +108,8 @@
 </template>
 
 <script setup lang="ts">
+import { vRvControl } from '@revolist/ui/vue-control';
+import '@revolist/ui/styles.css';
 import { ref, onMounted, computed, onBeforeUnmount, nextTick } from 'vue';
 import { VGrid, type ColumnGrouping, type ColumnRegular } from '@revolist/vue3-datagrid';
 import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_COMPANY_OPTIONS, HR_OPTIONS } from './sys-data/hr.data';

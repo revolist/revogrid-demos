@@ -1,3 +1,5 @@
+import { applyControlPresentation } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 // src/components/showcase/ECommerce.ts
 
 import './ecommerce.scss';
@@ -93,6 +95,7 @@ export function load(parentSelector: string, data: any[] = []) {
       <div id="emptyState" class="ecommerce-empty" role="status" aria-live="polite" hidden>No customers match these filters.</div>
     </div>
   `;
+  applyControlPresentation(container);
 
   const parent = document.querySelector(parentSelector);
   if (parent) {
