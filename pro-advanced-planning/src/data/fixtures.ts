@@ -1,4 +1,5 @@
 import type { PlanningTask } from './types'
+import { planningPalette, workflowBadges } from './palette'
 
 export type PlanningPerson = {
     readonly id: string
@@ -21,35 +22,35 @@ export const planningPeople: readonly PlanningPerson[] = [
         id: 'Ava',
         name: 'Ava',
         role: 'Design',
-        color: '#4f46e5',
+        color: planningPalette.purple,
         avatarUrl: avatarUrls.Ava,
     },
     {
         id: 'Noah',
         name: 'Noah',
         role: 'Engineering',
-        color: '#0891b2',
+        color: planningPalette.blue,
         avatarUrl: avatarUrls.Noah,
     },
     {
         id: 'Leo',
         name: 'Leo',
         role: 'QA',
-        color: '#16a34a',
+        color: planningPalette.teal,
         avatarUrl: avatarUrls.Leo,
     },
     {
         id: 'Maya',
         name: 'Maya',
         role: 'Product',
-        color: '#008b55',
+        color: planningPalette.orange,
         avatarUrl: avatarUrls.Maya,
     },
     {
         id: 'Nina',
         name: 'Nina',
         role: 'Security',
-        color: '#7c3aed',
+        color: planningPalette.pink,
         avatarUrl: avatarUrls.Nina,
     },
 ]
@@ -279,12 +280,7 @@ export function createTasks(): PlanningTask[] {
             percentDone,
             order: (index + 1) * 1000,
             workflowStatus,
-            color: {
-                'not-started': '#64748b',
-                'in-progress': '#5b67b7',
-                blocked: '#a85858',
-                done: '#4f8068',
-            }[workflowStatus],
+            color: workflowBadges[workflowStatus].color,
             priority: [500, 700, 900][index % 3],
             projectId: projects[projectIndex],
             budget: 1800 + index * 200,

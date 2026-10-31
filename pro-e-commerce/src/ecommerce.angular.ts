@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ViewEncapsulation, Input, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, OnDestroy } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ViewEncapsulation, Input, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, OnDestroy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   RevoGrid,
@@ -102,6 +102,7 @@ import {
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ECommerceGridComponent implements AfterViewInit, OnDestroy {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   @Input() set rows(value: any[]) {
     this.sourceRows = normalizeEcommerceRows(value || []);
     this.visibleRows = this.sourceRows;
@@ -176,6 +177,7 @@ export class ECommerceGridComponent implements AfterViewInit, OnDestroy {
         this.selectedRowsCount = state.visibleSelectedIds.size;
         this.updateRowsCountLabel();
         this.totalSpend = formatEcommerceTotalSpend(this.visibleRows);
+        this.changeDetector.markForCheck();
       },
       () => new Set([...this.selectedIndexes].map(index =>
         getEcommerceRowId(this.sourceRows[index]))),

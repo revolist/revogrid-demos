@@ -2,6 +2,7 @@ import type { EventManagerEvent } from '@revolist/revogrid-pro'
 import type { DependencyEntity } from '@revolist/gantt'
 import { getOwnerAvatar, getOwnerAvatarIndex } from './fixtures'
 import type { PlanningTask } from './types'
+import { workflowBadges } from './palette'
 
 export type PlanningEditDetail = Partial<
     Pick<EventManagerEvent, 'data' | 'domainChanges' | 'models'>
@@ -44,6 +45,13 @@ function applyDerivedPlanningFields(
     patch: Record<string, unknown>
 ): PlanningTask {
     const next = { ...task, ...patch } as PlanningTask
+
+    if (
+        Object.prototype.hasOwnProperty.call(patch, 'workflowStatus') &&
+        !Object.prototype.hasOwnProperty.call(patch, 'color')
+    ) {
+        next.color = workflowBadges[String(next.workflowStatus)]?.color ?? next.color
+    }
 
     if (Object.prototype.hasOwnProperty.call(patch, 'owner')) {
         next.ownerAvatar = getOwnerAvatar(String(next.owner ?? ''))

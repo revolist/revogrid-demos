@@ -98,5 +98,10 @@
     "jsdom": "^29.1.1",
     "playwright": "1.59.1",
     "typescript": "~6.0.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "@revolist/revogrid": "4.29.1"
+    }
   }
 }

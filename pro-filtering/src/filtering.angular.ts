@@ -1,5 +1,6 @@
 import {
   type AfterViewInit,
+  ChangeDetectorRef,
   Component,
   NO_ERRORS_SCHEMA,
   type OnDestroy,
@@ -92,6 +93,7 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
   visibleCount = this.source.length;
   quickText = '';
   readonly quickFilterExample = ORDER_EXPLORER_QUICK_FILTER_EXAMPLE;
+  private disposed = false;
   private readonly disconnectTheme = observeCurrentTheme((isDark) => {
     this.theme = isDark ? 'darkMaterial' : 'material';
   });
@@ -101,16 +103,20 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
   }
 
   private readonly syncFilterState = async () => {
-    this.visibleCount = await getOrderExplorerVisibleCount(this.grid, this.source.length);
+    const count = await getOrderExplorerVisibleCount(this.grid, this.source.length);
+    if (this.disposed) return;
+    this.visibleCount = count;
+    // Grid events can resolve outside Angular's change-detection notification.
+    this.cdr.markForCheck();
   };
+
+  constructor(private readonly cdr: ChangeDetectorRef) {}
 
   ngAfterViewInit() {
     const grid = this.grid;
     if (!grid) return;
     grid.addEventListener('afterfilterapply', this.syncFilterState);
-    void getOrderExplorerVisibleCount(grid, this.source.length).then(count => {
-      this.visibleCount = count;
-    });
+    void this.syncFilterState();
   }
 
   ngOnDestroy() {
@@ -118,6 +124,7 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
   }
 
   private disposeOrderExplorer() {
+    this.disposed = true;
     this.disconnectTheme();
     this.grid?.removeEventListener('afterfilterapply', this.syncFilterState);
   }
