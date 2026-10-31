@@ -9,7 +9,7 @@
   color: inherit;
 }
 
-.order-explorer :is(.rv-btn, .rv-btn-secondary) {
+.order-explorer :is(.order-explorer__presets, .order-explorer__search, .order-explorer__summary) > :is(.rv-btn, .rv-btn-secondary) {
   @include demo-controls.scheduler-button;
 }
 
@@ -80,21 +80,6 @@
 
 .order-explorer__active-filters:empty {
   display: none;
-}
-
-.order-explorer__filter-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 26px;
-  box-sizing: border-box;
-  border: 1px solid color-mix(in srgb, #2563eb 32%, transparent);
-  border-radius: 999px;
-  padding: 3px 10px;
-  background: color-mix(in srgb, #2563eb 9%, transparent);
-  color: inherit;
-  font-size: 12px;
-  font-weight: 500;
 }
 
 .order-explorer__grid {
