@@ -1,5 +1,6 @@
 import '@revolist/ui/styles.css';
-import { ButtonControl as UiButton, Input as UiInput, Select as UiSelect } from '@revolist/ui/react-control';
+import { ButtonControl as UiButton, Input as UiInput } from '@revolist/ui/react-control';
+import { Dropdown as UiDropdown } from '@revolist/ui/react';
 import './project-tracker.scss';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
@@ -393,9 +394,10 @@ function DraftSelect({
     <label className="project-modal__field project-modal__field--select">
       <span>{label}</span>
       <span className="project-modal-select">
-        <UiSelect className="project-modal-select__native" value={value} onChange={(event) => onChange(event.target.value)}>
-          {options.map((option) => <option key={option} value={option}>{kind === 'owner' ? projectOwnerProfiles.find(owner => owner.value === option)?.label ?? option : option}</option>)}
-        </UiSelect>
+        <UiDropdown className="project-modal-select__native" value={value} onChange={(nextValue) => onChange(String(nextValue))}
+          source={options.map(value => ({ value, label: kind === 'owner' ? projectOwnerProfiles.find(owner => owner.value === value)?.label ?? value : value }))}
+          config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: label }}
+        />
       </span>
     </label>
   );
