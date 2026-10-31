@@ -128,3 +128,12 @@ test('compact layouts keep the audit panel docked beside the grid', async () => 
   assert.match(compactStyles, /flex-basis:\s*320px/);
   assert.match(compactStyles, /width:\s*320px/);
 });
+
+test('demo actors use consistent portrait URLs with initials for unknown users', () => {
+  const options = createPanelOptions();
+  const records = createSeedAuditRecords();
+  const portraits = records.map(record => options.getUserAvatar(record.changedBy));
+  assert.equal(new Set(portraits).size, 4);
+  assert.ok(portraits.every(url => /^https:\/\/i\.pravatar\.cc\/96\?img=\d+$/.test(url)));
+  assert.equal(options.getUserAvatar({ id: 'unknown-user', name: 'Unknown user' }), undefined);
+});

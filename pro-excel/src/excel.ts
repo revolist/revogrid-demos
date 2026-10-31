@@ -20,10 +20,10 @@ import {
   FormulaDependencyHighlightPlugin,
   FormulaPlugin,
   HistoryPlugin,
+  defineHistoryControls,
   NamedRangesPlugin,
   RowOrderPlugin,
   SelectionPlugin,
-  type HistoryState,
 } from '@revolist/revogrid-pro';
 import './spreadsheet.scss';
 import type { DataType } from '@revolist/revogrid';
@@ -83,13 +83,6 @@ export function load(parentSelector: string) {
   let feedStep = 0;
   let feedTimer: number | undefined;
   let presenceUsers = createSpreadsheetPresenceUsers(0);
-  let historyState: HistoryState = {
-    undoStackSize: 0,
-    redoStackSize: 0,
-    canUndo: false,
-    canRedo: false,
-    disabled: false,
-  };
 
   const shell = document.createElement('section');
   shell.className = 'spreadsheet-workbench';
@@ -125,11 +118,11 @@ export function load(parentSelector: string) {
 
   const exportButton = button('Export XLSX', exportWorkbook, SPREADSHEET_ACTION_ICONS.export);
   exportButton.dataset.testid = 'spreadsheet-export';
-  const undoButton = button('Undo 0', () => runHistory('undo'), SPREADSHEET_ACTION_ICONS.undo);
-  const redoButton = button('Redo 0', () => runHistory('redo'), SPREADSHEET_ACTION_ICONS.redo);
+  const historyHost = document.createElement('div');
+  historyHost.className = 'spreadsheet-ribbon-group';
   ribbon.append(
     group(exportButton),
-    group(undoButton, redoButton),
+    historyHost,
   );
 
   const budgetSheetTab = button('Budget', () => {});
@@ -169,7 +162,7 @@ export function load(parentSelector: string) {
   shell.append(ribbon, sheetTabs, formulaRow, main, statusRow);
   parent.appendChild(shell);
 
-  grid.addEventListener('historychanged', onHistoryChanged as EventListener);
+  const disposeHistory: unknown = defineHistoryControls(historyHost, grid);
   grid.addEventListener('multirangeselectionchange', onSelectionChange as EventListener);
   grid.addEventListener('beforecopyapply', onClipboardCopy as EventListener);
   grid.addEventListener('beforepasteapply', onClipboardPaste as EventListener);
@@ -194,6 +187,7 @@ export function load(parentSelector: string) {
   toggleFeedFlash();
 
   return () => {
+    if (typeof disposeHistory === 'function') disposeHistory();
     disconnectThemeObserver();
     disconnectReadonlyEditGuard();
     window.clearInterval(presenceTimer);
@@ -237,10 +231,6 @@ export function load(parentSelector: string) {
   }
 
   function syncToolbar() {
-    setButtonContent(undoButton, `Undo ${historyState.undoStackSize}`, SPREADSHEET_ACTION_ICONS.undo);
-    undoButton.disabled = !historyState.canUndo;
-    setButtonContent(redoButton, `Redo ${historyState.redoStackSize}`, SPREADSHEET_ACTION_ICONS.redo);
-    redoButton.disabled = !historyState.canRedo;
     shell.dataset.pluginStack = getSpreadsheetPluginLabels().join(',');
     workbookStatus.textContent = formatWorkbookStatus(workbook);
     selectionStatus.textContent ||= 'No ranges selected';
@@ -319,11 +309,6 @@ export function load(parentSelector: string) {
   async function getPlugin<T>(pluginClass: new (...args: any[]) => T): Promise<T | undefined> {
     const plugins = await grid.getPlugins?.();
     return plugins?.find(plugin => plugin instanceof pluginClass) as T | undefined;
-  }
-
-  async function runHistory(action: 'undo' | 'redo') {
-    const plugin = await getPlugin(HistoryPlugin);
-    plugin?.[action]();
   }
 
   async function exportWorkbook() {
@@ -408,11 +393,6 @@ export function load(parentSelector: string) {
     syncToolbar();
     const plugin = await getPlugin(CellFlashPlugin);
     flashSpreadsheetPresenceEdit(plugin as SpreadsheetFlashPlugin | undefined, result);
-  }
-
-  function onHistoryChanged(event: CustomEvent<HistoryState>) {
-    historyState = event.detail;
-    syncToolbar();
   }
 
   function onSelectionChange(event: CustomEvent<{ ranges?: Array<{ x: number; y: number; x1: number; y1: number }> }>) {

@@ -175,8 +175,16 @@ export function createCellFlashConfig(): CellFlashConfig {
   };
 }
 
+const DEMO_USER_AVATARS = new Map([
+  ['avery-stone', 'https://i.pravatar.cc/96?img=1'],
+  ['morgan-lee', 'https://i.pravatar.cc/96?img=5'],
+  ['riley-chen', 'https://i.pravatar.cc/96?img=3'],
+  ['priya-shah', 'https://i.pravatar.cc/96?img=9'],
+]);
+
 export function createPanelOptions(): AuditHistoryPanelOptions {
   return {
+    getUserAvatar: user => DEMO_USER_AVATARS.get(user.id),
     placement: 'right',
     pageSize: 12,
     allowExport: true,
