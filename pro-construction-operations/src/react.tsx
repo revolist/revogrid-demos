@@ -1,5 +1,6 @@
 import '@revolist/ui/styles.css';
-import { ButtonControl as UiButton, Select as UiSelect } from '@revolist/ui/react-control';
+import { ButtonControl as UiButton } from '@revolist/ui/react-control';
+import { Dropdown as UiDropdown } from '@revolist/ui/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';
@@ -187,10 +188,10 @@ export default function ConstructionFabricationGanttDemo() {
                   </div>
                   {view === 'lookahead' && <label className="construction-fabrication__control-group">
                     <span className="construction-fabrication__toolbar-label">Work area</span>
-                    <UiSelect className="construction-fabrication__select" value={filters.workArea} onChange={(event) => setFilters((current) => ({ ...current, workArea: event.target.value }))}>
-                      <option value="all">All work areas</option>
-                      {constructionWorkAreas(state).map((area) => <option key={area}>{area}</option>)}
-                    </UiSelect>
+                    <UiDropdown className="construction-fabrication__select" value={filters.workArea} onChange={(nextValue) => setFilters((current) => ({ ...current, workArea: String(nextValue) }))}
+                      source={[{ value: 'all', label: 'All work areas' }, ...constructionWorkAreas(state).map(value => ({ value, label: value }))]}
+                      config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Work area' }}
+                    />
                   </label>}
                 </div>
               </div>}
