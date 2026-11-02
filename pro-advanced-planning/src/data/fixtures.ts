@@ -1,3 +1,8 @@
+import avaAvatar from '../assets/avatars/ava.webp'
+import noahAvatar from '../assets/avatars/noah.webp'
+import leoAvatar from '../assets/avatars/leo.webp'
+import mayaAvatar from '../assets/avatars/maya.webp'
+import ninaAvatar from '../assets/avatars/nina.webp'
 import type { PlanningTask } from './types'
 import { planningPalette, workflowBadges } from './palette'
 
@@ -10,11 +15,11 @@ export type PlanningPerson = {
 }
 
 const avatarUrls = {
-    Ava: new URL('../assets/avatars/ava.webp', import.meta.url).href,
-    Noah: new URL('../assets/avatars/noah.webp', import.meta.url).href,
-    Leo: new URL('../assets/avatars/leo.webp', import.meta.url).href,
-    Maya: new URL('../assets/avatars/maya.webp', import.meta.url).href,
-    Nina: new URL('../assets/avatars/nina.webp', import.meta.url).href,
+    Ava: new URL(avaAvatar, import.meta.url).href,
+    Noah: new URL(noahAvatar, import.meta.url).href,
+    Leo: new URL(leoAvatar, import.meta.url).href,
+    Maya: new URL(mayaAvatar, import.meta.url).href,
+    Nina: new URL(ninaAvatar, import.meta.url).href,
 } as const
 
 export const planningPeople: readonly PlanningPerson[] = [
