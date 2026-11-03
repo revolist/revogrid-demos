@@ -1,5 +1,6 @@
 import '@revolist/ui/styles.css';
-import { ButtonControl as UiButton, Input as UiInput, Select as UiSelect } from '@revolist/ui/react-control';
+import { ButtonControl as UiButton, Input as UiInput } from '@revolist/ui/react-control';
+import { Dropdown as UiDropdown } from '@revolist/ui/react';
 // src/components/showcase/ECommerce.tsx
 
 import './ecommerce.scss';
@@ -174,26 +175,20 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
           </label>
           <label className="ecommerce-preset">
             <span className="sr-only">Advanced filter example</span>
-            <UiSelect
-              aria-label="Advanced filter example"
-              defaultValue=""
-              onChange={async (event) => {
+            <UiDropdown
+              value=""
+              onChange={async (nextValue) => {
                 const grid = gridRef.current;
                 if (grid) {
-                  const select = event.currentTarget;
                   await applyEcommerceFilterPreset(
                     grid,
-                    (select.value || undefined) as EcommerceFilterPresetId | undefined,
+                    (String(nextValue) || undefined) as EcommerceFilterPresetId | undefined,
                   );
-                  select.value = '';
                 }
               }}
-            >
-              <option value="">Advanced examples</option>
-              {Object.entries(ECOMMERCE_FILTER_PRESETS).map(([id, preset]) => (
-                <option key={id} value={id}>{preset.label}</option>
-              ))}
-            </UiSelect>
+              source={[{ value: '', label: 'Advanced examples' }, ...Object.entries(ECOMMERCE_FILTER_PRESETS).map(([value, preset]) => ({ value, label: preset.label }))]}
+              config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Advanced filter example' }}
+            />
           </label>
         </div>
         <div className="ecommerce-toolbar__aside">

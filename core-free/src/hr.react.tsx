@@ -1,5 +1,6 @@
 import '@revolist/ui/styles.css';
-import { ButtonControl as UiButton, Select as UiSelect } from '@revolist/ui/react-control';
+import { ButtonControl as UiButton } from '@revolist/ui/react-control';
+import { Dropdown as UiDropdown } from '@revolist/ui/react';
 import './hr.css';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -161,8 +162,8 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
     );
   }, [currentSize, workspaceState]);
 
-  const onSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const nextSize = parseInt(e.target.value, 10);
+  const onSizeChange = (value: number | number[]) => {
+    const nextSize = Number(value);
     setCurrentSize(nextSize);
     setWorkspaceStatus('Unsaved changes');
     loadData(nextSize);
@@ -188,33 +189,25 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
     <div className="hr-demo grow h-full flex flex-col">
       <div className="hr-toolbar">
         <span className="text-sm font-medium">Data Source</span>
-        <UiSelect
+        <UiDropdown
           className="hr-select"
           value={currentSize}
           onChange={onSizeChange}
           disabled={loading}
-        >
-          {HR_OPTIONS.map(opt => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </UiSelect>
+          source={HR_OPTIONS}
+          config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Data Source' }}
+        />
         <span className="text-sm font-medium">Theme</span>
-        <UiSelect
+        <UiDropdown
           className="hr-select"
           value={selectedTheme}
-          onChange={event => {
-            setSelectedTheme(event.target.value);
+          onChange={nextValue => {
+            setSelectedTheme(String(nextValue));
             setWorkspaceStatus('Unsaved changes');
           }}
-        >
-          {HR_THEME_OPTIONS.map(option => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </UiSelect>
+          source={HR_THEME_OPTIONS}
+          config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Theme' }}
+        />
         <UiButton type="button" className="hr-button" onClick={saveView}>Save view</UiButton>
         <UiButton type="button" className="hr-button hr-button-secondary" onClick={resetView}>Reset view</UiButton>
         <span className="hr-workspace-status">{workspaceStatus}</span>
