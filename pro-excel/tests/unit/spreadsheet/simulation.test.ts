@@ -11,6 +11,7 @@ test('patches physical feed rows without replacing source while FilterHeader tri
 
   const items = [1];
   const storeSource = sourceRows.map(row => ({ ...row }));
+  const authoredModel = storeSource[0];
   let sourceSetCount = 0;
   const refreshCalls: string[] = [];
   const dataStore = {
@@ -52,9 +53,10 @@ test('patches physical feed rows without replacing source while FilterHeader tri
   );
 
   assert.equal(storeSource[0].jan, targetRows[0].jan, 'the physical feed row is updated');
+  assert.equal(storeSource[0], authoredModel, 'formula references retain the authored row identity');
   assert.equal(storeSource[1].jan, sourceRows[1].jan, 'the first filtered-visible row is not mistaken for row zero');
   assert.equal(sourceSetCount, 0, 'the filtered source array is not replaced');
-  assert.deepEqual(refreshCalls, ['rgRow']);
+  assert.deepEqual(refreshCalls, ['all'], 'pinned formula summaries repaint with body updates');
   assert.equal(result.rows[0].jan, targetRows[0].jan, 'simulation state follows the provider source');
 });
 
