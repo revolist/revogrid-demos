@@ -1,7 +1,6 @@
 import searchIcon from './assets/search.svg'
 import '@revolist/ui/styles.css';
-import { ButtonControl as UiButton, Input as UiInput } from '@revolist/ui/react-control';
-import { Dropdown as UiDropdown } from '@revolist/ui/react';
+import { ButtonControl as UiButton, Input as UiInput, Select as UiSelect } from '@revolist/ui/react-control';
 import React, { useEffect, useMemo, useState } from 'react'
 import { RevoGrid } from '@revolist/react-datagrid'
 import type { ColumnFilterConfig } from '@revolist/revogrid'
@@ -220,29 +219,43 @@ export default function PlanningViews() {
                     />
                 </label>
                 <div className="planning-demo__filters">
-                    <UiDropdown
+                    <UiSelect
+                        aria-label="Project"
                         className="rv-control--compact"
                         value={filters.projectId}
-                        onChange={(nextValue) =>
-                            changeFilters((current) => ({
-                                ...current,
-                                projectId: String(nextValue) as PlanningFilters['projectId'],
-                            }))
-                        }
-                      source={[{ value: 'all', label: 'Project: All' }, ...planningProjects.map(project => ({ value: project.id, label: project.label }))]}
-                      config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Project' }}
-                    />
+                        onChange={(event) => {
+                            const projectId = event.currentTarget.value as PlanningFilters['projectId'];
+                            changeFilters((current) => ({ ...current, projectId }));
+                        }}
+                    >
+                        <option value="all">Project: All</option>
+                        {planningProjects.map(project => <option key={project.id} value={project.id}>{project.label}</option>)}
+                    </UiSelect>
                     {activeView === 'kanban' && <>
-                        <UiDropdown className="rv-control--compact" value={filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''}
-                            onChange={nextValue => changeFilters(current => ({ ...current, statuses: String(nextValue) ? [String(nextValue)] : [] }))}
-                          source={[{ value: '', label: 'Status: All' }, ...(filters.statuses.length > 1 ? [{ value: 'active', label: 'Status: Active', disabled: true }] : []), { value: 'not-started', label: 'Planned' }, { value: 'in-progress', label: 'In progress' }, { value: 'blocked', label: 'Blocked' }, { value: 'done', label: 'Done' }]}
-                          config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Status' }}
-                        />
-                        <UiDropdown className="rv-control--compact" value={filters.priorities[0] ? String(filters.priorities[0]) : ''}
-                            onChange={nextValue => changeFilters(current => ({ ...current, priorities: String(nextValue) ? [Number(nextValue)] : [] }))}
-                          source={[{ value: '', label: 'Priority: All' }, { value: '500', label: 'Normal' }, { value: '700', label: 'High' }, { value: '900', label: 'Critical' }]}
-                          config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Priority' }}
-                        />
+                        <UiSelect aria-label="Status" className="rv-control--compact" value={filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''}
+                            onChange={event => {
+                                const status = event.currentTarget.value;
+                                changeFilters(current => ({ ...current, statuses: status ? [status] : [] }));
+                            }}
+                        >
+                            <option value="">Status: All</option>
+                            {filters.statuses.length > 1 && <option value="active" disabled>Status: Active</option>}
+                            <option value="not-started">Planned</option>
+                            <option value="in-progress">In progress</option>
+                            <option value="blocked">Blocked</option>
+                            <option value="done">Done</option>
+                        </UiSelect>
+                        <UiSelect aria-label="Priority" className="rv-control--compact" value={filters.priorities[0] ? String(filters.priorities[0]) : ''}
+                            onChange={event => {
+                                const priority = event.currentTarget.value;
+                                changeFilters(current => ({ ...current, priorities: priority ? [Number(priority)] : [] }));
+                            }}
+                        >
+                            <option value="">Priority: All</option>
+                            <option value="500">Normal</option>
+                            <option value="700">High</option>
+                            <option value="900">Critical</option>
+                        </UiSelect>
                     </>}
                 </div>
                 <UiButton
