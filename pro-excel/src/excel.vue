@@ -8,10 +8,7 @@
   >
     <div class="spreadsheet-ribbon">
       <span class="spreadsheet-ribbon-group">
-        <button v-rv-control class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" @click="exportWorkbook">
-          <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.export"></span>
-          Export XLSX
-        </button>
+        <IconButton label="Export XLSX" :icon="actionIcons.export" data-testid="spreadsheet-export" @click="exportWorkbook" />
       </span>
       <div ref="historyHostRef" class="spreadsheet-ribbon-group"></div>
       <span class="spreadsheet-collab" aria-label="Live collaborators">
@@ -84,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { vRvControl } from '@revolist/ui/vue-control';
+import { IconButton } from '@revolist/ui/vue';
 import '@revolist/ui/styles.css';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { VGrid } from '@revolist/vue3-datagrid';

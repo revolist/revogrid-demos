@@ -1,6 +1,6 @@
-import searchIcon from './assets/search.svg'
+import searchIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?url'
 import '@revolist/ui/styles.css';
-import { UiComponent } from '@revolist/ui/angular';
+import { UiComponent, UiSlotDirective } from '@revolist/ui/angular';
 import { UiControlDirective } from '@revolist/ui/angular-control';
 import {
     Component,
@@ -59,7 +59,7 @@ import {
     selector: 'planning-views-grid',
     standalone: true,
     schemas: [NO_ERRORS_SCHEMA],
-    imports: [UiComponent, UiControlDirective, RevoGrid],
+    imports: [UiComponent, UiSlotDirective, UiControlDirective, RevoGrid],
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./planning.scss'],
     template: `
@@ -122,15 +122,11 @@ import {
             </nav>
 
             <div class="planning-demo__toolbar" role="group" aria-label="Task filters">
-                <label class="planning-demo__search rv-search-input rv-search-input--no-shortcut"
-                    ><span class="rv-search-input-icon" aria-hidden="true"><img [src]="searchIcon" alt="" /></span
-                    ><input rvControl
-                        aria-label="Search tasks"
-                        type="search"
-                        placeholder="Search tasks…"
-                        [value]="filters.query"
-                        (input)="setQuery($event)"
-                /></label>
+                <rv-ui component="SearchInput"
+                    [props]="{ rootClassName: 'planning-demo__search', 'aria-label': 'Search tasks', placeholder: 'Search tasks…', value: filters.query }"
+                    (valueChange)="setQuery($event)">
+                    <ng-template rvUiSlot="icon"><img [src]="searchIcon" alt="" /></ng-template>
+                </rv-ui>
                 <div class="planning-demo__filters">
                     <span class="planning-demo__filter">
                         <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.project, className: 'rv-select', value: filters.projectId }" (valueChange)="setProject($event)" />
@@ -324,12 +320,12 @@ export class PlanningViewsGridComponent {
             this.tasks
         )
     }
-    readonly searchIcon = `data:image/svg+xml,${encodeURIComponent(searchIcon)}`
+    readonly searchIcon = searchIcon
 
-    setQuery(event: Event) {
+    setQuery(value: unknown) {
         this.filters = {
             ...this.filters,
-            query: (event.target as HTMLInputElement).value,
+            query: String(value),
         }
         this.applyToolbarFilters()
     }

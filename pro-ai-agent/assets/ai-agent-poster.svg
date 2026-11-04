@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="title">
+  <title id="title">RevoGrid AI Agent filters an orders grid</title>
+  <rect width="960" height="540" fill="#edf3f2"/>
+  <rect x="52" y="48" width="856" height="444" rx="20" fill="#fff" stroke="#d7e0df"/>
+  <path d="M578 48v444M52 136h856M52 188h526M52 247h526M52 306h526M52 365h526" stroke="#d7e0df"/>
+  <g font-family="system-ui,sans-serif" fill="#172633">
+    <text x="80" y="103" font-size="25" font-weight="600">Orders</text>
+    <text x="606" y="103" font-size="25" font-weight="600">AI Agent</text>
+    <g font-size="17">
+      <text x="80" y="168">Order</text><text x="260" y="168">Region</text><text x="430" y="168">Amount</text>
+      <text x="80" y="224">ORD-0001</text><text x="260" y="224">Europe</text><text x="430" y="224">$100</text>
+      <text x="80" y="283">ORD-0004</text><text x="260" y="283">Europe</text><text x="430" y="283">$511</text>
+      <text x="80" y="342">ORD-0007</text><text x="260" y="342">Europe</text><text x="430" y="342">$922</text>
+      <rect x="727" y="159" width="152" height="42" rx="10" fill="#e1f5ed"/>
+      <text x="750" y="186">Only Europe</text>
+      <rect x="606" y="220" width="273" height="67" rx="10" fill="#f0f3f7"/>
+      <text x="624" y="248">View updated.</text><text x="624" y="271">Filtered by Region.</text>
+    </g>
+  </g>
+</svg>

@@ -1,5 +1,5 @@
 import '@revolist/ui/styles.css';
-import { ButtonControl as UiButton } from '@revolist/ui/react-control';
+import { IconButton } from '@revolist/ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import {
@@ -74,16 +74,6 @@ import {
   applySpreadsheetFeedFlashStep,
   flashSpreadsheetFeedEdit,
 } from './spreadsheet.feed';
-
-function ActionIcon({ icon }: { icon: string }) {
-  return (
-    <span
-      className="spreadsheet-action-icon"
-      aria-hidden="true"
-      dangerouslySetInnerHTML={{ __html: icon }}
-    />
-  );
-}
 
 export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: boolean }) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
@@ -401,10 +391,7 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     >
       <div className="spreadsheet-ribbon">
         <span className="spreadsheet-ribbon-group">
-          <UiButton className="spreadsheet-btn" type="button" data-testid="spreadsheet-export" onClick={exportWorkbook}>
-            <ActionIcon icon={SPREADSHEET_ACTION_ICONS.export} />
-            Export XLSX
-          </UiButton>
+          <IconButton label="Export XLSX" icon={SPREADSHEET_ACTION_ICONS.export} data-testid="spreadsheet-export" onClick={exportWorkbook} />
         </span>
         <div ref={historyHostRef} className="spreadsheet-ribbon-group" />
         <span className="spreadsheet-collab" aria-label="Live collaborators">

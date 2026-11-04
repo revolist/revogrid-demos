@@ -658,10 +658,9 @@ test('uses declarative data-grid formats for every planning value type', () => {
     )
     assert.match(formattingSource, /preset:\s*'date'[\s\S]*?timeZone:\s*'UTC'/)
     assert.match(
-        formattingSource,
-        /preset:\s*'number'[\s\S]*?id:\s*'progress-line'/
+        columnsSource,
+        /\.\.\.percentDoneColumn[\s\S]*?cellTemplate: editorSlider/
     )
-    assert.match(formattingSource, /id:\s*'progress-line'/)
     assert.match(
         formattingSource,
         /preset:\s*'currency'[\s\S]*?currency:\s*'USD'/

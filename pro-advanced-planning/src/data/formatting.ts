@@ -143,17 +143,6 @@ export const planningGridFormats = {
             timeZone: 'UTC',
         },
     },
-    percentDone: {
-        value: {
-            kind: 'preset',
-            preset: 'number',
-            locale: 'en-US',
-        },
-        presentation: {
-            id: 'progress-line',
-            options: { minValue: 0, maxValue: 100 },
-        },
-    },
     budget: {
         value: {
             kind: 'preset',

@@ -135,6 +135,9 @@ importers:
       '@angular/platform-browser-dynamic':
         specifier: ^22.1.0
         version: 22.1.6(@angular/common@22.1.6(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/compiler@22.1.6)(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@22.1.6(@angular/common@22.1.6(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1)))
+      '@fortawesome/fontawesome-free':
+        specifier: 7.3.1
+        version: 7.3.1
       '@revolist/angular-datagrid':
         specifier: 4.31.3
         version: 4.31.3
@@ -1092,8 +1095,87 @@ importers:
         specifier: ^6.3.5
         version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13)
 
+  pro-ai-agent:
+    dependencies:
+      '@angular/common':
+        specifier: ^22.1.0
+        version: 22.1.6(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2)
+      '@angular/compiler':
+        specifier: ^22.1.0
+        version: 22.1.6
+      '@angular/core':
+        specifier: ^22.1.0
+        version: 22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1)
+      '@angular/platform-browser':
+        specifier: ^22.1.0
+        version: 22.1.6(@angular/common@22.1.6(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))
+      '@revolist/angular-datagrid':
+        specifier: 4.31.3
+        version: 4.31.3
+      '@revolist/react-datagrid':
+        specifier: 4.31.3
+        version: 4.31.3
+      '@revolist/revogrid':
+        specifier: 4.31.3
+        version: 4.31.3
+      '@revolist/revogrid-pro':
+        specifier: npm:@revolist/rv-pro-trial@4.0.2-rc
+        version: '@revolist/rv-pro-trial@4.0.2-rc'
+      '@revolist/ui':
+        specifier: file:../vendor/revolist-ui-3.0.14.tgz
+        version: file:vendor/revolist-ui-3.0.14.tgz(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(preact@10.29.1)(react@18.3.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
+      '@revolist/vue3-datagrid':
+        specifier: 4.31.3
+        version: 4.31.3
+      preact:
+        specifier: 10.29.1
+        version: 10.29.1
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      rxjs:
+        specifier: ~7.8.0
+        version: 7.8.2
+      tslib:
+        specifier: ^2.4.0
+        version: 2.8.1
+      vue:
+        specifier: ^3.5.21
+        version: 3.5.42(typescript@6.0.3)
+      zone.js:
+        specifier: ~0.15.0
+        version: 0.15.1
+    devDependencies:
+      '@types/react':
+        specifier: ^18.3.18
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.5
+        version: 18.3.7(@types/react@18.3.31)
+      '@vitejs/plugin-react':
+        specifier: ^4.3.4
+        version: 4.7.0(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13))
+      '@vitejs/plugin-vue':
+        specifier: ^5.2.1
+        version: 5.2.4(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13))(vue@3.5.42(typescript@6.0.3))
+      sass-embedded:
+        specifier: ^1.83.4
+        version: 1.104.1
+      typescript:
+        specifier: ~6.0.3
+        version: 6.0.3
+      vite:
+        specifier: ^6.3.5
+        version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13)
+
   pro-infinity-scroll:
     dependencies:
+      '@fortawesome/fontawesome-free':
+        specifier: 7.3.1
+        version: 7.3.1
       '@angular/common':
         specifier: ^22.1.0
         version: 22.1.6(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2)
@@ -2144,7 +2226,10 @@ packages:
     resolution: {integrity: sha512-bRt8J8m+Fot9CXv+zNQGXUq2ET0MggR1fPz7v6edN6MFYmsbfGnMmkmWZJEegMKqrAC8ej/o1sqisHZXZJMAfQ==}
     engines: {node: '>=23.5.0 || ^22.13.0 || ^20.17.0'}
     peerDependencies:
-      '@types/node': '>=18'
+      '@tanstack/query-core@5.104.5':
+    resolution: {integrity: sha512-Q94gI8Opd+CbdVNOdj8ZCyV8WqLYitrDq1t96Xc8WZT6lY0r5iRnJLXYDxMex7EEf2v+mXvn4FcjaBKSxXZQ9A==}
+
+  '@types/node': '>=18'
     peerDependenciesMeta:
       '@types/node':
         optional: true
@@ -3007,6 +3092,9 @@ packages:
 
   '@revolist/rv-pro-trial@3.0.18':
     resolution: {integrity: sha512-cG2ucLzg6p6rjE/43JrndxIrrms3V/c2Hvg5FR3dOsPeNAV/LguTJTLc2wmLlKkSWV2b4/PifN4Iuf+4Iv4hAg==, tarball: https://trial.rv-grid.com/@revolist/rv-pro-trial/-/163baae10440b72fe5dcfe0ff359b856c34399aa}
+
+  '@revolist/rv-pro-trial@4.0.2-rc':
+    resolution: {integrity: sha512-r/P3UpGYwy4ziZfS5PfShZqnSNcH8fxh0fOOupFa2ftt1zYz+at+Vo+v68aMz3PE+0oBUavarT244wUhzSJoKA==, tarball: https://trial.rv-grid.com/@revolist/rv-pro-trial/-/203b3146b31f936b854eb5959681a42eeac4e4d9}
 
   '@revolist/scheduler-trial@3.0.18':
     resolution: {integrity: sha512-k/zf0dVeSt0yhAJExfIkKxhSPFzKbyWeiu4WZk8buUCqFN0YL6iGuOLyA+qa4tGRLxWQYlb/lx1Pw7lQlQ7h/A==, tarball: https://trial.rv-grid.com/@revolist/scheduler-trial/-/7615abfab2cdda20dd61b1e78b0a6f729fd92274}
@@ -5426,7 +5514,9 @@ snapshots:
       '@babel/template': 8.0.0
       '@babel/traverse': 8.0.5
       '@babel/types': 8.0.5
-      '@types/gensync': 1.0.5
+      '@tanstack/query-core@5.104.5': {}
+
+  '@types/gensync': 1.0.5
       convert-source-map: 2.0.0
       empathic: 2.0.1
       gensync: 1.0.0-beta.2
@@ -6495,6 +6585,14 @@ snapshots:
     dependencies:
       '@formulajs/formulajs': 4.6.1
       '@revolist/revogrid': 4.31.3
+      preact: 10.29.1
+      write-excel-file: 4.1.1
+
+  '@revolist/rv-pro-trial@4.0.2-rc':
+    dependencies:
+      '@formulajs/formulajs': 4.6.1
+      '@revolist/revogrid': 4.31.3
+      '@tanstack/query-core': 5.104.5
       preact: 10.29.1
       write-excel-file: 4.1.1
 

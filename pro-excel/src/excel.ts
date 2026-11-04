@@ -1,4 +1,4 @@
-import { controlAttributes, createControl } from '@revolist/ui';
+import { createControl } from '@revolist/ui';
 import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 defineCustomElements();
@@ -116,7 +116,11 @@ export function load(parentSelector: string) {
   grid.columnTypes = { statusDropdown: ColumnDropdown, departmentDropdown: ColumnDropdown };
   grid.filter = SPREADSHEET_FILTER_CONFIG;
 
-  const exportButton = button('Export XLSX', exportWorkbook, SPREADSHEET_ACTION_ICONS.export);
+  const exportButton = createControl(document, 'button', { type: 'button', class: 'rv-btn-icon rv-btn-ghost' });
+  exportButton.setAttribute('aria-label', 'Export XLSX');
+  exportButton.title = 'Export XLSX';
+  appendActionIcon(exportButton, SPREADSHEET_ACTION_ICONS.export);
+  exportButton.addEventListener('click', exportWorkbook);
   exportButton.dataset.testid = 'spreadsheet-export';
   const historyHost = document.createElement('div');
   historyHost.className = 'spreadsheet-ribbon-group';
@@ -189,31 +193,12 @@ export function load(parentSelector: string) {
     shell.remove();
   };
 
-  function button(label: string, onClick: (event: MouseEvent) => void | Promise<void>, icon?: string) {
-    const item = createControl(document, 'button', { type: 'button' });
-    item.className = controlAttributes('button', { class: 'spreadsheet-btn' }).class;
-    item.type = 'button';
-    setButtonContent(item, label, icon);
-    item.addEventListener('click', (event) => {
-      void onClick(event);
-    });
-    return item;
-  }
-
   function appendActionIcon(parent: HTMLElement, icon: string) {
     const iconElement = document.createElement('span');
     iconElement.className = 'spreadsheet-action-icon';
     iconElement.setAttribute('aria-hidden', 'true');
     iconElement.innerHTML = icon;
     parent.append(iconElement);
-  }
-
-  function setButtonContent(item: HTMLButtonElement, label: string, icon?: string) {
-    item.replaceChildren();
-    if (icon) {
-      appendActionIcon(item, icon);
-    }
-    item.append(document.createTextNode(label));
   }
 
   function group(...children: Array<HTMLElement>) {

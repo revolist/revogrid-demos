@@ -1,5 +1,5 @@
 import '@revolist/ui/styles.css';
-import { UiControlDirective } from '@revolist/ui/angular-control';
+import { UiComponent } from '@revolist/ui/angular';
 import {
   AfterViewInit,
   ChangeDetectorRef,
@@ -94,7 +94,7 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
 @Component({
   selector: 'spreadsheet-workbench-grid',
   standalone: true,
-  imports: [UiControlDirective, CommonModule, RevoGrid],
+  imports: [UiComponent, CommonModule, RevoGrid],
   template: `
     <section
       #workbenchShell
@@ -105,10 +105,9 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
     >
       <div class="spreadsheet-ribbon">
         <span class="spreadsheet-ribbon-group">
-          <button rvControl class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" (click)="exportWorkbook()">
-            <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.export"></span>
-            Export XLSX
-          </button>
+          <rv-ui component="IconButton"
+            [props]="{ label: 'Export XLSX', icon: actionIcons.export, 'data-testid': 'spreadsheet-export' }"
+            (click)="exportWorkbook()" />
         </span>
         <div #historyHost class="spreadsheet-ribbon-group"></div>
         <span class="spreadsheet-collab" aria-label="Live collaborators">

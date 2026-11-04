@@ -1,7 +1,7 @@
-import searchIcon from './assets/search.svg'
+import searchIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?url'
 import '@revolist/ui/styles.css';
-import { Dropdown } from '@revolist/ui/react';
-import { ButtonControl as UiButton, Input as UiInput } from '@revolist/ui/react-control';
+import { Dropdown, SearchInput } from '@revolist/ui/react';
+import { ButtonControl as UiButton } from '@revolist/ui/react-control';
 import React, { useEffect, useMemo, useState } from 'react'
 import { RevoGrid } from '@revolist/react-datagrid'
 import type { ColumnFilterConfig } from '@revolist/revogrid'
@@ -198,21 +198,14 @@ export default function PlanningViews() {
             </nav>
 
             <div className="planning-demo__toolbar" role="group" aria-label="Task filters">
-                <label className="planning-demo__search rv-search-input rv-search-input--no-shortcut">
-                    <span className="rv-search-input-icon" aria-hidden="true"><img src={searchIcon} alt="" /></span>
-                    <UiInput
-                        aria-label="Search tasks"
-                        type="search"
-                        placeholder="Search tasks…"
-                        value={filters.query}
-                        onChange={(event) =>
-                            changeFilters((current) => ({
-                                ...current,
-                                query: event.target.value,
-                            }))
-                        }
-                    />
-                </label>
+                <SearchInput
+                    rootClassName="planning-demo__search"
+                    aria-label="Search tasks"
+                    placeholder="Search tasks…"
+                    value={filters.query}
+                    icon={<img src={searchIcon} alt="" />}
+                    onValueChange={(query) => changeFilters((current) => ({ ...current, query }))}
+                />
                 <div className="planning-demo__filters">
                     <span className="planning-demo__filter">
                         <Dropdown className="rv-select" {...planningFilterDropdowns.project} value={filters.projectId}

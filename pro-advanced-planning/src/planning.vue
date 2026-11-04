@@ -4,40 +4,43 @@
         class="planning-demo planning-demo--filter-toolbar"
         :data-theme="theme === 'darkCompact' ? 'dark' : 'light'"
     >
-        <nav class="planning-demo__switch rv-segmented-switch" role="tablist" aria-label="Planning view">
-            <button v-rv-control v-for="view in views" :key="view" type="button"
-                class="rv-segmented-switch-item" :class="{ on: activeView === view }"
-                role="tab" :aria-selected="activeView === view"
-                :data-demo-action="`view_${view}`" @click="selectPlanningView(view)">
-                {{ view }}
-            </button>
-        </nav>
-        <div class="planning-demo__toolbar" role="group" aria-label="Task filters">
-            <label class="planning-demo__search rv-search-input rv-search-input--no-shortcut">
-                <span class="rv-search-input-icon" aria-hidden="true"><img :src="searchIcon" alt="" /></span>
-                <input v-rv-control type="search" aria-label="Search tasks" placeholder="Search tasks…"
-                    :value="filters.query" @input="changeFilters({ ...filters, query: ($event.target as HTMLInputElement).value })" />
-            </label>
-            <div class="planning-demo__filters">
-                <span class="planning-demo__filter">
-                    <Dropdown class="rv-select" v-bind="planningFilterDropdowns.project" :value="filters.projectId"
-                        @update:model-value="value => changeFilters({ ...filters, projectId: value as PlanningFilters['projectId'] })" />
-                </span>
-                <template v-if="activeView === 'kanban'">
+        <div class="planning-demo__topbar">
+            <nav class="planning-demo__switch rv-segmented-switch" role="tablist" aria-label="Planning view">
+                <button v-rv-control v-for="view in views" :key="view" type="button"
+                    class="rv-segmented-switch-item" :class="{ on: activeView === view }"
+                    role="tab" :aria-selected="activeView === view"
+                    :data-demo-action="`view_${view}`" @click="selectPlanningView(view)">
+                    {{ view }}
+                </button>
+            </nav>
+            <button v-rv-control class="planning-demo__fullscreen rv-btn-ghost" type="button"
+                aria-label="Full screen" title="Full screen" @click="toggleFullscreen"><span aria-hidden="true">↗</span></button>
+            <div class="planning-demo__toolbar" role="group" aria-label="Task filters">
+                <SearchInput root-class-name="planning-demo__search" aria-label="Search tasks" placeholder="Search tasks…"
+                    :value="filters.query" @update:model-value="query => changeFilters({ ...filters, query })">
+                    <template #icon><img :src="searchIcon" alt="" /></template>
+                </SearchInput>
+                <div class="planning-demo__filters">
                     <span class="planning-demo__filter">
-                        <Dropdown class="rv-select" v-bind="planningFilterDropdowns.status"
-                            :value="filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''"
-                            @update:model-value="value => changeFilters({ ...filters, statuses: value ? [String(value)] : [] })" />
+                        <Dropdown class="rv-select" v-bind="planningFilterDropdowns.project" :value="filters.projectId"
+                            @update:model-value="value => changeFilters({ ...filters, projectId: value as PlanningFilters['projectId'] })" />
                     </span>
-                    <span class="planning-demo__filter">
-                        <Dropdown class="rv-select" v-bind="planningFilterDropdowns.priority"
-                            :value="String(filters.priorities[0] ?? '')"
-                            @update:model-value="value => changeFilters({ ...filters, priorities: value ? [Number(value)] : [] })" />
-                    </span>
-                </template>
+                    <template v-if="activeView === 'kanban'">
+                        <span class="planning-demo__filter">
+                            <Dropdown class="rv-select" v-bind="planningFilterDropdowns.status"
+                                :value="filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''"
+                                @update:model-value="value => changeFilters({ ...filters, statuses: value ? [String(value)] : [] })" />
+                        </span>
+                        <span class="planning-demo__filter">
+                            <Dropdown class="rv-select" v-bind="planningFilterDropdowns.priority"
+                                :value="String(filters.priorities[0] ?? '')"
+                                @update:model-value="value => changeFilters({ ...filters, priorities: value ? [Number(value)] : [] })" />
+                        </span>
+                    </template>
+                </div>
+                <button v-rv-control class="rv-choice-chip planning-demo__active" type="button" :class="{ on: isActiveTasksPreset }"
+                    :aria-pressed="isActiveTasksPreset" data-demo-action="apply_active_tasks" @click="applyActiveTasksPreset">Active tasks</button>
             </div>
-            <button v-rv-control class="rv-choice-chip planning-demo__active" type="button" :class="{ on: isActiveTasksPreset }"
-                :aria-pressed="isActiveTasksPreset" data-demo-action="apply_active_tasks" @click="applyActiveTasksPreset">Active tasks</button>
         </div>
         <div v-if="activeView === 'grid'" class="planning-demo__grid-stage">
             <RevoGrid
@@ -123,21 +126,17 @@
             :event-scheduler-resources.prop="schedulerResources"
             @gridedit="handlePlanningEdit"
         />
-        <footer class="planning-demo__footer">
-            <button v-rv-control class="planning-demo__fullscreen rv-btn-ghost" type="button"
-                aria-label="Full screen" title="Full screen" @click="toggleFullscreen"><span aria-hidden="true">↗</span></button>
-        </footer>
     </section>
 </template>
 
 <script setup lang="ts">
-import { Dropdown } from '@revolist/ui/vue';
+import searchIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?url'
+import { Dropdown, SearchInput } from '@revolist/ui/vue';
 import { vRvControl } from '@revolist/ui/vue-control';
 import '@revolist/ui/styles.css';
 import RevoGrid from '@revolist/vue3-datagrid'
 import { usePlanningWorkspace } from './composables/usePlanningWorkspace'
 import './planning.scss'
-import searchIcon from './assets/search.svg'
 import { planningFilterDropdowns, type PlanningFilters } from './data'
 
 const {

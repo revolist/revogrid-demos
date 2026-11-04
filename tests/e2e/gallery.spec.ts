@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 const featureSlugs = ['pivot', 'gantt', 'kanban', 'scheduler'];
 const retainedSlugs = [
-  'core-ai-prompts',
+  'ai-agent',
   'core-project-portfolio',
   'core',
   'excel',
