@@ -178,10 +178,11 @@ export function createCellFlashConfig(): CellFlashConfig {
 export function createPanelOptions(): AuditHistoryPanelOptions {
   return {
     placement: 'right',
+    resizable: true,
     pageSize: 12,
     allowExport: true,
     allowCompare: true,
     restoreActions: ['cell', 'row', 'transaction'],
-    labels: { title: 'Change ledger' },
+    labels: { title: 'Audit history' },
   };
 }
