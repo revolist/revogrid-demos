@@ -9,6 +9,36 @@ export const planningProjects: ReadonlyArray<{
     { id: 'internal-tools', label: 'Internal tools' },
 ]
 
+export const planningFilterDropdowns = {
+    project: {
+        config: { ariaLabel: 'Project', nativeTabNavigation: true, topLayer: true },
+        source: [
+            { value: 'all', label: 'Project: All' },
+            ...planningProjects.map(({ id, label }) => ({ value: id, label })),
+        ],
+    },
+    status: {
+        config: { ariaLabel: 'Status', nativeTabNavigation: true, topLayer: true },
+        source: [
+            { value: '', label: 'Status: All' },
+            { value: 'active', label: 'Status: Active', disabled: true },
+            { value: 'not-started', label: 'Planned' },
+            { value: 'in-progress', label: 'In progress' },
+            { value: 'blocked', label: 'Blocked' },
+            { value: 'done', label: 'Done' },
+        ],
+    },
+    priority: {
+        config: { ariaLabel: 'Priority', nativeTabNavigation: true, topLayer: true },
+        source: [
+            { value: '', label: 'Priority: All' },
+            { value: '500', label: 'Normal' },
+            { value: '700', label: 'High' },
+            { value: '900', label: 'Critical' },
+        ],
+    },
+}
+
 export const defaultPlanningFilters = (): PlanningFilters => ({
     query: '',
     projectId: 'all',

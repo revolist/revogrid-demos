@@ -46,6 +46,47 @@ for (const slug of [...featureSlugs, ...retainedSlugs]) {
   });
 }
 
+test('tree toolbar groups icon actions and keeps Sticky parents on the right', async ({ page }) => {
+  await page.goto('/tree-data/demo/');
+
+  const toolbar = page.locator('.tree-toolbar');
+  const actions = toolbar.getByRole('group', { name: 'Tree actions' });
+  const sticky = toolbar.getByRole('switch', { name: 'Sticky parents' });
+  const expand = actions.getByRole('button', { name: 'Expand all' });
+  const collapse = actions.getByRole('button', { name: 'Collapse all' });
+  const exportButton = actions.getByRole('button', { name: 'Export to Excel' });
+
+  for (const button of [expand, collapse, exportButton]) {
+    await expect(button.locator('svg')).toBeVisible();
+    await expect(button).toHaveCSS('width', '28px');
+    await expect(button).toHaveCSS('height', '28px');
+    await expect(button).toHaveCSS('border-radius', '6px');
+  }
+  await expect(actions).toHaveCSS('height', '38px');
+  await collapse.hover();
+  await expect(collapse).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(sticky).toBeChecked();
+  const actionsBox = await actions.boundingBox();
+  const stickyBox = await sticky.boundingBox();
+  expect(stickyBox!.x).toBeGreaterThan(actionsBox!.x + actionsBox!.width);
+
+  const grid = page.locator('revo-grid');
+  const member = grid.getByText('Eva Green', { exact: true });
+  await collapse.click();
+  await expect(member).toHaveCount(0);
+  await expand.focus();
+  await page.keyboard.press('Enter');
+  await expect(member).toBeVisible();
+  await sticky.click();
+  await expect(sticky).not.toBeChecked();
+  await expect.poll(() => grid.evaluate(element => (element as HTMLRevoGridElement).tree?.stickyParents)).toBe(false);
+  await expect(member).toBeVisible();
+
+  const download = page.waitForEvent('download');
+  await exportButton.click();
+  expect((await download).suggestedFilename()).toMatch(/\.xlsx$/);
+});
+
 test('construction gallery route keeps the canonical TypeScript build and current scoped styles', async ({ page }) => {
   await page.goto('/construction-operations/demo/');
 

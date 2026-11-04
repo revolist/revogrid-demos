@@ -1,4 +1,3 @@
-import { controlAttributes, createControl } from '@revolist/ui';
 import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import {
@@ -23,17 +22,10 @@ import {
   TREE_STICKY_CELLS_CONFIG,
   type TreeDataRow,
 } from './tree.shared';
+import { mountTreeToolbar } from './tree.toolbar';
 import './tree.scss';
 
 defineCustomElements();
-
-function createButton(label: string) {
-  const button = createControl(document, 'button', { type: 'button' });
-  button.type = 'button';
-  button.className = controlAttributes('button', { class: 'tree-button' }).class;
-  button.textContent = label;
-  return button;
-}
 
 export function load(parentSelector: string, rows?: TreeDataRow[]) {
   const parent = document.querySelector(parentSelector);
@@ -47,20 +39,6 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
   container.setAttribute('aria-label', 'Tree Data organization explorer');
 
   const toolbar = document.createElement('div');
-  toolbar.className = 'tree-toolbar';
-  const actions = document.createElement('div');
-  actions.className = 'tree-toolbar__actions';
-  const expandButton = createButton('Expand all');
-  const collapseButton = createButton('Collapse all');
-  const exportButton = createButton('Export to Excel');
-  const stickyLabel = document.createElement('label');
-  stickyLabel.className = 'tree-sticky';
-  const stickyInput = createControl(document, 'input', { type: 'checkbox' });
-  stickyInput.type = 'checkbox';
-  stickyInput.checked = true;
-  stickyLabel.append(stickyInput, document.createTextNode('Sticky parents'));
-  actions.append(expandButton, collapseButton, exportButton, stickyLabel);
-  toolbar.append(actions);
 
   const grid = document.createElement('revo-grid');
   grid.className = 'tree-grid';
@@ -84,13 +62,13 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
 
   const expandAll = () => grid.dispatchEvent(new CustomEvent(TREE_EXPAND_ALL_EVENT));
   const collapseAll = () => grid.dispatchEvent(new CustomEvent(TREE_COLLAPSE_ALL_EVENT));
-  const toggleSticky = () => {
+  const toggleSticky = (checked: boolean) => {
     treeConfig = createTreeConfig(source, {
       expandedRowIds,
-      stickyParents: stickyInput.checked,
+      stickyParents: checked,
     });
     grid.tree = treeConfig;
-    grid.columns = createTreeColumns(source, stickyInput.checked);
+    grid.columns = createTreeColumns(source, checked);
   };
   const syncTreeState = (event: Event) => {
     expandedRowIds = new Set(
@@ -98,22 +76,14 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
     );
   };
   const exportToExcel = async () => {
-    exportButton.disabled = true;
-    exportButton.textContent = 'Exporting…';
-    try {
-      const plugins = await grid.getPlugins();
-      const exportPlugin = plugins.find((plugin) => plugin instanceof ExportExcelPlugin) as ExportExcelPlugin | undefined;
-      await exportPlugin?.export(TREE_EXPORT_CONFIG);
-    } finally {
-      exportButton.disabled = false;
-      exportButton.textContent = 'Export to Excel';
-    }
+    const plugins = await grid.getPlugins();
+    const exportPlugin = plugins.find((plugin) => plugin instanceof ExportExcelPlugin) as ExportExcelPlugin | undefined;
+    await exportPlugin?.export(TREE_EXPORT_CONFIG);
   };
 
-  expandButton.addEventListener('click', expandAll);
-  collapseButton.addEventListener('click', collapseAll);
-  exportButton.addEventListener('click', exportToExcel);
-  stickyInput.addEventListener('change', toggleSticky);
+  const unmountToolbar = mountTreeToolbar(toolbar, {
+    expandAll, collapseAll, exportToExcel, setStickyParents: toggleSticky,
+  });
   grid.addEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
   container.append(toolbar, grid);
   parent.appendChild(container);
@@ -124,10 +94,7 @@ export function load(parentSelector: string, rows?: TreeDataRow[]) {
 
   return () => {
     disconnectTheme();
-    expandButton.removeEventListener('click', expandAll);
-    collapseButton.removeEventListener('click', collapseAll);
-    exportButton.removeEventListener('click', exportToExcel);
-    stickyInput.removeEventListener('change', toggleSticky);
+    unmountToolbar();
     grid.removeEventListener(TREE_STATE_CHANGED_EVENT, syncTreeState);
     container.remove();
   };

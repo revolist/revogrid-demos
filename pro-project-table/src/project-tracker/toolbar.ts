@@ -138,9 +138,8 @@ export class ProjectTrackerToolbarElement extends HTMLElement {
     this.disposeMenuContent();
     this.innerHTML = `
       <div class="project-grid-toolbar">
-        <button data-toolbar-action="new" type="button" class="project-grid-primary rv-btn-solid">
+        <button data-toolbar-action="new" type="button" class="project-grid-primary rv-btn-solid rv-btn-icon" aria-label="New project" title="New project">
           ${renderToolbarIcon(projectToolbarIcons.add)}
-          <span>New</span>
         </button>
         ${renderMenuControl('Group', 'group', projectToolbarIcons.group)}
         <button

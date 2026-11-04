@@ -1,18 +1,6 @@
 <template>
   <section class="tree-showcase" aria-label="Tree Data organization explorer">
-    <div class="tree-toolbar">
-      <div class="tree-toolbar__actions">
-        <button v-rv-control class="tree-button" type="button" @click="expandAll">Expand all</button>
-        <button v-rv-control class="tree-button" type="button" @click="collapseAll">Collapse all</button>
-        <button v-rv-control class="tree-button" type="button" :disabled="exporting" @click="exportToExcel">
-          {{ exporting ? 'Exporting…' : 'Export to Excel' }}
-        </button>
-        <label class="tree-sticky">
-          <input v-rv-control v-model="stickyParents" type="checkbox" />
-          Sticky parents
-        </label>
-      </div>
-    </div>
+    <div ref="toolbarRef"></div>
     <RevoGrid
       ref="gridRef"
       class="tree-grid"
@@ -39,7 +27,6 @@
 </template>
 
 <script setup lang="ts">
-import { vRvControl } from '@revolist/ui/vue-control';
 import '@revolist/ui/styles.css';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
@@ -63,8 +50,10 @@ import {
   TREE_ROW_SELECT_CONFIG,
   TREE_STICKY_CELLS_CONFIG,
 } from './tree.shared';
+import { mountTreeToolbar } from './tree.toolbar';
 import './tree.scss';
 
+const toolbarRef = ref<HTMLElement | null>(null);
 const gridRef = ref<{ $el: HTMLRevoGridElement } | HTMLRevoGridElement | null>(null);
 const rows = ref(createTreeRows());
 const stickyParents = ref(true);
@@ -73,21 +62,28 @@ const columns = computed(() => createTreeColumns(rows.value, stickyParents.value
 const filterConfig = computed(() => createTreeFilterConfig(rows.value));
 const plugins = [...TREE_PLUGINS];
 const columnTypes = TREE_COLUMN_TYPES;
-const exporting = ref(false);
 const darkTheme = ref(typeof window !== 'undefined' && currentTheme().isDark());
 const treeConfig = computed(() => createTreeConfig(rows.value, {
   expandedRowIds: expandedRowIds.value,
   stickyParents: stickyParents.value,
 }));
+let unmountToolbar: (() => void) | undefined;
 let disconnectTheme: (() => void) | undefined;
 
 onMounted(() => {
+  if (toolbarRef.value) {
+    unmountToolbar = mountTreeToolbar(toolbarRef.value, {
+      expandAll, collapseAll, exportToExcel,
+      setStickyParents: checked => { stickyParents.value = checked; },
+    });
+  }
   disconnectTheme = observeCurrentTheme((isDark) => {
     darkTheme.value = isDark;
   });
 });
 
 onUnmounted(() => {
+  unmountToolbar?.();
   disconnectTheme?.();
 });
 
@@ -111,13 +107,8 @@ function handleTreeState(event: CustomEvent<{ expandedRowIds: Set<string> }>) {
 async function exportToExcel() {
   const grid = getGrid();
   if (!grid) return;
-  exporting.value = true;
-  try {
-    const gridPlugins = await grid.getPlugins();
-    const exportPlugin = gridPlugins.find((plugin) => plugin instanceof ExportExcelPlugin) as ExportExcelPlugin | undefined;
-    await exportPlugin?.export(TREE_EXPORT_CONFIG);
-  } finally {
-    exporting.value = false;
-  }
+  const gridPlugins = await grid.getPlugins();
+  const exportPlugin = gridPlugins.find((plugin) => plugin instanceof ExportExcelPlugin) as ExportExcelPlugin | undefined;
+  await exportPlugin?.export(TREE_EXPORT_CONFIG);
 }
 </script>

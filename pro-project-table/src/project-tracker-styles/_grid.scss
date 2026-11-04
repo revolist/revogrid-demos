@@ -34,7 +34,7 @@ revo-grid.project-tracker-grid {
     text-align: left;
   }
 
-  .rgCell.project-block-cell:not(revo-grid.project-tracker-grid revo-grid .rgCell) {
+  .rgCell:is(.project-block-cell, .project-timeline-cell):not(revo-grid.project-tracker-grid revo-grid .rgCell) {
     padding: 0 !important;
   }
 
@@ -69,6 +69,7 @@ revo-grid.project-tracker-grid {
     appearance: none;
     width: 30px;
     height: 30px;
+    padding: 0;
     border: 1px solid transparent;
     border-radius: 8px;
     background: transparent;
@@ -92,10 +93,14 @@ revo-grid.project-tracker-grid {
       transform: translateY(1px) scale(0.98);
     }
 
+    &__icon {
+      display: flex;
+    }
+
     svg {
+      display: block;
       width: 16px;
       height: 16px;
-      margin-top: 20px;
       fill: currentColor;
       pointer-events: none;
     }
@@ -525,7 +530,7 @@ revo-grid.project-tracker-grid {
 
     .dropdown-arrow {
       margin-left: space(1);
-      color: token(muted);
+      color: var(--pipeline-muted);
     }
   }
 
@@ -598,7 +603,7 @@ revo-grid.project-tracker-grid {
     .dropdown-arrow {
       flex: 0 0 auto;
       margin-left: auto;
-      color: token(text-soft);
+      color: var(--pipeline-text);
       opacity: 0.86;
     }
   }
@@ -629,8 +634,6 @@ revo-grid.project-tracker-grid {
 
     .revo-slider-input {
       height: 22px;
-      top: 50%;
-      transform: translateY(-50%);
 
       &::-webkit-slider-thumb {
         opacity: 0;
@@ -683,7 +686,6 @@ revo-grid.project-tracker-grid {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 0 space(4) !important;
 
     > * {
       width: 100%;
@@ -763,7 +765,7 @@ revo-grid.project-tracker-grid {
 
   .dropdown-arrow {
     margin-left: space(2);
-    color: rgba(255, 255, 255, 0.86);
+    color: var(--pipeline-text);
 
     svg {
       display: block;
@@ -771,6 +773,10 @@ revo-grid.project-tracker-grid {
       height: 10px;
       fill: currentColor;
     }
+  }
+
+  .dropdown-trigger:has(.project-block) > .dropdown-arrow {
+    color: rgba(255, 255, 255, 0.86);
   }
 
   .project-department .dropdown-arrow {

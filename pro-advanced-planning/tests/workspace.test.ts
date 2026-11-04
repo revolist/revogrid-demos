@@ -751,10 +751,6 @@ test('keeps quick search in a stable native input', () => {
         stylesSource,
         /planning-demo__filter-row\s*\{[^}]*display:\s*flex[^}]*padding-bottom:\s*6px[^}]*border-bottom:\s*1px solid var\(--rv-ui-border\)/
     )
-    assert.match(
-        stylesSource,
-        /planning-demo__filter-badges\[role='status'\]\s*\{[^}]*display:\s*none/
-    )
 })
 
 test('uses one focus treatment for sidebar search, quick search, and row checkboxes', () => {
@@ -847,20 +843,6 @@ test('keeps native Grid filters mounted across planning view switches', () => {
     assert.match(workspaceSource, /FilterHeaderPlugin/)
     assert.doesNotMatch(workspaceSource, /displayedGridPlugins|showInlineFilters/)
     assert.doesNotMatch(vueSource, /Column filters|toggleColumnFilters/)
-})
-
-test('keeps filter badges owned by the filtering plugin', () => {
-    const workspaceSource = readFileSync(
-        new URL('../src/composables/usePlanningWorkspace.ts', import.meta.url),
-        'utf8'
-    )
-    assert.match(vueSource, /:filter-badges\.prop="filterBadgeOptions"/)
-    assert.doesNotMatch(vueSource, /filterBadgesRef|filter-badge-host|ref="gridRef"/)
-    assert.doesNotMatch(
-        workspaceSource,
-        /gridRef|gridElement|moveFilterBadges|querySelector|append\(/
-    )
-    assert.doesNotMatch(vueSource, /planning-demo__filter-status/)
 })
 
 test('keeps milestones scheduler-valid in the shared task source', () => {
@@ -1281,22 +1263,22 @@ test('synchronizes Vanilla planning actions without reconstructing the active vi
     assert.match(vanillaSource, /activeGrid\.ganttAssignments = toGanttAssignments\(allTasks\)/)
     assert.match(vanillaSource, /activeGrid\.ganttDependencies = filterGanttDependencies/)
 
-    for (const action of ['input', 'change', 'click']) {
+    for (const action of ['input', 'click']) {
         assert.match(vanillaSource, new RegExp(`addEventListener\\('${action}'`))
     }
     const searchHandler = vanillaSource.match(
         /search\.addEventListener\('input',[\s\S]*?\n    \}\)/
     )?.[0]
-    const resetHandler = vanillaSource.match(
-        /reset\.addEventListener\('click',[\s\S]*?\n    \}\)/
+    const activeTasksHandler = vanillaSource.match(
+        /activeTasks\.addEventListener\('click',[\s\S]*?\n    \}\)/
     )?.[0]
 
     assert.ok(searchHandler)
-    assert.ok(resetHandler)
+    assert.ok(activeTasksHandler)
     assert.match(searchHandler, /syncActiveGrid\(\)/)
-    assert.match(resetHandler, /syncActiveGrid\(\)/)
+    assert.match(activeTasksHandler, /syncActiveGrid\(\)/)
     assert.doesNotMatch(searchHandler, /render\(activeView\)/)
-    assert.doesNotMatch(resetHandler, /render\(activeView\)/)
+    assert.doesNotMatch(activeTasksHandler, /render\(activeView\)/)
 })
 
 test('synchronizes EventManager-derived fields onto the authored row model', () => {

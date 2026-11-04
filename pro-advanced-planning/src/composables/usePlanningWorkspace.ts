@@ -9,7 +9,6 @@ import {
     RowOrderPlugin,
     RowSelectPlugin,
     RangeSelectionLimitPlugin,
-    type AdvancedFilterBadgesOptions,
     type RowSelectConfig,
 } from '@revolist/revogrid-pro'
 import { GanttPlugin } from '@revolist/gantt'
@@ -96,12 +95,6 @@ export function usePlanningWorkspace() {
     }
     const dataGridContextMenu =
         createPlanningDataGridContextMenu(deleteSelectedTasks)
-    const filterBadgeOptions = {
-        className: 'planning-demo__filter-badges',
-        badgeClassName: 'planning-demo__filter-badge',
-        emptyClassName: 'planning-demo__filter-badges--empty',
-        renderEmpty: () => '',
-    } satisfies AdvancedFilterBadgesOptions
     const isDark = ref(currentTheme().isDark())
     const theme = computed(() => (isDark.value ? 'darkCompact' : 'compact'))
     // Every view receives the canonical source. Its own AdvanceFilterPlugin
@@ -139,14 +132,6 @@ export function usePlanningWorkspace() {
         refreshViewSnapshot()
     }
 
-    function resetWorkspace() {
-        planningStore.replace(createTasks())
-        ganttDependencyState.value = [...ganttDependencies]
-        filters.value = defaultPlanningFilters()
-        isActiveTasksPreset.value = false
-        refreshViewSnapshot()
-    }
-
     function selectPlanningView(view: PlanningView) {
         if (view === activeView.value) return
         refreshViewSnapshot()
@@ -177,7 +162,6 @@ export function usePlanningWorkspace() {
         applyActiveTasksPreset,
         calendarConfig,
         emptySource,
-        filterBadgeOptions,
         ganttAssignments,
         ganttColumns,
         ganttConfig,
@@ -198,7 +182,6 @@ export function usePlanningWorkspace() {
         handlePlanningEdit,
         kanbanConfig,
         kanbanPlugins,
-        resetWorkspace,
         rootRef,
         rowSelect,
         schedulerConfig,

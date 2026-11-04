@@ -46,12 +46,6 @@
     display: flex;
     align-items: center;
 }
-.planning-demo__footer-meta {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    margin-left: auto;
-}
 .planning-demo__topbar {
     justify-content: space-between;
     border-bottom: 1px solid var(--rv-ui-border);
@@ -264,24 +258,9 @@
     outline: 0;
     box-shadow: 0 0 0 3px var(--demo-focus-ring);
 }
-.planning-demo__filter-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-.planning-demo__filter-badges[role='status'] {
-    display: none;
-}
-// Badge presentation is owned by the shared ChoiceChip component.
-
 @media (max-width: 900px) {
     .planning-demo__footer {
         padding-right: 2px;
-    }
-}
-@media (max-width: 700px) {
-    .planning-demo__footer-meta > span {
-        display: none;
     }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -333,17 +312,16 @@
     padding-inline-end: 12px;
     border-inline-end: 1px solid var(--rv-ui-border);
 }
-.planning-demo__filters .rv-control {
+.planning-demo__filter {
     --rv-control-height: 32px;
     --rv-control-padding: 5px 10px;
     width: 150px;
     height: 32px;
-    font-size: 13px;
+    --rv-control-font-size: 13px;
 }
-.planning-demo__filters .rv-control[aria-label='Project'] {
+.planning-demo__filter:first-child {
     width: 170px;
 }
-.planning-demo__select { display: contents; }
 .planning-demo__toolbar .planning-demo__active {
     height: 32px;
     min-height: 32px;
@@ -353,22 +331,14 @@
     border-radius: 6px;
     font-size: 13px;
 }
-.planning-demo__toolbar .planning-demo__reset {
-    margin-inline-start: auto;
-    height: 32px;
-    min-height: 32px;
-    padding: 4px 10px;
-    font-size: 13px;
-    color: var(--rv-ui-text-muted);
-}
 .planning-demo__switch {
     flex-shrink: 0;
 }
 @media (max-width: 700px) {
     .planning-demo__search { flex: 1 1 100%; width: 100%; }
     .planning-demo__filters { flex: 1 1 100%; padding-inline-end: 0; border-inline-end: 0; }
-    .planning-demo__filters .rv-control,
-    .planning-demo__filters .rv-control[aria-label='Project'] {
+    .planning-demo__filter,
+    .planning-demo__filter:first-child {
         flex: 1 1 110px;
         width: 110px;
     }

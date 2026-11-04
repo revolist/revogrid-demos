@@ -47,6 +47,7 @@ export {
     defaultPlanningFilters,
     filterPlanningTasks,
     mergeVisibleTasks,
+    planningFilterDropdowns,
     planningProjects,
 } from './workspace'
 export type { PlanningFilters, PlanningProjectId } from './types'

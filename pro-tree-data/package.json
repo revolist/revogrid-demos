@@ -25,6 +25,7 @@
     "@angular/compiler": "^22.1.0",
     "@angular/core": "^22.1.0",
     "@angular/platform-browser": "^22.1.0",
+    "@fortawesome/fontawesome-free": "^7.3.1",
     "@revolist/angular-datagrid": "4.31.3",
     "@revolist/react-datagrid": "4.31.3",
     "@revolist/revogrid": "4.31.3",

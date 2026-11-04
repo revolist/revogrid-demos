@@ -197,7 +197,7 @@ export const gridColumns: ColumnRegular[] = [
     {
         prop: 'owner',
         name: 'Owner',
-        size: 120,
+        size: 180,
         sortable: true,
         filter: [FIlTER_SELECTION],
         columnType: 'dropdown',
