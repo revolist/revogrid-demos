@@ -1,0 +1,71 @@
+.ai-view-demo {
+  position: relative;
+  font-family: system-ui, sans-serif;
+  color: var(--rv-ui-text);
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 12px var(--ai-assistant-width, 26rem);
+  height: 100%;
+  min-height: 520px;
+  min-width: 0;
+}
+.ai-view-demo .rv-ai-activity {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 10;
+  width: min(24rem, calc(100% - 2rem));
+  max-height: min(20rem, 60%);
+  overflow: auto;
+}
+.ai-view-demo__grid {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.ai-view-demo__toolbar {
+  flex: none;
+  padding: 0.75rem 1rem;
+  border-block-end: 1px solid var(--rv-ui-border);
+}
+.ai-view-demo__grid > revo-grid {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+.ai-view-demo__assistant {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.ai-view-demo__assistant > div {
+  flex: 1;
+  min-height: 0;
+}
+
+// The shared chat fills its externally mounted demo host.
+.ai-view-demo__assistant .rv-ai-assistant,
+.ai-view-demo__assistant .rv-ai-mounted-chat {
+  height: 100%;
+  min-height: 0;
+}
+.ai-view-demo__assistant .rv-ai-chat-viewport {
+  max-height: none;
+}
+
+@media (max-width: 760px) {
+  .ai-view-demo {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(320px, 1fr) minmax(320px, 1fr);
+    min-height: 640px;
+  }
+  .ai-view-demo__resize {
+    display: none;
+  }
+  .ai-view-demo__assistant {
+    border-block-start: 1px solid var(--rv-ui-border);
+  }
+}
