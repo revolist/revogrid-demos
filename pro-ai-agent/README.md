@@ -49,3 +49,7 @@ The demo registers application-owned native tools in `AiAssistant.formatting.ts`
 - **Format Amount as currency** changes display formatting through `DataGridFormattingPlugin`, preserving source values. The tool also accepts explicit order IDs for individual cells. Formatting and highlights share the column's native `dataGridFormat` definition, so they combine and survive a Pivot round trip.
 
 These optional tools are supplied through `aiAssistant.actions`; applications can replace them. `createAiDemoFormattingActions(getGrid, translations)` accepts host translations for action messages.
+
+Formatting commands also work while Pivot or Charts is active. Currency, number and percent formats use native Pivot measure formatting; threshold highlights use its conditional-format rules. The native view checkpoint retains both when returning from Data Grid, without editing source values. Individual order-ID formatting applies only in Data Grid.
+
+In Pivot, **Highlight invalid Amounts** validates the displayed totals using the authored Amount validator. Aggregation can hide invalid contributing records, so **Check Amounts** validates the original source records in any view and reports their IDs.

@@ -4,17 +4,62 @@ import {
   translateAiText,
   DataGridFormattingPlugin,
   formatWithValuePresentation,
+  getDataGridSourceColumns,
   type DataGridFormatContext,
   type DataGridFormatDefinition,
   type AiAction,
   type AiAssistantTranslations,
 } from '@revolist/revogrid-pro';
+import {
+  PivotPlugin,
+  type PivotConfig,
+  type PivotConfigValue,
+} from '@revolist/pivot';
+import type { ColumnRegular } from '@revolist/revogrid';
 
 function resolveFormat(
   definition: DataGridFormatDefinition | undefined,
   context: DataGridFormatContext,
 ) {
   return typeof definition === 'function' ? definition(context) : definition;
+}
+
+type HighlightCondition = 'above' | 'invalid' | 'clear';
+
+/** Use the same native column validator and appearance definition in source and report grids. */
+function amountHighlight(
+  column: ColumnRegular,
+  condition: HighlightCondition,
+  threshold: number,
+): DataGridFormatDefinition {
+  const previous = column.dataGridFormat;
+  return (context) => {
+    const current = resolveFormat(previous, context);
+    const {
+      fillColor: _fill,
+      textColor: _text,
+      ...appearance
+    } = current?.appearance ?? {};
+    const highlighted =
+      condition === 'invalid'
+        ? column.validate?.(context.value, context.model) !== true
+        : condition === 'above' &&
+          typeof context.value === 'number' &&
+          context.value > threshold;
+    return {
+      ...current,
+      appearance: {
+        ...appearance,
+        horizontal: 'right',
+        ...(highlighted
+          ? {
+              fillColor: condition === 'invalid' ? '#fee2e2' : '#fef3c7',
+              textColor: '#111827',
+            }
+          : {}),
+      },
+    };
+  };
 }
 
 /** Application policy: expose a small set of native formatting operations on order Amounts. */
@@ -27,12 +72,31 @@ export function createAiDemoFormattingActions(
   const amountColumn = async () => {
     const grid = getGrid();
     if (!grid) throw new Error(t('The demo grid is not ready.'));
-    const column = (await grid.getColumns()).find(
-      (column) => column.prop === 'amount',
+    const plugins = await grid.getPlugins();
+    const pivot = plugins.find((plugin) => plugin instanceof PivotPlugin);
+    const snapshot = pivot?.getRuntimeSnapshot();
+    const columns = snapshot
+      ? getDataGridSourceColumns(plugins)
+      : await grid.getColumns();
+    const column = columns.find((column) => column.prop === 'amount');
+    if (!column) throw new Error(t('The Amount source column is unavailable.'));
+    return { grid, column, pivot, snapshot };
+  };
+  const updateMeasure = async (
+    pivot: PivotPlugin,
+    config: Readonly<PivotConfig>,
+    patch: Partial<PivotConfigValue>,
+    signal: AbortSignal,
+  ) => {
+    if (!config.values?.some((value) => value.prop === 'amount')) {
+      throw new Error(t('Amount is not a Pivot measure.'));
+    }
+    const values = config.values.map((value) =>
+      value.prop === 'amount' ? { ...value, ...patch } : value,
     );
-    if (!column)
-      throw new Error(t('Return to Data Grid to format source cells.'));
-    return { grid, column };
+    if (!(await pivot.updatePivotConfig({ ...config, values }, { signal }))) {
+      throw new Error(t('Pivot formatting was not committed.'));
+    }
   };
   const fieldSchema = { const: 'amount' };
   const fieldInput = (input: unknown, keys: string[]) => {
@@ -45,7 +109,7 @@ export function createAiDemoFormattingActions(
     defineAiAction({
       name: 'cells.highlight',
       description:
-        'Highlight numeric Amounts above a threshold, or values rejected by the column validator. Keeps working after data changes.',
+        'Highlight numeric Amounts above a threshold, or values rejected by the column validator. In Pivot, conditions apply to displayed totals; use grid.validate to inspect underlying source records. Keeps working after data changes.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -71,40 +135,56 @@ export function createAiDemoFormattingActions(
           threshold: value.threshold as number,
         };
       },
-      async run({ condition, threshold }) {
-        const { grid, column } = await amountColumn();
-        const previous = column.dataGridFormat;
+      async run({ condition, threshold }, { signal }) {
+        const { grid, column, pivot, snapshot } = await amountColumn();
+        if (pivot && snapshot) {
+          // Pivot owns the generated columns. Keep presentation in its native config/checkpoint.
+          const dimensions = snapshot.config.dimensions?.map((dimension) =>
+            dimension.prop === 'amount'
+              ? {
+                  ...dimension,
+                  dataGridFormat: amountHighlight(
+                    { ...dimension, validate: column.validate },
+                    condition === 'invalid' ? 'invalid' : 'clear',
+                    threshold,
+                  ),
+                }
+              : dimension,
+          );
+          await updateMeasure(
+            pivot,
+            { ...snapshot.config, dimensions },
+            {
+              conditionalFormatting:
+                condition === 'above'
+                  ? {
+                      rules: [
+                        {
+                          operator: 'gt',
+                          value: threshold,
+                          style: {
+                            backgroundColor: '#fef3c7',
+                            color: '#111827',
+                          },
+                        },
+                      ],
+                    }
+                  : undefined,
+            },
+            signal,
+          );
+          return {
+            message: t(
+              condition === 'invalid'
+                ? 'Pivot highlighting checks displayed totals. Use Check Amounts to validate source records.'
+                : 'Amount highlighting updated.',
+            ),
+          };
+        }
         await grid.updateColumns([
           {
             ...column,
-            dataGridFormat: (context) => {
-              const current = resolveFormat(previous, context);
-              const {
-                fillColor: _fill,
-                textColor: _text,
-                ...appearance
-              } = current?.appearance ?? {};
-              const highlighted =
-                condition === 'invalid'
-                  ? column.validate?.(context.value, context.model) !== true
-                  : condition === 'above' &&
-                    typeof context.value === 'number' &&
-                    context.value > threshold;
-              return {
-                ...current,
-                appearance: {
-                  ...appearance,
-                  horizontal: 'right',
-                  ...(highlighted
-                    ? {
-                        fillColor:
-                          condition === 'invalid' ? '#fee2e2' : '#fef3c7',
-                        textColor: '#111827',
-                      }
-                    : {}),
-                },
-              };
-            },
+            dataGridFormat: amountHighlight(column, condition, threshold),
           },
         ]);
         return { message: t('Amount highlighting updated.') };
@@ -113,7 +193,7 @@ export function createAiDemoFormattingActions(
     defineAiAction({
       name: 'cells.format',
       description:
-        'Format Amount cells as numbers, currency or percentages without changing their numeric source values. Optional order IDs select specific cells; omit for the entire column.',
+        'Format Amount cells as numbers, currency or percentages without changing their numeric source values. Optional order IDs select specific cells; omit for the entire column. In Pivot, formats Amount measures; individual order IDs apply only in Data Grid.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -146,8 +226,33 @@ export function createAiDemoFormattingActions(
           rows: value.rows as string[] | undefined,
         };
       },
-      async run({ preset, rows }) {
-        const { grid, column } = await amountColumn();
+      async run({ preset, rows }, { signal }) {
+        const { grid, column, pivot, snapshot } = await amountColumn();
+        if (pivot && snapshot) {
+          if (rows)
+            throw new Error(
+              t(
+                'Individual order formatting applies in Data Grid. Omit order IDs to format Pivot totals.',
+              ),
+            );
+          const options = {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+            useGrouping: true,
+          };
+          await updateMeasure(
+            pivot,
+            snapshot.config,
+            {
+              format:
+                preset === 'currency'
+                  ? { preset, currency: 'USD', options }
+                  : { preset, options },
+            },
+            signal,
+          );
+          return { message: t('Amount format updated.') };
+        }
         const formatting = (await grid.getPlugins()).find(
           (plugin) => plugin instanceof DataGridFormattingPlugin,
         );
@@ -183,7 +288,7 @@ export function createAiDemoFormattingActions(
     defineAiAction({
       name: 'grid.validate',
       description:
-        'Inspect Amounts with the existing numeric column validator. Invalid cells already carry native validation feedback.',
+        'Inspect original source Amounts with the existing numeric column validator, including while Pivot is active. Returns invalid order IDs; aggregate totals can hide invalid contributing records.',
       inputSchema: {
         type: 'object',
         properties: { field: fieldSchema },
@@ -192,8 +297,10 @@ export function createAiDemoFormattingActions(
       },
       parse: (input) => fieldInput(input, []),
       async run() {
-        const { grid, column } = await amountColumn();
-        const invalid = grid.source
+        const { grid, column, pivot, snapshot } = await amountColumn();
+        const source =
+          pivot && snapshot ? pivot.getPivotOriginalSource() : grid.source;
+        const invalid = source
           .filter((row) => column.validate?.(row.amount, row) !== true)
           .map((row) => row.id);
         return {
