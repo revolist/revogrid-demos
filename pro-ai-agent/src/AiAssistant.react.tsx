@@ -3,6 +3,11 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import {
   attachAiAssistantResize,
+  createAiDemoViewSwitcher,
+  mountAiDemoViewControls,
+  aiDemoCharts,
+  aiDemoColumnTypes,
+  aiDemoFilter,
   aiViewColumns,
   aiViewPlugins,
   aiDemoFormulaNames,
@@ -27,8 +32,14 @@ export default function AiAssistant({
     [],
   );
   const grid = useRef<HTMLRevoGridElement | undefined>(undefined);
+  const viewControls = useRef<HTMLDivElement>(null);
+  const [gridSurface, setGridSurface] = useState<HTMLElement | null>(null);
+  const [chartSurface, setChartSurface] = useState<HTMLElement | null>(null);
+  const views = useMemo(() => !rowsEndpoint && gridSurface && chartSurface
+    ? createAiDemoViewSwitcher(gridSurface, chartSurface) : undefined, [rowsEndpoint, gridSurface, chartSurface]);
   const [controlsHost, setControlsHost] = useState<HTMLElement | null>(null);
   const [assistantHost, setAssistantHost] = useState<HTMLElement | null>(null);
+  const columnTypes = useMemo(() => aiDemoColumnTypes, []);
   const plugins = useMemo(() => [...aiViewPlugins], []);
   const [source, setSource] = useState(() =>
     rowsEndpoint ? [] : createAiViewRows(),
@@ -58,27 +69,33 @@ export default function AiAssistant({
   return (
     <div ref={container} className="ai-view-demo">
       <div className="ai-view-demo__grid">
-        <div
-          ref={setControlsHost}
-          className="ai-view-demo__toolbar"
-          role="toolbar"
-          aria-label="Grid controls"
-        />
-        {assistantHost && controlsHost && (
+        <div className="ai-view-demo__toolbar" role="toolbar" aria-label="Grid controls">
+          <div ref={setControlsHost} />
+          <div ref={viewControls} />
+        </div>
+        <div ref={setChartSurface} className="ai-view-demo__chart" hidden />
+        <div ref={setGridSurface} className="ai-view-demo__surface">
+        {assistantHost && controlsHost && gridSurface && chartSurface && (
           <RevoGrid
             onAftergridinit={(event) => {
               grid.current = event.target as HTMLRevoGridElement;
+              grid.current.pivotCharts = aiDemoCharts;
+              grid.current.formulaNames = aiDemoFormulaNames;
+              if (!rowsEndpoint) void mountAiDemoViewControls(grid.current, viewControls.current!);
             }}
             source={source}
             columns={columns}
             plugins={plugins}
+            columnTypes={columnTypes}
+            stretch="all"
             aiAssistant={config}
-            formulaNames={aiDemoFormulaNames}
-            filter={true}
+            viewSwitcher={views}
+            filter={rowsEndpoint ? true : aiDemoFilter}
             theme={isDark ? 'darkCompact' : 'compact'}
             hideAttribution={true}
           />
         )}
+        </div>
       </div>
       <div
         ref={resizeHandle}

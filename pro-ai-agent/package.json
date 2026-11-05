@@ -17,7 +17,10 @@
     "build:ts": "vite build --mode ts",
     "build:react": "vite build --mode react",
     "build:vue": "vite build --mode vue",
-    "build:angular": "vite build --mode angular"
+    "build:angular": "vite build --mode angular",
+    "test": "vitest run",
+    "lint": "tsc -p tsconfig.app.json --noEmit",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@angular/common": "^22.1.0",
@@ -36,7 +39,9 @@
     "vue": "^3.5.21",
     "zone.js": "~0.15.0",
     "@revolist/ui": "file:../vendor/revolist-ui-3.0.14.tgz",
-    "preact": "10.29.1"
+    "preact": "10.29.1",
+    "@revolist/pivot": "link:../../../packages/pivot",
+    "@revolist/charts": "link:../../../packages/charts"
   },
   "devDependencies": {
     "@types/react": "^18.3.18",
@@ -45,6 +50,7 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "sass-embedded": "^1.83.4",
     "typescript": "~6.0.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vitest": "^4.1.10"
   }
 }

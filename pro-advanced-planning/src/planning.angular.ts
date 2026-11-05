@@ -1,4 +1,4 @@
-import searchIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?url'
+import searchIconSvg from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?raw'
 import '@revolist/ui/styles.css';
 import { UiComponent, UiSlotDirective } from '@revolist/ui/angular';
 import { UiControlDirective } from '@revolist/ui/angular-control';
@@ -320,7 +320,7 @@ export class PlanningViewsGridComponent {
             this.tasks
         )
     }
-    readonly searchIcon = searchIcon
+    readonly searchIcon = `data:image/svg+xml,${encodeURIComponent(searchIconSvg)}`
 
     setQuery(value: unknown) {
         this.filters = {

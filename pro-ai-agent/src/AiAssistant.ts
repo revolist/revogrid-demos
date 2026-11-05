@@ -1,6 +1,11 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import {
   attachAiAssistantResize,
+  createAiDemoViewSwitcher,
+  mountAiDemoViewControls,
+  aiDemoCharts,
+  aiDemoColumnTypes,
+  aiDemoFilter,
   aiViewColumns,
   aiViewPlugins,
   aiDemoFormulaNames,
@@ -21,9 +26,10 @@ export function load(
   assistantHost.className = 'ai-view-demo__assistant';
   assistantHost.setAttribute('aria-label', 'AI assistant');
   const controlsHost = document.createElement('div');
-  controlsHost.className = 'ai-view-demo__toolbar';
-  controlsHost.setAttribute('role', 'toolbar');
-  controlsHost.setAttribute('aria-label', 'Grid controls');
+  const toolbar = document.createElement('div');
+  toolbar.className = 'ai-view-demo__toolbar';
+  toolbar.setAttribute('role', 'toolbar');
+  toolbar.setAttribute('aria-label', 'Grid controls');
   const grid = document.createElement('revo-grid');
   grid.columns = options.rowsEndpoint
     ? aiViewColumns.map((column) => ({
@@ -33,7 +39,9 @@ export function load(
       }))
     : aiViewColumns;
   grid.plugins = aiViewPlugins;
-  grid.filter = true;
+  grid.columnTypes = aiDemoColumnTypes;
+  grid.stretch = 'all';
+  grid.filter = options.rowsEndpoint ? true : aiDemoFilter;
   grid.formulaNames = aiDemoFormulaNames;
   grid.theme = 'compact';
   grid.hideAttribution = true;
@@ -53,7 +61,19 @@ export function load(
   );
   const gridHost = document.createElement('div');
   gridHost.className = 'ai-view-demo__grid';
-  gridHost.append(controlsHost, grid);
+  const viewControls = document.createElement('div');
+  toolbar.append(controlsHost, viewControls);
+  const gridSurface = document.createElement('div');
+  gridSurface.className = 'ai-view-demo__surface';
+  gridSurface.append(grid);
+  const chartSurface = document.createElement('div');
+  chartSurface.className = 'ai-view-demo__chart'; chartSurface.hidden = true;
+  grid.pivotCharts = aiDemoCharts;
+  if (!options.rowsEndpoint) {
+    grid.viewSwitcher = createAiDemoViewSwitcher(gridSurface, chartSurface);
+    grid.addEventListener('aftergridinit', () => { void mountAiDemoViewControls(grid, viewControls); }, { once: true });
+  }
+  gridHost.append(toolbar, gridSurface, chartSurface);
   const resizeHandle = document.createElement('div');
   resizeHandle.className = 'rv-resize-handle ai-view-demo__resize';
   container.append(gridHost, resizeHandle, assistantHost);

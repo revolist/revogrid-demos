@@ -1112,6 +1112,12 @@ importers:
       '@revolist/angular-datagrid':
         specifier: 4.31.3
         version: 4.31.3
+      '@revolist/charts':
+        specifier: link:../../../packages/charts
+        version: link:../../../packages/charts
+      '@revolist/pivot':
+        specifier: link:../../../packages/pivot
+        version: link:../../../packages/pivot
       '@revolist/react-datagrid':
         specifier: 4.31.3
         version: 4.31.3
@@ -1170,6 +1176,10 @@ importers:
       vite:
         specifier: ^6.3.5
         version: 6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13)
+
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.11(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@6.4.3(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(tsx@4.23.13))
 
   pro-infinity-scroll:
     dependencies:

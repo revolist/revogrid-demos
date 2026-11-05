@@ -10,10 +10,15 @@ import {
   type OnDestroy,
   ViewEncapsulation,
 } from '@angular/core';
-import type { AiAssistantConfig } from '@revolist/revogrid-pro';
+import type { ViewSwitcherConfig, AiAssistantConfig } from '@revolist/revogrid-pro';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import {
   attachAiAssistantResize,
+  createAiDemoViewSwitcher,
+  mountAiDemoViewControls,
+  aiDemoCharts,
+  aiDemoColumnTypes,
+  aiDemoFilter,
   aiViewColumns,
   aiViewPlugins,
   aiDemoFormulaNames,
@@ -27,6 +32,8 @@ export class AiAssistantConfigDirective {
   @Input() set formulaNames(value: typeof aiDemoFormulaNames) {
     this.grid.nativeElement.formulaNames = value;
   }
+  @Input() set viewSwitcher(value: ViewSwitcherConfig | undefined) { this.grid.nativeElement.viewSwitcher = value; }
+  @Input() set pivotCharts(value: typeof aiDemoCharts) { this.grid.nativeElement.pivotCharts = value; }
   @Input({ required: true }) set aiAssistant(value: AiAssistantConfig) {
     this.grid.nativeElement.aiAssistant = value;
   }
@@ -39,23 +46,28 @@ export class AiAssistantConfigDirective {
   encapsulation: ViewEncapsulation.None,
   template: `<div #container class="ai-view-demo">
     <div class="ai-view-demo__grid">
-      <div
-        #controlsHost
-        class="ai-view-demo__toolbar"
-        role="toolbar"
-        aria-label="Grid controls"
-      ></div>
+      <div class="ai-view-demo__toolbar" role="toolbar" aria-label="Grid controls">
+        <div #controlsHost></div>
+        <div #viewControls></div>
+      </div>
+      <div #chartSurface class="ai-view-demo__chart" hidden></div>
+      <div #gridSurface class="ai-view-demo__surface">
       <revo-grid
         (aftergridinit)="onGridReady($event)"
         [source]="source"
         [columns]="columns"
         [plugins]="plugins"
+        [columnTypes]="columnTypes"
+        stretch="all"
         [aiAssistant]="config"
+        [viewSwitcher]="views"
+        [pivotCharts]="charts"
         [formulaNames]="formulaNames"
-        [filter]="true"
+        [filter]="rowsEndpoint ? true : filter"
         [theme]="isDark ? 'darkCompact' : 'compact'"
         [hideAttribution]="true"
       ></revo-grid>
+      </div>
     </div>
     <div #resizeHandle class="rv-resize-handle ai-view-demo__resize"></div>
     <aside
@@ -87,12 +99,19 @@ export class AiAssistantGridComponent
   @ViewChild('controlsHost', { static: true })
   private controlsHost!: ElementRef<HTMLElement>;
   ngOnInit() {
+    this.views = createAiDemoViewSwitcher(this.gridSurface.nativeElement, this.chartSurface.nativeElement);
     this.configure();
   }
   @Input() isDark = false;
+  @ViewChild('gridSurface', { static: true }) private gridSurface!: ElementRef<HTMLElement>;
+  @ViewChild('chartSurface', { static: true }) private chartSurface!: ElementRef<HTMLElement>;
+  @ViewChild('viewControls', { static: true }) private viewControls!: ElementRef<HTMLElement>;
+  views?: ViewSwitcherConfig;
+  readonly charts = aiDemoCharts;
   private grid?: HTMLRevoGridElement;
   onGridReady(event: Event) {
     this.grid = event.target as HTMLRevoGridElement;
+    if (!this.remoteEndpoint) void mountAiDemoViewControls(this.grid, this.viewControls.nativeElement);
   }
   private modelEndpoint?: string;
   private remoteEndpoint?: string;
@@ -131,6 +150,8 @@ export class AiAssistantGridComponent
   source = createAiViewRows();
   columns = aiViewColumns;
   readonly plugins = aiViewPlugins;
+  readonly columnTypes = aiDemoColumnTypes;
+  readonly filter = aiDemoFilter;
   readonly formulaNames = aiDemoFormulaNames;
   config = createAiAssistantDemoConfig(undefined, undefined, () => this.grid);
 }

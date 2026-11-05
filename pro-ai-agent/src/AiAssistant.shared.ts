@@ -1,9 +1,25 @@
-import { attachResizeHandle } from '@revolist/ui';
-import { ExportFilePlugin } from '@revolist/revogrid';
+import { createChartsRenderer } from '@revolist/charts';
 import {
+  PivotPlugin,
+  PivotChartsPlugin,
+  PivotChartsUiPlugin,
+  createPivotViews,
+} from '@revolist/pivot';
+import { attachResizeHandle } from '@revolist/ui';
+import { ExportFilePlugin, type ColumnFilterConfig } from '@revolist/revogrid';
+import {
+  ViewSwitcherPlugin,
+  createViewSwitcherAiAdapter,
+  type ViewSwitcherConfig,
   AdvanceFilterPlugin,
   AiAssistantPlugin,
   ColumnHidePlugin,
+  ColumnStretchPlugin,
+  ColumnNumber,
+  EventManagerPlugin,
+  CellValidatePlugin,
+  DataGridFormattingPlugin,
+  ColumnDropdown,
   HistoryPlugin,
   FormulaPlugin,
   AutoSizeColumnPlugin,
@@ -15,6 +31,7 @@ import {
 } from '@revolist/revogrid-pro';
 import { createLocalAiDemoActions } from './AiAssistant.actions';
 import {
+  aiViewColumns,
   aiViewFields,
   aiViewSuggestions,
   aiViewFieldHints,
@@ -24,7 +41,19 @@ import {
 } from './AiAssistant.data';
 export * from './AiAssistant.data';
 export const aiDemoFormulaNames = { rowIdProp: 'id' };
+export const aiDemoColumnTypes = {
+  number: ColumnNumber,
+  dropdown: ColumnDropdown,
+};
+export const aiDemoFilter: ColumnFilterConfig = {
+  slider: { showRangeInputs: true },
+  selection: { excelMode: 'windows', sortDirection: 'asc' },
+};
 export const aiViewPlugins = [
+  EventManagerPlugin,
+  CellValidatePlugin,
+  DataGridFormattingPlugin,
+  ColumnStretchPlugin,
   AdvanceFilterPlugin,
   ColumnHidePlugin,
   HistoryPlugin,
@@ -33,6 +62,10 @@ export const aiViewPlugins = [
   ExportFilePlugin,
   CellFlashPlugin,
   RowSelectPlugin,
+  PivotPlugin,
+  PivotChartsPlugin,
+  PivotChartsUiPlugin,
+  ViewSwitcherPlugin,
   AiAssistantPlugin,
 ];
 interface RemoteDemoOptions {
@@ -75,6 +108,7 @@ export function createAiAssistantDemoConfig(
 ): AiAssistantConfig {
   return {
     mountTo,
+    ...(!remote ? { adapter: createViewSwitcherAiAdapter() } : {}),
     ...(remote
       ? { fields: aiViewFields, executor: createRemoteDemoExecutor(remote) }
       : {}),
@@ -94,13 +128,15 @@ export function createAiAssistantDemoConfig(
     ui: {
       mode: 'chat',
       controlsMountTo,
-      showClearChat: false,
+      showNewConversation: true,
       emptyState: {
         title: 'What would you like to do?',
-        description: 'Ask me to filter orders, summarize amounts, or update the grid.',
+        description:
+          'Ask me to filter orders, summarize amounts, or update the grid.',
       },
       activityDurationMs: 8000,
       promptHistory: {},
+      maxVisibleSuggestions: 2,
       suggestions:
         remote || !getGrid ? aiViewSuggestions : aiDemoStages[0].suggestions,
     },
@@ -146,4 +182,73 @@ export function attachAiAssistantResize(
     observer.disconnect();
     dispose();
   };
+}
+
+/** Configure native view owners once; the application owns the visible surfaces. */
+export function createAiDemoViewSwitcher(
+  gridHost: HTMLElement,
+  chartHost: HTMLElement,
+): ViewSwitcherConfig {
+  return {
+    views: [
+      createPivotViews({
+        pivot: {
+          dimensions: [
+            { prop: 'id', allowedRoles: ['rows', 'columns'] },
+            {
+              prop: 'region',
+              name: 'Region',
+              allowedRoles: ['rows', 'columns'],
+            },
+            {
+              prop: 'status',
+              name: 'Status',
+              allowedRoles: ['rows', 'columns'],
+            },
+            {
+              prop: 'country',
+              name: 'Country',
+              allowedRoles: ['rows', 'columns'],
+            },
+            {
+              ...aiViewColumns.find((column) => column.prop === 'amount')!,
+              allowedRoles: ['values'],
+            },
+          ],
+          rows: ['status'],
+          columns: [],
+          values: [{ prop: 'amount', aggregator: 'sum' }],
+        },
+        chart: {
+          container: chartHost,
+          chartType: 'groupedColumn',
+          controls: 'standard',
+        },
+      }),
+    ],
+    onChange(state) {
+      gridHost.hidden = false;
+      chartHost.hidden = (state.pendingView ?? state.view) !== 'chart';
+    },
+  };
+}
+
+export const aiDemoCharts = { renderer: createChartsRenderer() };
+
+/** Framework adapters call aftergridinit; all controls and cleanup belong to the plugin. */
+export async function mountAiDemoViewControls(
+  grid: HTMLRevoGridElement,
+  host: HTMLElement,
+) {
+  grid.pivotChartsUi = {
+    miniMode: true,
+    resizable: true,
+    settingsMode: 'replace',
+    toolbarMode: 'overlay',
+  };
+  const plugins = await grid.getPlugins();
+  const switcher = plugins.find(
+    (plugin) => plugin instanceof ViewSwitcherPlugin,
+  ) as ViewSwitcherPlugin | undefined;
+  return switcher?.mount(host, { showViews: false, label: 'Grid view' });
 }
