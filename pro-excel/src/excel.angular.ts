@@ -1,7 +1,8 @@
 import '@revolist/ui/styles.css';
-import { UiControlDirective } from '@revolist/ui/angular-control';
+import { UiComponent } from '@revolist/ui/angular';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
@@ -31,11 +32,11 @@ import {
   FormulaDependencyHighlightPlugin,
   FormulaPlugin,
   HistoryPlugin,
+  defineHistoryControls,
   NamedRangesPlugin,
   RowOrderPlugin,
   SelectionPlugin,
   type FormulaBarConfig,
-  type HistoryState,
 } from '@revolist/revogrid-pro';
 import {
   SPREADSHEET_ACTION_ICONS,
@@ -93,7 +94,7 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
 @Component({
   selector: 'spreadsheet-workbench-grid',
   standalone: true,
-  imports: [UiControlDirective, CommonModule, RevoGrid],
+  imports: [UiComponent, CommonModule, RevoGrid],
   template: `
     <section
       #workbenchShell
@@ -104,21 +105,11 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
     >
       <div class="spreadsheet-ribbon">
         <span class="spreadsheet-ribbon-group">
-          <button rvControl class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" (click)="exportWorkbook()">
-            <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.export"></span>
-            Export XLSX
-          </button>
+          <rv-ui component="IconButton"
+            [props]="{ label: 'Export XLSX', icon: actionIcons.export, 'data-testid': 'spreadsheet-export' }"
+            (click)="exportWorkbook()" />
         </span>
-        <span class="spreadsheet-ribbon-group">
-          <button rvControl class="spreadsheet-btn" type="button" [disabled]="!historyState.canUndo" (click)="runHistory('undo')">
-            <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.undo"></span>
-            Undo {{ historyState.undoStackSize }}
-          </button>
-          <button rvControl class="spreadsheet-btn" type="button" [disabled]="!historyState.canRedo" (click)="runHistory('redo')">
-            <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.redo"></span>
-            Redo {{ historyState.redoStackSize }}
-          </button>
-        </span>
+        <div #historyHost class="spreadsheet-ribbon-group"></div>
         <span class="spreadsheet-collab" aria-label="Live collaborators">
           <span class="spreadsheet-live-dot" title="Live data"></span>
           <span
@@ -168,7 +159,6 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
             [rowHeaders]="rowHeaders"
             [resize]="true"
             [hideAttribution]="true"
-            (historychanged)="onHistoryChanged($event)"
             (multirangeselectionchange)="onSelectionChange($event)"
             (beforecopyapply)="onClipboardCopy($event)"
             (beforepasteapply)="onClipboardPaste($event)"
@@ -192,12 +182,16 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
   schemas: [NO_ERRORS_SCHEMA],
 })
 export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestroy {
+  constructor(private readonly changeDetector: ChangeDetectorRef) {}
+
   readonly collaboratorPhoto = getSpreadsheetCollaboratorPhoto;
   readonly actionIcons = SPREADSHEET_ACTION_ICONS;
   @Input() theme: 'dark' | 'light' | string = isSpreadsheetDarkTheme() ? 'dark' : 'light';
 
   @ViewChild('grid', { read: ElementRef }) gridElement!: ElementRef<SpreadsheetGridElement>;
   @ViewChild('workbenchShell', { read: ElementRef }) shellElement!: ElementRef<HTMLElement>;
+  @ViewChild('historyHost', { read: ElementRef }) historyHostElement!: ElementRef<HTMLElement>;
+  private disposeHistory: (() => void) | void;
   @ViewChild('formulaHost', { read: ElementRef }) formulaHostElement!: ElementRef<HTMLElement>;
   @ViewChild('formulaBadge', { read: ElementRef }) formulaBadgeElement!: ElementRef<HTMLSpanElement>;
   workbook: SpreadsheetWorkbook = createSpreadsheetWorkbook();
@@ -209,13 +203,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   displayColumns = createSpreadsheetDisplayColumns(this.workbook);
   selectionStatus = 'No ranges selected';
   clipboardStatus = 'Copy ranges or paste structured data.';
-  historyState: HistoryState = {
-    undoStackSize: 0,
-    redoStackSize: 0,
-    canUndo: false,
-    canRedo: false,
-    disabled: false,
-  };
 
   columnTypes = { statusDropdown: ColumnDropdown, departmentDropdown: ColumnDropdown };
   filterConfig = SPREADSHEET_FILTER_CONFIG;
@@ -262,6 +249,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
       showCellBadge: true,
     };
     const grid = this.gridElement.nativeElement;
+    this.disposeHistory = defineHistoryControls(this.historyHostElement.nativeElement, grid);
     grid.formulaBar = this.formulaBar;
     void installSpreadsheetAutofillStrategy(grid);
     this.disconnectReadonlyEditGuard = installSpreadsheetReadonlyEditGuard(
@@ -269,6 +257,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
       () => this.workbook.columns,
       (message) => {
         this.clipboardStatus = message;
+        this.changeDetector.markForCheck();
       },
     );
     this.presenceTimer = window.setInterval(() => {
@@ -282,6 +271,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
   }
 
   ngOnDestroy() {
+    if (typeof this.disposeHistory === 'function') this.disposeHistory();
     this.disconnectReadonlyEditGuard?.();
     if (this.presenceTimer) {
       window.clearInterval(this.presenceTimer);
@@ -291,11 +281,6 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     if (grid) {
       grid.formulaBar = null;
     }
-  }
-
-  async runHistory(action: 'undo' | 'redo') {
-    const plugin = await this.getPlugin(HistoryPlugin);
-    plugin?.[action]();
   }
 
   private getRowsForSimulation(grid: HTMLRevoGridElement | null, fallbackRows: unknown[] = []) {
@@ -329,6 +314,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     const grid = this.gridElement?.nativeElement;
     if (shouldDeferSpreadsheetSimulationDataUpdate(grid, this.shellElement?.nativeElement)) {
       this.clipboardStatus = 'Local row interaction in progress; collaborator simulation paused.';
+      this.changeDetector.markForCheck();
       return;
     }
     this.presenceStep += 1;
@@ -340,20 +326,18 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     this.presenceUsers = result.users;
     this.collaborativePresence = createSpreadsheetCollaborativePresence(this.presenceUsers);
     this.clipboardStatus = result.message;
+    this.changeDetector.markForCheck();
     if (!hasSpreadsheetSimulationDataChange(result)) {
       return;
     }
     if (shouldDeferSpreadsheetSimulationDataUpdate(grid, this.shellElement?.nativeElement)) {
       this.clipboardStatus = `${result.message} Local edit in progress; remote write paused.`;
+      this.changeDetector.markForCheck();
       return;
     }
     this._simulationWorkbook = await syncSpreadsheetSimulationResultToGrid(grid, sourceWorkbook, result.workbook, { rowType: 'rgRow' });
     const plugin = await this.getPlugin(CellFlashPlugin);
     flashSpreadsheetPresenceEdit(plugin as SpreadsheetFlashPlugin | undefined, result);
-  }
-
-  onHistoryChanged(event: Event) {
-    this.historyState = (event as CustomEvent<HistoryState>).detail;
   }
 
   onSelectionChange(event: Event) {
@@ -403,6 +387,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     const grid = this.gridElement?.nativeElement;
     if (shouldDeferSpreadsheetSimulationDataUpdate(grid, this.shellElement?.nativeElement)) {
       this.clipboardStatus = 'Local row interaction in progress; feed simulation paused.';
+      this.changeDetector.markForCheck();
       return;
     }
     this.feedStep += 1;
@@ -413,10 +398,12 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     const result = applySpreadsheetFeedFlashStep(sourceWorkbook, this.feedStep);
     if (shouldDeferSpreadsheetSimulationDataUpdate(grid, this.shellElement?.nativeElement)) {
       this.clipboardStatus = `${result.message} Local edit in progress; feed write paused.`;
+      this.changeDetector.markForCheck();
       return;
     }
     this._simulationWorkbook = await syncSpreadsheetSimulationResultToGrid(grid, sourceWorkbook, result.workbook, { rowType: 'rgRow' });
     this.clipboardStatus = result.message;
+    this.changeDetector.markForCheck();
     const plugin = await this.getPlugin(CellFlashPlugin);
     flashSpreadsheetFeedEdit(plugin as SpreadsheetFlashPlugin | undefined, result);
   }

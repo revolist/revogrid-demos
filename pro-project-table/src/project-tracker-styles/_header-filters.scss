@@ -34,6 +34,7 @@ revo-grid.color-grid {
       }
 
       .rv-filter:not(.filter-header-selection-trigger) {
+        position: absolute;
         right: 20px !important;
         bottom: inherit !important;
         top: 14px;
@@ -117,7 +118,7 @@ revo-grid.color-grid {
     }
 
     .rgHeaderCell.sortable {
-      > .sort-indicator {
+      .sort-indicator {
         right: 0 !important;
         height: 50px !important;
       }

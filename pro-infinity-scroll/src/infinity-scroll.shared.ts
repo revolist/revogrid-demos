@@ -156,7 +156,8 @@ export function createInfinityScrollDataLoader({
     }
 
     return {
-      data: result.slice(skip, skip + limit),
+      // Remote responses must be cloneable even when a framework proxies the input rows.
+      data: result.slice(skip, skip + limit).map(row => ({ ...row })),
       total: result.length,
       hasMore: skip + limit < result.length,
     };

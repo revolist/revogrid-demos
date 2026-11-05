@@ -1,4 +1,4 @@
-import { controlAttributes, createControl } from '@revolist/ui';
+import { createControl } from '@revolist/ui';
 import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 defineCustomElements();
@@ -22,10 +22,10 @@ import {
   FormulaDependencyHighlightPlugin,
   FormulaPlugin,
   HistoryPlugin,
+  defineHistoryControls,
   NamedRangesPlugin,
   RowOrderPlugin,
   SelectionPlugin,
-  type HistoryState,
 } from '@revolist/revogrid-pro';
 import './spreadsheet.scss';
 import type { DataType } from '@revolist/revogrid';
@@ -86,13 +86,6 @@ export function load(parentSelector: string) {
   let feedStep = 0;
   let feedTimer: number | undefined;
   let presenceUsers = createSpreadsheetPresenceUsers(0);
-  let historyState: HistoryState = {
-    undoStackSize: 0,
-    redoStackSize: 0,
-    canUndo: false,
-    canRedo: false,
-    disabled: false,
-  };
 
   const shell = document.createElement('section');
   shell.className = 'spreadsheet-workbench';
@@ -123,13 +116,17 @@ export function load(parentSelector: string) {
   grid.columnTypes = { statusDropdown: ColumnDropdown, departmentDropdown: ColumnDropdown };
   grid.filter = SPREADSHEET_FILTER_CONFIG;
 
-  const exportButton = button('Export XLSX', exportWorkbook, SPREADSHEET_ACTION_ICONS.export);
+  const exportButton = createControl(document, 'button', { type: 'button', class: 'rv-btn-icon rv-btn-ghost' });
+  exportButton.setAttribute('aria-label', 'Export XLSX');
+  exportButton.title = 'Export XLSX';
+  appendActionIcon(exportButton, SPREADSHEET_ACTION_ICONS.export);
+  exportButton.addEventListener('click', exportWorkbook);
   exportButton.dataset.testid = 'spreadsheet-export';
-  const undoButton = button('Undo 0', () => runHistory('undo'), SPREADSHEET_ACTION_ICONS.undo);
-  const redoButton = button('Redo 0', () => runHistory('redo'), SPREADSHEET_ACTION_ICONS.redo);
+  const historyHost = document.createElement('div');
+  historyHost.className = 'spreadsheet-ribbon-group';
   ribbon.append(
     group(exportButton),
-    group(undoButton, redoButton),
+    historyHost,
   );
 
   const collab = document.createElement('span');
@@ -162,7 +159,7 @@ export function load(parentSelector: string) {
   shell.append(ribbon, formulaRow, main, statusRow);
   parent.appendChild(shell);
 
-  grid.addEventListener('historychanged', onHistoryChanged as EventListener);
+  const disposeHistory: unknown = defineHistoryControls(historyHost, grid);
   grid.addEventListener('multirangeselectionchange', onSelectionChange as EventListener);
   grid.addEventListener('beforecopyapply', onClipboardCopy as EventListener);
   grid.addEventListener('beforepasteapply', onClipboardPaste as EventListener);
@@ -187,6 +184,7 @@ export function load(parentSelector: string) {
   toggleFeedFlash();
 
   return () => {
+    if (typeof disposeHistory === 'function') disposeHistory();
     disconnectThemeObserver();
     disconnectReadonlyEditGuard();
     window.clearInterval(presenceTimer);
@@ -195,31 +193,12 @@ export function load(parentSelector: string) {
     shell.remove();
   };
 
-  function button(label: string, onClick: (event: MouseEvent) => void | Promise<void>, icon?: string) {
-    const item = createControl(document, 'button', { type: 'button' });
-    item.className = controlAttributes('button', { class: 'spreadsheet-btn' }).class;
-    item.type = 'button';
-    setButtonContent(item, label, icon);
-    item.addEventListener('click', (event) => {
-      void onClick(event);
-    });
-    return item;
-  }
-
   function appendActionIcon(parent: HTMLElement, icon: string) {
     const iconElement = document.createElement('span');
     iconElement.className = 'spreadsheet-action-icon';
     iconElement.setAttribute('aria-hidden', 'true');
     iconElement.innerHTML = icon;
     parent.append(iconElement);
-  }
-
-  function setButtonContent(item: HTMLButtonElement, label: string, icon?: string) {
-    item.replaceChildren();
-    if (icon) {
-      appendActionIcon(item, icon);
-    }
-    item.append(document.createTextNode(label));
   }
 
   function group(...children: Array<HTMLElement>) {
@@ -230,10 +209,6 @@ export function load(parentSelector: string) {
   }
 
   function syncToolbar() {
-    setButtonContent(undoButton, `Undo ${historyState.undoStackSize}`, SPREADSHEET_ACTION_ICONS.undo);
-    undoButton.disabled = !historyState.canUndo;
-    setButtonContent(redoButton, `Redo ${historyState.redoStackSize}`, SPREADSHEET_ACTION_ICONS.redo);
-    redoButton.disabled = !historyState.canRedo;
     shell.dataset.pluginStack = getSpreadsheetPluginLabels().join(',');
     workbookStatus.textContent = formatWorkbookStatus(workbook);
     selectionStatus.textContent ||= 'No ranges selected';
@@ -312,11 +287,6 @@ export function load(parentSelector: string) {
   async function getPlugin<T>(pluginClass: new (...args: any[]) => T): Promise<T | undefined> {
     const plugins = await grid.getPlugins?.();
     return plugins?.find(plugin => plugin instanceof pluginClass) as T | undefined;
-  }
-
-  async function runHistory(action: 'undo' | 'redo') {
-    const plugin = await getPlugin(HistoryPlugin);
-    plugin?.[action]();
   }
 
   async function exportWorkbook() {
@@ -401,11 +371,6 @@ export function load(parentSelector: string) {
     syncToolbar();
     const plugin = await getPlugin(CellFlashPlugin);
     flashSpreadsheetPresenceEdit(plugin as SpreadsheetFlashPlugin | undefined, result);
-  }
-
-  function onHistoryChanged(event: CustomEvent<HistoryState>) {
-    historyState = event.detail;
-    syncToolbar();
   }
 
   function onSelectionChange(event: CustomEvent<{ ranges?: Array<{ x: number; y: number; x1: number; y1: number }> }>) {

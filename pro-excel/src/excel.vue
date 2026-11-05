@@ -8,21 +8,9 @@
   >
     <div class="spreadsheet-ribbon">
       <span class="spreadsheet-ribbon-group">
-        <button v-rv-control class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" @click="exportWorkbook">
-          <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.export"></span>
-          Export XLSX
-        </button>
+        <IconButton label="Export XLSX" :icon="actionIcons.export" data-testid="spreadsheet-export" @click="exportWorkbook" />
       </span>
-      <span class="spreadsheet-ribbon-group">
-        <button v-rv-control class="spreadsheet-btn" type="button" :disabled="!historyState.canUndo" @click="runHistory('undo')">
-          <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.undo"></span>
-          Undo {{ historyState.undoStackSize }}
-        </button>
-        <button v-rv-control class="spreadsheet-btn" type="button" :disabled="!historyState.canRedo" @click="runHistory('redo')">
-          <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.redo"></span>
-          Redo {{ historyState.redoStackSize }}
-        </button>
-      </span>
+      <div ref="historyHostRef" class="spreadsheet-ribbon-group"></div>
       <span class="spreadsheet-collab" aria-label="Live collaborators">
         <span class="spreadsheet-live-dot" title="Live data"></span>
         <span
@@ -73,7 +61,6 @@
           :row-headers="rowHeaderConfig"
           resize
           hide-attribution
-          @historychanged="onHistoryChanged"
           @multirangeselectionchange="onSelectionChange"
           @beforecopyapply="onClipboardCopy"
           @beforepasteapply="onClipboardPaste"
@@ -94,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { vRvControl } from '@revolist/ui/vue-control';
+import { IconButton } from '@revolist/ui/vue';
 import '@revolist/ui/styles.css';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { VGrid } from '@revolist/vue3-datagrid';
@@ -117,10 +104,10 @@ import {
   FormulaDependencyHighlightPlugin,
   FormulaPlugin,
   HistoryPlugin,
+  defineHistoryControls,
   NamedRangesPlugin,
   RowOrderPlugin,
   SelectionPlugin,
-  type HistoryState,
 } from '@revolist/revogrid-pro';
 import './spreadsheet.scss';
 import {
@@ -184,17 +171,12 @@ const feedFlashActive = ref(true);
 const presenceUsers = ref(createSpreadsheetPresenceUsers(0));
 const gridRef = ref<{ $el?: HTMLRevoGridElement } | HTMLRevoGridElement | null>(null);
 const shellRef = ref<HTMLElement | null>(null);
+const historyHostRef = ref<HTMLElement | null>(null);
+let disposeHistory: (() => void) | void;
 const formulaHostRef = ref<HTMLElement | null>(null);
 const formulaBadgeRef = ref<HTMLSpanElement | null>(null);
 const selectionStatus = ref('No ranges selected');
 const clipboardStatus = ref('Copy ranges or paste structured data.');
-const historyState = ref<HistoryState>({
-  undoStackSize: 0,
-  redoStackSize: 0,
-  canUndo: false,
-  canRedo: false,
-  disabled: false,
-});
 
 const columnTypes = { statusDropdown: ColumnDropdown, departmentDropdown: ColumnDropdown };
 const filterConfig = SPREADSHEET_FILTER_CONFIG;
@@ -254,6 +236,7 @@ onMounted(() => {
   });
   const grid = getGrid();
   if (grid) {
+    if (historyHostRef.value) disposeHistory = defineHistoryControls(historyHostRef.value, grid);
     void installSpreadsheetAutofillStrategy(grid);
     disconnectReadonlyEditGuard = installSpreadsheetReadonlyEditGuard(
       grid,
@@ -274,6 +257,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  if (typeof disposeHistory === 'function') disposeHistory();
   disconnectThemeObserver?.();
   disconnectReadonlyEditGuard?.();
   if (presenceTimer) {
@@ -294,11 +278,6 @@ async function getPlugin<T>(pluginClass: new (...args: any[]) => T): Promise<T |
   const grid = getGrid();
   const plugins = await grid?.getPlugins?.();
   return plugins?.find(plugin => plugin instanceof pluginClass) as T | undefined;
-}
-
-async function runHistory(action: 'undo' | 'redo') {
-  const plugin = await getPlugin(HistoryPlugin);
-  plugin?.[action]();
 }
 
 function getRowsForSimulation(grid: HTMLRevoGridElement | null, fallbackRows: unknown[] = []) {
@@ -385,10 +364,6 @@ async function runPresenceSimulation() {
   simulationWorkbook = await syncSpreadsheetSimulationResultToGrid(grid, sourceWorkbook, result.workbook, { rowType: 'rgRow' });
   const plugin = await getPlugin(CellFlashPlugin);
   flashSpreadsheetPresenceEdit(plugin as SpreadsheetFlashPlugin | undefined, result);
-}
-
-function onHistoryChanged(event: CustomEvent<HistoryState>) {
-  historyState.value = event.detail;
 }
 
 function onSelectionChange(event: CustomEvent<{ ranges?: Array<{ x: number; y: number; x1: number; y1: number }> }>) {

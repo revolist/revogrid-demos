@@ -1,6 +1,6 @@
+import questionIcon from '@fortawesome/fontawesome-free/svgs/solid/question.svg?raw';
 import '@revolist/ui/styles.css';
-import { ButtonControl as UiButton } from '@revolist/ui/react-control';
-import { Dropdown as UiDropdown } from '@revolist/ui/react';
+import { Button as UiButton, Dropdown as UiDropdown, IconButton } from '@revolist/ui/react';
 import './hr.css';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -20,7 +20,6 @@ import {
   formatDuration,
   formatFrameRate,
   formatMemory,
-  getHRMetricTooltipId,
   HR_PERFORMANCE_METRICS,
   type HRPerformanceMetricKey,
   type HRPerformanceMonitor,
@@ -41,19 +40,10 @@ interface HRDemoProps {
 
 function HRMetricLabel({ metric }: { metric: HRPerformanceMetricKey }) {
   const definition = HR_PERFORMANCE_METRICS[metric];
-  const tooltipId = getHRMetricTooltipId(metric);
   return (
     <div className="hr-performance-label">
       <span>{definition.label}</span>
-      <span className="hr-metric-help">
-        <UiButton
-          type="button"
-          className="hr-metric-help-trigger"
-          aria-label={`About ${definition.label}`}
-          aria-describedby={tooltipId}
-        >?</UiButton>
-        <span className="hr-metric-tooltip" id={tooltipId} role="tooltip">{definition.description}</span>
-      </span>
+      <IconButton label={`About ${definition.label}`} title={definition.description} icon={questionIcon} />
     </div>
   );
 }
@@ -188,28 +178,32 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
   return (
     <div className="hr-demo grow h-full flex flex-col">
       <div className="hr-toolbar">
-        <span className="text-sm font-medium">Data Source</span>
-        <UiDropdown
-          className="hr-select"
-          value={currentSize}
-          onChange={onSizeChange}
-          disabled={loading}
-          source={HR_OPTIONS}
-          config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Data Source' }}
-        />
-        <span className="text-sm font-medium">Theme</span>
-        <UiDropdown
-          className="hr-select"
-          value={selectedTheme}
-          onChange={nextValue => {
-            setSelectedTheme(String(nextValue));
-            setWorkspaceStatus('Unsaved changes');
-          }}
-          source={HR_THEME_OPTIONS}
-          config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Theme' }}
-        />
-        <UiButton type="button" className="hr-button" onClick={saveView}>Save view</UiButton>
-        <UiButton type="button" className="hr-button hr-button-secondary" onClick={resetView}>Reset view</UiButton>
+        <div className="hr-field hr-field--source">
+          <span>Data Source</span>
+          <UiDropdown
+            className="rv-select"
+            value={currentSize}
+            onChange={onSizeChange}
+            disabled={loading}
+            source={HR_OPTIONS}
+            config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Data Source' }}
+          />
+        </div>
+        <div className="hr-field">
+          <span>Theme</span>
+          <UiDropdown
+            className="rv-select"
+            value={selectedTheme}
+            onChange={nextValue => {
+              setSelectedTheme(String(nextValue));
+              setWorkspaceStatus('Unsaved changes');
+            }}
+            source={HR_THEME_OPTIONS}
+            config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Theme' }}
+          />
+        </div>
+        <UiButton type="button" onClick={saveView}>Save view</UiButton>
+        <UiButton type="button" onClick={resetView}>Reset view</UiButton>
         <span className="hr-workspace-status">{workspaceStatus}</span>
         {loading && <div className="text-sm opacity-50 animate-pulse ml-2">{loadingLabel}</div>}
       </div>

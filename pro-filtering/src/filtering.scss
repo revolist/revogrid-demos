@@ -1,5 +1,3 @@
-@use '../../styles/scheduler-button' as demo-controls;
-
 .order-explorer {
   display: flex;
   min-height: 0;
@@ -22,12 +20,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: min(100%, 290px);
+  width: min(100%, 480px);
 }
 
-.order-explorer__search-input {
-  box-sizing: border-box;
-  width: 100%;
+.order-explorer__search-field {
+  flex: 1 1 360px;
+  min-width: 0;
 }
 
 .order-explorer__presets,
@@ -36,15 +34,6 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-}
-
-.order-explorer__eyebrow {
-  margin: 0 8px 0 0;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  color: var(--rv-ui-text-muted, #64748b);
 }
 
 .order-explorer__count {
@@ -67,20 +56,8 @@
   display: none;
 }
 
-.order-explorer__filter-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 26px;
-  box-sizing: border-box;
-  border: 1px solid color-mix(in srgb, #2563eb 32%, transparent);
-  border-radius: 999px;
-  padding: 3px 10px;
-  background: color-mix(in srgb, #2563eb 9%, transparent);
-  color: inherit;
-  font-size: 12px;
-  font-weight: 500;
-}
+// Badge presentation is owned by the shared ChoiceChip component.
+
 
 .order-explorer__grid {
   --revo-grid-header-font-weight: 500;

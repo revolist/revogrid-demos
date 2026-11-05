@@ -63,10 +63,8 @@ function applySpreadsheetGridRowUpdates(
   if (currentRow == null) {
     return false;
   }
-  source[rowIndex] = {
-    ...currentRow,
-    ...rowDiff,
-  };
+  // Formula references retain these authored models across provider refreshes.
+  Object.assign(currentRow, rowDiff);
   return true;
 }
 
@@ -122,7 +120,7 @@ export async function syncSpreadsheetSimulationResultToGrid(
   }
 
   if (didUpdate) {
-    providers?.data?.refresh?.(rowType);
+    providers?.data?.refresh?.('all');
   }
 
   const nextGridRows = dataStore.store.get('source');

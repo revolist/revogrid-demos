@@ -1,6 +1,5 @@
 import '@revolist/ui/styles.css';
-import { UiControlDirective } from '@revolist/ui/angular-control';
-import { Component, ElementRef, NO_ERRORS_SCHEMA, type OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, inject, NO_ERRORS_SCHEMA, type AfterViewInit, type OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import {
   ExportExcelPlugin,
@@ -22,29 +21,18 @@ import {
   TREE_ROW_SELECT_CONFIG,
   TREE_STICKY_CELLS_CONFIG,
 } from './tree.shared';
+import { mountTreeToolbar } from './tree.toolbar';
 
 @Component({
   selector: 'tree-data-grid',
   standalone: true,
-  imports: [UiControlDirective, RevoGrid],
+  imports: [RevoGrid],
   schemas: [NO_ERRORS_SCHEMA],
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./tree.scss'],
   template: `
     <section class="tree-showcase" aria-label="Tree Data organization explorer">
-      <div class="tree-toolbar">
-        <div class="tree-toolbar__actions">
-          <button rvControl class="tree-button" type="button" (click)="expandAll()">Expand all</button>
-          <button rvControl class="tree-button" type="button" (click)="collapseAll()">Collapse all</button>
-          <button rvControl class="tree-button" type="button" [disabled]="exporting" (click)="exportToExcel()">
-            {{ exporting ? 'Exporting…' : 'Export to Excel' }}
-          </button>
-          <label class="tree-sticky">
-            <input rvControl type="checkbox" [checked]="stickyParents" (change)="setStickyParents($event)" />
-            Sticky parents
-          </label>
-        </div>
-      </div>
+      <div #toolbar></div>
       <revo-grid
         #grid
         class="tree-grid"
@@ -70,8 +58,12 @@ import {
     </section>
   `,
 })
-export class TreeDataGridComponent implements OnDestroy {
+export class TreeDataGridComponent implements AfterViewInit, OnDestroy {
   @ViewChild('grid', { read: ElementRef }) gridElement?: ElementRef<HTMLRevoGridElement>;
+
+  @ViewChild('toolbar', { read: ElementRef, static: true }) toolbar!: ElementRef<HTMLElement>;
+  private readonly changeDetector = inject(ChangeDetectorRef);
+  private unmountToolbar?: () => void;
 
   theme: HTMLRevoGridElement['theme'] = currentTheme().isDark() ? 'darkMaterial' : 'material';
   private readonly disconnectTheme = observeCurrentTheme((isDark) => {
@@ -89,10 +81,19 @@ export class TreeDataGridComponent implements OnDestroy {
   readonly stickyCells = TREE_STICKY_CELLS_CONFIG;
   stickyParents = true;
   expandedRowIds: Set<string> | undefined;
-  exporting = false;
   treeConfig = createTreeConfig(this.rows);
 
+  ngAfterViewInit() {
+    this.unmountToolbar = mountTreeToolbar(this.toolbar.nativeElement, {
+      expandAll: () => this.expandAll(),
+      collapseAll: () => this.collapseAll(),
+      exportToExcel: () => this.exportToExcel(),
+      setStickyParents: checked => this.setStickyParents(checked),
+    });
+  }
+
   ngOnDestroy() {
+    this.unmountToolbar?.();
     this.disconnectTheme();
   }
 
@@ -104,13 +105,14 @@ export class TreeDataGridComponent implements OnDestroy {
     this.gridElement?.nativeElement.dispatchEvent(new CustomEvent(TREE_COLLAPSE_ALL_EVENT));
   }
 
-  setStickyParents(event: Event) {
-    this.stickyParents = (event.target as HTMLInputElement).checked;
+  setStickyParents(checked: boolean) {
+    this.stickyParents = checked;
     this.treeConfig = createTreeConfig(this.rows, {
       expandedRowIds: this.expandedRowIds,
       stickyParents: this.stickyParents,
     });
     this.columns = createTreeColumns(this.rows, this.stickyParents);
+    this.changeDetector.markForCheck();
   }
 
   handleTreeState(event: CustomEvent<{ expandedRowIds: Set<string> }>) {
@@ -124,13 +126,8 @@ export class TreeDataGridComponent implements OnDestroy {
   async exportToExcel() {
     const grid = this.gridElement?.nativeElement;
     if (!grid) return;
-    this.exporting = true;
-    try {
-      const gridPlugins = await grid.getPlugins();
-      const exportPlugin = gridPlugins.find((plugin) => plugin instanceof ExportExcelPlugin) as ExportExcelPlugin | undefined;
-      await exportPlugin?.export(TREE_EXPORT_CONFIG);
-    } finally {
-      this.exporting = false;
-    }
+    const gridPlugins = await grid.getPlugins();
+    const exportPlugin = gridPlugins.find((plugin) => plugin instanceof ExportExcelPlugin) as ExportExcelPlugin | undefined;
+    await exportPlugin?.export(TREE_EXPORT_CONFIG);
   }
 }

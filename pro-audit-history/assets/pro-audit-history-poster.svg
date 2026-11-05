@@ -28,7 +28,7 @@
       <rect x="510" y="671" width="106" height="32" rx="16" fill="#dcf8ea"/><text x="530" y="693" fill="#08794f">Approved</text>
     </g>
     <path fill="#181c27" d="M1030 270h446a24 24 0 0 1 24 24v482a24 24 0 0 1-24 24h-446Z"/>
-    <text x="1070" y="322" fill="#f2f4fa" font-family="Arial" font-size="25" font-weight="700">Change ledger</text><circle cx="1450" cy="312" r="6" fill="#28c68b"/>
+    <text x="1070" y="322" fill="#f2f4fa" font-family="Arial" font-size="25" font-weight="700">Audit history</text><circle cx="1450" cy="312" r="6" fill="#28c68b"/>
     <g font-family="Arial"><circle cx="1095" cy="392" r="22" fill="#596edb"/><text x="1081" y="399" fill="#fff" font-size="15" font-weight="700">AS</text><text x="1132" y="380" fill="#f5f6fa" font-size="17" font-weight="700">submitted INV-2048</text><text x="1132" y="405" fill="#9ea7b9" font-size="15">Draft → In review · 1h ago</text>
       <circle cx="1095" cy="478" r="22" fill="#239b74"/><text x="1081" y="485" fill="#fff" font-size="15" font-weight="700">ML</text><text x="1132" y="466" fill="#f5f6fa" font-size="17" font-weight="700">approved INV-2051</text><text x="1132" y="491" fill="#9ea7b9" font-size="15">In review → Approved · 3h ago</text>
       <circle cx="1095" cy="564" r="22" fill="#d0872d"/><text x="1081" y="571" fill="#fff" font-size="15" font-weight="700">RC</text><text x="1132" y="552" fill="#f5f6fa" font-size="17" font-weight="700">pasted August adjustments</text><text x="1132" y="577" fill="#9ea7b9" font-size="15">2 cells updated · 7h ago</text></g>

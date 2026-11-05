@@ -1,4 +1,5 @@
-import { controlAttributes, createControl } from '@revolist/ui';
+import searchIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?raw';
+import { createControl, createSearchInput } from '@revolist/ui';
 import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import type { MultiFilterItem } from '@revolist/revogrid';
@@ -22,10 +23,8 @@ import './filtering.scss';
 
 defineCustomElements();
 
-function createButton(label: string, onClick: () => void, className = 'rv-btn') {
+function createButton(label: string, onClick: () => void) {
   const button = createControl(document, 'button', { type: 'button' });
-  button.type = 'button';
-  button.className = controlAttributes('button', { class: className }).class;
   button.textContent = label;
   button.addEventListener('click', onClick);
   return button;
@@ -45,10 +44,6 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
   const presets = document.createElement('div');
   presets.className = 'order-explorer__presets';
   presets.setAttribute('aria-label', 'Filter presets');
-  const eyebrow = document.createElement('p');
-  eyebrow.className = 'order-explorer__eyebrow';
-  eyebrow.textContent = 'Presets';
-  presets.append(eyebrow);
 
   const summary = document.createElement('div');
   summary.className = 'order-explorer__summary';
@@ -90,24 +85,23 @@ export function load(parentSelector: string, rows?: OrderExplorerRow[]) {
   });
   const search = document.createElement('div');
   search.className = 'order-explorer__search';
-  const searchInput = createControl(document, 'input', { type: 'search' });
-  searchInput.className = controlAttributes('input', { type: searchInput.type, class: 'order-explorer__search-input' }).class;
-  searchInput.type = 'search';
-  searchInput.placeholder = 'Global search — try “Lisbon pending”';
-  searchInput.setAttribute('aria-label', 'Search all visible columns');
+  const { root: searchField, input: searchInput } = createSearchInput(document, {
+    rootClassName: 'order-explorer__search-field',
+    iconSvg: searchIcon,
+    inputAttributes: {
+      placeholder: 'Global search — try “Lisbon pending”',
+      'aria-label': 'Search all visible columns',
+    },
+  });
   const applyQuickFilter = (text: string) => {
     searchInput.value = text;
     setOrderExplorerQuickFilter(grid, text);
   };
   searchInput.addEventListener('input', () => applyQuickFilter(searchInput.value));
   search.append(
-    searchInput,
+    searchField,
     createButton('Try example', () => applyQuickFilter(ORDER_EXPLORER_QUICK_FILTER_EXAMPLE)),
   );
-  summary.append(createButton('Clear All', () => {
-    applyFilterItems({});
-    applyQuickFilter('');
-  }, 'rv-btn-secondary'));
   toolbar.append(presets, search, summary);
   container.append(toolbar, grid);
 

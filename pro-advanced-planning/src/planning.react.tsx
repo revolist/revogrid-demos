@@ -1,7 +1,7 @@
-import searchIcon from './assets/search.svg'
+import searchIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?url'
 import '@revolist/ui/styles.css';
-import { ButtonControl as UiButton, Input as UiInput } from '@revolist/ui/react-control';
-import { Dropdown as UiDropdown } from '@revolist/ui/react';
+import { Dropdown, SearchInput } from '@revolist/ui/react';
+import { ButtonControl as UiButton } from '@revolist/ui/react-control';
 import React, { useEffect, useMemo, useState } from 'react'
 import { RevoGrid } from '@revolist/react-datagrid'
 import type { ColumnFilterConfig } from '@revolist/revogrid'
@@ -38,7 +38,7 @@ import {
     gridColumnTypes,
     gridColumns,
     createKanbanConfig,
-    planningProjects,
+    planningFilterDropdowns,
     planningFilterConfig,
     planningDataGridFormatting,
     planningRowOrder,
@@ -71,7 +71,6 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     ) => void
     onRoworderapplied?: (event: CustomEvent) => void
     onFilterastchange?: (event: CustomEvent) => void
-    filterBadges?: object
     rangeSelectionLimit?: 'column'
 }
 
@@ -120,6 +119,7 @@ export default function PlanningViews() {
             PlanningWorkspacePlugin,
             EventManagerPlugin,
             AdvanceFilterPlugin,
+            FilterHeaderPlugin,
             DataGridFormattingPlugin,
             RangeSelectionLimitPlugin,
             ColumnStretchPlugin,
@@ -159,12 +159,6 @@ export default function PlanningViews() {
         planningStore.commitPlanningEdit(event.detail)
         setTasks(planningStore.createSnapshot())
     }
-    const filterBadgeOptions = useMemo(() => ({
-        className: 'planning-demo__filter-badges',
-        badgeClassName: 'planning-demo__filter-badge',
-        emptyClassName: 'planning-demo__filter-badges--empty',
-        renderEmpty: () => '',
-    }), [])
 
     const selectPlanningView = (view: PlanningView) => {
         if (view === activeView) return
@@ -204,45 +198,30 @@ export default function PlanningViews() {
             </nav>
 
             <div className="planning-demo__toolbar" role="group" aria-label="Task filters">
-                <label className="planning-demo__search rv-search-input rv-search-input--no-shortcut">
-                    <span className="rv-search-input-icon" aria-hidden="true"><img src={searchIcon} alt="" /></span>
-                    <UiInput
-                        aria-label="Search tasks"
-                        type="search"
-                        placeholder="Search tasks…"
-                        value={filters.query}
-                        onChange={(event) =>
-                            changeFilters((current) => ({
-                                ...current,
-                                query: event.target.value,
-                            }))
-                        }
-                    />
-                </label>
+                <SearchInput
+                    rootClassName="planning-demo__search"
+                    aria-label="Search tasks"
+                    placeholder="Search tasks…"
+                    value={filters.query}
+                    icon={<img src={searchIcon} alt="" />}
+                    onValueChange={(query) => changeFilters((current) => ({ ...current, query }))}
+                />
                 <div className="planning-demo__filters">
-                    <UiDropdown
-                        className="rv-control--compact"
-                        value={filters.projectId}
-                        onChange={(nextValue) =>
-                            changeFilters((current) => ({
-                                ...current,
-                                projectId: String(nextValue) as PlanningFilters['projectId'],
-                            }))
-                        }
-                      source={[{ value: 'all', label: 'Project: All' }, ...planningProjects.map(project => ({ value: project.id, label: project.label }))]}
-                      config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Project' }}
-                    />
+                    <span className="planning-demo__filter">
+                        <Dropdown className="rv-select" {...planningFilterDropdowns.project} value={filters.projectId}
+                            onChange={value => changeFilters(current => ({ ...current, projectId: value as PlanningFilters['projectId'] }))} />
+                    </span>
                     {activeView === 'kanban' && <>
-                        <UiDropdown className="rv-control--compact" value={filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''}
-                            onChange={nextValue => changeFilters(current => ({ ...current, statuses: String(nextValue) ? [String(nextValue)] : [] }))}
-                          source={[{ value: '', label: 'Status: All' }, ...(filters.statuses.length > 1 ? [{ value: 'active', label: 'Status: Active', disabled: true }] : []), { value: 'not-started', label: 'Planned' }, { value: 'in-progress', label: 'In progress' }, { value: 'blocked', label: 'Blocked' }, { value: 'done', label: 'Done' }]}
-                          config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Status' }}
-                        />
-                        <UiDropdown className="rv-control--compact" value={filters.priorities[0] ? String(filters.priorities[0]) : ''}
-                            onChange={nextValue => changeFilters(current => ({ ...current, priorities: String(nextValue) ? [Number(nextValue)] : [] }))}
-                          source={[{ value: '', label: 'Priority: All' }, { value: '500', label: 'Normal' }, { value: '700', label: 'High' }, { value: '900', label: 'Critical' }]}
-                          config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Priority' }}
-                        />
+                        <span className="planning-demo__filter">
+                            <Dropdown className="rv-select" {...planningFilterDropdowns.status}
+                                value={filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''}
+                                onChange={value => changeFilters(current => ({ ...current, statuses: value ? [String(value)] : [] }))} />
+                        </span>
+                        <span className="planning-demo__filter">
+                            <Dropdown className="rv-select" {...planningFilterDropdowns.priority}
+                                value={String(filters.priorities[0] ?? '')}
+                                onChange={value => changeFilters(current => ({ ...current, priorities: value ? [Number(value)] : [] }))} />
+                        </span>
                     </>}
                 </div>
                 <UiButton
@@ -255,19 +234,6 @@ export default function PlanningViews() {
                     }}
                 >
                     Active tasks
-                </UiButton>
-                <UiButton
-                    className="rv-btn-ghost planning-demo__reset"
-                    type="button"
-                    onClick={() => {
-                        planningStore.replace(createTasks())
-                        setCurrentGanttDependencies([...ganttDependencies])
-                        setTasks(planningStore.createSnapshot())
-                        setIsActiveTasksPreset(false)
-                        setFilters(defaultPlanningFilters())
-                    }}
-                >
-                    Reset
                 </UiButton>
             </div>
 
@@ -293,7 +259,6 @@ export default function PlanningViews() {
                     rowOrder={planningRowOrder}
                     rowSelect={{ rowOrder: true }}
                     filter={filterConfigs.grid}
-                    filterBadges={filterBadgeOptions}
                     onFilterastchange={(event) => {
                         if (event.detail.origin === 'ui') {
                             filterConfigs.grid.filterAst = event.detail.filterAst
@@ -324,7 +289,6 @@ export default function PlanningViews() {
                     ganttResources={ganttResources}
                     ganttAssignments={ganttAssignments}
                     filter={filterConfigs.gantt}
-                    filterBadges={filterBadgeOptions}
                     onFilterastchange={(event) => {
                         if (event.detail.origin === 'ui') {
                             filterConfigs.gantt.filterAst = event.detail.filterAst
@@ -344,7 +308,6 @@ export default function PlanningViews() {
                     columns={gridColumns}
                     kanban={kanbanConfig}
                     filter={filterConfigs.kanban}
-                    filterBadges={filterBadgeOptions}
                     onFilterastchange={(event) => {
                         if (event.detail.origin === 'ui') {
                             filterConfigs.kanban.filterAst = event.detail.filterAst
@@ -373,11 +336,6 @@ export default function PlanningViews() {
                         onGridedit={handlePlanningEdit}
                     />
                 )}
-            <footer className="planning-demo__footer">
-                <span className="planning-demo__footer-meta">
-                    <span>Changes stay in this demo</span>
-                </span>
-            </footer>
         </section>
     )
 }

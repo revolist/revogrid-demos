@@ -1,5 +1,5 @@
 import '@revolist/ui/styles.css';
-import { ButtonControl as UiButton } from '@revolist/ui/react-control';
+import { IconButton } from '@revolist/ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import {
@@ -21,10 +21,10 @@ import {
   FormulaDependencyHighlightPlugin,
   FormulaPlugin,
   HistoryPlugin,
+  defineHistoryControls,
   NamedRangesPlugin,
   RowOrderPlugin,
   SelectionPlugin,
-  type HistoryState,
 } from '@revolist/revogrid-pro';
 import './spreadsheet.scss';
 import {
@@ -75,19 +75,10 @@ import {
   flashSpreadsheetFeedEdit,
 } from './spreadsheet.feed';
 
-function ActionIcon({ icon }: { icon: string }) {
-  return (
-    <span
-      className="spreadsheet-action-icon"
-      aria-hidden="true"
-      dangerouslySetInnerHTML={{ __html: icon }}
-    />
-  );
-}
-
 export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: boolean }) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
   const shellRef = useRef<HTMLElement | null>(null);
+  const historyHostRef = useRef<HTMLDivElement>(null);
   const formulaHostRef = useRef<HTMLSpanElement>(null);
   const formulaBadgeRef = useRef<HTMLSpanElement>(null);
   const feedTimerRef = useRef<number | undefined>(undefined);
@@ -101,13 +92,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
   const [presenceUsers, setPresenceUsers] = useState(() => createSpreadsheetPresenceUsers(0));
   const [selectionStatus, setSelectionStatus] = useState('No ranges selected');
   const [clipboardStatus, setClipboardStatus] = useState('Copy ranges or paste structured data.');
-  const [historyState, setHistoryState] = useState<HistoryState>({
-    undoStackSize: 0,
-    redoStackSize: 0,
-    canUndo: false,
-    canRedo: false,
-    disabled: false,
-  });
 
   const columnTypes = useMemo(() => ({ statusDropdown: ColumnDropdown, departmentDropdown: ColumnDropdown }), []);
   const filterConfig = useMemo(() => SPREADSHEET_FILTER_CONFIG, []);
@@ -152,6 +136,12 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     CellValidatePlugin,
     ColumnStretchPlugin,
   ], []);
+
+  useEffect(() => {
+    if (!historyHostRef.current || !gridRef.current) return;
+    const dispose: unknown = defineHistoryControls(historyHostRef.current, gridRef.current);
+    return () => { if (typeof dispose === 'function') dispose(); };
+  }, []);
 
   useEffect(() => {
     setFormulaReady(true);
@@ -235,10 +225,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     return () => window.clearInterval(timer);
   }, [runPresenceSimulation]);
 
-  const runHistory = useCallback(async (action: 'undo' | 'redo') => {
-    const plugin = await getPlugin(HistoryPlugin);
-    plugin?.[action]();
-  }, [getPlugin]);
 
   const exportWorkbook = useCallback(async () => {
     const plugin = await getPlugin(ExportExcelPlugin);
@@ -306,10 +292,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onHistoryChanged = useCallback((event: CustomEvent<HistoryState>) => {
-    setHistoryState(event.detail);
-  }, []);
-
   const onSelectionChange = useCallback((event: CustomEvent<{ ranges?: Array<{ x: number; y: number; x1: number; y1: number }> }>) => {
     setSelectionStatus(summarizeSelection(event.detail?.ranges ?? []));
   }, []);
@@ -366,7 +348,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
       rowHeaders={rowHeaderConfig}
       resize
       hideAttribution
-      onHistorychanged={onHistoryChanged as any}
       onMultirangeselectionchange={onSelectionChange as any}
       onBeforecopyapply={onClipboardCopy as any}
       onBeforepasteapply={onClipboardPaste as any}
@@ -390,7 +371,6 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     history,
     onClipboardCopy,
     onClipboardPaste,
-    onHistoryChanged,
     onBeforeEdit,
     onReadonlyEdit,
     onRowHeaderFocus,
@@ -411,21 +391,9 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     >
       <div className="spreadsheet-ribbon">
         <span className="spreadsheet-ribbon-group">
-          <UiButton className="spreadsheet-btn" type="button" data-testid="spreadsheet-export" onClick={exportWorkbook}>
-            <ActionIcon icon={SPREADSHEET_ACTION_ICONS.export} />
-            Export XLSX
-          </UiButton>
+          <IconButton label="Export XLSX" icon={SPREADSHEET_ACTION_ICONS.export} data-testid="spreadsheet-export" onClick={exportWorkbook} />
         </span>
-        <span className="spreadsheet-ribbon-group">
-          <UiButton className="spreadsheet-btn" type="button" disabled={!historyState.canUndo} onClick={() => void runHistory('undo')}>
-            <ActionIcon icon={SPREADSHEET_ACTION_ICONS.undo} />
-            Undo {historyState.undoStackSize}
-          </UiButton>
-          <UiButton className="spreadsheet-btn" type="button" disabled={!historyState.canRedo} onClick={() => void runHistory('redo')}>
-            <ActionIcon icon={SPREADSHEET_ACTION_ICONS.redo} />
-            Redo {historyState.redoStackSize}
-          </UiButton>
-        </span>
+        <div ref={historyHostRef} className="spreadsheet-ribbon-group" />
         <span className="spreadsheet-collab" aria-label="Live collaborators">
           <span className="spreadsheet-live-dot" title="Live data" />
           {presenceUsers.map(user => (

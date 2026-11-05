@@ -1,4 +1,5 @@
 import '@revolist/ui/styles.css';
+import { UiComponent } from '@revolist/ui/angular';
 import { UiControlDirective } from '@revolist/ui/angular-control';
 import {
   type AfterViewInit,
@@ -30,7 +31,7 @@ import {
 @Component({
   selector: 'filtering-grid',
   standalone: true,
-  imports: [UiControlDirective, RevoGrid],
+  imports: [UiComponent, UiControlDirective, RevoGrid],
   schemas: [NO_ERRORS_SCHEMA],
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./filtering.scss'],
@@ -38,27 +39,21 @@ import {
     <section class="order-explorer" aria-label="Advanced Filtering: Order Explorer">
       <div class="order-explorer__toolbar">
         <div class="order-explorer__presets" aria-label="Filter presets">
-          <p class="order-explorer__eyebrow">Presets</p>
+
           <button rvControl class="rv-btn" type="button" (click)="applyPreset('high-value-europe')">High-value Europe</button>
           <button rvControl class="rv-btn" type="button" (click)="applyPreset('recent-expedited')">Recent expedited</button>
           <button rvControl class="rv-btn" type="button" (click)="applyPreset('review-queue')">Review queue</button>
         </div>
         <div class="order-explorer__search">
-          <input rvControl
-            class="order-explorer__search-input"
-            type="search"
-            [value]="quickText"
-            placeholder="Global search — try “Lisbon pending”"
-            aria-label="Search all visible columns"
-            (input)="onQuickInput($event)"
-          />
+          <rv-ui component="SearchInput"
+            [props]="{ rootClassName: 'order-explorer__search-field', value: quickText, placeholder: 'Global search — try “Lisbon pending”', 'aria-label': 'Search all visible columns' }"
+            (valueChange)="applyQuickFilter($any($event))" />
           <button rvControl class="rv-btn" type="button" (click)="applyQuickFilter(quickFilterExample)">Try example</button>
         </div>
         <div class="order-explorer__summary">
           <span class="order-explorer__count" aria-live="polite">
             {{ visibleCount.toLocaleString() }} of {{ source.length.toLocaleString() }} orders
           </span>
-          <button rvControl class="rv-btn-secondary" type="button" (click)="clearAll()">Clear All</button>
         </div>
       </div>
       <div class="order-explorer__grid">
@@ -135,14 +130,6 @@ export class FilteringGridComponent implements AfterViewInit, OnDestroy {
     this.applyFilterItems(createOrderExplorerPreset(preset));
   }
 
-  clearAll() {
-    this.applyFilterItems({});
-    this.applyQuickFilter('');
-  }
-
-  onQuickInput(event: Event) {
-    this.applyQuickFilter((event.target as HTMLInputElement).value);
-  }
 
   applyQuickFilter(text: string) {
     this.quickText = text;
