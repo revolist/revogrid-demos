@@ -294,18 +294,4 @@ export const gridColumns: ColumnRegular[] = [
 
 export const ganttColumns = [
     { ...createDefaultTaskTableColumn('name'), rowDrag: false },
-    {
-        ...createDefaultTaskTableColumn('assignees'),
-        name: 'Assignee',
-        readonly: true,
-        avatarProp: 'ownerAvatar',
-        avatarIndexProp: 'ownerAvatarIndex',
-        avatarLabelProp: 'owner',
-        avatarSize: 20,
-        cellTemplate: ownerAvatarRenderer,
-        cellProperties: paddedCellProperties,
-    },
-    createDefaultTaskTableColumn('startDate'),
-    createDefaultTaskTableColumn('endDate'),
-    createDefaultTaskTableColumn('percentDone'),
 ]

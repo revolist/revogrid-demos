@@ -407,10 +407,6 @@ test('hides unsupported structural planning actions', () => {
     assert.match(ganttConfigSource, /contextMenu:\s*\{\s*row:\s*false\s*\}/)
     assert.match(
         columnsSource,
-        /createDefaultTaskTableColumn\('assignees'\)[\s\S]*?readonly:\s*true/
-    )
-    assert.match(
-        columnsSource,
         /createDefaultTaskTableColumn\('name'\)[\s\S]*?rowDrag:\s*false/
     )
     assert.match(

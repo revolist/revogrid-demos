@@ -146,6 +146,21 @@
 .planning-demo__grid--timeline {
     margin-top: -8px;
 }
+.planning-demo__bar-avatars {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 2px;
+    pointer-events: none;
+}
+.planning-demo__grid--timeline.gantt-plugin.filter-header:is([theme='compact'], [theme='darkCompact']) {
+    --rv-header-height: 60px;
+    --rv-header-label-height: 30px;
+    --rv-header-input-padding: 2px;
+    --rv-filter-control-height: 28px;
+}
 /*
  * FilterHeaderPlugin restores the core header padding after Gantt has made
  * the timeline header edge-to-edge. Keep the header ticks on the same x-axis

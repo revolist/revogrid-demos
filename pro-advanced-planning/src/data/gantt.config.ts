@@ -3,6 +3,7 @@ import {
     type GanttPluginConfig,
     type TimelineZoomLevel,
 } from '@revolist/gantt'
+import { avatarTemplate } from '@revolist/revogrid-pro'
 import { planningCalendarId } from './source'
 import { planningFields } from './fields'
 
@@ -50,6 +51,19 @@ export const ganttConfig: GanttPluginConfig = {
     },
     visuals: {
         showTaskLabels: false,
+        taskBarContentHook: ({ h, row, defaultContent }) => [
+            ...defaultContent,
+            row.assigneeDetails?.length
+                ? h('span', {
+                      class: 'planning-demo__bar-avatars',
+                      title: row.assigneeDetails.map(({ name }) => name).join(', '),
+                  }, row.assigneeDetails.map((assignee) => avatarTemplate(h, {
+                      value: assignee.avatarUrl || assignee.name,
+                      label: assignee.name,
+                      size: 20,
+                  })))
+                : null,
+        ],
     },
     dateFormats: {
         locale: 'en-US',
