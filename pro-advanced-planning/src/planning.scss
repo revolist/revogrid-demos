@@ -155,23 +155,6 @@
     gap: 2px;
     pointer-events: none;
 }
-.planning-demo__grid--timeline.gantt-plugin.filter-header:is([theme='compact'], [theme='darkCompact']) {
-    --rv-header-height: 60px;
-    --rv-header-label-height: 30px;
-    --rv-header-input-padding: 2px;
-    --rv-filter-control-height: 28px;
-}
-/*
- * FilterHeaderPlugin restores the core header padding after Gantt has made
- * the timeline header edge-to-edge. Keep the header ticks on the same x-axis
- * as the timeline background and task bars.
- */
-.planning-demo__grid--timeline.gantt-plugin.filter-header
-    revogr-viewport-scroll.colPinEnd
-    revogr-header
-    .header-content {
-    padding: 0 !important;
-}
 .planning-demo__grid--kanban {
     overflow-x: auto;
 }

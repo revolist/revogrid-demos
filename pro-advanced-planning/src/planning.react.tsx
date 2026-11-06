@@ -33,6 +33,8 @@ import {
     filterPlanningTasks,
     ganttColumns,
     ganttConfig,
+    toPlanningGanttSource,
+    ganttTaskEditorDialog,
     ganttDependencies,
     ganttResources,
     gridColumnTypes,
@@ -58,6 +60,7 @@ import './planning.scss'
 
 type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     gantt?: typeof ganttConfig
+    ganttTaskEditorDialog?: typeof ganttTaskEditorDialog
     ganttResources?: typeof ganttResources
     ganttAssignments?: ReturnType<typeof toGanttAssignments>
     ganttDependencies?: typeof ganttDependencies
@@ -108,7 +111,7 @@ export default function PlanningViews() {
         []
     )
     const [isDark, setIsDark] = useState(() => currentTheme().isDark())
-    const ganttPlugins = useMemo(() => [GanttPlugin, AdvanceFilterPlugin, FilterHeaderPlugin], [])
+    const ganttPlugins = useMemo(() => [GanttPlugin, AdvanceFilterPlugin], [])
     const kanbanPlugins = useMemo(() => [KanbanPlugin, AdvanceFilterPlugin], [])
     const schedulerPlugins = useMemo(() => [EventSchedulerPlugin], [])
     const emptySource = useMemo<never[]>(() => [], [])
@@ -149,6 +152,7 @@ export default function PlanningViews() {
         () => filterPlanningTasks(tasks, filters),
         [tasks, filters]
     )
+    const ganttSource = useMemo(() => toPlanningGanttSource(visibleTasks), [visibleTasks])
     useEffect(() => observeCurrentTheme(setIsDark), [])
     const handlePlanningEdit = (
         event: CustomEvent<PlanningEditDetail>
@@ -281,10 +285,11 @@ export default function PlanningViews() {
                     theme={isDark ? 'darkCompact' : 'compact'}
                     hideAttribution
                     plugins={ganttPlugins}
-                    source={visibleTasks}
+                    source={ganttSource}
                     columns={ganttColumns}
                     rowOrder={false}
                     gantt={ganttConfig}
+                    ganttTaskEditorDialog={ganttTaskEditorDialog}
                     ganttDependencies={visibleGanttDependencies}
                     ganttResources={ganttResources}
                     ganttAssignments={ganttAssignments}

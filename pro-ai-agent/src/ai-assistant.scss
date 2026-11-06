@@ -4,7 +4,7 @@
   color: var(--rv-ui-text);
   display: grid;
   grid-template-rows: minmax(0, 1fr);
-  grid-template-columns: minmax(0, 1fr) 12px var(--ai-assistant-width, 26rem);
+  grid-template-columns: minmax(0, 1fr) 12px var(--ai-assistant-width, 20.8rem);
   height: 100%;
   min-height: 520px;
   min-width: 0;
@@ -86,7 +86,7 @@
 // Reports stay in the same workspace; a dashboard shares space with the grid.
 .ai-view-demo__grid:has(> .ai-view-demo__chart:not([hidden]):not(:empty)) {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) minmax(0, 340px);
+  grid-template-columns: minmax(260px, 1fr) minmax(360px, 0.95fr);
   grid-template-rows: auto minmax(0, 1fr);
   gap: 0 0.75rem;
 
@@ -95,8 +95,8 @@
   > .ai-view-demo__chart { grid-column: 2; grid-row: 2; }
 }
 .ai-view-demo__chart:not([hidden]):not(:empty) {
-  --rv-pivot-chart-embedded-min-height: 308px;
-  --rv-pivot-chart-plot-min-height: 240px;
+  --rv-pivot-chart-embedded-min-height: 400px;
+  --rv-pivot-chart-plot-min-height: 300px;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -104,11 +104,11 @@
   min-height: 0;
 
   > .rv-report-chart-host {
-    flex: 0 0 308px;
-    min-height: 308px;
+    flex: 0 0 400px;
+    min-height: 400px;
   }
 }
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .ai-view-demo__grid:has(> .ai-view-demo__chart:not([hidden]):not(:empty)) {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(180px, 1fr) minmax(260px, 1fr);

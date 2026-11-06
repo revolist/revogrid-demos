@@ -1,4 +1,5 @@
 import { createChartsRenderer } from '@revolist/charts';
+import '@revolist/pivot/styles.css';
 import {
   PivotPlugin,
   PivotChartsPlugin,
@@ -148,7 +149,7 @@ export function attachAiAssistantResize(
   container: HTMLElement,
   handle: HTMLElement,
 ) {
-  let width = 416;
+  let width = 332.8;
   let maximum = 640;
   const minimum = 280;
   const update = (next: number) => {

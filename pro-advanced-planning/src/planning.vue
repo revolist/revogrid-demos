@@ -95,10 +95,11 @@
             hide-attribution
             :theme="theme"
             :plugins="ganttPlugins"
-            :source="tasks"
+            :source="ganttSource"
             :columns="ganttColumns"
             :row-order.prop="false"
             :gantt.prop="ganttConfig"
+            :gantt-task-editor-dialog.prop="ganttTaskEditorDialog"
             :gantt-dependencies.prop="visibleGanttDependencies"
             :gantt-resources.prop="ganttResources"
             :gantt-assignments.prop="ganttAssignments"
@@ -149,6 +150,8 @@ const {
     ganttAssignments,
     ganttColumns,
     ganttConfig,
+    ganttSource,
+    ganttTaskEditorDialog,
     ganttFilterConfig,
     ganttPlugins,
     ganttResources,

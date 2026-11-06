@@ -1,11 +1,17 @@
 import {
     DEFAULT_TIMELINE_ZOOM_LEVELS,
     type GanttPluginConfig,
+    type GanttTaskEditorDialogOptions,
     type TimelineZoomLevel,
 } from '@revolist/gantt'
 import { avatarTemplate } from '@revolist/revogrid-pro'
 import { planningCalendarId } from './source'
 import { planningFields } from './fields'
+
+// The shared workspace stores one owner, so its multi-resource picker is read-only.
+export const ganttTaskEditorDialog = {
+    resources: false,
+} satisfies GanttTaskEditorDialogOptions
 
 const dayWeekMediumZoomLevel: TimelineZoomLevel = {
     id: 'day-week-medium',

@@ -195,7 +195,7 @@ test('selection filters reuse team member and status cell templates', () => {
     value: 'Maya Chen',
     label: 'Maya Chen',
     id: 'product',
-    avatar: 'MC',
+    avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
     fullName: 'Maya Chen',
   });
 });

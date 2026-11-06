@@ -17,12 +17,13 @@ for (const framework of ['ts', 'vue', 'react', 'angular']) {
     const grid = demo!.locator('.ai-view-demo__surface > revo-grid');
     const dashboard = demo!.locator('.ai-view-demo__chart');
     const charts = dashboard.locator('.rv-pivot-chart-embedded');
-    const expectCompactCharts = async () => {
+    const expectDashboardCards = async () => {
       for (const chart of await charts.all()) {
         const card = (await chart.boundingBox())!;
         const plot = (await chart.locator('.rv-pivot-chart-dialog__chart').boundingBox())!;
-        expect(card.height).toBeLessThanOrEqual(320);
-        expect(card.width).toBeLessThanOrEqual(350);
+        expect(card.height).toBeGreaterThanOrEqual(380);
+        expect(card.height).toBeLessThanOrEqual(420);
+        expect(card.width).toBeLessThanOrEqual((await dashboard.boundingBox())!.width);
         expect(plot.y + plot.height).toBeLessThanOrEqual(card.y + card.height);
       }
     };
@@ -51,7 +52,7 @@ for (const framework of ['ts', 'vue', 'react', 'angular']) {
     await submit('Show donut chart by amount and status', 'chart');
     await expect(grid).toBeVisible();
     await expect(charts).toHaveCount(1);
-    await expectCompactCharts();
+    await expectDashboardCards();
     const reportWidth = await grid.evaluate((grid: HTMLRevoGridElement) => grid.clientWidth);
     await expect.poll(() => grid.evaluate(async (grid: HTMLRevoGridElement) => {
       const owner = (await grid.getPlugins()).find((plugin: any) => plugin.providers?.dimension) as any;
@@ -71,7 +72,7 @@ for (const framework of ['ts', 'vue', 'react', 'angular']) {
 
     await submit('Show a dashboard with donut and area charts', 'chart');
     await expect(charts).toHaveCount(2);
-    await expectCompactCharts();
+    await expectDashboardCards();
     if (framework === 'ts') {
       await page.mouse.move(0, 0);
       await page.screenshot({ path: 'test-results/screenshots/03-dashboard.png' });
