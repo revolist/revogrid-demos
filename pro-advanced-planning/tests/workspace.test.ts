@@ -916,7 +916,7 @@ test('provides a stable 100-task fixture across three projects', () => {
     )
 })
 
-test('uses varied multi-day work with parallel owner schedules', () => {
+test('uses varied multi-day work with staggered owner schedules', () => {
     const tasks = createTasks()
     const regularTasks = tasks.filter(({ type }) => type !== 'milestone')
     assert.ok(regularTasks.every(({ duration, durationIsElapsed }) =>

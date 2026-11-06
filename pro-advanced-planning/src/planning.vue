@@ -97,6 +97,7 @@
             :plugins="ganttPlugins"
             :source="ganttSource"
             :columns="ganttColumns"
+            :row-size="40"
             :row-order.prop="false"
             :gantt.prop="ganttConfig"
             :gantt-task-editor-dialog.prop="ganttTaskEditorDialog"

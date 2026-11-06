@@ -1,4 +1,3 @@
-import searchIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?url'
 import '@revolist/ui/styles.css';
 import { Dropdown, SearchInput } from '@revolist/ui/react';
 import { ButtonControl as UiButton } from '@revolist/ui/react-control';
@@ -207,7 +206,6 @@ export default function PlanningViews() {
                     aria-label="Search tasks"
                     placeholder="Search tasks…"
                     value={filters.query}
-                    icon={<img src={searchIcon} alt="" />}
                     onValueChange={(query) => changeFilters((current) => ({ ...current, query }))}
                 />
                 <div className="planning-demo__filters">
@@ -287,6 +285,7 @@ export default function PlanningViews() {
                     plugins={ganttPlugins}
                     source={ganttSource}
                     columns={ganttColumns}
+                    rowSize={40}
                     rowOrder={false}
                     gantt={ganttConfig}
                     ganttTaskEditorDialog={ganttTaskEditorDialog}

@@ -56,6 +56,7 @@ export const ganttConfig: GanttPluginConfig = {
         taskModeDefault: 'auto',
     },
     visuals: {
+        taskBarColorHook: () => ({ borderColor: 'transparent' }),
         showTaskLabels: false,
         taskBarContentHook: ({ h, row, defaultContent }) => [
             ...defaultContent,

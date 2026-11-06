@@ -189,6 +189,7 @@ import {
                         [plugins]="ganttPlugins"
                         [source]="ganttSource"
                         [columns]="ganttColumns"
+                        [rowSize]="40"
                         [rowOrder]="false"
                         [gantt]="ganttConfig"
                         [ganttTaskEditorDialog]="ganttTaskEditorDialog"

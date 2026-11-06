@@ -222,6 +222,7 @@ export function load(parentSelector: string): (() => void) | undefined {
         } else if (view === 'gantt') {
             grid.plugins = [GanttPlugin, AdvanceFilterPlugin]
             grid.columns = ganttColumns
+            grid.rowSize = 40
             grid.rowOrder = false
             grid.gantt = ganttConfig
             grid.ganttTaskEditorDialog = ganttTaskEditorDialog
