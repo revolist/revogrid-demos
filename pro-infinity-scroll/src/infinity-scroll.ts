@@ -1,3 +1,8 @@
+import exportIcon from '@fortawesome/fontawesome-free/svgs/solid/download.svg?raw';
+import { h } from 'preact';
+import { renderPreactInto } from '@revolist/ui/preact-mount';
+import { IconButton } from '@revolist/ui/preact';
+import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import type { ColumnProp, FilterCollectionItem, MultiFilterItem } from '@revolist/revogrid';
 import {
@@ -51,11 +56,8 @@ export function load(parentSelector: string, rows?: InfinityScrollUser[]) {
   status.className = 'infinity-status';
   status.textContent = 'Initializing remote source…';
   copy.append(title, status);
-  const exportButton = document.createElement('button');
-  exportButton.type = 'button';
-  exportButton.className = 'infinity-button';
-  exportButton.textContent = 'Export all to Excel';
-  toolbar.append(copy, exportButton);
+  const exportHost = document.createElement('div');
+  toolbar.append(copy, exportHost);
 
   const columns = createInfinityScrollColumns();
   const grid = document.createElement('revo-grid');
@@ -87,6 +89,8 @@ export function load(parentSelector: string, rows?: InfinityScrollUser[]) {
     return result;
   };
   const infinityScroll: Partial<InfinityScrollConfig> = {
+    // Published 4.0.1 cached reads reference Node process; use supported direct reads until the fixed release.
+    query: false,
     chunkSize: 50,
     bufferSize: 150,
     preloadThreshold: 0.75,
@@ -96,7 +100,7 @@ export function load(parentSelector: string, rows?: InfinityScrollUser[]) {
   grid.infinityScroll = infinityScroll;
 
   const exportAll = async () => {
-    exportButton.disabled = true;
+    renderExportButton(true);
     try {
       await exportInfinityScrollRows({
         columns,
@@ -106,10 +110,13 @@ export function load(parentSelector: string, rows?: InfinityScrollUser[]) {
         setStatus: (message) => { status.textContent = message; },
       });
     } finally {
-      exportButton.disabled = false;
+      renderExportButton(false);
     }
   };
-  exportButton.addEventListener('click', exportAll);
+  const renderExportButton = (disabled: boolean) => {
+    renderPreactInto(exportHost, h(IconButton, { label: 'Export all to Excel', icon: exportIcon, disabled, onClick: exportAll }));
+  };
+  renderExportButton(false);
 
   container.append(toolbar, grid);
   parent.appendChild(container);
@@ -120,7 +127,7 @@ export function load(parentSelector: string, rows?: InfinityScrollUser[]) {
 
   return () => {
     disconnectTheme();
-    exportButton.removeEventListener('click', exportAll);
+    renderPreactInto(exportHost, null);
     grid.remove();
     container.remove();
   };

@@ -1,3 +1,5 @@
+import { controlAttributes, createControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import './assets/styles.scss';
 import buildingIcon from '@fortawesome/fontawesome-free/svgs/solid/building.svg?raw';
 import calendarIcon from '@fortawesome/fontawesome-free/svgs/solid/calendar-days.svg?raw';
@@ -176,8 +178,8 @@ export function mountConstructionFabricationWorkspace(
       ));
       body.append(createControlGroup('Department', departmentButtons));
     } else {
-      const areaSelect = document.createElement('select');
-      areaSelect.className = 'construction-fabrication__select';
+      const areaSelect = createControl(document, 'select');
+      areaSelect.className = controlAttributes('select', { class: 'construction-fabrication__select' }).class;
       areaSelect.setAttribute('aria-label', 'Work area');
       const unfilteredLookAhead = lookAheadSource(CONSTRUCTION_MODEL, selectedProject, period, { department: 'all', workArea: 'all' }, tasks);
       const areas = [...new Set(unfilteredLookAhead.map((task) => task.workArea).filter(Boolean))] as string[];

@@ -1,3 +1,5 @@
+import { renderControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import type { ColumnData, ColumnProp, ColumnRegular, HyperFunc, VNode } from '@revolist/revogrid';
 import { circularProgressRenderer, editorSlider, editorTimeline, type ColumnAddPopupConfig, type ColumnAddPopupItem } from '@revolist/revogrid-pro';
 import chevronDownIcon from '@fortawesome/fontawesome-free/svgs/solid/chevron-down.svg?raw';
@@ -281,7 +283,7 @@ function createProjectColumnAddColumn(options: ProjectColumnAddColumnOptions = {
     columnProperties: () => ({ class: 'rv-column-add-header' }),
     cellProperties: () => ({ class: 'rv-column-add-cell-host' }),
     columnTemplate: (h: HyperFunc<VNode>) =>
-      h('button', {
+      renderControl(h, 'button', {
         class: PROJECT_COLUMN_ADD_TRIGGER_CLASS,
         type: 'button',
         title: options.title ?? label,
@@ -435,7 +437,7 @@ function createProjectDynamicColumn(item: ColumnAddPopupItem): ProjectDynamicCol
         filterPlaceholder: 'All',
         cellTemplate: (h, props) =>
           h('span', { class: 'project-checkbox-preview' },
-            h('input', { type: 'checkbox', checked: !!props.value, disabled: true }),
+            renderControl(h, 'input', { type: 'checkbox', checked: !!props.value, disabled: true }),
           ),
       },
       defaultValue: row => row.status === 'Ready',

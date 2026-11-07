@@ -1,3 +1,7 @@
+import questionIcon from '@fortawesome/fontawesome-free/svgs/solid/question.svg?raw';
+import '@revolist/ui/styles.css';
+import { UiComponent } from '@revolist/ui/angular';
+import { UiControlDirective } from '@revolist/ui/angular-control';
 import { 
   Component, 
   Input, 
@@ -25,7 +29,6 @@ import {
   formatDuration,
   formatFrameRate,
   formatMemory,
-  getHRMetricTooltipId,
   HR_PERFORMANCE_METRICS,
   type HRPerformanceMonitor,
 } from './hr-performance';
@@ -43,30 +46,26 @@ import './hr.css';
 @Component({
   selector: 'hr-demo-grid',
   standalone: true,
-  imports: [RevoGrid, FormsModule, CommonModule],
+  imports: [UiComponent, UiControlDirective, RevoGrid, FormsModule, CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="hr-demo grow h-full flex flex-col">
       <div class="hr-toolbar">
-        <span class="text-sm font-medium">Data Source</span>
-        <select
-          class="hr-select"
-          [disabled]="loading()"
-          (change)="onSizeChange($event)"
-        >
-          @for (opt of options; track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
-          }
-        </select>
-        <span class="text-sm font-medium">Theme</span>
-        <select class="hr-select" [value]="selectedTheme()" (change)="onThemeChange($event)">
-          @for (opt of themeOptions; track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
-          }
-        </select>
-        <button type="button" class="hr-button" (click)="saveView()">Save view</button>
-        <button type="button" class="hr-button hr-button-secondary" (click)="resetView()">Reset view</button>
+        <div class="hr-field hr-field--source">
+          <span>Data Source</span>
+          <rv-ui component="Dropdown"
+            [props]="{ className: 'rv-select', source: options, value: currentSize(), disabled: loading(), config: { nativeTabNavigation: true, topLayer: true, ariaLabel: 'Data Source' } }"
+            (valueChange)="onSizeChange($event)" />
+        </div>
+        <div class="hr-field">
+          <span>Theme</span>
+          <rv-ui component="Dropdown"
+            [props]="{ className: 'rv-select', source: themeOptions, value: selectedTheme(), config: { nativeTabNavigation: true, topLayer: true, ariaLabel: 'Theme' } }"
+            (valueChange)="onThemeChange($event)" />
+        </div>
+        <button rvControl type="button" (click)="saveView()">Save view</button>
+        <button rvControl type="button" (click)="resetView()">Reset view</button>
         <span class="hr-workspace-status">{{ workspaceStatus() }}</span>
         @if (loading()) {
             <div class="text-sm opacity-50 animate-pulse ml-2">{{ loadingLabel() }}</div>
@@ -107,50 +106,40 @@ import './hr.css';
         <div class="hr-performance-metric">
           <div class="hr-performance-label">
             <span>{{ metricDefinitions.preparation.label }}</span>
-            <span class="hr-metric-help">
-              <button type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.preparation.label" [attr.aria-describedby]="getHRMetricTooltipId('preparation')">?</button>
-              <span class="hr-metric-tooltip" [id]="getHRMetricTooltipId('preparation')" role="tooltip">{{ metricDefinitions.preparation.description }}</span>
-            </span>
+            <rv-ui component="IconButton"
+              [props]="{ label: 'About ' + metricDefinitions.preparation.label, title: metricDefinitions.preparation.description, icon: questionIcon }" />
           </div>
           <strong>{{ formatDuration(performanceState().preparationTime) }}</strong>
         </div>
         <div class="hr-performance-metric">
           <div class="hr-performance-label">
             <span>{{ metricDefinitions.grid.label }}</span>
-            <span class="hr-metric-help">
-              <button type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.grid.label" [attr.aria-describedby]="getHRMetricTooltipId('grid')">?</button>
-              <span class="hr-metric-tooltip" [id]="getHRMetricTooltipId('grid')" role="tooltip">{{ metricDefinitions.grid.description }}</span>
-            </span>
+            <rv-ui component="IconButton"
+              [props]="{ label: 'About ' + metricDefinitions.grid.label, title: metricDefinitions.grid.description, icon: questionIcon }" />
           </div>
           <strong>{{ formatDuration(performanceState().gridRenderTime) }}</strong>
         </div>
         <div class="hr-performance-metric">
           <div class="hr-performance-label">
             <span>{{ metricDefinitions.scroll.label }}</span>
-            <span class="hr-metric-help">
-              <button type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.scroll.label" [attr.aria-describedby]="getHRMetricTooltipId('scroll')">?</button>
-              <span class="hr-metric-tooltip" [id]="getHRMetricTooltipId('scroll')" role="tooltip">{{ metricDefinitions.scroll.description }}</span>
-            </span>
+            <rv-ui component="IconButton"
+              [props]="{ label: 'About ' + metricDefinitions.scroll.label, title: metricDefinitions.scroll.description, icon: questionIcon }" />
           </div>
           <strong>{{ formatFrameRate(performanceState().scrollFps) }}</strong>
         </div>
         <div class="hr-performance-metric">
           <div class="hr-performance-label">
             <span>{{ metricDefinitions.memory.label }}</span>
-            <span class="hr-metric-help">
-              <button type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.memory.label" [attr.aria-describedby]="getHRMetricTooltipId('memory')">?</button>
-              <span class="hr-metric-tooltip" [id]="getHRMetricTooltipId('memory')" role="tooltip">{{ metricDefinitions.memory.description }}</span>
-            </span>
+            <rv-ui component="IconButton"
+              [props]="{ label: 'About ' + metricDefinitions.memory.label, title: metricDefinitions.memory.description, icon: questionIcon }" />
           </div>
           <strong>{{ formatMemory(performanceState().memoryUsage?.usedJSHeapSize) }}</strong>
         </div>
         <div class="hr-performance-metric">
           <div class="hr-performance-label">
             <span>{{ metricDefinitions.dataset.label }}</span>
-            <span class="hr-metric-help">
-              <button type="button" class="hr-metric-help-trigger" [attr.aria-label]="'About ' + metricDefinitions.dataset.label" [attr.aria-describedby]="getHRMetricTooltipId('dataset')">?</button>
-              <span class="hr-metric-tooltip" [id]="getHRMetricTooltipId('dataset')" role="tooltip">{{ metricDefinitions.dataset.description }}</span>
-            </span>
+            <rv-ui component="IconButton"
+              [props]="{ label: 'About ' + metricDefinitions.dataset.label, title: metricDefinitions.dataset.description, icon: questionIcon }" />
           </div>
           <strong>{{ performanceState().rowCount.toLocaleString() }} × {{ performanceState().columnCount }}</strong>
         </div>
@@ -177,7 +166,7 @@ export class HRDemoGridComponent implements AfterViewInit, OnDestroy {
   readonly columnTypes = signal<any>({});
   readonly performanceState = signal(createInitialHRPerformanceState());
   readonly metricDefinitions = HR_PERFORMANCE_METRICS;
-  readonly getHRMetricTooltipId = getHRMetricTooltipId;
+  readonly questionIcon = questionIcon;
   readonly formatDuration = formatDuration;
   readonly formatFrameRate = formatFrameRate;
   readonly formatMemory = formatMemory;
@@ -269,15 +258,15 @@ export class HRDemoGridComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  onSizeChange(event: any) {
-    const size = parseInt(event.target.value, 10);
+  onSizeChange(value: unknown) {
+    const size = Number(value);
     this.currentSize.set(size);
     this.workspaceStatus.set('Unsaved changes');
     this.loadData(size);
   }
 
-  onThemeChange(event: Event) {
-    this.selectedTheme.set((event.target as HTMLSelectElement).value);
+  onThemeChange(value: unknown) {
+    this.selectedTheme.set(String(value));
     this.workspaceStatus.set('Unsaved changes');
   }
 

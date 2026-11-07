@@ -4,10 +4,10 @@
     aria-label="Construction and Fabrication Operations"
   >
     <nav class="construction-fabrication__nav" aria-label="Schedule location">
-      <button class="construction-fabrication__button construction-fabrication__button--quiet" :aria-pressed="view === 'master'" type="button" @click="showMaster">Company Master</button>
+      <button v-rv-control class="rv-choice-chip construction-fabrication__button construction-fabrication__button--quiet" :aria-pressed="view === 'master'" type="button" @click="showMaster">Company Master</button>
       <template v-if="view !== 'master'">
         <span class="construction-fabrication__crumb">›</span>
-        <button class="construction-fabrication__button construction-fabrication__button--quiet" :aria-pressed="view === 'project'" type="button" @click="showSchedule">{{ projectName }}</button>
+        <button v-rv-control class="rv-choice-chip construction-fabrication__button construction-fabrication__button--quiet" :aria-pressed="view === 'project'" type="button" @click="showSchedule">{{ projectName }}</button>
       </template>
       <template v-if="view === 'lookahead'">
         <span class="construction-fabrication__crumb">›</span>
@@ -19,16 +19,16 @@
       <main class="construction-fabrication__main">
         <div v-if="view !== 'master'" class="construction-fabrication__command-deck">
           <div class="construction-fabrication__view-tabs" role="tablist">
-            <button class="construction-fabrication__button construction-fabrication__button--tab" :aria-pressed="view === 'project' && !resourcesOpen" type="button" @click="showSchedule">Schedule</button>
-            <button class="construction-fabrication__button construction-fabrication__button--tab" :aria-pressed="view === 'lookahead'" type="button" @click="showLookAhead">Look-Ahead</button>
-            <button class="construction-fabrication__button construction-fabrication__button--tab" :aria-pressed="resourcesOpen" type="button" @click="showResources">Resources</button>
+            <button v-rv-control class="rv-choice-chip construction-fabrication__button construction-fabrication__button--tab" :aria-pressed="view === 'project' && !resourcesOpen" type="button" @click="showSchedule">Schedule</button>
+            <button v-rv-control class="rv-choice-chip construction-fabrication__button construction-fabrication__button--tab" :aria-pressed="view === 'lookahead'" type="button" @click="showLookAhead">Look-Ahead</button>
+            <button v-rv-control class="rv-choice-chip construction-fabrication__button construction-fabrication__button--tab" :aria-pressed="resourcesOpen" type="button" @click="showResources">Resources</button>
           </div>
 
           <div class="construction-fabrication__command-actions">
             <div v-if="view === 'project' && !resourcesOpen" class="construction-fabrication__control-group">
               <span class="construction-fabrication__toolbar-label">Timeline</span>
               <div class="construction-fabrication__control-set">
-                <button v-for="option in scaleOptions" :key="option.value" class="construction-fabrication__button construction-fabrication__button--default" :aria-pressed="scale === option.value" type="button" @click="scale = option.value">{{ option.label }}</button>
+                <button v-rv-control v-for="option in scaleOptions" :key="option.value" class="rv-choice-chip construction-fabrication__button construction-fabrication__button--default" :aria-pressed="scale === option.value" type="button" @click="scale = option.value">{{ option.label }}</button>
               </div>
             </div>
             <template v-else>
@@ -37,27 +37,27 @@
                 <strong class="construction-fabrication__period">{{ displayDate(period.start) }} – {{ displayDate(period.end) }}</strong>
               </div>
               <div class="construction-fabrication__control-set">
-                <button class="construction-fabrication__button construction-fabrication__button--icon-only" aria-label="Previous 14 days" title="Previous 14 days" type="button" @click="movePeriod(-1)">‹</button>
-                <button class="construction-fabrication__button construction-fabrication__button--icon-only" aria-label="Reset to the featured window" title="Reset to the featured window" type="button" @click="resetPeriod">↺</button>
-                <button class="construction-fabrication__button construction-fabrication__button--icon-only" aria-label="Next 14 days" title="Next 14 days" type="button" @click="movePeriod(1)">›</button>
+                <button v-rv-control class="construction-fabrication__button construction-fabrication__button--icon-only" aria-label="Previous 14 days" title="Previous 14 days" type="button" @click="movePeriod(-1)">‹</button>
+                <button v-rv-control class="construction-fabrication__button construction-fabrication__button--icon-only" aria-label="Reset to the featured window" title="Reset to the featured window" type="button" @click="resetPeriod">↺</button>
+                <button v-rv-control class="construction-fabrication__button construction-fabrication__button--icon-only" aria-label="Next 14 days" title="Next 14 days" type="button" @click="movePeriod(1)">›</button>
               </div>
             </template>
 
             <template v-if="!resourcesOpen">
-              <button class="construction-fabrication__button construction-fabrication__button--quiet" :aria-pressed="filtersOpen" type="button" @click="filtersOpen = !filtersOpen">Filter</button>
+              <button v-rv-control class="rv-choice-chip construction-fabrication__button construction-fabrication__button--quiet" :aria-pressed="filtersOpen" type="button" @click="filtersOpen = !filtersOpen">Filter</button>
               <div v-if="filtersOpen" class="construction-fabrication__filter-popover construction-fabrication__filter-popover--bound" role="dialog" aria-label="Schedule filters">
                 <div class="construction-fabrication__filter-header">
                   <strong class="construction-fabrication__filter-title">Filters</strong>
-                  <button class="construction-fabrication__button construction-fabrication__button--quiet" type="button" @click="resetFilters">Reset</button>
+                  <button v-rv-control class="construction-fabrication__button construction-fabrication__button--quiet" type="button" @click="resetFilters">Reset</button>
                 </div>
                 <div class="construction-fabrication__filter-body">
                   <div class="construction-fabrication__control-group">
                     <span class="construction-fabrication__toolbar-label">Department</span>
                     <div class="construction-fabrication__control-set">
-                      <button
+                      <button v-rv-control
                         v-for="department in DEPARTMENT_FILTERS"
                         :key="department"
-                        class="construction-fabrication__button"
+                        class="rv-choice-chip construction-fabrication__button"
                         :aria-pressed="activeDepartment === department"
                         type="button"
                         @click="updateDepartment(department)"
@@ -66,7 +66,7 @@
                   </div>
                   <label v-if="view === 'lookahead'" class="construction-fabrication__control-group">
                     <span class="construction-fabrication__toolbar-label">Work area</span>
-                    <select v-model="filters.workArea" class="construction-fabrication__select" @change="refreshActiveSource()">
+                    <select v-rv-control v-model="filters.workArea" class="construction-fabrication__select" @change="refreshActiveSource()">
                       <option value="all">All work areas</option>
                       <option v-for="area in workAreas" :key="area">{{ area }}</option>
                     </select>
@@ -102,6 +102,8 @@
 </template>
 
 <script setup lang="ts">
+import { vRvControl } from '@revolist/ui/vue-control';
+import '@revolist/ui/styles.css';
 import { computed, onBeforeUnmount, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import { currentTheme, observeCurrentTheme } from '../../composables/useRandomData';

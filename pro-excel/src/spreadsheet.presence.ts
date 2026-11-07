@@ -1,3 +1,4 @@
+import { planningPeople } from '../../pro-advanced-planning/src/data/fixtures';
 import {
   type CollaborativePresenceConfig,
   type CollaborativePresenceUser,
@@ -144,6 +145,7 @@ export function createSpreadsheetPresenceUsers(
   return SPREADSHEET_COLLABORATORS.map((user, index) => ({
     ...userById.get(user.id)!,
     lastActiveAt: now - index * 850,
+    avatarUrl: getSpreadsheetCollaboratorPhoto(user.id),
   }));
 }
 
@@ -223,4 +225,10 @@ export function flashSpreadsheetPresenceEdit(
     duration: 1300,
     rowDuration: 1500,
   });
+}
+
+/** Reuse bundled demo portraits; collaborator identities and live state stay unchanged. */
+export function getSpreadsheetCollaboratorPhoto(id: string): string | undefined {
+  const portraits: Record<string, string> = { anna: 'Ava', sarah: 'Maya', leo: 'Leo' };
+  return planningPeople.find(person => person.id === portraits[id])?.avatarUrl;
 }

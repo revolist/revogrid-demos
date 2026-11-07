@@ -1,5 +1,8 @@
+import '@revolist/ui/styles.css';
+import { UiComponent } from '@revolist/ui/angular';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
@@ -78,6 +81,7 @@ import {
   createSpreadsheetPresenceUsers,
   flashSpreadsheetPresenceEdit,
 } from './spreadsheet.presence';
+import { getSpreadsheetCollaboratorPhoto } from './spreadsheet.presence';
 import {
   applySpreadsheetFeedFlashStep,
   flashSpreadsheetFeedEdit,
@@ -90,7 +94,7 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
 @Component({
   selector: 'spreadsheet-workbench-grid',
   standalone: true,
-  imports: [CommonModule, RevoGrid],
+  imports: [UiComponent, CommonModule, RevoGrid],
   template: `
     <section
       #workbenchShell
@@ -101,19 +105,11 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
     >
       <div class="spreadsheet-ribbon">
         <span class="spreadsheet-ribbon-group">
-          <button class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" (click)="exportWorkbook()">
-            <span class="spreadsheet-action-icon" aria-hidden="true" [innerHTML]="actionIcons.export"></span>
-            Export XLSX
-          </button>
+          <rv-ui component="IconButton"
+            [props]="{ label: 'Export XLSX', icon: actionIcons.export, 'data-testid': 'spreadsheet-export' }"
+            (click)="exportWorkbook()" />
         </span>
         <div #historyHost class="spreadsheet-ribbon-group"></div>
-      </div>
-
-      <div class="spreadsheet-sheet-tabs" data-testid="spreadsheet-sheet-tabs">
-        <button class="spreadsheet-sheet-tab is-active" type="button" data-testid="spreadsheet-sheet-budget">
-          Budget
-        </button>
-        <span class="spreadsheet-tab-spacer" aria-hidden="true"></span>
         <span class="spreadsheet-collab" aria-label="Live collaborators">
           <span class="spreadsheet-live-dot" title="Live data"></span>
           <span
@@ -122,7 +118,8 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
             [style.--spreadsheet-avatar-color]="user.color"
             [title]="user.name + ' - ' + (user.activity || 'viewing')"
           >
-            {{ user.initials }}
+            <img *ngIf="collaboratorPhoto(user.id) as photo; else collaboratorInitials" [src]="photo" [alt]="user.name" />
+            <ng-template #collaboratorInitials>{{ user.initials }}</ng-template>
           </span>
         </span>
       </div>
@@ -185,6 +182,9 @@ type SpreadsheetGridElement = HTMLRevoGridElement & {
   schemas: [NO_ERRORS_SCHEMA],
 })
 export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestroy {
+  constructor(private readonly changeDetector: ChangeDetectorRef) {}
+
+  readonly collaboratorPhoto = getSpreadsheetCollaboratorPhoto;
   readonly actionIcons = SPREADSHEET_ACTION_ICONS;
   @Input() theme: 'dark' | 'light' | string = isSpreadsheetDarkTheme() ? 'dark' : 'light';
 
@@ -257,6 +257,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
       () => this.workbook.columns,
       (message) => {
         this.clipboardStatus = message;
+        this.changeDetector.markForCheck();
       },
     );
     this.presenceTimer = window.setInterval(() => {
@@ -313,6 +314,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     const grid = this.gridElement?.nativeElement;
     if (shouldDeferSpreadsheetSimulationDataUpdate(grid, this.shellElement?.nativeElement)) {
       this.clipboardStatus = 'Local row interaction in progress; collaborator simulation paused.';
+      this.changeDetector.markForCheck();
       return;
     }
     this.presenceStep += 1;
@@ -324,11 +326,13 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     this.presenceUsers = result.users;
     this.collaborativePresence = createSpreadsheetCollaborativePresence(this.presenceUsers);
     this.clipboardStatus = result.message;
+    this.changeDetector.markForCheck();
     if (!hasSpreadsheetSimulationDataChange(result)) {
       return;
     }
     if (shouldDeferSpreadsheetSimulationDataUpdate(grid, this.shellElement?.nativeElement)) {
       this.clipboardStatus = `${result.message} Local edit in progress; remote write paused.`;
+      this.changeDetector.markForCheck();
       return;
     }
     this._simulationWorkbook = await syncSpreadsheetSimulationResultToGrid(grid, sourceWorkbook, result.workbook, { rowType: 'rgRow' });
@@ -383,6 +387,7 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     const grid = this.gridElement?.nativeElement;
     if (shouldDeferSpreadsheetSimulationDataUpdate(grid, this.shellElement?.nativeElement)) {
       this.clipboardStatus = 'Local row interaction in progress; feed simulation paused.';
+      this.changeDetector.markForCheck();
       return;
     }
     this.feedStep += 1;
@@ -393,10 +398,12 @@ export class SpreadsheetWorkbenchGridComponent implements AfterViewInit, OnDestr
     const result = applySpreadsheetFeedFlashStep(sourceWorkbook, this.feedStep);
     if (shouldDeferSpreadsheetSimulationDataUpdate(grid, this.shellElement?.nativeElement)) {
       this.clipboardStatus = `${result.message} Local edit in progress; feed write paused.`;
+      this.changeDetector.markForCheck();
       return;
     }
     this._simulationWorkbook = await syncSpreadsheetSimulationResultToGrid(grid, sourceWorkbook, result.workbook, { rowType: 'rgRow' });
     this.clipboardStatus = result.message;
+    this.changeDetector.markForCheck();
     const plugin = await this.getPlugin(CellFlashPlugin);
     flashSpreadsheetFeedEdit(plugin as SpreadsheetFlashPlugin | undefined, result);
   }

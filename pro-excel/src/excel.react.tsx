@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { IconButton } from '@revolist/ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RevoGrid } from '@revolist/react-datagrid';
 import {
@@ -67,20 +69,11 @@ import {
   createSpreadsheetPresenceUsers,
   flashSpreadsheetPresenceEdit,
 } from './spreadsheet.presence';
+import { getSpreadsheetCollaboratorPhoto } from './spreadsheet.presence';
 import {
   applySpreadsheetFeedFlashStep,
   flashSpreadsheetFeedEdit,
 } from './spreadsheet.feed';
-
-function ActionIcon({ icon }: { icon: string }) {
-  return (
-    <span
-      className="spreadsheet-action-icon"
-      aria-hidden="true"
-      dangerouslySetInnerHTML={{ __html: icon }}
-    />
-  );
-}
 
 export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: boolean }) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
@@ -398,19 +391,9 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
     >
       <div className="spreadsheet-ribbon">
         <span className="spreadsheet-ribbon-group">
-          <button className="spreadsheet-btn" type="button" data-testid="spreadsheet-export" onClick={exportWorkbook}>
-            <ActionIcon icon={SPREADSHEET_ACTION_ICONS.export} />
-            Export XLSX
-          </button>
+          <IconButton label="Export XLSX" icon={SPREADSHEET_ACTION_ICONS.export} data-testid="spreadsheet-export" onClick={exportWorkbook} />
         </span>
         <div ref={historyHostRef} className="spreadsheet-ribbon-group" />
-      </div>
-
-      <div className="spreadsheet-sheet-tabs" data-testid="spreadsheet-sheet-tabs">
-        <button className="spreadsheet-sheet-tab is-active" type="button" data-testid="spreadsheet-sheet-budget">
-          Budget
-        </button>
-        <span className="spreadsheet-tab-spacer" aria-hidden="true" />
         <span className="spreadsheet-collab" aria-label="Live collaborators">
           <span className="spreadsheet-live-dot" title="Live data" />
           {presenceUsers.map(user => (
@@ -420,7 +403,9 @@ export default function SpreadsheetWorkbench({ isDark = false }: { isDark?: bool
               style={{ '--spreadsheet-avatar-color': user.color } as React.CSSProperties}
               title={`${user.name} - ${user.activity ?? 'viewing'}`}
             >
-              {user.initials}
+              {getSpreadsheetCollaboratorPhoto(user.id)
+                ? <img src={getSpreadsheetCollaboratorPhoto(user.id)} alt={user.name} />
+                : user.initials}
             </span>
           ))}
         </span>

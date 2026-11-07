@@ -42,51 +42,51 @@
               <p>New project</p>
               <h2>Pipeline details</h2>
             </div>
-            <button type="button" class="project-modal__close" aria-label="Close task dialog" @click="closeTaskModal">×</button>
+            <button v-rv-control type="button" class="project-modal__close" aria-label="Close task dialog" @click="closeTaskModal">×</button>
           </div>
 
           <label class="project-modal__field project-modal__field--wide">
             <span>Project</span>
-            <input v-model="taskDraft.task" required placeholder="Describe the project" />
+            <input v-rv-control v-model="taskDraft.task" required placeholder="Describe the project" />
           </label>
           <label class="project-modal__field project-modal__field--wide">
             <span>AI summary</span>
-            <input v-model="taskDraft.summary" required placeholder="Short project summary" />
+            <input v-rv-control v-model="taskDraft.summary" required placeholder="Short project summary" />
           </label>
 
           <div class="project-modal__grid">
             <DraftSelect kind="owner" label="Owner" v-model="taskDraft.owner" :options="options.owners" />
             <DraftChecks label="Skills" v-model="taskDraft.skills" :options="options.skills" />
-            <DraftSelect kind="block" label="Priority" v-model="taskDraft.priority" :options="options.priorities" />
-            <DraftSelect kind="block" label="Risk" v-model="taskDraft.risk" :options="options.risks" />
-            <DraftSelect kind="block" label="Status" v-model="taskDraft.status" :options="options.statuses" />
-            <DraftSelect kind="department" label="Department" v-model="taskDraft.department" :options="options.departments" />
+            <DraftSelect label="Priority" v-model="taskDraft.priority" :options="options.priorities" />
+            <DraftSelect label="Risk" v-model="taskDraft.risk" :options="options.risks" />
+            <DraftSelect label="Status" v-model="taskDraft.status" :options="options.statuses" />
+            <DraftSelect label="Department" v-model="taskDraft.department" :options="options.departments" />
             <label class="project-modal__field">
               <span>Progress</span>
-              <input v-model.number="taskDraft.progress" type="number" min="0" max="100" />
+              <input v-rv-control v-model.number="taskDraft.progress" type="number" min="0" max="100" />
             </label>
             <label class="project-modal__field">
               <span>Start</span>
-              <input v-model="taskDraft.from" type="date" />
+              <input v-rv-control v-model="taskDraft.from" type="date" />
             </label>
             <label class="project-modal__field">
               <span>End</span>
-              <input v-model="taskDraft.to" type="date" />
+              <input v-rv-control v-model="taskDraft.to" type="date" />
             </label>
             <label class="project-modal__field">
               <span>Budget</span>
-              <input v-model.number="taskDraft.budget" type="number" min="0" step="1000" />
+              <input v-rv-control v-model.number="taskDraft.budget" type="number" min="0" step="1000" />
             </label>
             <label class="project-modal__field">
               <span>Rating</span>
-              <input v-model.number="taskDraft.rating" type="number" min="0" max="5" step="1" />
+              <input v-rv-control v-model.number="taskDraft.rating" type="number" min="0" max="5" step="1" />
             </label>
-            <DraftSelect kind="section" label="Section" v-model="taskDraft.section" :options="options.sections" />
+            <DraftSelect label="Section" v-model="taskDraft.section" :options="options.sections" />
           </div>
 
           <div class="project-modal__footer">
-            <button type="button" @click="closeTaskModal">Cancel</button>
-            <button type="submit" class="project-grid-primary">Create project</button>
+            <button v-rv-control type="button" @click="closeTaskModal">Cancel</button>
+            <button v-rv-control type="submit" class="project-grid-primary">Create project</button>
           </div>
         </form>
       </div>
@@ -95,6 +95,9 @@
 </template>
 
 <script setup lang="ts">
+import { renderControl } from '@revolist/ui';
+import { vRvControl } from '@revolist/ui/vue-control';
+import '@revolist/ui/styles.css';
 import './project-tracker.scss';
 import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, shallowRef, watchEffect } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
@@ -120,11 +123,9 @@ import {
   projectRowOrder,
   projectRowSelect,
   openProjectStatusHeaderFilter,
-  projectOwnerProfiles,
   resolveProjectSortValueFromConfig,
-  projectSkillOptions,
+  projectOwnerProfiles,
   syncProjectCellEdit,
-  tagTone,
   updateProjectCollapsedGroups,
   defineProjectTrackerToolbarElement,
   type ProjectGroupProp,
@@ -222,14 +223,11 @@ const DraftSelect = defineComponent({
   setup(props, { emit }) {
     return () => h('label', { class: 'project-modal__field project-modal__field--select' }, [
       h('span', props.label),
-      h('span', { class: 'project-modal-select' }, [
-        renderDraftSelectPreview(props.kind as ModalSelectKind, props.modelValue),
-        h('select', {
-          class: 'project-modal-select__native',
-          value: props.modelValue,
-          onChange: (event: Event) => emit('update:modelValue', (event.target as HTMLSelectElement).value),
-        }, props.options.map((option) => h('option', { value: option }, option))),
-      ]),
+      renderControl(h, 'select', {
+        value: props.modelValue,
+        onChange: (event: Event) => emit('update:modelValue', (event.target as HTMLSelectElement).value),
+      }, props.options.map((option) => h('option', { value: option },
+        props.kind === 'owner' ? projectOwnerProfiles.find(owner => owner.value === option)?.label ?? option : option))),
     ]);
   },
 });
@@ -251,73 +249,23 @@ const DraftChecks = defineComponent({
     return () => h('fieldset', { class: 'project-modal__field project-modal__field--wide project-modal__checks' }, [
       h('legend', props.label),
       h('div', props.options.map((option) => h('label', { key: option }, [
-        h('input', {
+        renderControl(h, 'input', {
           type: 'checkbox',
           checked: props.modelValue.includes(option),
-          onChange: (event: Event) => toggle(option, (event.target as HTMLInputElement).checked),
+          onChange: (event: Event) => {
+            const input = event.target as HTMLInputElement;
+            if (!input.checked && props.modelValue.length === 1 && props.modelValue.includes(option)) {
+              input.checked = true;
+              return;
+            }
+            toggle(option, input.checked);
+          },
         }),
-        h('span', { class: `project-modal-skill project-skill--${modalSkillTone(option)}` }, option),
+        h('span', option),
       ]))),
     ]);
   },
 });
-
-type ModalSelectKind = 'plain' | 'owner' | 'block' | 'department' | 'section';
-
-function renderDraftSelectPreview(kind: ModalSelectKind, value: string) {
-  if (kind === 'owner') {
-    const profile = projectOwnerProfiles.find((owner) => owner.value === value);
-    const index = Math.max(0, projectOwnerProfiles.findIndex((owner) => owner.value === value));
-    return h('span', { class: 'project-modal-select__preview' }, [
-      h('span', { class: 'project-modal-owner' }, [
-        h('span', { class: `avatar-cell avatar-cell--${index % 8} project-avatar` }, value.slice(0, 1)),
-        h('span', { class: 'project-modal-select__text' }, profile?.label ?? value),
-      ]),
-    ]);
-  }
-  if (kind === 'block') {
-    return h('span', { class: 'project-modal-select__preview' }, [
-      h('span', { class: `project-modal-block project-filter-block--${modalBlockTone(value)}` }, value),
-    ]);
-  }
-  if (kind === 'department') {
-    return h('span', { class: 'project-modal-select__preview' }, [
-      h('span', { class: `project-modal-pill project-filter-department--${tagTone(value)}` }, value),
-    ]);
-  }
-  if (kind === 'section') {
-    return h('span', { class: 'project-modal-select__preview' }, [
-      h('span', { class: 'project-modal-section', style: { '--project-modal-section-color': modalSectionColor(value) } }, [
-        h('span', { class: 'project-modal-section__dot' }),
-        h('span', { class: 'project-modal-select__text' }, value),
-      ]),
-    ]);
-  }
-  return h('span', { class: 'project-modal-select__preview' }, [
-    h('span', { class: 'project-modal-select__text' }, value),
-  ]);
-}
-
-function modalBlockTone(value: string) {
-  const normalized = value.toLowerCase();
-  if (normalized.includes('blocked') || normalized.includes('high')) return 'red';
-  if (normalized.includes('review') || normalized.includes('medium')) return 'orange';
-  if (normalized.includes('ready') || normalized.includes('low')) return 'green';
-  if (normalized.includes('new')) return 'blue';
-  return 'violet';
-}
-
-function modalSectionColor(value: string) {
-  const normalized = value.toLowerCase();
-  if (normalized.includes('review')) return '#ff8b00';
-  if (normalized.includes('ready')) return '#00c875';
-  if (normalized.includes('blocked')) return '#ff4d5e';
-  return '#1f7aff';
-}
-
-function modalSkillTone(value: string) {
-  return projectSkillOptions.find((skill) => skill.value === value)?.tone ?? tagTone(value);
-}
 
 function openTaskModal() {
   taskDraft.value = createProjectTaskDraft();

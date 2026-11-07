@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { UiControlDirective } from '@revolist/ui/angular-control';
 import {
   ChangeDetectorRef,
   Component,
@@ -40,7 +42,7 @@ import type {
 @Component({
   selector: 'construction-operations-grid',
   standalone: true,
-  imports: [RevoGrid],
+  imports: [UiControlDirective, RevoGrid],
   schemas: [NO_ERRORS_SCHEMA],
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./assets/styles.scss'],
@@ -51,10 +53,10 @@ import type {
       aria-label="Construction and Fabrication Operations"
     >
       <nav class="construction-fabrication__nav" aria-label="Schedule location">
-        <button class="construction-fabrication__button construction-fabrication__button--quiet" [attr.aria-pressed]="view === 'master'" type="button" (click)="showMaster()">Company Master</button>
+        <button rvControl class="rv-choice-chip construction-fabrication__button construction-fabrication__button--quiet" [attr.aria-pressed]="view === 'master'" type="button" (click)="showMaster()">Company Master</button>
         @if (view !== 'master') {
           <span class="construction-fabrication__crumb">›</span>
-          <button class="construction-fabrication__button construction-fabrication__button--quiet" [attr.aria-pressed]="view === 'project'" type="button" (click)="showSchedule()">{{ projectName }}</button>
+          <button rvControl class="rv-choice-chip construction-fabrication__button construction-fabrication__button--quiet" [attr.aria-pressed]="view === 'project'" type="button" (click)="showSchedule()">{{ projectName }}</button>
         }
         @if (view === 'lookahead') {
           <span class="construction-fabrication__crumb">›</span>
@@ -67,9 +69,9 @@ import type {
           @if (view !== 'master') {
             <div class="construction-fabrication__command-deck">
               <div class="construction-fabrication__view-tabs" role="tablist">
-                <button class="construction-fabrication__button construction-fabrication__button--tab" [attr.aria-pressed]="view === 'project' && !resourcesOpen" type="button" (click)="showSchedule()">Schedule</button>
-                <button class="construction-fabrication__button construction-fabrication__button--tab" [attr.aria-pressed]="view === 'lookahead'" type="button" (click)="showLookAhead()">Look-Ahead</button>
-                <button class="construction-fabrication__button construction-fabrication__button--tab" [attr.aria-pressed]="resourcesOpen" type="button" (click)="showResources()">Resources</button>
+                <button rvControl class="rv-choice-chip construction-fabrication__button construction-fabrication__button--tab" [attr.aria-pressed]="view === 'project' && !resourcesOpen" type="button" (click)="showSchedule()">Schedule</button>
+                <button rvControl class="rv-choice-chip construction-fabrication__button construction-fabrication__button--tab" [attr.aria-pressed]="view === 'lookahead'" type="button" (click)="showLookAhead()">Look-Ahead</button>
+                <button rvControl class="rv-choice-chip construction-fabrication__button construction-fabrication__button--tab" [attr.aria-pressed]="resourcesOpen" type="button" (click)="showResources()">Resources</button>
               </div>
 
               <div class="construction-fabrication__command-actions">
@@ -77,9 +79,9 @@ import type {
                   <div class="construction-fabrication__control-group">
                     <span class="construction-fabrication__toolbar-label">Timeline</span>
                     <div class="construction-fabrication__control-set">
-                      <button class="construction-fabrication__button" [attr.aria-pressed]="scale === 'day-week'" type="button" (click)="setScale('day-week')">Days</button>
-                      <button class="construction-fabrication__button" [attr.aria-pressed]="scale === 'week-month'" type="button" (click)="setScale('week-month')">Weeks</button>
-                      <button class="construction-fabrication__button" [attr.aria-pressed]="scale === 'month-quarter'" type="button" (click)="setScale('month-quarter')">Months</button>
+                      <button rvControl class="rv-choice-chip construction-fabrication__button" [attr.aria-pressed]="scale === 'day-week'" type="button" (click)="setScale('day-week')">Days</button>
+                      <button rvControl class="rv-choice-chip construction-fabrication__button" [attr.aria-pressed]="scale === 'week-month'" type="button" (click)="setScale('week-month')">Weeks</button>
+                      <button rvControl class="rv-choice-chip construction-fabrication__button" [attr.aria-pressed]="scale === 'month-quarter'" type="button" (click)="setScale('month-quarter')">Months</button>
                     </div>
                   </div>
                 } @else {
@@ -88,33 +90,33 @@ import type {
                     <strong class="construction-fabrication__period">{{ formatDate(period.start) }} – {{ formatDate(period.end) }}</strong>
                   </div>
                   <div class="construction-fabrication__control-set">
-                    <button class="construction-fabrication__button construction-fabrication__button--icon-only" aria-label="Previous 14 days" title="Previous 14 days" type="button" (click)="movePeriod(-1)">‹</button>
-                    <button class="construction-fabrication__button construction-fabrication__button--icon-only" aria-label="Reset to the featured window" title="Reset to the featured window" type="button" (click)="resetPeriod()">↺</button>
-                    <button class="construction-fabrication__button construction-fabrication__button--icon-only" aria-label="Next 14 days" title="Next 14 days" type="button" (click)="movePeriod(1)">›</button>
+                    <button rvControl class="construction-fabrication__button construction-fabrication__button--icon-only" aria-label="Previous 14 days" title="Previous 14 days" type="button" (click)="movePeriod(-1)">‹</button>
+                    <button rvControl class="construction-fabrication__button construction-fabrication__button--icon-only" aria-label="Reset to the featured window" title="Reset to the featured window" type="button" (click)="resetPeriod()">↺</button>
+                    <button rvControl class="construction-fabrication__button construction-fabrication__button--icon-only" aria-label="Next 14 days" title="Next 14 days" type="button" (click)="movePeriod(1)">›</button>
                   </div>
                 }
 
                 @if (!resourcesOpen) {
-                  <button class="construction-fabrication__button construction-fabrication__button--quiet" [attr.aria-pressed]="filtersOpen" type="button" (click)="filtersOpen = !filtersOpen">Filter</button>
+                  <button rvControl class="rv-choice-chip construction-fabrication__button construction-fabrication__button--quiet" [attr.aria-pressed]="filtersOpen" type="button" (click)="filtersOpen = !filtersOpen">Filter</button>
                   @if (filtersOpen) {
                     <div class="construction-fabrication__filter-popover construction-fabrication__filter-popover--bound" role="dialog" aria-label="Schedule filters">
                       <div class="construction-fabrication__filter-header">
                         <strong class="construction-fabrication__filter-title">Filters</strong>
-                        <button class="construction-fabrication__button construction-fabrication__button--quiet" type="button" (click)="resetFilters()">Reset</button>
+                        <button rvControl class="construction-fabrication__button construction-fabrication__button--quiet" type="button" (click)="resetFilters()">Reset</button>
                       </div>
                       <div class="construction-fabrication__filter-body">
                         <div class="construction-fabrication__control-group">
                           <span class="construction-fabrication__toolbar-label">Department</span>
                           <div class="construction-fabrication__control-set">
                             @for (department of departments; track department) {
-                              <button class="construction-fabrication__button" [attr.aria-pressed]="activeDepartment === department" type="button" (click)="updateDepartment(department)">{{ departmentLabel(department) }}</button>
+                              <button rvControl class="rv-choice-chip construction-fabrication__button" [attr.aria-pressed]="activeDepartment === department" type="button" (click)="updateDepartment(department)">{{ departmentLabel(department) }}</button>
                             }
                           </div>
                         </div>
                         @if (view === 'lookahead') {
                           <label class="construction-fabrication__control-group">
                             <span class="construction-fabrication__toolbar-label">Work area</span>
-                            <select class="construction-fabrication__select" [value]="filters.workArea" (change)="updateWorkArea($event)">
+                            <select rvControl class="construction-fabrication__select" [value]="filters.workArea" (change)="updateWorkArea($event)">
                               <option value="all">All work areas</option>
                               @for (area of workAreas; track area) { <option [value]="area">{{ area }}</option> }
                             </select>

@@ -1,3 +1,6 @@
+import '@revolist/ui/styles.css';
+import { Dropdown, SearchInput } from '@revolist/ui/react';
+import { ButtonControl as UiButton } from '@revolist/ui/react-control';
 import React, { useEffect, useMemo, useState } from 'react'
 import { RevoGrid } from '@revolist/react-datagrid'
 import type { ColumnFilterConfig } from '@revolist/revogrid'
@@ -29,12 +32,14 @@ import {
     filterPlanningTasks,
     ganttColumns,
     ganttConfig,
+    toPlanningGanttSource,
+    ganttTaskEditorDialog,
     ganttDependencies,
     ganttResources,
     gridColumnTypes,
     gridColumns,
     createKanbanConfig,
-    planningProjects,
+    planningFilterDropdowns,
     planningFilterConfig,
     planningDataGridFormatting,
     planningRowOrder,
@@ -54,6 +59,7 @@ import './planning.scss'
 
 type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     gantt?: typeof ganttConfig
+    ganttTaskEditorDialog?: typeof ganttTaskEditorDialog
     ganttResources?: typeof ganttResources
     ganttAssignments?: ReturnType<typeof toGanttAssignments>
     ganttDependencies?: typeof ganttDependencies
@@ -67,7 +73,6 @@ type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     ) => void
     onRoworderapplied?: (event: CustomEvent) => void
     onFilterastchange?: (event: CustomEvent) => void
-    filterBadges?: object
     rangeSelectionLimit?: 'column'
 }
 
@@ -105,7 +110,7 @@ export default function PlanningViews() {
         []
     )
     const [isDark, setIsDark] = useState(() => currentTheme().isDark())
-    const ganttPlugins = useMemo(() => [GanttPlugin, AdvanceFilterPlugin, FilterHeaderPlugin], [])
+    const ganttPlugins = useMemo(() => [GanttPlugin, AdvanceFilterPlugin], [])
     const kanbanPlugins = useMemo(() => [KanbanPlugin, AdvanceFilterPlugin], [])
     const schedulerPlugins = useMemo(() => [EventSchedulerPlugin], [])
     const emptySource = useMemo<never[]>(() => [], [])
@@ -116,6 +121,7 @@ export default function PlanningViews() {
             PlanningWorkspacePlugin,
             EventManagerPlugin,
             AdvanceFilterPlugin,
+            FilterHeaderPlugin,
             DataGridFormattingPlugin,
             RangeSelectionLimitPlugin,
             ColumnStretchPlugin,
@@ -145,6 +151,7 @@ export default function PlanningViews() {
         () => filterPlanningTasks(tasks, filters),
         [tasks, filters]
     )
+    const ganttSource = useMemo(() => toPlanningGanttSource(visibleTasks), [visibleTasks])
     useEffect(() => observeCurrentTheme(setIsDark), [])
     const handlePlanningEdit = (
         event: CustomEvent<PlanningEditDetail>
@@ -155,12 +162,6 @@ export default function PlanningViews() {
         planningStore.commitPlanningEdit(event.detail)
         setTasks(planningStore.createSnapshot())
     }
-    const filterBadgeOptions = useMemo(() => ({
-        className: 'planning-demo__filter-badges',
-        badgeClassName: 'planning-demo__filter-badge',
-        emptyClassName: 'planning-demo__filter-badges--empty',
-        renderEmpty: () => '',
-    }), [])
 
     const selectPlanningView = (view: PlanningView) => {
         if (view === activeView) return
@@ -186,169 +187,56 @@ export default function PlanningViews() {
                 aria-label="Planning view"
             >
                 {views.map((view) => (
-                    <button
+                    <UiButton
                         key={view}
                         type="button"
-                        className={`rv-segmented-switch-item${activeView === view ? ' on' : ''}`}
+                        className={"rv-segmented-switch-item " + (`rv-segmented-switch-item${activeView === view ? ' on' : ''}`) + ((activeView === view) ? ' on' : '')}
                         role="tab"
                         aria-selected={activeView === view}
                         onClick={() => selectPlanningView(view)}
                     >
                         {view}
-                    </button>
+                    </UiButton>
                 ))}
             </nav>
 
-            <div className="planning-demo__toolbar">
-                <label className="planning-demo__search">
-                    <span aria-hidden="true">⌕</span>
-                    <input
-                        aria-label="Search tasks"
-                        type="search"
-                        placeholder="Search tasks…"
-                        value={filters.query}
-                        onChange={(event) =>
-                            changeFilters((current) => ({
-                                ...current,
-                                query: event.target.value,
-                            }))
-                        }
-                    />
-                </label>
-                <label className="planning-demo__select">
-                    <select
-                        aria-label="Project"
-                        value={filters.projectId}
-                        onChange={(event) =>
-                            changeFilters((current) => ({
-                                ...current,
-                                projectId: event.target
-                                    .value as PlanningFilters['projectId'],
-                            }))
-                        }
-                    >
-                        <option value="all">All projects</option>
-                        {planningProjects.map((project) => (
-                            <option key={project.id} value={project.id}>
-                                {project.label}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                <details className="planning-demo__filter-wrap">
-                    <summary>
-                        Filter ·{' '}
-                        {filters.statuses.length + filters.priorities.length}
-                    </summary>
-                    <div className="planning-demo__filter-popover">
-                        <fieldset>
-                            <legend>Status</legend>
-                            {(
-                                [
-                                    ['not-started', 'Planned'],
-                                    ['in-progress', 'In progress'],
-                                    ['blocked', 'Blocked'],
-                                    ['done', 'Done'],
-                                ] as const
-                            ).map(([value, label]) => (
-                                <label key={value}>
-                                    <input
-                                        type="checkbox"
-                                        checked={filters.statuses.includes(
-                                            value
-                                        )}
-                                        onChange={() =>
-                                            changeFilters((current) => ({
-                                                ...current,
-                                                statuses:
-                                                    current.statuses.includes(
-                                                        value
-                                                    )
-                                                        ? current.statuses.filter(
-                                                              (item) =>
-                                                                  item !== value
-                                                          )
-                                                        : [
-                                                              ...current.statuses,
-                                                              value,
-                                                          ],
-                                            }))
-                                        }
-                                    />
-                                    {label}
-                                </label>
-                            ))}
-                        </fieldset>
-                        <fieldset>
-                            <legend>Priority</legend>
-                            {[
-                                [500, 'Normal'],
-                                [700, 'High'],
-                                [900, 'Critical'],
-                            ].map(([value, label]) => (
-                                <label key={value}>
-                                    <input
-                                        type="checkbox"
-                                        checked={filters.priorities.includes(
-                                            Number(value)
-                                        )}
-                                        onChange={() =>
-                                            changeFilters((current) => ({
-                                                ...current,
-                                                priorities:
-                                                    current.priorities.includes(
-                                                        Number(value)
-                                                    )
-                                                        ? current.priorities.filter(
-                                                              (item) =>
-                                                                  item !==
-                                                                  Number(value)
-                                                          )
-                                                        : [
-                                                              ...current.priorities,
-                                                              Number(value),
-                                                          ],
-                                            }))
-                                        }
-                                    />
-                                    {label}
-                                </label>
-                            ))}
-                        </fieldset>
-                        <button
-                            type="button"
-                            className="planning-demo__clear"
-                            onClick={() =>
-                                changeFilters(defaultPlanningFilters())
-                            }
-                        >
-                            Clear filters
-                        </button>
-                    </div>
-                </details>
-                <button
+            <div className="planning-demo__toolbar" role="group" aria-label="Task filters">
+                <SearchInput
+                    rootClassName="planning-demo__search"
+                    aria-label="Search tasks"
+                    placeholder="Search tasks…"
+                    value={filters.query}
+                    onValueChange={(query) => changeFilters((current) => ({ ...current, query }))}
+                />
+                <div className="planning-demo__filters">
+                    <span className="planning-demo__filter">
+                        <Dropdown className="rv-select" {...planningFilterDropdowns.project} value={filters.projectId}
+                            onChange={value => changeFilters(current => ({ ...current, projectId: value as PlanningFilters['projectId'] }))} />
+                    </span>
+                    {activeView === 'kanban' && <>
+                        <span className="planning-demo__filter">
+                            <Dropdown className="rv-select" {...planningFilterDropdowns.status}
+                                value={filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''}
+                                onChange={value => changeFilters(current => ({ ...current, statuses: value ? [String(value)] : [] }))} />
+                        </span>
+                        <span className="planning-demo__filter">
+                            <Dropdown className="rv-select" {...planningFilterDropdowns.priority}
+                                value={String(filters.priorities[0] ?? '')}
+                                onChange={value => changeFilters(current => ({ ...current, priorities: value ? [Number(value)] : [] }))} />
+                        </span>
+                    </>}
+                </div>
+                <UiButton
                     type="button"
-                    className={isActiveTasksPreset ? 'on' : undefined}
+                    className={"rv-choice-chip planning-demo__active " + (isActiveTasksPreset ? 'on' : undefined)}
                     aria-pressed={isActiveTasksPreset}
                     onClick={() => {
-                        setIsActiveTasksPreset(true)
-                        setFilters(activePlanningFilters())
+                        setIsActiveTasksPreset(!isActiveTasksPreset)
+                        setFilters(isActiveTasksPreset ? defaultPlanningFilters() : activePlanningFilters())
                     }}
                 >
                     Active tasks
-                </button>
-                <button
-                    type="button"
-                    onClick={() => {
-                        planningStore.replace(createTasks())
-                        setCurrentGanttDependencies([...ganttDependencies])
-                        setTasks(planningStore.createSnapshot())
-                        setIsActiveTasksPreset(false)
-                        setFilters(defaultPlanningFilters())
-                    }}
-                >
-                    Reset
-                </button>
+                </UiButton>
             </div>
 
             {activeView === 'grid' && (
@@ -373,7 +261,6 @@ export default function PlanningViews() {
                     rowOrder={planningRowOrder}
                     rowSelect={{ rowOrder: true }}
                     filter={filterConfigs.grid}
-                    filterBadges={filterBadgeOptions}
                     onFilterastchange={(event) => {
                         if (event.detail.origin === 'ui') {
                             filterConfigs.grid.filterAst = event.detail.filterAst
@@ -396,15 +283,16 @@ export default function PlanningViews() {
                     theme={isDark ? 'darkCompact' : 'compact'}
                     hideAttribution
                     plugins={ganttPlugins}
-                    source={visibleTasks}
+                    source={ganttSource}
                     columns={ganttColumns}
+                    rowSize={40}
                     rowOrder={false}
                     gantt={ganttConfig}
+                    ganttTaskEditorDialog={ganttTaskEditorDialog}
                     ganttDependencies={visibleGanttDependencies}
                     ganttResources={ganttResources}
                     ganttAssignments={ganttAssignments}
                     filter={filterConfigs.gantt}
-                    filterBadges={filterBadgeOptions}
                     onFilterastchange={(event) => {
                         if (event.detail.origin === 'ui') {
                             filterConfigs.gantt.filterAst = event.detail.filterAst
@@ -424,7 +312,6 @@ export default function PlanningViews() {
                     columns={gridColumns}
                     kanban={kanbanConfig}
                     filter={filterConfigs.kanban}
-                    filterBadges={filterBadgeOptions}
                     onFilterastchange={(event) => {
                         if (event.detail.origin === 'ui') {
                             filterConfigs.kanban.filterAst = event.detail.filterAst
@@ -453,11 +340,6 @@ export default function PlanningViews() {
                         onGridedit={handlePlanningEdit}
                     />
                 )}
-            <footer className="planning-demo__footer">
-                <span className="planning-demo__footer-meta">
-                    <span>Changes stay in this demo</span>
-                </span>
-            </footer>
         </section>
     )
 }

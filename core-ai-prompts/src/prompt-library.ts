@@ -1,3 +1,5 @@
+import { applyControlPresentation } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import { filterPrompts, PROMPT_CATEGORIES, PROMPT_COLUMNS, PROMPTS } from './prompt-library.shared';
 import { PROMPT_EDITORS } from './prompt-editor';
@@ -17,6 +19,7 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
       <label><span>Category</span><select data-category>${PROMPT_CATEGORIES.map(item => `<option>${item}</option>`).join('')}</select></label>
       <span class="prompt-hint">Double-click a prompt to edit it</span>
     </div>`;
+  applyControlPresentation(container);
 
   const grid = document.createElement('revo-grid') as HTMLRevoGridElement;
   grid.className = 'prompt-grid';

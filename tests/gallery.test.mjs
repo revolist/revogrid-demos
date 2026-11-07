@@ -72,5 +72,5 @@ test('all generated internal links and media references resolve', async () => {
 test('home page renders twenty keyboard-reachable showcase links', async () => {
   const html = await readFile(join(output, 'index.html'), 'utf8');
   assert.equal((html.match(/class="showcase-card"/g) ?? []).length, 20);
-  assert.equal((html.match(/href="\/(?:pivot|gantt|kanban|scheduler|core|core-ai-prompts|core-project-portfolio|excel|ecommerce|project-table|filtering|infinity-scroll|column-collapse|data-grid-context-menu|row-master|audit-history|tree-data|planning|construction-operations|construction-gantt-simple)\/"/g) ?? []).length, 20);
+  assert.equal((html.match(/href="\/(?:pivot|gantt|kanban|scheduler|core|ai-agent|core-project-portfolio|excel|ecommerce|project-table|filtering|infinity-scroll|column-collapse|data-grid-context-menu|row-master|audit-history|tree-data|planning|construction-operations|construction-gantt-simple)\/"/g) ?? []).length, 20);
 });

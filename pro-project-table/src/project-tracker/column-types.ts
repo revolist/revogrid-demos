@@ -1,3 +1,5 @@
+import { renderControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import NumberColumnType from '@revolist/revogrid-column-numeral';
 import {
   TextEditor,
@@ -31,7 +33,7 @@ function formatDateValue(value: ColumnDataSchemaModel['value']) {
 
 class ProjectDateEditor extends TextEditor {
   render(h: HyperFunc<VNode>): VNode | VNode[] {
-    return h('input', {
+    return renderControl(h, 'input', {
       type: 'date',
       enterKeyHint: 'enter',
       value: formatDateValue(this.editCell?.val),
@@ -45,7 +47,7 @@ class ProjectDateEditor extends TextEditor {
 
 const projectDateRenderer: CellTemplate = (h, { value }) => [
   h('div', { class: { 'cell-value-wrapper': true } }, formatDateValue(value)),
-  h('button', {
+  renderControl(h, 'button', {
     class: { calendar: true },
     innerHTML: calendarIcon,
     onClick: (event: MouseEvent) => {

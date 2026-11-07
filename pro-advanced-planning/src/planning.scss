@@ -1,5 +1,7 @@
 .planning-demo {
     --planning-accent: #6647f0;
+    --rv-segmented-bg: var(--rv-ui-surface-sunken);
+    --revo-grid-cell-disabled-bg: var(--rv-segmented-bg);
     --demo-focus-color: var(--planning-accent);
     --demo-focus-ring: color-mix(in srgb, var(--planning-accent) 24%, transparent);
     --rv-ui-focus-outline: var(--demo-focus-color);
@@ -11,6 +13,7 @@
     height: 100%;
     min-height: 0;
     padding: 0 0 8px;
+    padding-inline: 4px;
     font-size: 14px;
     line-height: 20px;
     position: relative;
@@ -41,43 +44,48 @@
     object-fit: cover;
     object-position: center;
 }
-.planning-demo__topbar,
-.planning-demo__footer {
-    display: flex;
-    align-items: center;
-}
-.planning-demo__footer-meta {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    margin-left: auto;
+.planning-demo .event-scheduler-plugin {
+    .event-scheduler-timeline-header,
+    .event-scheduler-header-group,
+    .event-scheduler-event__title,
+    .event-scheduler-calendar-day__number,
+    .event-scheduler-calendar-day__more {
+        font-weight: 400;
+    }
 }
 .planning-demo__topbar {
-    justify-content: space-between;
+    --planning-fullscreen-width: 32px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 4px 0 8px;
+    padding-inline-end: calc(var(--planning-fullscreen-width) + 8px);
     border-bottom: 1px solid var(--rv-ui-border);
+}
+.planning-demo__topbar > .planning-demo__toolbar {
+    max-width: 100%;
+    padding: 0;
+    border-bottom: 0;
+}
+.planning-demo__topbar .planning-demo__switch {
+    flex-shrink: 1;
 }
 .planning-demo__switch {
     display: flex;
+    align-self: flex-start;
+    max-width: 100%;
     min-width: 0;
     overflow-x: auto;
+    overflow-y: hidden;
 }
 .planning-demo__switch button {
     display: inline-flex;
-    height: 52px;
     align-items: center;
     gap: 5px;
-    padding: 0 12px;
-    border: 0;
-    border-bottom: 2px solid transparent;
-    background: transparent;
-    color: inherit;
-    font: 500 13px/1 inherit;
     text-transform: capitalize;
     white-space: nowrap;
-}
-.planning-demo__switch button.on {
-    color: var(--planning-accent);
-    border-bottom-color: currentColor;
 }
 .planning-demo__actions {
     display: flex;
@@ -87,36 +95,14 @@
     padding-right: 4px;
     white-space: nowrap;
 }
-.planning-demo__actions > button:not(.planning-demo__fullscreen) {
-    height: 30px;
-    padding: 0 9px;
-    border: 1px solid var(--rv-ui-border);
-    border-radius: 6px;
-    background: transparent;
-    color: inherit;
-    font: 500 11px/1 inherit;
-    cursor: pointer;
-}
-.planning-demo__actions > button.on,
-.planning-demo__toolbar > button.on {
-    border-color: var(--demo-focus-color);
-    background: var(--rv-ui-surface);
-    color: var(--demo-focus-color);
-}
 .planning-demo__fullscreen {
+    position: absolute;
+    inset-block-start: 4px;
+    inset-inline-end: 0;
     display: inline-flex;
-    width: 32px;
-    height: 32px;
+    width: var(--planning-fullscreen-width);
     align-items: center;
     justify-content: center;
-    border: 0;
-    border-radius: 6px;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-}
-.planning-demo__fullscreen:hover {
-    background: var(--rv-ui-surface);
 }
 .planning-demo__grid {
     height: 100%;
@@ -160,16 +146,14 @@
 .planning-demo__grid--timeline {
     margin-top: -8px;
 }
-/*
- * FilterHeaderPlugin restores the core header padding after Gantt has made
- * the timeline header edge-to-edge. Keep the header ticks on the same x-axis
- * as the timeline background and task bars.
- */
-.planning-demo__grid--timeline.gantt-plugin.filter-header
-    revogr-viewport-scroll.colPinEnd
-    revogr-header
-    .header-content {
-    padding: 0 !important;
+.planning-demo__bar-avatars {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 2px;
+    pointer-events: none;
 }
 .planning-demo__grid--kanban {
     overflow-x: auto;
@@ -189,6 +173,7 @@
     padding: 0;
 }
 .planning-card__title {
+    font-weight: 400;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -248,13 +233,6 @@
     background: currentColor;
     content: '';
 }
-.planning-demo__footer {
-    justify-content: space-between;
-    height: 30px;
-    min-height: 30px;
-    padding: 0 82px 0 2px;
-    font-size: 11px;
-}
 .planning-demo__filter-search {
     position: relative;
     display: flex;
@@ -290,36 +268,11 @@
 .planning-demo__filter-search input {
     width: 100%;
     min-width: 0;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: inherit;
 }
 .planning-demo__filter-search:focus-within {
     border-color: var(--demo-focus-color);
     outline: 0;
     box-shadow: 0 0 0 3px var(--demo-focus-ring);
-}
-.planning-demo__filter-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-.planning-demo__filter-badges[role='status'] {
-    display: none;
-}
-@media (max-width: 900px) {
-    .planning-demo__switch button {
-        padding-inline: 9px;
-    }
-    .planning-demo__footer {
-        padding-right: 2px;
-    }
-}
-@media (max-width: 700px) {
-    .planning-demo__footer-meta > span {
-        display: none;
-    }
 }
 @media (prefers-reduced-motion: reduce) {
     .planning-demo * {
@@ -328,51 +281,111 @@
     }
 }
 
+// Layout only: field, search, button and focus presentation come from @revolist/ui.
 .planning-demo__toolbar {
+    --rv-control-height: 32px;
+    --rv-control-padding: 5px 10px;
+    --rv-search-input-height: 32px;
+    --rv-search-input-bg: var(--rv-ui-surface);
+    --rv-ui-accent: var(--planning-accent);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    flex: 0 0 auto;
+    gap: 8px;
+    min-width: 0;
+    padding: 4px 0 8px;
+    border-bottom: 1px solid var(--rv-ui-border);
+    font-size: 13px;
+}
+.planning-demo__search {
+    flex: 0 1 196px;
+    width: 196px;
+    min-width: 160px;
+    max-width: 100%;
+}
+.planning-demo__search .rv-search-input-icon :is(img, svg) {
+    display: block;
+    width: 14px;
+    height: 14px;
+    opacity: .55;
+    fill: currentColor;
+}
+.planning-demo[data-theme='dark'] .rv-search-input-icon img {
+    filter: invert(1);
+}
+.planning-demo__filters {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
-    position: relative;
+    min-width: 0;
+    padding-inline-end: 12px;
+    border-inline-end: 1px solid var(--rv-ui-border);
 }
-.planning-demo__toolbar input,
-.planning-demo__toolbar select,
-.planning-demo__toolbar > button,
-.planning-demo__filter-wrap > summary {
-    min-height: 30px;
-    padding: 4px 9px;
-    border: 1px solid var(--rv-ui-border, #dce1e8);
+.planning-demo__filter {
+    --rv-control-height: 32px;
+    --rv-control-padding: 5px 10px;
+    width: 150px;
+    height: 32px;
+    --rv-control-font-size: 13px;
+}
+.planning-demo__filter:first-child {
+    width: 170px;
+}
+.planning-demo__toolbar .planning-demo__active {
+    height: 32px;
+    min-height: 32px;
+    margin-inline-start: 4px;
+    padding-inline: 12px;
+    border: 1px solid var(--rv-ui-border);
     border-radius: 6px;
-    background: var(--rv-ui-surface, #fff);
-    color: inherit;
-    font: inherit;
+    font-size: 13px;
 }
-.planning-demo__search {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+.planning-demo__switch {
+    flex-shrink: 0;
 }
-.planning-demo__filter-wrap {
-    position: relative;
+@media (max-width: 700px) {
+    .planning-demo__search { flex: 1 1 100%; width: 100%; }
+    .planning-demo__filters { flex: 1 1 100%; padding-inline-end: 0; border-inline-end: 0; }
+    .planning-demo__filter,
+    .planning-demo__filter:first-child {
+        flex: 1 1 110px;
+        width: 110px;
+    }
+    .planning-demo__toolbar .planning-demo__active { margin-inline-start: 0; }
 }
-.planning-demo__filter-wrap > summary {
-    cursor: pointer;
+
+.planning-demo .planning-progress-editor {
+    .revo-slider {
+        --slider-track-height: 8px;
+        --slider-thumb-size: 14px;
+        --slider-track-bg: #e9edf5;
+        --slider-value-color: #4a5870;
+        --slider-value-size: 11px;
+        padding-inline: 8px 6px;
+        gap: 6px;
+    }
+
+    .revo-slider-value {
+        min-width: 34px;
+        font-weight: 500;
+    }
+
+    .revo-slider-threshold {
+        display: none;
+    }
+
+    &:not(:hover):not(:focus-within) .revo-slider-input::-webkit-slider-thumb {
+        opacity: 0;
+    }
+
+    &:not(:hover):not(:focus-within) .revo-slider-input::-moz-range-thumb {
+        opacity: 0;
+    }
 }
-.planning-demo__filter-popover {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    z-index: 100;
-    width: min(320px, 85vw);
-    padding: 12px;
-    border: 1px solid var(--rv-ui-border, #dce1e8);
-    border-radius: 8px;
-    background: var(--rv-ui-surface, #fff);
-    box-shadow: 0 8px 24px #0002;
-}
-.planning-demo__filter-popover fieldset {
-    display: grid;
-    gap: 6px;
-    margin: 0 0 8px;
-    border: 0;
+
+.planning-demo[data-theme='dark'] .planning-progress-editor .revo-slider {
+    --slider-track-bg: #20283a;
+    --slider-value-color: #aeb9cd;
 }

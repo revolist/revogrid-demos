@@ -1,3 +1,5 @@
+import { renderControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import folderIcon from '@fortawesome/fontawesome-free/svgs/solid/folder.svg?raw';
 import folderOpenIcon from '@fortawesome/fontawesome-free/svgs/solid/folder-open.svg?raw';
 import { createDefaultTaskTableColumn } from '@revolist/gantt';
@@ -75,7 +77,7 @@ export function createConstructionColumns(
       return h('span', { class: 'construction-fabrication__project-root' }, content);
     }
 
-    return h('button', {
+    return renderControl(h, 'button', {
       class: 'construction-fabrication__project-link',
       title: `Open ${model.name} schedule`,
       onClick: (event: Event) => {

@@ -19,7 +19,8 @@ export {
     type PlanningViewFilters,
 } from './filter-state'
 export { planningFields } from './fields'
-export { ganttConfig } from './gantt.config'
+export { ganttConfig, ganttTaskEditorDialog } from './gantt.config'
+export { toPlanningGanttSource } from './gantt-source'
 export { createKanbanConfig, kanbanConfig } from './kanban.config'
 export { calendarConfig, schedulerConfig } from './scheduler.config'
 export {
@@ -47,6 +48,7 @@ export {
     defaultPlanningFilters,
     filterPlanningTasks,
     mergeVisibleTasks,
+    planningFilterDropdowns,
     planningProjects,
 } from './workspace'
 export type { PlanningFilters, PlanningProjectId } from './types'

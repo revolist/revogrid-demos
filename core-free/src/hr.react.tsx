@@ -1,3 +1,6 @@
+import questionIcon from '@fortawesome/fontawesome-free/svgs/solid/question.svg?raw';
+import '@revolist/ui/styles.css';
+import { Button as UiButton, Dropdown as UiDropdown, IconButton } from '@revolist/ui/react';
 import './hr.css';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -17,7 +20,6 @@ import {
   formatDuration,
   formatFrameRate,
   formatMemory,
-  getHRMetricTooltipId,
   HR_PERFORMANCE_METRICS,
   type HRPerformanceMetricKey,
   type HRPerformanceMonitor,
@@ -38,19 +40,10 @@ interface HRDemoProps {
 
 function HRMetricLabel({ metric }: { metric: HRPerformanceMetricKey }) {
   const definition = HR_PERFORMANCE_METRICS[metric];
-  const tooltipId = getHRMetricTooltipId(metric);
   return (
     <div className="hr-performance-label">
       <span>{definition.label}</span>
-      <span className="hr-metric-help">
-        <button
-          type="button"
-          className="hr-metric-help-trigger"
-          aria-label={`About ${definition.label}`}
-          aria-describedby={tooltipId}
-        >?</button>
-        <span className="hr-metric-tooltip" id={tooltipId} role="tooltip">{definition.description}</span>
-      </span>
+      <IconButton label={`About ${definition.label}`} title={definition.description} icon={questionIcon} />
     </div>
   );
 }
@@ -159,8 +152,8 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
     );
   }, [currentSize, workspaceState]);
 
-  const onSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const nextSize = parseInt(e.target.value, 10);
+  const onSizeChange = (value: number | number[]) => {
+    const nextSize = Number(value);
     setCurrentSize(nextSize);
     setWorkspaceStatus('Unsaved changes');
     loadData(nextSize);
@@ -185,36 +178,32 @@ export const HRDemo: React.FC<HRDemoProps> = ({ isDark }) => {
   return (
     <div className="hr-demo grow h-full flex flex-col">
       <div className="hr-toolbar">
-        <span className="text-sm font-medium">Data Source</span>
-        <select
-          className="hr-select"
-          value={currentSize}
-          onChange={onSizeChange}
-          disabled={loading}
-        >
-          {HR_OPTIONS.map(opt => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <span className="text-sm font-medium">Theme</span>
-        <select
-          className="hr-select"
-          value={selectedTheme}
-          onChange={event => {
-            setSelectedTheme(event.target.value);
-            setWorkspaceStatus('Unsaved changes');
-          }}
-        >
-          {HR_THEME_OPTIONS.map(option => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <button type="button" className="hr-button" onClick={saveView}>Save view</button>
-        <button type="button" className="hr-button hr-button-secondary" onClick={resetView}>Reset view</button>
+        <div className="hr-field hr-field--source">
+          <span>Data Source</span>
+          <UiDropdown
+            className="rv-select"
+            value={currentSize}
+            onChange={onSizeChange}
+            disabled={loading}
+            source={HR_OPTIONS}
+            config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Data Source' }}
+          />
+        </div>
+        <div className="hr-field">
+          <span>Theme</span>
+          <UiDropdown
+            className="rv-select"
+            value={selectedTheme}
+            onChange={nextValue => {
+              setSelectedTheme(String(nextValue));
+              setWorkspaceStatus('Unsaved changes');
+            }}
+            source={HR_THEME_OPTIONS}
+            config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Theme' }}
+          />
+        </div>
+        <UiButton type="button" onClick={saveView}>Save view</UiButton>
+        <UiButton type="button" onClick={resetView}>Reset view</UiButton>
         <span className="hr-workspace-status">{workspaceStatus}</span>
         {loading && <div className="text-sm opacity-50 animate-pulse ml-2">{loadingLabel}</div>}
       </div>

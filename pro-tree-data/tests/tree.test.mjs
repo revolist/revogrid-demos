@@ -47,9 +47,14 @@ test('all four frameworks expose matching tree controls', async () => {
     assert.match(source, /TREE_EXPAND_ALL_EVENT/);
     assert.match(source, /TREE_COLLAPSE_ALL_EVENT/);
     assert.match(source, /ExportExcelPlugin/);
-    assert.match(source, /Sticky parents/);
+    assert.match(source, /mountTreeToolbar/);
     assert.doesNotMatch(source, /Organization explorer|Interactive hierarchy|tree-(?:toolbar__intro|eyebrow)/);
   }
+
+  const toolbar = await readSource('tree.toolbar.ts');
+  assert.match(toolbar, /ButtonGroup/);
+  assert.match(toolbar, /IconButton/);
+  assert.match(toolbar, /preactH\(Switch,[\s\S]*?Sticky parents/);
 
   const styles = await readSource('tree.scss');
   assert.doesNotMatch(styles, /\.tree-(?:toolbar__intro|eyebrow)\b/);
@@ -190,7 +195,7 @@ test('selection filters reuse team member and status cell templates', () => {
     value: 'Maya Chen',
     label: 'Maya Chen',
     id: 'product',
-    avatar: 'MC',
+    avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
     fullName: 'Maya Chen',
   });
 });
@@ -255,7 +260,7 @@ test('framework variants retain expansion state after reactive tree refreshes', 
   }
 });
 
-test('tree columns explicitly track sticky parent IDs and checkbox changes', async () => {
+test('tree columns explicitly track sticky parent IDs and toggle changes', async () => {
   const [shared, typescript, react, vue, angular] = await Promise.all([
     readSource('tree.shared.ts'),
     readSource('tree.ts'),
@@ -310,5 +315,5 @@ test('showcase chrome stays transparent and inherits the host theme', async () =
   assert.match(styles, /\.tree-showcase\s*\{[^}]*border:\s*0/);
   assert.match(styles, /\.tree-showcase\s*\{[^}]*border-radius:\s*0/);
   assert.match(styles, /\.tree-toolbar\s*\{[^}]*background:\s*transparent/);
-  assert.match(styles, /\.tree-button,[^{]*\{[^}]*@include demo-controls\.scheduler-button/);
+  assert.match(styles, /\.tree-toolbar > \.rv-switch\s*\{[^}]*margin-inline-start:\s*auto/);
 });

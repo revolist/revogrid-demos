@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { UiControlDirective } from '@revolist/ui/angular-control';
 import { AfterViewInit, ChangeDetectorRef, Component, ViewEncapsulation, Input, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, OnDestroy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
@@ -34,7 +36,7 @@ import {
 @Component({
   selector: 'ecommerce-grid',
   standalone: true,
-  imports: [RevoGrid, FormsModule],
+  imports: [UiControlDirective, RevoGrid, FormsModule],
   host: { class: 'ecommerce-grid-host' },
   template: `
     <div class="ecommerce-shell grow">
@@ -46,7 +48,7 @@ import {
           </span>
           <label class="ecommerce-filter" for="customerSearch">
             <span aria-hidden="true">⌕</span>
-            <input
+            <input rvControl
               id="customerSearch"
               type="search"
               aria-label="Search customers"
@@ -57,7 +59,7 @@ import {
           </label>
           <label class="ecommerce-preset">
             <span class="sr-only">Advanced filter example</span>
-            <select aria-label="Advanced filter example" (change)="applyPreset($event)">
+            <select rvControl aria-label="Advanced filter example" (change)="applyPreset($event)">
               <option value="">Advanced examples</option>
               @for (entry of filterPresets; track entry[0]) {
                 <option [value]="entry[0]">{{ entry[1].label }}</option>
@@ -70,7 +72,7 @@ import {
             <span>Spend</span>
             <strong>{{ totalSpend }}</strong>
           </span>
-          <button type="button" class="ecommerce-button ecommerce-button--export" (click)="exportToExcel()">
+          <button rvControl type="button" class="ecommerce-button ecommerce-button--export" (click)="exportToExcel()">
             Export
           </button>
         </div>

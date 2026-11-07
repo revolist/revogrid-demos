@@ -1,3 +1,5 @@
+import { renderControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import {
   type ColumnRegular,
   GROUP_DEPTH,
@@ -279,9 +281,9 @@ const ADD_COLUMNS: ColumnRegular = {
               popupClassName: 'dropdown-menu-color',
             },
             value: props.visibleColumns,
-            renderSelectedValue: (h) => h('button', { class: 'insert-column' }),
+            renderSelectedValue: (h) => renderControl(h, 'button', { class: 'insert-column' }),
             renderOption: (h, option, isSelected) => h('div', { class: 'label px-2 py-1' }, [
-                h('input', {
+                renderControl(h, 'input', {
                   type: 'checkbox',
                   checked: isSelected,
                 }),

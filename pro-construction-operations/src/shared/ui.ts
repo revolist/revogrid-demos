@@ -1,3 +1,5 @@
+import { controlAttributes, createControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 interface ButtonOptions {
   active?: boolean;
   icon?: string;
@@ -29,12 +31,12 @@ export function createButton(
   onClick: () => void,
   options: ButtonOptions = {},
 ): HTMLButtonElement {
-  const element = document.createElement('button');
+  const element = createControl(document, 'button', { type: 'button' });
   element.type = 'button';
-  element.className = `construction-fabrication__button construction-fabrication__button--${options.kind ?? 'default'}`;
+  element.className = controlAttributes('button', { class: `construction-fabrication__button construction-fabrication__button--${options.kind ?? 'default'}` }).class;
 
   if (options.active !== undefined) {
-    element.setAttribute('aria-pressed', String(options.active));
+    element.classList.add('rv-choice-chip'); element.setAttribute('aria-pressed', String(options.active));
   }
   if (options.title) element.title = options.title;
   if (options.iconOnly) {

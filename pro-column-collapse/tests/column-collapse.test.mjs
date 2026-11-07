@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
+import { columnTypeRenderer } from '@revolist/revogrid-pro';
 import { fileURLToPath } from 'node:url';
 import {
   createColumnCollapseColumns,
@@ -111,13 +112,17 @@ test('showcase renders only the borderless grid workspace', async () => {
   assert.doesNotMatch(styles, /background:\s*#(?:fff|ffffff|f8fafc)/i);
 });
 
-test('column and group titles truncate without hiding their type icons', async () => {
-  const styles = await readFile(
-    join(root, '../../../../../packages/pro/plugins/charts/column-type.style.css'),
-    'utf8',
-  );
-
-  assert.match(styles, /\.column-type-container\s*\{[^}]*min-width:\s*0/s);
-  assert.match(styles, /\.column-icon\s*\{[^}]*flex:\s*0\s+0\s+auto/s);
-  assert.match(styles, /\.column-label\s*\{[^}]*min-width:\s*0[^}]*overflow:\s*hidden[^}]*text-overflow:\s*ellipsis[^}]*white-space:\s*nowrap/s);
+test('column groups preserve their complete labels and type icons through the public renderer', () => {
+  const h = (tag, props, children) => ({ tag, props, children });
+  for (const column of createColumnCollapseColumns()) {
+    assert.strictEqual(column.columnTemplate, columnTypeRenderer);
+    const rendered = column.columnTemplate(h, column);
+    assert.equal(rendered.props.class, 'column-type-container');
+    const [icon, label] = rendered.children;
+    assert.match(icon.props.class, /\bcolumn-icon\b/);
+    assert.match(icon.props.innerHTML, /<svg\b/);
+    assert.ok(icon.props.title);
+    assert.equal(label.props.class, 'column-label');
+    assert.equal(label.children, column.name);
+  }
 });

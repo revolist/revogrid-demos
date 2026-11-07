@@ -1,3 +1,7 @@
+import searchIconSvg from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?raw'
+import '@revolist/ui/styles.css';
+import { UiComponent, UiSlotDirective } from '@revolist/ui/angular';
+import { UiControlDirective } from '@revolist/ui/angular-control';
 import {
     Component,
     NO_ERRORS_SCHEMA,
@@ -30,12 +34,14 @@ import {
     filterPlanningTasks,
     ganttColumns,
     ganttConfig,
+    toPlanningGanttSource,
+    ganttTaskEditorDialog,
     ganttDependencies,
     ganttResources,
     gridColumnTypes,
     gridColumns,
     createKanbanConfig,
-    planningProjects,
+    planningFilterDropdowns,
     planningFilterConfig,
     planningDataGridFormatting,
     planningRowOrder,
@@ -55,7 +61,7 @@ import {
     selector: 'planning-views-grid',
     standalone: true,
     schemas: [NO_ERRORS_SCHEMA],
-    imports: [RevoGrid],
+    imports: [UiComponent, UiSlotDirective, UiControlDirective, RevoGrid],
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./planning.scss'],
     template: `
@@ -65,9 +71,9 @@ import {
                 role="tablist"
                 aria-label="Planning view"
             >
-                <button
+                <button rvControl [class.on]="activeView === 'grid'"
                     type="button"
-                    class="rv-segmented-switch-item"
+                    class="rv-segmented-switch-item rv-segmented-switch-item"
                     role="tab"
                     [class.on]="activeView === 'grid'"
                     [attr.aria-selected]="activeView === 'grid'"
@@ -75,9 +81,9 @@ import {
                 >
                     Grid
                 </button>
-                <button
+                <button rvControl [class.on]="activeView === 'kanban'"
                     type="button"
-                    class="rv-segmented-switch-item"
+                    class="rv-segmented-switch-item rv-segmented-switch-item"
                     role="tab"
                     [class.on]="activeView === 'kanban'"
                     [attr.aria-selected]="activeView === 'kanban'"
@@ -85,9 +91,9 @@ import {
                 >
                     Kanban
                 </button>
-                <button
+                <button rvControl [class.on]="activeView === 'gantt'"
                     type="button"
-                    class="rv-segmented-switch-item"
+                    class="rv-segmented-switch-item rv-segmented-switch-item"
                     role="tab"
                     [class.on]="activeView === 'gantt'"
                     [attr.aria-selected]="activeView === 'gantt'"
@@ -95,9 +101,9 @@ import {
                 >
                     Gantt
                 </button>
-                <button
+                <button rvControl [class.on]="activeView === 'scheduler'"
                     type="button"
-                    class="rv-segmented-switch-item"
+                    class="rv-segmented-switch-item rv-segmented-switch-item"
                     role="tab"
                     [class.on]="activeView === 'scheduler'"
                     [attr.aria-selected]="activeView === 'scheduler'"
@@ -105,9 +111,9 @@ import {
                 >
                     Scheduler
                 </button>
-                <button
+                <button rvControl [class.on]="activeView === 'calendar'"
                     type="button"
-                    class="rv-segmented-switch-item"
+                    class="rv-segmented-switch-item rv-segmented-switch-item"
                     role="tab"
                     [class.on]="activeView === 'calendar'"
                     [attr.aria-selected]="activeView === 'calendar'"
@@ -117,56 +123,26 @@ import {
                 </button>
             </nav>
 
-            <div class="planning-demo__toolbar">
-                <label class="planning-demo__search"
-                    ><span aria-hidden="true">⌕</span
-                    ><input
-                        aria-label="Search tasks"
-                        type="search"
-                        placeholder="Search tasks…"
-                        [value]="filters.query"
-                        (input)="setQuery($event)"
-                /></label>
-                <label class="planning-demo__select"
-                    ><select
-                        aria-label="Project"
-                        [value]="filters.projectId"
-                        (change)="setProject($event)"
-                    >
-                        <option value="all">All projects</option>
-                        @for (project of planningProjects; track project.id) {
-                            <option [value]="project.id">
-                                {{ project.label }}
-                            </option>
-                        }
-                    </select></label
-                >
-                <label class="planning-demo__select"
-                    ><select
-                        aria-label="Status"
-                        [value]="filters.statuses[0] || ''"
-                        (change)="setStatus($event)"
-                    >
-                        <option value="">All statuses</option>
-                        <option value="not-started">Planned</option>
-                        <option value="in-progress">In progress</option>
-                        <option value="blocked">Blocked</option>
-                        <option value="done">Done</option>
-                    </select></label
-                >
-                <label class="planning-demo__select"
-                    ><select
-                        aria-label="Priority"
-                        [value]="filters.priorities[0] || ''"
-                        (change)="setPriority($event)"
-                    >
-                        <option value="">All priorities</option>
-                        <option value="500">Normal</option>
-                        <option value="700">High</option>
-                        <option value="900">Critical</option>
-                    </select></label
-                >
-                <button
+            <div class="planning-demo__toolbar" role="group" aria-label="Task filters">
+                <rv-ui component="SearchInput"
+                    [props]="{ rootClassName: 'planning-demo__search', 'aria-label': 'Search tasks', placeholder: 'Search tasks…', value: filters.query }"
+                    (valueChange)="setQuery($event)">
+                    <ng-template rvUiSlot="icon"><img [src]="searchIcon" alt="" /></ng-template>
+                </rv-ui>
+                <div class="planning-demo__filters">
+                    <span class="planning-demo__filter">
+                        <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.project, className: 'rv-select', value: filters.projectId }" (valueChange)="setProject($event)" />
+                    </span>
+                    @if (activeView === 'kanban') {
+                        <span class="planning-demo__filter">
+                            <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.status, className: 'rv-select', value: filters.statuses.length > 1 ? 'active' : filters.statuses[0] || '' }" (valueChange)="setStatus($event)" />
+                        </span>
+                        <span class="planning-demo__filter">
+                            <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.priority, className: 'rv-select', value: filters.priorities[0]?.toString() ?? '' }" (valueChange)="setPriority($event)" />
+                        </span>
+                    }
+                </div>
+                <button rvControl class="rv-choice-chip planning-demo__active"
                     type="button"
                     [class.on]="isActiveTasksPreset"
                     [attr.aria-pressed]="isActiveTasksPreset"
@@ -174,7 +150,6 @@ import {
                 >
                     Active tasks
                 </button>
-                <button type="button" (click)="resetWorkspace()">Reset</button>
             </div>
 
             @switch (activeView) {
@@ -191,7 +166,6 @@ import {
                         [dataGridFormatting]="planningDataGridFormatting"
                         [stretch]="1"
                         [filter]="gridFilterConfig"
-                        [filterBadges]="filterBadgeOptions"
                         [range]="true"
                         [rangeSelectionLimit]="'column'"
                         [resize]="true"
@@ -213,15 +187,16 @@ import {
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="ganttPlugins"
-                        [source]="tasks"
+                        [source]="ganttSource"
                         [columns]="ganttColumns"
+                        [rowSize]="40"
                         [rowOrder]="false"
                         [gantt]="ganttConfig"
+                        [ganttTaskEditorDialog]="ganttTaskEditorDialog"
                         [ganttDependencies]="visibleGanttDependencies"
                         [ganttResources]="ganttResources"
                         [ganttAssignments]="ganttAssignments"
                         [filter]="ganttFilterConfig"
-                        [filterBadges]="filterBadgeOptions"
                         (gridedit)="handlePlanningEdit($event)"
                         (filterastchange)="
                             $any($event).detail.origin === 'ui' &&
@@ -239,7 +214,6 @@ import {
                         [columns]="gridColumns"
                         [kanban]="kanbanConfig"
                         [filter]="kanbanFilterConfig"
-                        [filterBadges]="filterBadgeOptions"
                         (gridedit)="handlePlanningEdit($event)"
                         (filterastchange)="
                             $any($event).detail.origin === 'ui' &&
@@ -278,11 +252,6 @@ import {
                     ></revo-grid>
                 }
             }
-            <footer class="planning-demo__footer">
-                <span class="planning-demo__footer-meta">
-                    <span>Changes stay in this demo</span>
-                </span>
-            </footer>
         </section>
     `,
 })
@@ -293,7 +262,7 @@ export class PlanningViewsGridComponent {
     tasks = this.planningStore.createSnapshot()
     filters: PlanningFilters = defaultPlanningFilters()
     isActiveTasksPreset = false
-    readonly planningProjects = planningProjects
+    readonly planningFilterDropdowns = planningFilterDropdowns
     readonly gridColumns = gridColumns
     readonly gridColumnTypes = gridColumnTypes
     readonly gridFilterConfig: AdvancedFilterConfig = {
@@ -308,31 +277,27 @@ export class PlanningViewsGridComponent {
         ...planningFilterConfig,
         multiFilterItems: { ...planningFilterConfig.multiFilterItems },
     }
-    readonly filterBadgeOptions = {
-        className: 'planning-demo__filter-badges',
-        badgeClassName: 'planning-demo__filter-badge',
-        emptyClassName: 'planning-demo__filter-badges--empty',
-        renderEmpty: () => '',
-    }
     readonly planningDataGridContextMenu = createPlanningDataGridContextMenu(
         (taskIds) => this.deleteSelectedTasks(taskIds)
     )
     readonly planningDataGridFormatting = planningDataGridFormatting
     readonly ganttColumns = ganttColumns
     readonly ganttConfig = ganttConfig
+    readonly ganttTaskEditorDialog = ganttTaskEditorDialog
     ganttDependencyState = [...ganttDependencies]
     readonly kanbanConfig = createKanbanConfig()
     readonly ganttResources = ganttResources
     readonly schedulerConfig = schedulerConfig
     readonly calendarConfig = calendarConfig
     readonly schedulerResources = schedulerResources
-    readonly ganttPlugins = [GanttPlugin, AdvanceFilterPlugin, FilterHeaderPlugin]
+    readonly ganttPlugins = [GanttPlugin, AdvanceFilterPlugin]
     readonly gridPlugins = [
         RowOrderPlugin,
         RowSelectPlugin,
         PlanningWorkspacePlugin,
         EventManagerPlugin,
         AdvanceFilterPlugin,
+        FilterHeaderPlugin,
         DataGridFormattingPlugin,
         RangeSelectionLimitPlugin,
         ColumnStretchPlugin,
@@ -344,6 +309,7 @@ export class PlanningViewsGridComponent {
     readonly schedulerPlugins = [EventSchedulerPlugin]
     readonly empty: never[] = []
     ganttAssignments = toGanttAssignments(this.tasks)
+    ganttSource = toPlanningGanttSource(this.tasks)
     visibleGanttDependencies = filterGanttDependencies(
         this.ganttDependencyState,
         this.tasks
@@ -355,47 +321,36 @@ export class PlanningViewsGridComponent {
             this.filters
         )
         this.ganttAssignments = toGanttAssignments(this.tasks)
+        this.ganttSource = toPlanningGanttSource(this.tasks)
         this.visibleGanttDependencies = filterGanttDependencies(
             this.ganttDependencyState,
             this.tasks
         )
     }
-    setQuery(event: Event) {
-        this.filters = {
-            ...this.filters,
-            query: (event.target as HTMLInputElement).value,
-        }
-        this.applyToolbarFilters()
-    }
-    setProject(event: Event) {
-        this.filters = {
-            ...this.filters,
-            projectId: (event.target as HTMLSelectElement)
-                .value as PlanningFilters['projectId'],
-        }
-        this.applyToolbarFilters()
-    }
-    setStatus(event: Event) {
-        const value = (event.target as HTMLSelectElement).value
-        this.filters = { ...this.filters, statuses: value ? [value] : [] }
-        this.applyToolbarFilters()
-    }
-    setPriority(event: Event) {
-        const value = (event.target as HTMLSelectElement).value
-        this.filters = {
-            ...this.filters,
-            priorities: value ? [Number(value)] : [],
-        }
-        this.applyToolbarFilters()
-    }
-    resetWorkspace() {
-        this.planningStore.replace(createTasks())
-        this.ganttDependencyState = [...ganttDependencies]
-        this.filters = defaultPlanningFilters()
-        this.isActiveTasksPreset = false
-        this.refreshViewSnapshot()
-    }
+    readonly searchIcon = `data:image/svg+xml,${encodeURIComponent(searchIconSvg)}`
 
+    setQuery(value: unknown) {
+        this.filters = {
+            ...this.filters,
+            query: String(value),
+        }
+        this.applyToolbarFilters()
+    }
+    setProject(value: unknown) {
+        this.filters = {
+            ...this.filters,
+            projectId: value as PlanningFilters['projectId'],
+        }
+        this.applyToolbarFilters()
+    }
+    setStatus(value: unknown) {
+        this.filters = { ...this.filters, statuses: value ? [String(value)] : [] }
+        this.applyToolbarFilters()
+    }
+    setPriority(value: unknown) {
+        this.filters = { ...this.filters, priorities: value ? [Number(value)] : [] }
+        this.applyToolbarFilters()
+    }
     selectPlanningView(view: PlanningView) {
         if (view === this.activeView) return
         this.refreshViewSnapshot()
@@ -403,8 +358,8 @@ export class PlanningViewsGridComponent {
     }
 
     applyActiveTasksPreset() {
-        this.filters = activePlanningFilters()
-        this.isActiveTasksPreset = true
+        this.isActiveTasksPreset = !this.isActiveTasksPreset
+        this.filters = this.isActiveTasksPreset ? activePlanningFilters() : defaultPlanningFilters()
         this.refreshViewSnapshot()
     }
 

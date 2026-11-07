@@ -8,23 +8,9 @@
   >
     <div class="spreadsheet-ribbon">
       <span class="spreadsheet-ribbon-group">
-        <button class="spreadsheet-btn" type="button" data-testid="spreadsheet-export" @click="exportWorkbook">
-          <span class="spreadsheet-action-icon" aria-hidden="true" v-html="actionIcons.export"></span>
-          Export XLSX
-        </button>
+        <IconButton label="Export XLSX" :icon="actionIcons.export" data-testid="spreadsheet-export" @click="exportWorkbook" />
       </span>
       <div ref="historyHostRef" class="spreadsheet-ribbon-group"></div>
-    </div>
-
-    <div class="spreadsheet-sheet-tabs" data-testid="spreadsheet-sheet-tabs">
-      <button
-        class="spreadsheet-sheet-tab is-active"
-        type="button"
-        data-testid="spreadsheet-sheet-budget"
-      >
-        Budget
-      </button>
-      <span class="spreadsheet-tab-spacer" aria-hidden="true"></span>
       <span class="spreadsheet-collab" aria-label="Live collaborators">
         <span class="spreadsheet-live-dot" title="Live data"></span>
         <span
@@ -34,7 +20,8 @@
           :style="{ '--spreadsheet-avatar-color': user.color }"
           :title="`${user.name} - ${user.activity ?? 'viewing'}`"
         >
-          {{ user.initials }}
+          <img v-if="getSpreadsheetCollaboratorPhoto(user.id)" :src="getSpreadsheetCollaboratorPhoto(user.id)" :alt="user.name" />
+          <template v-else>{{ user.initials }}</template>
         </span>
       </span>
     </div>
@@ -94,6 +81,8 @@
 </template>
 
 <script setup lang="ts">
+import { IconButton } from '@revolist/ui/vue';
+import '@revolist/ui/styles.css';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { VGrid } from '@revolist/vue3-datagrid';
 import {
@@ -164,6 +153,7 @@ import {
   createSpreadsheetPresenceUsers,
   flashSpreadsheetPresenceEdit,
 } from './spreadsheet.presence';
+import { getSpreadsheetCollaboratorPhoto } from './spreadsheet.presence';
 import {
   applySpreadsheetFeedFlashStep,
   flashSpreadsheetFeedEdit,

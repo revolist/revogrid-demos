@@ -1,3 +1,6 @@
+import '@revolist/ui/styles.css';
+import exportIcon from '@fortawesome/fontawesome-free/svgs/solid/download.svg?raw';
+import { UiComponent } from '@revolist/ui/angular';
 import { ChangeDetectorRef, Component, Input, NO_ERRORS_SCHEMA, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { RevoGrid } from '@revolist/angular-datagrid';
 import type { ColumnProp, FilterCollectionItem, MultiFilterItem } from '@revolist/revogrid';
@@ -26,7 +29,7 @@ import './infinity-scroll.scss';
 @Component({
   selector: 'infinity-scroll-grid',
   standalone: true,
-  imports: [RevoGrid],
+  imports: [UiComponent, RevoGrid],
   encapsulation: ViewEncapsulation.None,
   schemas: [NO_ERRORS_SCHEMA],
   template: `
@@ -36,9 +39,9 @@ import './infinity-scroll.scss';
           <strong>Remote user directory</strong>
           <span class="infinity-status">{{ status }}</span>
         </div>
-        <button class="infinity-button" type="button" [disabled]="exporting" (click)="exportAll()">
-          {{ exporting ? 'Preparing export…' : 'Export all to Excel' }}
-        </button>
+        <rv-ui component="IconButton"
+          [props]="{ label: 'Export all to Excel', icon: exportIcon, disabled: exporting }"
+          (click)="exportAll()" />
       </div>
       <revo-grid
         class="infinity-grid"
@@ -70,6 +73,7 @@ export class InfinityScrollGridComponent implements OnDestroy {
   readonly pinnedTopSource = createInfinityScrollPinnedTopRows();
   readonly pinnedBottomSource = createInfinityScrollPinnedBottomRows();
   status = 'Initializing remote source…';
+  readonly exportIcon = exportIcon;
   exporting = false;
   private dataset = createInfinityScrollRows();
   private serverLoader = createInfinityScrollDataLoader({
@@ -86,7 +90,9 @@ export class InfinityScrollGridComponent implements OnDestroy {
 
   private createConfig(): Partial<InfinityScrollConfig> {
     return {
-      chunkSize: 50,
+      // Published 4.0.1 cached reads reference Node process; use supported direct reads until the fixed release.
+    query: false,
+    chunkSize: 50,
       bufferSize: 150,
       preloadThreshold: 0.75,
       total: this.dataset.length,

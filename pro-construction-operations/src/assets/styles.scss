@@ -134,55 +134,11 @@
   height: 100%;
 }
 
-.construction-fabrication__button,
-.construction-fabrication__select,
-.construction-fabrication__project-link {
-  font: inherit;
-}
-
-.construction-fabrication__button,
-.construction-fabrication__select {
-  min-height: 32px;
-  border: 1px solid var(--cf-line-strong);
-  border-radius: 5px;
-  color: var(--cf-ink);
-  background: var(--cf-surface-raised);
-}
-
 .construction-fabrication__button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 5px 8px;
-  font-weight: 600;
-  line-height: 1;
-  cursor: pointer;
-  transition: border-color .15s ease, background .15s ease, color .15s ease, box-shadow .15s ease;
-}
-
-.construction-fabrication__button:hover {
-  border-color: var(--cf-accent);
-  background: var(--cf-accent-soft);
-}
-
-.construction-fabrication__button[aria-pressed="true"] {
-  color: #fff;
-  background: var(--cf-accent);
-  border-color: var(--cf-accent);
-  box-shadow: none;
-}
-
-.construction-fabrication__button--quiet {
-  border-color: transparent;
-  background: transparent;
-}
-
-.construction-fabrication__button--quiet[aria-pressed="true"] {
-  color: var(--cf-accent-strong);
-  background: var(--cf-accent-soft);
-  border-color: transparent;
-  box-shadow: none;
 }
 
 .construction-fabrication__filter-trigger[data-open] {
@@ -227,14 +183,6 @@
   font-weight: 500;
 }
 
-.construction-fabrication__filter-header .construction-fabrication__button {
-  min-height: 28px;
-  padding: 4px 7px;
-  color: var(--cf-muted);
-  font-size: 11px;
-  font-weight: 400;
-}
-
 .construction-fabrication__filter-body {
   display: grid;
   gap: 12px;
@@ -254,9 +202,6 @@
 
 .construction-fabrication__filter-body .construction-fabrication__button {
   min-width: 0;
-  padding-inline: 6px;
-  font-size: 11px;
-  font-weight: 400;
 }
 
 .construction-fabrication__filter-body .construction-fabrication__select {
@@ -266,27 +211,6 @@
 
 .construction-fabrication__button--tab {
   align-self: stretch;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  padding: 3px 8px;
-  color: var(--cf-muted);
-  background: transparent;
-  box-shadow: none;
-}
-
-.construction-fabrication__button--tab[aria-pressed="true"] {
-  color: var(--cf-accent-strong);
-  border-bottom-color: var(--cf-accent);
-  background: transparent;
-  box-shadow: none;
-}
-
-.construction-fabrication__button:focus-visible,
-.construction-fabrication__select:focus-visible,
-.construction-fabrication__project-link:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--cf-accent) 34%, transparent);
-  outline-offset: 2px;
 }
 
 .construction-fabrication__control-group,
@@ -301,7 +225,6 @@
 .construction-fabrication__control-set .construction-fabrication__button--icon-only {
   width: 32px;
   min-width: 32px;
-  padding-inline: 5px;
 }
 
 .construction-fabrication__toolbar-label {
@@ -349,8 +272,6 @@
 
 .construction-fabrication__select {
   min-width: 132px;
-  padding: 5px 28px 5px 8px;
-  cursor: pointer;
 }
 
 .construction-fabrication__project-link,
@@ -359,21 +280,7 @@
   align-items: center;
   max-width: 100%;
   gap: 6px;
-  color: var(--cf-ink);
-  font-weight: 400;
 }
-
-.construction-fabrication__project-link {
-  min-height: 26px;
-  border: 0;
-  border-radius: 5px;
-  padding: 1px 4px;
-  color: var(--cf-accent-strong);
-  background: transparent;
-  cursor: pointer;
-}
-
-.construction-fabrication__project-link:hover { background: var(--cf-accent-soft); }
 .construction-fabrication__project-link:hover .construction-fabrication__project-name { text-decoration: underline; text-underline-offset: 2px; }
 .construction-fabrication__project-icon { width: 15px; height: 15px; color: var(--cf-accent); }
 

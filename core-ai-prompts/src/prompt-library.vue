@@ -1,8 +1,8 @@
 <template>
   <section class="prompt-demo" :class="{ 'is-dark': isDark }">
     <div class="prompt-toolbar">
-      <label class="prompt-search"><span>Search</span><input v-model="query" type="search" placeholder="Role, prompt, or tag…" /></label>
-      <label><span>Category</span><select v-model="category"><option v-for="item in PROMPT_CATEGORIES" :key="item">{{ item }}</option></select></label>
+      <label class="prompt-search"><span>Search</span><input v-rv-control v-model="query" type="search" placeholder="Role, prompt, or tag…" /></label>
+      <label><span>Category</span><select v-rv-control v-model="category"><option v-for="item in PROMPT_CATEGORIES" :key="item">{{ item }}</option></select></label>
       <span class="prompt-hint">Double-click a prompt to edit it</span>
     </div>
     <VGrid class="prompt-grid" :theme="isDark ? 'darkCompact' : 'compact'" :source="visibleRows" :columns="PROMPT_COLUMNS" :editors="PROMPT_EDITORS" :filter="true" range resize row-headers hide-attribution can-move-columns :row-size="108" />
@@ -10,6 +10,8 @@
 </template>
 
 <script setup lang="ts">
+import { vRvControl } from '@revolist/ui/vue-control';
+import '@revolist/ui/styles.css';
 import { computed, ref } from 'vue';
 import VGrid from '@revolist/vue3-datagrid';
 import { filterPrompts, PROMPT_CATEGORIES, PROMPT_COLUMNS, PROMPTS } from './prompt-library.shared';

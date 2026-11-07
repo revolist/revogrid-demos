@@ -1,3 +1,8 @@
+import questionIcon from '@fortawesome/fontawesome-free/svgs/solid/question.svg?raw';
+import { h, render } from 'preact';
+import { IconButton } from '@revolist/ui/preact';
+import { applyControlPresentation, createDropdownControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import { getHRColumnsCount, getHRData, getHRVisibleColumnsCount, HR_COMPANY_OPTIONS, HR_OPTIONS } from './sys-data/hr.data';
 import { getBaseHRColumns, getExtraHRColumns, withHRShortDate } from './sys-data/hr.columns';
@@ -11,7 +16,6 @@ import {
   formatDuration,
   formatFrameRate,
   formatMemory,
-  getHRMetricTooltipId,
   HR_PERFORMANCE_METRICS,
   type HRPerformanceMetricKey,
 } from './hr-performance';
@@ -29,13 +33,9 @@ defineCustomElements();
 
 function metricLabel(metric: HRPerformanceMetricKey) {
   const definition = HR_PERFORMANCE_METRICS[metric];
-  const tooltipId = getHRMetricTooltipId(metric);
   return `<div class="hr-performance-label">
     <span>${definition.label}</span>
-    <span class="hr-metric-help">
-      <button type="button" class="hr-metric-help-trigger" aria-label="About ${definition.label}" aria-describedby="${tooltipId}">?</button>
-      <span class="hr-metric-tooltip" id="${tooltipId}" role="tooltip">${definition.description}</span>
-    </span>
+    <span data-metric-help="${metric}"></span>
   </div>`;
 }
 
@@ -59,16 +59,10 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
   container.className = 'hr-demo grow h-full flex flex-col';
   container.innerHTML = `
     <div class="hr-toolbar">
-      <span class="text-sm font-medium">Data Source</span>
-      <select class="hr-select" id="size-select">
-        ${HR_OPTIONS.map(opt => `<option value="${opt.value}"${opt.value === currentSize ? ' selected' : ''}>${opt.label}</option>`).join('')}
-      </select>
-      <span class="text-sm font-medium">Theme</span>
-      <select class="hr-select" id="theme-select">
-        ${HR_THEME_OPTIONS.map(opt => `<option value="${opt.value}"${opt.value === currentTheme ? ' selected' : ''}>${opt.label}</option>`).join('')}
-      </select>
-      <button type="button" class="hr-button" id="save-view">Save view</button>
-      <button type="button" class="hr-button hr-button-secondary" id="reset-view">Reset view</button>
+      <div class="hr-field hr-field--source" id="size-field"><span>Data Source</span></div>
+      <div class="hr-field" id="theme-field"><span>Theme</span></div>
+      <button type="button" id="save-view">Save view</button>
+      <button type="button" id="reset-view">Reset view</button>
       <span class="hr-workspace-status" id="workspace-status">${Object.keys(workspaceState).length ? 'Saved locally' : 'View not saved'}</span>
       <div id="loading-indicator" class="text-sm opacity-50 animate-pulse ml-2" style="display: none;"></div>
     </div>
@@ -82,11 +76,23 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
       <div class="hr-performance-metric">${metricLabel('dataset')}<strong data-metric="dataset">0 × 0</strong></div>
     </section>
   `;
+  applyControlPresentation(container);
   parent.appendChild(container);
+  const metricHelp = container.querySelectorAll<HTMLElement>('[data-metric-help]');
+  for (const host of metricHelp) {
+    const definition = HR_PERFORMANCE_METRICS[host.dataset.metricHelp as HRPerformanceMetricKey];
+    render(h(IconButton, { label: `About ${definition.label}`, title: definition.description, icon: questionIcon }), host);
+  }
 
   const gridContainer = container.querySelector('#grid-container')!;
-  const select = container.querySelector('#size-select') as HTMLSelectElement;
-  const themeSelect = container.querySelector('#theme-select') as HTMLSelectElement;
+  const select = createDropdownControl(document, {
+    source: HR_OPTIONS, value: currentSize, config: { topLayer: true, ariaLabel: 'Data Source' },
+  });
+  const themeSelect = createDropdownControl(document, {
+    source: HR_THEME_OPTIONS, value: currentTheme, config: { topLayer: true, ariaLabel: 'Theme' },
+  });
+  container.querySelector('#size-field')!.appendChild(select.element);
+  container.querySelector('#theme-field')!.appendChild(themeSelect.element);
   const loadingIndicator = container.querySelector('#loading-indicator') as HTMLElement;
   const saveButton = container.querySelector('#save-view') as HTMLButtonElement;
   const resetButton = container.querySelector('#reset-view') as HTMLButtonElement;
@@ -205,17 +211,17 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
     overlayElement = gridContainer.querySelector('.hr-loading-overlay') as HTMLElement | undefined;
   };
 
-  select.addEventListener('change', (e) => {
-    currentSize = parseInt((e.target as HTMLSelectElement).value, 10);
+  select.onChange = value => {
+    currentSize = value;
     workspaceStatus.textContent = 'Unsaved changes';
     loadRows(currentSize);
-  });
+  };
 
-  themeSelect.addEventListener('change', (event) => {
-    currentTheme = (event.target as HTMLSelectElement).value;
+  themeSelect.onChange = value => {
+    currentTheme = value;
     grid.theme = currentTheme;
     workspaceStatus.textContent = 'Unsaved changes';
-  });
+  };
 
   saveButton.addEventListener('click', async () => {
     workspaceState = await workspaceController.save({ rowCount: currentSize, theme: currentTheme });
@@ -227,7 +233,7 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
     workspaceState = {};
     currentSize = HR_DEFAULT_ROW_COUNT;
     currentTheme = defaultTheme;
-    select.value = String(currentSize);
+    select.value = currentSize;
     themeSelect.value = currentTheme;
     grid.theme = currentTheme;
     grid.filter = { collection: {} };
@@ -243,6 +249,9 @@ export async function load(parentSelector: string, options: { isDark?: boolean }
     activeController?.abort();
     workspaceController.destroy();
     performanceMonitor.destroy();
+    select.destroy();
+    themeSelect.destroy();
+    for (const host of metricHelp) render(null, host);
     container.remove();
   };
 }

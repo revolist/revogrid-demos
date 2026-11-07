@@ -186,10 +186,11 @@ export function createPanelOptions(): AuditHistoryPanelOptions {
   return {
     getUserAvatar: user => DEMO_USER_AVATARS.get(user.id),
     placement: 'right',
+    resizable: true,
     pageSize: 12,
     allowExport: true,
     allowCompare: true,
     restoreActions: ['cell', 'row', 'transaction'],
-    labels: { title: 'Change ledger' },
+    labels: { title: 'Audit history' },
   };
 }

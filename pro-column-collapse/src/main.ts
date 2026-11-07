@@ -24,7 +24,8 @@ async function bootstrap() {
     }
     case 'angular': {
       await import('zone.js');
-      await import('@angular/compiler');
+      const { publishFacade } = await import('@angular/compiler');
+      publishFacade(globalThis);
       document.querySelector('#app')!.innerHTML = '<column-collapse-grid></column-collapse-grid>';
       const [{ bootstrapApplication }, { ColumnCollapseGridComponent }] = await Promise.all([
         import('@angular/platform-browser'),

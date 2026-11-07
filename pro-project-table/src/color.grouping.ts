@@ -1,3 +1,5 @@
+import { renderControl } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import {
   type GroupingOptions,
   getSourceItem,
@@ -17,7 +19,6 @@ export const GROUPING_COLOR: GroupingOptions = {
     const weekDiff = getGroupByDate(props.name);
     // get color by week difference
     const color = getColorByWeekDiff(weekDiff);
-
 
     // set label based on week difference
     let label = '';
@@ -41,14 +42,12 @@ export const GROUPING_COLOR: GroupingOptions = {
 
     // Add expand button to pin start column
     if (props.providers.colType === 'colPinStart') {
-      const expandButton = h(
-        'button',
+      const expandButton = renderControl(
+        h, 'button',
         {
           class: 'tree-toggle',
           expanded: props.expanded,
-          style: {
-            color,
-          },
+          style: {  },
         },
         EXPAND_ICON,
       );
@@ -64,7 +63,6 @@ export const GROUPING_COLOR: GroupingOptions = {
     if (props.providers.colType === 'colPinEnd' || !props.expanded) {
       return;
     }
-
 
     // Create column headers for grouping
     const store = props.providers.columns;

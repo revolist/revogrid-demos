@@ -5,15 +5,12 @@
         <strong>Remote user directory</strong>
         <span class="infinity-status">{{ status }}</span>
       </div>
-      <button class="infinity-button" type="button" :disabled="exporting" @click="exportAll">
-        {{ exporting ? 'Preparing export…' : 'Export all to Excel' }}
-      </button>
+      <IconButton label="Export all to Excel" :icon="exportIcon" :disabled="exporting" @click="exportAll" />
     </div>
     <RevoGrid
       class="infinity-grid"
       :theme="darkTheme ? 'darkMaterial' : 'material'"
       :columns="columns"
-      :source="source"
       :pinned-top-source="pinnedTopSource"
       :pinned-bottom-source="pinnedBottomSource"
       :plugins="plugins"
@@ -26,6 +23,9 @@
 </template>
 
 <script setup lang="ts">
+import exportIcon from '@fortawesome/fontawesome-free/svgs/solid/download.svg?raw';
+import { IconButton } from '@revolist/ui/vue';
+import '@revolist/ui/styles.css';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import RevoGrid from '@revolist/vue3-datagrid';
 import type { ColumnProp, FilterCollectionItem, MultiFilterItem } from '@revolist/revogrid';
@@ -53,7 +53,6 @@ import './infinity-scroll.scss';
 
 const props = defineProps<{ rows?: InfinityScrollUser[] }>();
 const rows = ref(props.rows?.length ? props.rows : createInfinityScrollRows());
-const source = ref<InfinityScrollUser[]>([]);
 const columns = createInfinityScrollColumns();
 const plugins = [InfinityScrollPlugin, AdvanceFilterPlugin, RowOddPlugin, RowSelectPlugin, ColumnStretchPlugin];
 const pinnedTopSource = createInfinityScrollPinnedTopRows();
@@ -81,7 +80,9 @@ const loadData = async (
   return result;
 };
 const infinityScroll = computed<Partial<InfinityScrollConfig>>(() => ({
-  chunkSize: 50,
+  // Published 4.0.1 cached reads reference Node process; use supported direct reads until the fixed release.
+    query: false,
+    chunkSize: 50,
   bufferSize: 150,
   preloadThreshold: 0.75,
   total: rows.value.length,

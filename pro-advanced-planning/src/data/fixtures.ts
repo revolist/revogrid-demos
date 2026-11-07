@@ -1,3 +1,23 @@
+import avaAvatar from '../assets/avatars/ava.webp'
+import noahAvatar from '../assets/avatars/noah.webp'
+import leoAvatar from '../assets/avatars/leo.webp'
+import mayaAvatar from '../assets/avatars/maya.webp'
+import ninaAvatar from '../assets/avatars/nina.webp'
+import liamAvatar from '../assets/avatars/liam.webp'
+import emmaAvatar from '../assets/avatars/emma.webp'
+import oliverAvatar from '../assets/avatars/oliver.webp'
+import sophiaAvatar from '../assets/avatars/sophia.webp'
+import jamesAvatar from '../assets/avatars/james.webp'
+import ameliaAvatar from '../assets/avatars/amelia.webp'
+import lucasAvatar from '../assets/avatars/lucas.webp'
+import isabellaAvatar from '../assets/avatars/isabella.webp'
+import henryAvatar from '../assets/avatars/henry.webp'
+import charlotteAvatar from '../assets/avatars/charlotte.webp'
+import ethanAvatar from '../assets/avatars/ethan.webp'
+import harperAvatar from '../assets/avatars/harper.webp'
+import masonAvatar from '../assets/avatars/mason.webp'
+import evelynAvatar from '../assets/avatars/evelyn.webp'
+import ariaAvatar from '../assets/avatars/aria.webp'
 import type { PlanningTask } from './types'
 import { planningPalette, workflowBadges } from './palette'
 
@@ -10,11 +30,26 @@ export type PlanningPerson = {
 }
 
 const avatarUrls = {
-    Ava: new URL('../assets/avatars/ava.webp', import.meta.url).href,
-    Noah: new URL('../assets/avatars/noah.webp', import.meta.url).href,
-    Leo: new URL('../assets/avatars/leo.webp', import.meta.url).href,
-    Maya: new URL('../assets/avatars/maya.webp', import.meta.url).href,
-    Nina: new URL('../assets/avatars/nina.webp', import.meta.url).href,
+    Ava: new URL(avaAvatar, import.meta.url).href,
+    Noah: new URL(noahAvatar, import.meta.url).href,
+    Leo: new URL(leoAvatar, import.meta.url).href,
+    Maya: new URL(mayaAvatar, import.meta.url).href,
+    Nina: new URL(ninaAvatar, import.meta.url).href,
+    Liam: new URL(liamAvatar, import.meta.url).href,
+    Emma: new URL(emmaAvatar, import.meta.url).href,
+    Oliver: new URL(oliverAvatar, import.meta.url).href,
+    Sophia: new URL(sophiaAvatar, import.meta.url).href,
+    James: new URL(jamesAvatar, import.meta.url).href,
+    Amelia: new URL(ameliaAvatar, import.meta.url).href,
+    Lucas: new URL(lucasAvatar, import.meta.url).href,
+    Isabella: new URL(isabellaAvatar, import.meta.url).href,
+    Henry: new URL(henryAvatar, import.meta.url).href,
+    Charlotte: new URL(charlotteAvatar, import.meta.url).href,
+    Ethan: new URL(ethanAvatar, import.meta.url).href,
+    Harper: new URL(harperAvatar, import.meta.url).href,
+    Mason: new URL(masonAvatar, import.meta.url).href,
+    Evelyn: new URL(evelynAvatar, import.meta.url).href,
+    Aria: new URL(ariaAvatar, import.meta.url).href,
 } as const
 
 export const planningPeople: readonly PlanningPerson[] = [
@@ -53,6 +88,17 @@ export const planningPeople: readonly PlanningPerson[] = [
         color: planningPalette.pink,
         avatarUrl: avatarUrls.Nina,
     },
+    ...([
+        ['Liam', 'Engineering'], ['Emma', 'Design'], ['Oliver', 'QA'],
+        ['Sophia', 'Product'], ['James', 'Security'], ['Amelia', 'Engineering'],
+        ['Lucas', 'Design'], ['Isabella', 'QA'], ['Henry', 'Product'],
+        ['Charlotte', 'Security'], ['Ethan', 'Engineering'], ['Harper', 'Design'],
+        ['Mason', 'QA'], ['Evelyn', 'Product'], ['Aria', 'Security'],
+    ] as const).map(([name, role], index) => ({
+        id: name, name, role,
+        avatarUrl: avatarUrls[name],
+        color: Object.values(planningPalette)[index % 5],
+    })),
 ]
 
 function findPlanningPerson(owner: string): PlanningPerson | undefined {
@@ -82,21 +128,15 @@ const workdayOffsets = [
     0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 15, 16, 17, 18, 21, 22, 23,
 ] as const
 
-function getTaskSlot(ownerTaskIndex: number) {
-    const isFirstSplitDay = ownerTaskIndex === 8 || ownerTaskIndex === 9
-    const isLastSplitDay = ownerTaskIndex === 18 || ownerTaskIndex === 19
-    const workdayIndex = isFirstSplitDay
-        ? 8
-        : isLastSplitDay
-          ? 17
-          : ownerTaskIndex < 8
-            ? ownerTaskIndex
-            : ownerTaskIndex - 1
-    const afternoon = ownerTaskIndex === 9 || ownerTaskIndex === 19
+function getTaskSlot(ownerTaskIndex: number, ownerIndex: number) {
+    // Stagger owners without shortening the three-workday gap between their tasks.
+    const workdayIndex = ownerTaskIndex * 3 + (ownerIndex % 3)
     return {
         dayOffset: workdayOffsets[workdayIndex],
-        startHour: isFirstSplitDay || isLastSplitDay ? (afternoon ? 13 : 8) : 8,
-        endHour: isFirstSplitDay || isLastSplitDay ? (afternoon ? 17 : 12) : 17,
+        availableWorkdays: workdayOffsets.length - workdayIndex,
+        startHour: [8, 9, 10, 11, 13, 14][(ownerIndex + ownerTaskIndex) % 6],
+        startMinute: [0, 15, 30, 45][(ownerIndex + ownerTaskIndex) % 4],
+        endHour: [15, 16, 17][(ownerIndex + ownerTaskIndex) % 3],
     }
 }
 
@@ -214,7 +254,7 @@ export function createTasks(): PlanningTask[] {
         'Platform hardening',
         'Release readiness',
     ]
-    const owners = ['Maya', 'Ava', 'Noah', 'Nina', 'Leo'] as const
+    const owners = planningPeople.map(({ id }) => id)
     const projects = [
         'customer-portal',
         'billing-platform',
@@ -230,12 +270,20 @@ export function createTasks(): PlanningTask[] {
     return names.map((name, index) => {
         const owner = owners[index % owners.length]
         const projectIndex = index % projects.length
-        const { dayOffset, startHour, endHour } = getTaskSlot(
-            Math.floor(index / owners.length)
+        const {
+            dayOffset, availableWorkdays, startHour, startMinute, endHour,
+        } = getTaskSlot(
+            Math.floor(index / owners.length),
+            index % owners.length
         )
-        const start = new Date(Date.UTC(2026, 8, 7 + dayOffset, startHour))
+        const start = new Date(
+            Date.UTC(2026, 8, 7 + dayOffset, startHour, startMinute)
+        )
         const milestone = [9, 39, 69, 99].includes(index)
-        const durationDays = milestone ? 0 : 2 + (index % 5)
+        // Keep the last staggered wave within the displayed September period.
+        const durationDays = milestone
+            ? 0
+            : Math.min(2 + (index % 5), availableWorkdays)
         const end = milestone
             ? new Date(start.getTime() + 3_600_000)
             : addWorkingDays(start, durationDays)

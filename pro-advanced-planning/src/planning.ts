@@ -1,3 +1,7 @@
+import { createDropdownControl } from '@revolist/ui/dropdown/control'
+import searchIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?raw'
+import { controlAttributes, createControl, createSearchInput } from '@revolist/ui';
+import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader'
 import type { ColumnFilterConfig } from '@revolist/revogrid'
 import { GanttPlugin } from '@revolist/gantt'
@@ -28,12 +32,14 @@ import {
     filterPlanningTasks,
     ganttColumns,
     ganttConfig,
+    toPlanningGanttSource,
+    ganttTaskEditorDialog,
     ganttDependencies,
     ganttResources,
     gridColumnTypes,
     gridColumns,
     createKanbanConfig,
-    planningProjects,
+    planningFilterDropdowns,
     planningFilterConfig,
     planningDataGridFormatting,
     planningRowOrder,
@@ -55,7 +61,6 @@ defineCustomElements()
 
 type PlanningGridElement = HTMLRevoGridElement & {
     filter?: typeof planningFilterConfig
-    filterBadges?: object
     gantt?: typeof ganttConfig
     ganttResources?: typeof ganttResources
     ganttAssignments?: ReturnType<typeof toGanttAssignments>
@@ -88,24 +93,17 @@ export function load(parentSelector: string): (() => void) | undefined {
             multiFilterItems: { ...planningFilterConfig.multiFilterItems },
         },
     }
-    const filterBadgeOptions = {
-        className: 'planning-demo__filter-badges',
-        badgeClassName: 'planning-demo__filter-badge',
-        emptyClassName: 'planning-demo__filter-badges--empty',
-        renderEmpty: () => '',
-    }
     const root = document.createElement('section')
     const switcher = document.createElement('nav')
     const panel = document.createElement('article')
     const toolbar = document.createElement('div')
-    const search = document.createElement('input')
-    const project = document.createElement('select')
-    const status = document.createElement('select')
-    const priority = document.createElement('select')
-    const activeTasks = document.createElement('button')
-    const reset = document.createElement('button')
-    const footer = document.createElement('footer')
-    const footerMessage = document.createElement('span')
+    const { root: searchRoot, input: search } = createSearchInput(document, {
+        rootClassName: 'planning-demo__search', iconSvg: searchIcon,
+    })
+    const project = createDropdownControl(document, { ...planningFilterDropdowns.project, value: 'all' })
+    const status = createDropdownControl(document, { ...planningFilterDropdowns.status, value: '' })
+    const priority = createDropdownControl(document, { ...planningFilterDropdowns.priority, value: '' })
+    const activeTasks = createControl(document, 'button')
     let activeGridAbort: AbortController | undefined
     let activeGrid: PlanningGridElement | undefined
 
@@ -115,35 +113,28 @@ export function load(parentSelector: string): (() => void) | undefined {
     switcher.ariaLabel = 'Planning view'
     panel.className = 'planning-demo__grid'
     toolbar.className = 'planning-demo__toolbar'
+    toolbar.setAttribute('role', 'group')
+    toolbar.ariaLabel = 'Task filters'
+    const filterGroup = document.createElement('div')
+    filterGroup.className = 'planning-demo__filters'
+    for (const dropdown of [project, status, priority]) {
+        dropdown.element.classList.add('planning-demo__filter')
+        filterGroup.append(dropdown.element)
+    }
     search.type = 'search'
     search.placeholder = 'Search tasks…'
     search.ariaLabel = 'Search tasks'
-    project.ariaLabel = 'Project'
-    project.innerHTML = `<option value="all">All projects</option>${planningProjects.map((item) => `<option value="${item.id}">${item.label}</option>`).join('')}`
-    status.ariaLabel = 'Status'
-    status.innerHTML =
-        '<option value="">All statuses</option><option value="not-started">Planned</option><option value="in-progress">In progress</option><option value="blocked">Blocked</option><option value="done">Done</option>'
-    priority.ariaLabel = 'Priority'
-    priority.innerHTML =
-        '<option value="">All priorities</option><option value="500">Normal</option><option value="700">High</option><option value="900">Critical</option>'
     activeTasks.type = 'button'
     activeTasks.textContent = 'Active tasks'
     const setActiveTasksPreset = (active: boolean) => {
         isActiveTasksPreset = active
         activeTasks.classList.toggle('on', isActiveTasksPreset)
-        activeTasks.ariaPressed = String(isActiveTasksPreset)
+        activeTasks.classList.add('rv-choice-chip'); activeTasks.ariaPressed = String(isActiveTasksPreset)
     }
     setActiveTasksPreset(false)
-    reset.type = 'button'
-    reset.textContent = 'Reset'
-    footer.className = 'planning-demo__footer'
-    footerMessage.textContent = 'Changes stay in this demo'
-    const footerMeta = document.createElement('span')
-    footerMeta.className = 'planning-demo__footer-meta'
-    footerMeta.append(footerMessage)
-    footer.append(footerMeta)
-    toolbar.append(search, project, status, priority, activeTasks, reset)
-    root.append(switcher, toolbar, panel, footer)
+    activeTasks.classList.add('planning-demo__active')
+    toolbar.append(searchRoot, filterGroup, activeTasks)
+    root.append(switcher, toolbar, panel)
     parent.appendChild(root)
 
     function syncActiveGrid() {
@@ -153,7 +144,7 @@ export function load(parentSelector: string): (() => void) | undefined {
             planningStore.createSnapshot(),
             filters
         )
-        activeGrid.source = allTasks
+        activeGrid.source = activeView === 'gantt' ? toPlanningGanttSource(allTasks) : allTasks
 
         if (activeView === 'gantt') {
             activeGrid.ganttAssignments = toGanttAssignments(allTasks)
@@ -165,6 +156,7 @@ export function load(parentSelector: string): (() => void) | undefined {
     }
 
     function render(view: PlanningView) {
+        status.element.hidden = priority.element.hidden = view !== 'kanban'
         activeGridAbort?.abort()
         activeGridAbort = new AbortController()
         activeView = view
@@ -191,6 +183,7 @@ export function load(parentSelector: string): (() => void) | undefined {
                 PlanningWorkspacePlugin,
                 EventManagerPlugin,
                 AdvanceFilterPlugin,
+                FilterHeaderPlugin,
                 DataGridFormattingPlugin,
                 RangeSelectionLimitPlugin,
                 ColumnStretchPlugin,
@@ -207,7 +200,6 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.dataGridFormatting = planningDataGridFormatting
             grid.stretch = 1
             grid.filter = filterConfigs.grid
-            grid.filterBadges = filterBadgeOptions
             grid.range = true
             grid.rangeSelectionLimit = 'column'
             grid.resize = true
@@ -227,17 +219,17 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.columns = gridColumns
             grid.kanban = createKanbanConfig()
             grid.filter = filterConfigs.kanban
-            grid.filterBadges = filterBadgeOptions
         } else if (view === 'gantt') {
-            grid.plugins = [GanttPlugin, AdvanceFilterPlugin, FilterHeaderPlugin]
+            grid.plugins = [GanttPlugin, AdvanceFilterPlugin]
             grid.columns = ganttColumns
+            grid.rowSize = 40
             grid.rowOrder = false
             grid.gantt = ganttConfig
+            grid.ganttTaskEditorDialog = ganttTaskEditorDialog
             grid.ganttDependencies = visibleGanttDependencies
             grid.ganttResources = ganttResources
             grid.ganttAssignments = toGanttAssignments(allTasks)
             grid.filter = filterConfigs.gantt
-            grid.filterBadges = filterBadgeOptions
         } else {
             grid.plugins = [EventSchedulerPlugin]
             grid.columns = []
@@ -270,11 +262,11 @@ export function load(parentSelector: string): (() => void) | undefined {
 
         panel.replaceChildren(grid)
         activeGrid = grid
-        grid.source = allTasks
+        grid.source = view === 'gantt' ? toPlanningGanttSource(allTasks) : allTasks
         switcher.querySelectorAll('button').forEach((button) => {
             const selected = button.dataset.view === activeView
             button.classList.toggle('on', selected)
-            button.ariaSelected = String(selected)
+            button.classList.add('rv-segmented-switch-item'); button.ariaSelected = String(selected);
         })
     }
 
@@ -283,48 +275,37 @@ export function load(parentSelector: string): (() => void) | undefined {
         filters = { ...filters, query: search.value }
         syncActiveGrid()
     })
-    project.addEventListener('change', () => {
+    project.onChange = value => {
         setActiveTasksPreset(false)
         filters = {
             ...filters,
-            projectId: project.value as PlanningFilters['projectId'],
+            projectId: value as PlanningFilters['projectId'],
         }
         syncActiveGrid()
-    })
-    status.addEventListener('change', () => {
+    }
+    status.onChange = value => {
         setActiveTasksPreset(false)
-        filters = { ...filters, statuses: status.value ? [status.value] : [] }
+        filters = { ...filters, statuses: value ? [value] : [] }
         syncActiveGrid()
-    })
-    priority.addEventListener('change', () => {
+    }
+    priority.onChange = value => {
         setActiveTasksPreset(false)
-        filters = {
-            ...filters,
-            priorities: priority.value ? [Number(priority.value)] : [],
-        }
+        filters = { ...filters, priorities: value ? [Number(value)] : [] }
         syncActiveGrid()
-    })
+    }
     activeTasks.addEventListener('click', () => {
-        setActiveTasksPreset(true)
-        filters = activePlanningFilters()
-        status.value = ''
-        syncActiveGrid()
-    })
-    reset.addEventListener('click', () => {
-        setActiveTasksPreset(false)
-        planningStore.replace(createTasks())
-        currentGanttDependencies = [...ganttDependencies]
-        filters = defaultPlanningFilters()
-        search.value = ''
-        project.value = 'all'
-        status.value = ''
+        setActiveTasksPreset(!isActiveTasksPreset)
+        filters = isActiveTasksPreset ? activePlanningFilters() : defaultPlanningFilters()
+        search.value = filters.query
+        project.value = filters.projectId
+        status.value = isActiveTasksPreset ? 'active' : ''
         priority.value = ''
         syncActiveGrid()
     })
     for (const view of views) {
-        const button = document.createElement('button')
+        const button = createControl(document, 'button', { type: 'button' })
         button.type = 'button'
-        button.className = 'rv-segmented-switch-item'
+        button.className = controlAttributes('button', { class: 'rv-segmented-switch-item' }).class
         button.setAttribute('role', 'tab')
         button.dataset.view = view
         button.textContent = view
@@ -346,6 +327,9 @@ export function load(parentSelector: string): (() => void) | undefined {
     return () => {
         disconnectTheme()
         activeGridAbort?.abort()
+        project.destroy()
+        status.destroy()
+        priority.destroy()
         root.remove()
     }
 }

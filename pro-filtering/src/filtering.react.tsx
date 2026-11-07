@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { Button as UiButton, SearchInput } from '@revolist/ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ColumnFilterConfig, MultiFilterItem } from '@revolist/revogrid';
 import { RevoGrid } from '@revolist/react-datagrid';
@@ -67,30 +69,25 @@ export default function Filtering({ rows }: { rows?: OrderExplorerRow[] }) {
     <section className="order-explorer" aria-label="Advanced Filtering: Order Explorer">
       <div className="order-explorer__toolbar">
         <div className="order-explorer__presets" aria-label="Filter presets">
-          <p className="order-explorer__eyebrow">Presets</p>
-          <button className="rv-btn" type="button" onClick={() => applyPreset('high-value-europe')}>High-value Europe</button>
-          <button className="rv-btn" type="button" onClick={() => applyPreset('recent-expedited')}>Recent expedited</button>
-          <button className="rv-btn" type="button" onClick={() => applyPreset('review-queue')}>Review queue</button>
+
+          <UiButton onClick={() => applyPreset('high-value-europe')}>High-value Europe</UiButton>
+          <UiButton onClick={() => applyPreset('recent-expedited')}>Recent expedited</UiButton>
+          <UiButton onClick={() => applyPreset('review-queue')}>Review queue</UiButton>
         </div>
         <div className="order-explorer__search">
-          <input
-            className="order-explorer__search-input"
-            type="search"
+          <SearchInput
+            rootClassName="order-explorer__search-field"
             value={quickText}
             placeholder="Global search — try “Lisbon pending”"
             aria-label="Search all visible columns"
-            onChange={event => applyQuickFilter(event.target.value)}
+            onValueChange={applyQuickFilter}
           />
-          <button className="rv-btn" type="button" onClick={() => applyQuickFilter(ORDER_EXPLORER_QUICK_FILTER_EXAMPLE)}>Try example</button>
+          <UiButton onClick={() => applyQuickFilter(ORDER_EXPLORER_QUICK_FILTER_EXAMPLE)}>Try example</UiButton>
         </div>
         <div className="order-explorer__summary">
           <span className="order-explorer__count" aria-live="polite">
             {visibleCount.toLocaleString()} of {source.length.toLocaleString()} orders
           </span>
-          <button className="rv-btn-secondary" type="button" onClick={() => {
-            applyFilterItems({});
-            applyQuickFilter('');
-          }}>Clear All</button>
         </div>
       </div>
       <div className="order-explorer__grid">

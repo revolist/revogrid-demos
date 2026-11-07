@@ -24,10 +24,6 @@ export class PlanningWorkspaceStore {
         return [...this.tasks]
     }
 
-    replace(tasks: PlanningTask[]): void {
-        this.tasks = tasks
-    }
-
     delete(taskIds: readonly string[]): void {
         this.tasks = deletePlanningTasks(this.tasks, taskIds)
     }

@@ -15,14 +15,14 @@ import {
   ECOMMERCE_FILTER_BY_PROP,
   ECOMMERCE_PLUGINS,
   renderEcommerceNumericAggregate,
-} from './sys-data/ecommerce.columns.ts';
+} from '../src/sys-data/ecommerce.columns.ts';
 import {
   ECOMMERCE_FILTER_PRESETS,
   ECOMMERCE_QUICK_FILTER_COLUMNS,
   createEcommerceDerivedState,
   createEcommerceVisibleSourceSync,
-} from './ecommerce.filtering.ts';
-import { ECOMMERCE_DATA } from './sys-data/ecommerce.data.ts';
+} from '../src/ecommerce.filtering.ts';
+import { ECOMMERCE_DATA } from '../src/sys-data/ecommerce.data.ts';
 
 test('every e-commerce field declares its type-correct contextual filter', () => {
   const expected = new Map([
@@ -295,10 +295,9 @@ test('narrow filter inputs stay contained and reserve space for the filter icon'
   );
 
   assert.match(styles, /\.filter-input\s*\{[\s\S]*?overflow:\s*hidden;/);
-  assert.match(
-    styles,
-    /input\[type='text'\]\s*\{[\s\S]*?padding-right:\s*38px\s*!important;[\s\S]*?text-overflow:\s*ellipsis;/,
-  );
+  assert.match(styles, /input\[type='text'\]\s*\{[^}]*text-overflow:\s*ellipsis;/);
+  const publicStyles = readFileSync(new URL(import.meta.resolve('@revolist/revogrid-pro/styles.css')), 'utf8');
+  assert.match(publicStyles, /\.filter-input input\[type=text\][^{]*\{[^}]*padding:5px 30px 5px 8px/);
 });
 
 test('all framework variants pass the configured contextual filter templates', () => {

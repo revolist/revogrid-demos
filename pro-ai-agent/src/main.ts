@@ -1,0 +1,50 @@
+import '../../demo-host.css';
+import '@revolist/revogrid-pro/styles.css';
+import '@revolist/ui/styles.css';
+
+const framework =
+  new URLSearchParams(location.search).get('framework') ??
+  (import.meta.env.MODE === 'development' ? 'ts' : import.meta.env.MODE);
+
+async function bootstrap() {
+  switch (framework) {
+    case 'react': {
+      const [{ createElement }, { createRoot }, { default: Demo }] =
+        await Promise.all([
+          import('react'),
+          import('react-dom/client'),
+          import('./AiAssistant.react'),
+        ]);
+      createRoot(document.querySelector('#app')!).render(createElement(Demo));
+      break;
+    }
+    case 'vue': {
+      const [{ createApp }, { default: Demo }] = await Promise.all([
+        import('vue'),
+        import('./AiAssistant.vue'),
+      ]);
+      createApp(Demo).mount('#app');
+      break;
+    }
+    case 'angular': {
+      await import('zone.js');
+      const { publishFacade } = await import('@angular/compiler');
+      publishFacade(globalThis);
+      document.querySelector('#app')!.innerHTML =
+        '<ai-view-assistant-grid></ai-view-assistant-grid>';
+      const [{ bootstrapApplication }, { AiAssistantGridComponent }] =
+        await Promise.all([
+          import('@angular/platform-browser'),
+          import('./AiAssistantAngular'),
+        ]);
+      await bootstrapApplication(AiAssistantGridComponent);
+      break;
+    }
+    default: {
+      const { load } = await import('./AiAssistant');
+      load('#app');
+    }
+  }
+}
+
+void bootstrap();

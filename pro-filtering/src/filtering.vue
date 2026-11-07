@@ -2,27 +2,25 @@
   <section class="order-explorer" aria-label="Advanced Filtering: Order Explorer">
     <div class="order-explorer__toolbar">
       <div class="order-explorer__presets" aria-label="Filter presets">
-        <p class="order-explorer__eyebrow">Presets</p>
-        <button class="rv-btn" type="button" @click="applyPreset('high-value-europe')">High-value Europe</button>
-        <button class="rv-btn" type="button" @click="applyPreset('recent-expedited')">Recent expedited</button>
-        <button class="rv-btn" type="button" @click="applyPreset('review-queue')">Review queue</button>
+
+        <Button @click="applyPreset('high-value-europe')">High-value Europe</Button>
+        <Button @click="applyPreset('recent-expedited')">Recent expedited</Button>
+        <Button @click="applyPreset('review-queue')">Review queue</Button>
       </div>
       <div class="order-explorer__search">
-        <input
-          v-model="quickText"
-          class="order-explorer__search-input"
-          type="search"
+        <SearchInput
+          :value="quickText"
+          root-class-name="order-explorer__search-field"
           placeholder="Global search — try “Lisbon pending”"
           aria-label="Search all visible columns"
-          @input="applyQuickFilter"
+          @update:model-value="setQuickText"
         />
-        <button class="rv-btn" type="button" @click="useQuickFilterExample">Try example</button>
+        <Button @click="useQuickFilterExample">Try example</Button>
       </div>
       <div class="order-explorer__summary">
         <span class="order-explorer__count" aria-live="polite">
           {{ visibleCount.toLocaleString() }} of {{ source.length.toLocaleString() }} orders
         </span>
-        <button class="rv-btn-secondary" type="button" @click="clearAll">Clear All</button>
       </div>
     </div>
     <div class="order-explorer__grid">
@@ -47,6 +45,8 @@
 </template>
 
 <script setup lang="ts">
+import { Button, SearchInput } from '@revolist/ui/vue';
+import '@revolist/ui/styles.css';
 import { onMounted, onUnmounted, ref } from 'vue';
 import type { ColumnFilterConfig, MultiFilterItem } from '@revolist/revogrid';
 import RevoGrid from '@revolist/vue3-datagrid';
@@ -100,16 +100,15 @@ function applyQuickFilter() {
   if (grid) setOrderExplorerQuickFilter(grid, quickText.value);
 }
 
-function useQuickFilterExample() {
-  quickText.value = ORDER_EXPLORER_QUICK_FILTER_EXAMPLE;
+function setQuickText(text: string) {
+  quickText.value = text;
   applyQuickFilter();
 }
 
-function clearAll() {
-  applyFilterItems({});
-  quickText.value = '';
-  applyQuickFilter();
+function useQuickFilterExample() {
+  setQuickText(ORDER_EXPLORER_QUICK_FILTER_EXAMPLE);
 }
+
 
 function disposeOrderExplorer() {
   disconnectTheme?.();

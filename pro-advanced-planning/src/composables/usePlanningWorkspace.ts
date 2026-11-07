@@ -9,7 +9,6 @@ import {
     RowOrderPlugin,
     RowSelectPlugin,
     RangeSelectionLimitPlugin,
-    type AdvancedFilterBadgesOptions,
     type RowSelectConfig,
 } from '@revolist/revogrid-pro'
 import { GanttPlugin } from '@revolist/gantt'
@@ -29,6 +28,8 @@ import {
     filterGanttDependencies,
     ganttColumns,
     ganttConfig,
+    toPlanningGanttSource,
+    ganttTaskEditorDialog,
     ganttDependencies,
     ganttResources,
     planningDataGridFormatting,
@@ -47,6 +48,7 @@ import {
     views,
     type PlanningEditDetail,
     type PlanningView,
+    type PlanningFilters,
     updateFromGanttDependencies,
 } from '../data'
 
@@ -63,7 +65,7 @@ const gridPlugins = [
     ColumnStretchPlugin,
     ColumnHidePlugin,
 ]
-const ganttPlugins = [GanttPlugin, AdvanceFilterPlugin, FilterHeaderPlugin]
+const ganttPlugins = [GanttPlugin, AdvanceFilterPlugin]
 const kanbanPlugins = [KanbanPlugin, AdvanceFilterPlugin]
 // Scheduler projects resource rows, so task-table filter rules do not apply
 // there. It retains its own native eventScheduler.filters boundary.
@@ -95,12 +97,6 @@ export function usePlanningWorkspace() {
     }
     const dataGridContextMenu =
         createPlanningDataGridContextMenu(deleteSelectedTasks)
-    const filterBadgeOptions = {
-        className: 'planning-demo__filter-badges',
-        badgeClassName: 'planning-demo__filter-badge',
-        emptyClassName: 'planning-demo__filter-badges--empty',
-        renderEmpty: () => '',
-    } satisfies AdvancedFilterBadgesOptions
     const isDark = ref(currentTheme().isDark())
     const theme = computed(() => (isDark.value ? 'darkCompact' : 'compact'))
     // Every view receives the canonical source. Its own AdvanceFilterPlugin
@@ -108,6 +104,7 @@ export function usePlanningWorkspace() {
     const ganttAssignments = computed(() =>
         toGanttAssignments(tasks.value)
     )
+    const ganttSource = computed(() => toPlanningGanttSource(tasks.value))
     const visibleGanttDependencies = computed(() =>
         filterGanttDependencies(ganttDependencyState.value, tasks.value)
     )
@@ -126,15 +123,14 @@ export function usePlanningWorkspace() {
     }
 
     function applyActiveTasksPreset() {
-        filters.value = activePlanningFilters()
-        isActiveTasksPreset.value = true
+        const active = !isActiveTasksPreset.value
+        filters.value = active ? activePlanningFilters() : defaultPlanningFilters()
+        isActiveTasksPreset.value = active
         refreshViewSnapshot()
     }
 
-    function resetWorkspace() {
-        planningStore.replace(createTasks())
-        ganttDependencyState.value = [...ganttDependencies]
-        filters.value = defaultPlanningFilters()
+    function changeFilters(next: PlanningFilters) {
+        filters.value = next
         isActiveTasksPreset.value = false
         refreshViewSnapshot()
     }
@@ -164,13 +160,16 @@ export function usePlanningWorkspace() {
 
     return {
         activeView,
+        filters,
+        changeFilters,
         applyActiveTasksPreset,
         calendarConfig,
         emptySource,
-        filterBadgeOptions,
         ganttAssignments,
         ganttColumns,
         ganttConfig,
+        ganttSource,
+        ganttTaskEditorDialog,
         ganttPlugins,
         ganttResources,
         planningDataGridContextMenu: dataGridContextMenu,
@@ -188,7 +187,6 @@ export function usePlanningWorkspace() {
         handlePlanningEdit,
         kanbanConfig,
         kanbanPlugins,
-        resetWorkspace,
         rootRef,
         rowSelect,
         schedulerConfig,

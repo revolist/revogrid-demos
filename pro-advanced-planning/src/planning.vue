@@ -5,50 +5,41 @@
         :data-theme="theme === 'darkCompact' ? 'dark' : 'light'"
     >
         <div class="planning-demo__topbar">
-            <nav
-                class="planning-demo__switch"
-                role="tablist"
-                aria-label="Planning view"
-            >
-                <button
-                    v-for="view in views"
-                    :key="view"
-                    type="button"
-                    :class="{ on: activeView === view }"
-                    role="tab"
-                    :aria-selected="activeView === view"
-                    :data-demo-action="`view_${view}`"
-                    @click="selectPlanningView(view)"
-                >
+            <nav class="planning-demo__switch rv-segmented-switch" role="tablist" aria-label="Planning view">
+                <button v-rv-control v-for="view in views" :key="view" type="button"
+                    class="rv-segmented-switch-item" :class="{ on: activeView === view }"
+                    role="tab" :aria-selected="activeView === view"
+                    :data-demo-action="`view_${view}`" @click="selectPlanningView(view)">
                     {{ view }}
                 </button>
             </nav>
-            <div class="planning-demo__actions">
-                <button
-                    type="button"
-                    data-demo-action="apply_active_tasks"
-                    :class="{ on: isActiveTasksPreset }"
-                    :aria-pressed="isActiveTasksPreset"
-                    @click="applyActiveTasksPreset"
-                >
-                    Active tasks
-                </button>
-                <button
-                    type="button"
-                    data-demo-action="reset_workspace"
-                    @click="resetWorkspace"
-                >
-                    Reset
-                </button>
-                <button
-                    class="planning-demo__fullscreen"
-                    type="button"
-                    aria-label="Full screen"
-                    title="Full screen"
-                    @click="toggleFullscreen"
-                >
-                    <span aria-hidden="true">↗</span>
-                </button>
+            <button v-rv-control class="planning-demo__fullscreen rv-btn-ghost" type="button"
+                aria-label="Full screen" title="Full screen" @click="toggleFullscreen"><span aria-hidden="true">↗</span></button>
+            <div class="planning-demo__toolbar" role="group" aria-label="Task filters">
+                <SearchInput root-class-name="planning-demo__search" aria-label="Search tasks" placeholder="Search tasks…"
+                    :value="filters.query" @update:model-value="query => changeFilters({ ...filters, query })">
+                    <template #icon><img :src="searchIcon" alt="" /></template>
+                </SearchInput>
+                <div class="planning-demo__filters">
+                    <span class="planning-demo__filter">
+                        <Dropdown class="rv-select" v-bind="planningFilterDropdowns.project" :value="filters.projectId"
+                            @update:model-value="value => changeFilters({ ...filters, projectId: value as PlanningFilters['projectId'] })" />
+                    </span>
+                    <template v-if="activeView === 'kanban'">
+                        <span class="planning-demo__filter">
+                            <Dropdown class="rv-select" v-bind="planningFilterDropdowns.status"
+                                :value="filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''"
+                                @update:model-value="value => changeFilters({ ...filters, statuses: value ? [String(value)] : [] })" />
+                        </span>
+                        <span class="planning-demo__filter">
+                            <Dropdown class="rv-select" v-bind="planningFilterDropdowns.priority"
+                                :value="String(filters.priorities[0] ?? '')"
+                                @update:model-value="value => changeFilters({ ...filters, priorities: value ? [Number(value)] : [] })" />
+                        </span>
+                    </template>
+                </div>
+                <button v-rv-control class="rv-choice-chip planning-demo__active" type="button" :class="{ on: isActiveTasksPreset }"
+                    :aria-pressed="isActiveTasksPreset" data-demo-action="apply_active_tasks" @click="applyActiveTasksPreset">Active tasks</button>
             </div>
         </div>
         <div v-if="activeView === 'grid'" class="planning-demo__grid-stage">
@@ -72,7 +63,6 @@
                 resize
                 can-move-columns
                 :row-select.prop="rowSelect"
-                :filter-badges.prop="filterBadgeOptions"
                 @gridedit="handlePlanningEdit"
                 @roworderapplied="handleGridRowOrder"
                 @filterastchange="
@@ -92,7 +82,6 @@
             :columns="gridColumns"
             :kanban.prop="kanbanConfig"
             :filter.prop="kanbanFilterConfig"
-            :filter-badges.prop="filterBadgeOptions"
             @gridedit="handlePlanningEdit"
             @filterastchange="
                 $event.detail.origin === 'ui' &&
@@ -106,15 +95,16 @@
             hide-attribution
             :theme="theme"
             :plugins="ganttPlugins"
-            :source="tasks"
+            :source="ganttSource"
             :columns="ganttColumns"
+            :row-size="40"
             :row-order.prop="false"
             :gantt.prop="ganttConfig"
+            :gantt-task-editor-dialog.prop="ganttTaskEditorDialog"
             :gantt-dependencies.prop="visibleGanttDependencies"
             :gantt-resources.prop="ganttResources"
             :gantt-assignments.prop="ganttAssignments"
             :filter.prop="ganttFilterConfig"
-            :filter-badges.prop="filterBadgeOptions"
             @gridedit="handlePlanningEdit"
             @filterastchange="
                 $event.detail.origin === 'ui' &&
@@ -138,26 +128,31 @@
             :event-scheduler-resources.prop="schedulerResources"
             @gridedit="handlePlanningEdit"
         />
-        <footer class="planning-demo__footer">
-            <span class="planning-demo__footer-meta">Changes stay in this demo</span>
-        </footer>
     </section>
 </template>
 
 <script setup lang="ts">
+import searchIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?url'
+import { Dropdown, SearchInput } from '@revolist/ui/vue';
+import { vRvControl } from '@revolist/ui/vue-control';
+import '@revolist/ui/styles.css';
 import RevoGrid from '@revolist/vue3-datagrid'
 import { usePlanningWorkspace } from './composables/usePlanningWorkspace'
 import './planning.scss'
+import { planningFilterDropdowns, type PlanningFilters } from './data'
 
 const {
     activeView,
+    filters,
+    changeFilters,
     applyActiveTasksPreset,
     calendarConfig,
     emptySource,
-    filterBadgeOptions,
     ganttAssignments,
     ganttColumns,
     ganttConfig,
+    ganttSource,
+    ganttTaskEditorDialog,
     ganttFilterConfig,
     ganttPlugins,
     ganttResources,
@@ -175,7 +170,6 @@ const {
     planningDataGridContextMenu,
     planningDataGridFormatting,
     planningRowOrder,
-    resetWorkspace,
     rootRef,
     rowSelect,
     schedulerConfig,

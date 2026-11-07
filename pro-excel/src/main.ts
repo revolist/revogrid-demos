@@ -26,7 +26,8 @@ switch (framework) {
   }
   case 'angular': {
     await import('zone.js');
-    await import('@angular/compiler');
+    const { publishFacade } = await import('@angular/compiler');
+      publishFacade(globalThis);
     document.querySelector('#app')!.innerHTML = '<spreadsheet-workbench-grid></spreadsheet-workbench-grid>';
     const [{ bootstrapApplication }, { SpreadsheetWorkbenchGridComponent }] = await Promise.all([
       import('@angular/platform-browser'),

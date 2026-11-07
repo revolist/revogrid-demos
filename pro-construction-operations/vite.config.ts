@@ -37,7 +37,7 @@ export default defineConfig(async ({ command, mode }) => {
     base: './',
     esbuild: { jsx: 'automatic' },
     resolve: {
-      alias: command === 'serve' || process.env.LOCAL_PACKAGES === 'true'
+      alias: process.env.LOCAL_PACKAGES === 'true'
         ? localBuildAliases()
         : trialCssAliases,
       dedupe: ['@revolist/revogrid'],

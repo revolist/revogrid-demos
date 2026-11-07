@@ -1,3 +1,5 @@
+import '@revolist/ui/styles.css';
+import { UiControlDirective } from '@revolist/ui/angular-control';
 import { CommonModule } from '@angular/common';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import type { OnDestroy } from '@angular/core';
@@ -27,9 +29,7 @@ import {
   openProjectStatusHeaderFilter,
   projectOwnerProfiles,
   resolveProjectSortValueFromConfig,
-  projectSkillOptions,
   syncProjectCellEdit,
-  tagTone,
   updateProjectCollapsedGroups,
   defineProjectTrackerToolbarElement,
   type ProjectBulkAction,
@@ -46,7 +46,7 @@ defineProjectTrackerToolbarElement();
 @Component({
   selector: 'color-grid',
   standalone: true,
-  imports: [RevoGrid, CommonModule, FormsModule],
+  imports: [UiControlDirective, RevoGrid, CommonModule, FormsModule],
   host: { class: 'project-grid-host' },
   template: `
     <div class="project-grid-shell">
@@ -91,30 +91,25 @@ defineProjectTrackerToolbarElement();
               <p>New project</p>
               <h2>Pipeline details</h2>
             </div>
-            <button type="button" class="project-modal__close" aria-label="Close task dialog" (click)="closeTaskModal()">×</button>
+            <button rvControl type="button" class="project-modal__close" aria-label="Close task dialog" (click)="closeTaskModal()">×</button>
           </div>
 
           <label class="project-modal__field project-modal__field--wide">
             <span>Project</span>
-            <input [(ngModel)]="taskDraft.task" name="task" required placeholder="Describe the project" />
+            <input rvControl [(ngModel)]="taskDraft.task" name="task" required placeholder="Describe the project" />
           </label>
           <label class="project-modal__field project-modal__field--wide">
             <span>AI summary</span>
-            <input [(ngModel)]="taskDraft.summary" name="summary" required placeholder="Short project summary" />
+            <input rvControl [(ngModel)]="taskDraft.summary" name="summary" required placeholder="Short project summary" />
           </label>
 
           <div class="project-modal__grid">
             <label class="project-modal__field">
               <span>Owner</span>
               <span class="project-modal-select">
-                <span class="project-modal-select__preview">
-                  <span class="project-modal-owner">
-                    <span class="avatar-cell project-avatar" [ngClass]="ownerAvatarClass(taskDraft.owner)">{{ taskDraft.owner.slice(0, 1) }}</span>
-                    <span class="project-modal-select__text">{{ ownerLabel(taskDraft.owner) }}</span>
-                  </span>
-                </span>
-                <select class="project-modal-select__native" [(ngModel)]="taskDraft.owner" name="owner">
-                  <option *ngFor="let owner of options.owners" [value]="owner">{{ owner }}</option>
+
+                <select rvControl class="project-modal-select__native" [(ngModel)]="taskDraft.owner" name="owner">
+                  <option *ngFor="let owner of options.owners" [value]="owner">{{ ownerLabel(owner) }}</option>
                 </select>
               </span>
             </label>
@@ -122,22 +117,20 @@ defineProjectTrackerToolbarElement();
               <legend>Skills</legend>
               <div>
                 <label *ngFor="let skill of options.skills">
-                  <input
+                  <input rvControl
                     type="checkbox"
                     [checked]="taskDraft.skills.includes(skill)"
-                    (change)="toggleDraftSkill(skill, $any($event.target).checked)"
+                    (change)="toggleDraftSkill(skill, $event)"
                   />
-                  <span class="project-modal-skill" [ngClass]="skillClass(skill)">{{ skill }}</span>
+                  <span>{{ skill }}</span>
                 </label>
               </div>
             </fieldset>
             <label class="project-modal__field">
               <span>Priority</span>
               <span class="project-modal-select">
-                <span class="project-modal-select__preview">
-                  <span class="project-modal-block" [ngClass]="blockClass(taskDraft.priority)">{{ taskDraft.priority }}</span>
-                </span>
-                <select class="project-modal-select__native" [(ngModel)]="taskDraft.priority" name="priority">
+
+                <select rvControl class="project-modal-select__native" [(ngModel)]="taskDraft.priority" name="priority">
                   <option *ngFor="let priority of options.priorities" [value]="priority">{{ priority }}</option>
                 </select>
               </span>
@@ -145,10 +138,8 @@ defineProjectTrackerToolbarElement();
             <label class="project-modal__field">
               <span>Risk</span>
               <span class="project-modal-select">
-                <span class="project-modal-select__preview">
-                  <span class="project-modal-block" [ngClass]="blockClass(taskDraft.risk)">{{ taskDraft.risk }}</span>
-                </span>
-                <select class="project-modal-select__native" [(ngModel)]="taskDraft.risk" name="risk">
+
+                <select rvControl class="project-modal-select__native" [(ngModel)]="taskDraft.risk" name="risk">
                   <option *ngFor="let risk of options.risks" [value]="risk">{{ risk }}</option>
                 </select>
               </span>
@@ -156,10 +147,8 @@ defineProjectTrackerToolbarElement();
             <label class="project-modal__field">
               <span>Status</span>
               <span class="project-modal-select">
-                <span class="project-modal-select__preview">
-                  <span class="project-modal-block" [ngClass]="blockClass(taskDraft.status)">{{ taskDraft.status }}</span>
-                </span>
-                <select class="project-modal-select__native" [(ngModel)]="taskDraft.status" name="status">
+
+                <select rvControl class="project-modal-select__native" [(ngModel)]="taskDraft.status" name="status">
                   <option *ngFor="let status of options.statuses" [value]="status">{{ status }}</option>
                 </select>
               </span>
@@ -167,44 +156,37 @@ defineProjectTrackerToolbarElement();
             <label class="project-modal__field">
               <span>Department</span>
               <span class="project-modal-select">
-                <span class="project-modal-select__preview">
-                  <span class="project-modal-pill" [ngClass]="departmentClass(taskDraft.department)">{{ taskDraft.department }}</span>
-                </span>
-                <select class="project-modal-select__native" [(ngModel)]="taskDraft.department" name="department">
+
+                <select rvControl class="project-modal-select__native" [(ngModel)]="taskDraft.department" name="department">
                   <option *ngFor="let department of options.departments" [value]="department">{{ department }}</option>
                 </select>
               </span>
             </label>
             <label class="project-modal__field">
               <span>Progress</span>
-              <input [(ngModel)]="taskDraft.progress" name="progress" type="number" min="0" max="100" />
+              <input rvControl [(ngModel)]="taskDraft.progress" name="progress" type="number" min="0" max="100" />
             </label>
             <label class="project-modal__field">
               <span>Start</span>
-              <input [(ngModel)]="taskDraft.from" name="from" type="date" />
+              <input rvControl [(ngModel)]="taskDraft.from" name="from" type="date" />
             </label>
             <label class="project-modal__field">
               <span>End</span>
-              <input [(ngModel)]="taskDraft.to" name="to" type="date" />
+              <input rvControl [(ngModel)]="taskDraft.to" name="to" type="date" />
             </label>
             <label class="project-modal__field">
               <span>Budget</span>
-              <input [(ngModel)]="taskDraft.budget" name="budget" type="number" min="0" step="1000" />
+              <input rvControl [(ngModel)]="taskDraft.budget" name="budget" type="number" min="0" step="1000" />
             </label>
             <label class="project-modal__field">
               <span>Rating</span>
-              <input [(ngModel)]="taskDraft.rating" name="rating" type="number" min="0" max="5" step="1" />
+              <input rvControl [(ngModel)]="taskDraft.rating" name="rating" type="number" min="0" max="5" step="1" />
             </label>
             <label class="project-modal__field">
               <span>Section</span>
               <span class="project-modal-select">
-                <span class="project-modal-select__preview">
-                  <span class="project-modal-section" [style.--project-modal-section-color]="sectionColor(taskDraft.section)">
-                    <span class="project-modal-section__dot"></span>
-                    <span class="project-modal-select__text">{{ taskDraft.section }}</span>
-                  </span>
-                </span>
-                <select class="project-modal-select__native" [(ngModel)]="taskDraft.section" name="section">
+
+                <select rvControl class="project-modal-select__native" [(ngModel)]="taskDraft.section" name="section">
                   <option *ngFor="let section of options.sections" [value]="section">{{ section }}</option>
                 </select>
               </span>
@@ -212,8 +194,8 @@ defineProjectTrackerToolbarElement();
           </div>
 
           <div class="project-modal__footer">
-            <button type="button" (click)="closeTaskModal()">Cancel</button>
-            <button type="submit" class="project-grid-primary">Create project</button>
+            <button rvControl type="button" (click)="closeTaskModal()">Cancel</button>
+            <button rvControl type="submit" class="project-grid-primary">Create project</button>
           </div>
         </form>
       </div>
@@ -224,7 +206,7 @@ defineProjectTrackerToolbarElement();
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ColorGridComponent implements OnDestroy {
-  @ViewChild('gridRef', { static: true }) gridRef!: ElementRef<HTMLRevoGridElement>;
+  @ViewChild('gridRef', { static: true, read: ElementRef }) gridRef!: ElementRef<HTMLRevoGridElement>;
 
   theme = currentTheme().isDark() ? 'darkMaterial' : 'material';
   private readonly disconnectTheme = observeCurrentTheme((isDark) => {
@@ -249,7 +231,6 @@ export class ColorGridComponent implements OnDestroy {
   toolbarState: ProjectTrackerToolbarState = this.createToolbarState();
   isTaskModalOpen = false;
   taskDraft: ProjectTaskDraft = createProjectTaskDraft();
-  projectOwnerProfiles = projectOwnerProfiles;
   contextMenus = createProjectContextMenus({
     getRows: () => this.projectRows,
     setRows: (rows) => {
@@ -355,50 +336,22 @@ export class ColorGridComponent implements OnDestroy {
     this.closeTaskModal();
   }
 
-  toggleDraftSkill(skill: string, checked: boolean) {
-    const next = checked
+  ownerLabel(value: string) {
+    return projectOwnerProfiles.find(owner => owner.value === value)?.label ?? value;
+  }
+
+  toggleDraftSkill(skill: string, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const next = input.checked
       ? Array.from(new Set([...this.taskDraft.skills, skill]))
       : this.taskDraft.skills.filter((item) => item !== skill);
-    this.taskDraft = { ...this.taskDraft, skills: next.length ? next : this.taskDraft.skills };
+    if (!next.length) {
+      input.checked = true;
+      return;
+    }
+    this.taskDraft = { ...this.taskDraft, skills: next };
   }
 
-  ownerLabel(value: string) {
-    return projectOwnerProfiles.find((owner) => owner.value === value)?.label ?? value;
-  }
-
-  ownerAvatarClass(value: string) {
-    const index = Math.max(0, projectOwnerProfiles.findIndex((owner) => owner.value === value));
-    return `avatar-cell--${index % 8}`;
-  }
-
-  skillClass(value: string) {
-    return `project-skill--${projectSkillOptions.find((skill) => skill.value === value)?.tone ?? tagTone(value)}`;
-  }
-
-  departmentClass(value: string) {
-    return `project-filter-department--${tagTone(value)}`;
-  }
-
-  blockClass(value: string) {
-    return `project-filter-block--${this.blockTone(value)}`;
-  }
-
-  blockTone(value: string) {
-    const normalized = value.toLowerCase();
-    if (normalized.includes('blocked') || normalized.includes('high')) return 'red';
-    if (normalized.includes('review') || normalized.includes('medium')) return 'orange';
-    if (normalized.includes('ready') || normalized.includes('low')) return 'green';
-    if (normalized.includes('new')) return 'blue';
-    return 'violet';
-  }
-
-  sectionColor(value: string) {
-    const normalized = value.toLowerCase();
-    if (normalized.includes('review')) return '#ff8b00';
-    if (normalized.includes('ready')) return '#00c875';
-    if (normalized.includes('blocked')) return '#ff4d5e';
-    return '#1f7aff';
-  }
 
   changeGroup(value: ProjectGroupProp) {
     this.groupBy = value;

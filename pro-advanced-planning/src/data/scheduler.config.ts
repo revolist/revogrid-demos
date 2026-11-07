@@ -1,3 +1,4 @@
+import { addDays, createDateTime, parseIsoDate } from '@revolist/revogrid-pro'
 import type { EventSchedulerConfig } from '@revolist/scheduler'
 import { planningFields } from './fields'
 
@@ -9,6 +10,13 @@ export const schedulerConfig: EventSchedulerConfig = {
     locale: 'en-US',
     timeZone: 'UTC',
     slotMinutes: 60,
+    timeAnnotations: Array.from({ length: 24 }, (_, offset) => addDays('2026-09-07', offset))
+        .filter((date) => ![0, 6].includes(parseIsoDate(date).getUTCDay()))
+        .flatMap((date) => [
+            { id: `shift-start-${date}`, startDateTime: createDateTime(date, 8 * 60), icon: '⚑', label: 'Shift start', color: '#d97706' },
+            { id: `lunch-${date}`, startDateTime: createDateTime(date, 12 * 60), endDateTime: createDateTime(date, 13 * 60), icon: '☕', label: 'Lunch', color: '#60a5fa' },
+            { id: `staff-training-${date}`, startDateTime: createDateTime(date, 15 * 60), endDateTime: createDateTime(date, 17 * 60), icon: '🎓', label: 'Staff training', color: '#38bdf8' },
+        ]),
     timeRange: { start: '08:00', end: '18:00' },
     rowSize: 50,
     resourceTimelineRowSizing: true,
