@@ -314,7 +314,7 @@ test('all framework variants pass the configured contextual filter templates', (
   }
 });
 
-test('all framework variants omit reset and toolbar column chooser controls', () => {
+test('all framework variants expose column views without removed chrome', () => {
   const files = [
     'ecommerce.ts',
     'ecommerce.react.tsx',
@@ -324,8 +324,11 @@ test('all framework variants omit reset and toolbar column chooser controls', ()
 
   for (const file of files) {
     const source = readFileSync(new URL(`../src/${file}`, import.meta.url), 'utf8');
-    assert.doesNotMatch(source, />\s*Reset\s*</, file);
-    assert.doesNotMatch(source, />\s*Columns\s*</, file);
-    assert.doesNotMatch(source, /isColumnsOpen|columnsMenu|columnsButton|resetFilters/, file);
+    assert.doesNotMatch(source, />Reset filters<|ecommerce-footer|ecommerce-result-count/, file);
+    assert.match(source, /Column view/, file);
+    assert.match(source, /Customer overview/, file);
+    assert.match(source, /All fields/, file);
+    assert.doesNotMatch(source, /ecommerce-metrics|data-metric=/, file);
+    assert.match(source, /getEcommerceViewColumns/, file);
   }
 });

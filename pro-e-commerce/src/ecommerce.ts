@@ -1,13 +1,13 @@
 import { applyControlPresentation } from '@revolist/ui';
+import { createDropdownControl } from '@revolist/ui/dropdown/control';
+import { SearchInput } from '@revolist/ui/search-input/index';
+import { createPreactElement, releasePreactElement } from '@revolist/ui/preact-mount';
+import { h } from 'preact';
 import '@revolist/ui/styles.css';
-// src/components/showcase/ECommerce.ts
-
 import './ecommerce.scss';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import type { ColumnProp } from '@revolist/revogrid';
-import {
-  ExportExcelPlugin,
-} from '@revolist/revogrid-pro';
+import { ExportExcelPlugin } from '@revolist/revogrid-pro';
 import { currentEcommerceTheme } from './ecommerce.theme';
 import {
   createEcommerceAnalyticsColumns,
@@ -17,10 +17,11 @@ import {
   ecommerceColumnTypes,
   ecommerceFilterConfig,
   ecommercePlugins,
-  formatEcommerceTotalSpend,
+  getEcommerceViewColumns,
   getSelectedEcommerceIndexes,
   getVisibleEcommerceColumns,
   normalizeEcommerceRows,
+  type EcommerceColumnView,
 } from './ecommerce.shared';
 import {
   ECOMMERCE_FILTER_PRESETS,
@@ -28,187 +29,146 @@ import {
   createEcommerceVisibleSourceSync,
   getEcommerceRowId,
   setEcommerceQuickFilter,
+  type EcommerceFilterPresetId,
 } from './ecommerce.filtering';
 
 defineCustomElements();
 
-  const { isDark } = currentEcommerceTheme();
-
-function formatRowsCount(selectedCount: number, totalCount: number) {
-  return selectedCount === totalCount ? String(totalCount) : `${selectedCount}/${totalCount}`;
-}
-
 export function load(parentSelector: string, data: any[] = []) {
+  const parent = document.querySelector(parentSelector);
+  if (!parent) return () => {};
   let source = normalizeEcommerceRows(data);
   let columns = createEcommerceAnalyticsColumns();
   let hiddenColumns: ColumnProp[] = [];
-  let selectedRowsCount = 0;
+  let columnView: EcommerceColumnView = 'overview';
   let selectedIndexes = new Set<number>();
-  let visibleRows = source;
-  let visibleRowsCount = source.length;
-
+  let empty = source.length === 0;
+  const events = new AbortController();
   const container = document.createElement('div');
   container.className = 'ecommerce-grid-host';
   container.innerHTML = `
-    <div class="ecommerce-shell grow">
-        <div class="ecommerce-toolbar">
-          <div class="ecommerce-toolbar__main">
-          <span class="ecommerce-chip">
-            <span>Rows</span>
-            <strong id="rowsCount">${formatRowsCount(selectedRowsCount, visibleRowsCount)}</strong>
-          </span>
-          <label class="ecommerce-filter" for="customerSearch">
-            <span aria-hidden="true">⌕</span>
-            <input
-              id="customerSearch"
-              type="search"
-              aria-label="Search customers"
-              placeholder="Search customers"
-            />
-          </label>
-          <label class="ecommerce-preset">
-            <span class="sr-only">Advanced filter example</span>
-            <select id="filterPreset" aria-label="Advanced filter example">
-              <option value="">Advanced examples</option>
-              ${Object.entries(ECOMMERCE_FILTER_PRESETS).map(([id, preset]) =>
-                `<option value="${id}">${preset.label}</option>`).join('')}
-            </select>
-          </label>
-        </div>
-        <div class="ecommerce-toolbar__aside">
-          <span class="ecommerce-chip">
-            <span>Spend</span>
-            <strong id="totalSpend">${formatEcommerceTotalSpend(source)}</strong>
-          </span>
-          <button id="exportButton" type="button" class="ecommerce-button ecommerce-button--export">
-            Export
-          </button>
+    <div class="ecommerce-shell grow" data-view="overview">
+      <header class="ecommerce-heading">
+        <div><h1>Customer analytics</h1><p>Explore spending, loyalty, and purchase behavior.</p></div>
+      </header>
+      <div class="ecommerce-toolbar" aria-label="Customer controls">
+        <span data-control="search"></span>
+        <span data-control="preset"></span>
+        <span data-control="view"></span>
+        <button type="button" class="ecommerce-export rv-btn-primary" data-action="export">Export</button>
+      </div>
+      <div class="ecommerce-table">
+        <revo-grid class="ecommerce-grid skip-style cell-border" range resize hide-attribution></revo-grid>
+        <div class="ecommerce-empty" role="status" aria-live="polite" hidden>
+          <strong>No customers found</strong><span>Try another search or choose a different segment.</span>
         </div>
       </div>
-      <revo-grid
-        class="ecommerce-grid skip-style cell-border"
-        range
-        id="grid"
-        resize
-        hide-attribution
-      ></revo-grid>
-      <div id="emptyState" class="ecommerce-empty" role="status" aria-live="polite" hidden>No customers match these filters.</div>
     </div>
   `;
   applyControlPresentation(container);
-
-  const parent = document.querySelector(parentSelector);
-  if (parent) {
-    parent.appendChild(container);
-  }
-
-  const grid = container.querySelector<HTMLRevoGridElement>('#grid');
-  const searchInput = container.querySelector<HTMLInputElement>('#customerSearch');
-  const presetSelect = container.querySelector<HTMLSelectElement>('#filterPreset');
-  const exportButton = container.querySelector<HTMLButtonElement>('#exportButton');
-  const rowsCount = container.querySelector<HTMLElement>('#rowsCount');
-  const totalSpend = container.querySelector<HTMLElement>('#totalSpend');
-  const emptyState = container.querySelector<HTMLElement>('#emptyState');
-
-  const updateRowsCount = () => {
-    if (rowsCount) rowsCount.textContent = formatRowsCount(selectedRowsCount, visibleRowsCount);
+  const grid = container.querySelector<HTMLRevoGridElement>('revo-grid')!;
+  grid.canMoveColumns = true;
+  parent.appendChild(container);
+  const shell = container.querySelector<HTMLElement>('.ecommerce-shell')!;
+  const search = createPreactElement<HTMLElement>(document, h(SearchInput, {
+    rootClassName: 'ecommerce-search',
+    'aria-label': 'Search customers',
+    placeholder: 'Search customers, cities, products…',
+    onValueChange: (value: string) => setEcommerceQuickFilter(grid, value),
+  }));
+  const presetControl = createDropdownControl<string>(document, {
+    source: [
+      { value: '', label: 'Saved segments' },
+      ...Object.entries(ECOMMERCE_FILTER_PRESETS).map(([value, preset]) => ({ value, label: preset.label })),
+    ],
+    value: '',
+    placeholder: 'Saved segments',
+    config: { ariaLabel: 'Saved segments' },
+    onChange: value => {
+      void applyEcommerceFilterPreset(grid, (value || undefined) as EcommerceFilterPresetId | undefined);
+    },
+  });
+  presetControl.element.classList.add('ecommerce-preset');
+  const viewControl = createDropdownControl<EcommerceColumnView>(document, {
+    source: [
+      { value: 'overview', label: 'Customer overview' },
+      { value: 'all', label: 'All fields' },
+    ],
+    value: columnView,
+    config: { ariaLabel: 'Column view' },
+    onChange: value => {
+      columnView = value as EcommerceColumnView;
+      updateColumns();
+    },
+  });
+  viewControl.element.classList.add('ecommerce-view');
+  container.querySelector('[data-control="search"]')!.replaceWith(search);
+  container.querySelector('[data-control="preset"]')!.replaceWith(presetControl.element);
+  container.querySelector('[data-control="view"]')!.replaceWith(viewControl.element);
+  const emptyState = container.querySelector<HTMLElement>('.ecommerce-empty')!;
+  const updateResults = () => {
+    emptyState.hidden = !empty;
   };
-
   const resetSelection = () => {
     selectedIndexes = new Set();
-    selectedRowsCount = 0;
     clearEcommerceSelection(grid);
-    updateRowsCount();
+    updateResults();
   };
-
   const updateColumns = () => {
-    if (!grid) return;
-    grid.columns = getVisibleEcommerceColumns(columns, hiddenColumns);
+    grid.columns = getVisibleEcommerceColumns(getEcommerceViewColumns(columns, columnView), hiddenColumns);
     grid.hideColumns = hiddenColumns;
+    shell.dataset.view = columnView;
   };
+  const syncVisibleSource = createEcommerceVisibleSourceSync(grid, (state) => {
+    empty = state.empty;
+    updateResults();
+  }, () => new Set([...selectedIndexes].map(index => getEcommerceRowId(source[index]))));
+  const exportToExcel = async () => {
+    const plugins = await grid.getPlugins();
+    const plugin = plugins.find(plugin => plugin instanceof ExportExcelPlugin) as ExportExcelPlugin | undefined;
+    await plugin?.export(createEcommerceExcelExportConfig());
+  };
+  const contextMenus = createEcommerceContextMenus({
+    getRows: () => source,
+    setRows: rows => { source = rows; grid.source = source; void syncVisibleSource(); },
+    getColumns: () => columns,
+    setColumns: nextColumns => { columns = nextColumns; updateColumns(); },
+    getHiddenColumns: () => hiddenColumns,
+    setHiddenColumns: nextHiddenColumns => { hiddenColumns = nextHiddenColumns; updateColumns(); },
+    getGrid: () => grid,
+    getSelectedIndexes: () => selectedIndexes,
+    clearSelection: resetSelection,
+    exportExcel: exportToExcel,
+  });
 
-  if (grid && searchInput && presetSelect && exportButton) {
-    const syncVisibleSource = createEcommerceVisibleSourceSync(grid, (state) => {
-      visibleRows = state.visibleRows;
-      visibleRowsCount = state.visibleCount;
-      selectedRowsCount = state.visibleSelectedIds.size;
-      if (totalSpend) totalSpend.textContent = formatEcommerceTotalSpend(visibleRows);
-      if (emptyState) emptyState.hidden = !state.empty;
-      updateRowsCount();
-    }, () => new Set([...selectedIndexes].map(index => getEcommerceRowId(source[index]))));
-    const exportToExcel = async () => {
-      const plugins = await grid.getPlugins();
-      const exportPlugin = plugins.find(
-        (plugin) => plugin instanceof ExportExcelPlugin
-      ) as ExportExcelPlugin;
-      await exportPlugin?.export(createEcommerceExcelExportConfig());
-    };
-    const { rowContextMenu, columnContextMenu } = createEcommerceContextMenus({
-      getRows: () => source,
-      setRows: (rows) => {
-        source = rows;
-        grid.source = source;
-        void syncVisibleSource();
-      },
-      getColumns: () => columns,
-      setColumns: (nextColumns) => {
-        columns = nextColumns;
-        updateColumns();
-      },
-      getHiddenColumns: () => hiddenColumns,
-      setHiddenColumns: (nextHiddenColumns) => {
-        hiddenColumns = nextHiddenColumns;
-        updateColumns();
-      },
-      getGrid: () => grid,
-      getSelectedIndexes: () => selectedIndexes,
-      clearSelection: resetSelection,
-      exportExcel: exportToExcel,
-    });
-
-    grid.range = true;
-    grid.theme = isDark() ? 'darkMaterial' : 'material';
-    grid.hideAttribution = true;
-    grid.resize = true;
-
-    grid.columnTypes = ecommerceColumnTypes;
-    grid.plugins = ecommercePlugins;
-    grid.filter = ecommerceFilterConfig;
-    grid.stretch = 'last';
-    grid.rowContextMenu = rowContextMenu;
-    grid.columnContextMenu = columnContextMenu;
-    updateColumns();
-    grid.source = source;
-    updateRowsCount();
-
-    searchInput.addEventListener('input', () => {
-      setEcommerceQuickFilter(grid, searchInput.value);
-    });
-    presetSelect.addEventListener('change', async () => {
-      await applyEcommerceFilterPreset(
-        grid,
-        (presetSelect.value || undefined) as keyof typeof ECOMMERCE_FILTER_PRESETS | undefined,
-      );
-      presetSelect.value = '';
-    });
-    grid.addEventListener('afterfilterapply', syncVisibleSource);
-    grid.addEventListener('aftertrimmed', syncVisibleSource);
-    grid.addEventListener('aftersourceset', syncVisibleSource);
-
-    grid.addEventListener('rowselected', (event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>) => {
-      selectedIndexes = getSelectedEcommerceIndexes(event, source);
-      selectedRowsCount = event.detail.count;
-      updateRowsCount();
-    });
-
-    exportButton.addEventListener('click', exportToExcel);
-
-    return () => {
-      grid.removeEventListener('afterfilterapply', syncVisibleSource);
-      grid.removeEventListener('aftertrimmed', syncVisibleSource);
-      grid.removeEventListener('aftersourceset', syncVisibleSource);
-      syncVisibleSource.cancel();
-      container.remove();
-    };
+  grid.theme = currentEcommerceTheme().isDark() ? 'darkMaterial' : 'material';
+  grid.rowSize = 48;
+  grid.columnTypes = ecommerceColumnTypes;
+  grid.plugins = ecommercePlugins;
+  grid.filter = ecommerceFilterConfig;
+  grid.stretch = 'last';
+  grid.rowContextMenu = contextMenus.rowContextMenu;
+  grid.columnContextMenu = contextMenus.columnContextMenu;
+  updateColumns();
+  for (const name of ['afterfilterapply', 'aftertrimmed', 'aftersourceset']) {
+    grid.addEventListener(name, syncVisibleSource, { signal: events.signal });
   }
+  grid.addEventListener('rowselected', (event: CustomEvent<HTMLRevoGridElementEventMap['rowselected']>) => {
+    selectedIndexes = getSelectedEcommerceIndexes(event, source);
+    updateResults();
+    void syncVisibleSource();
+  }, { signal: events.signal });
+  container.querySelector('[data-action="export"]')!.addEventListener('click', () => { void exportToExcel(); }, { signal: events.signal });
+  grid.source = source;
+  updateResults();
+
+  return () => {
+    events.abort();
+    syncVisibleSource.cancel();
+    presetControl.destroy();
+    viewControl.destroy();
+    releasePreactElement(search);
+    grid.remove();
+    container.remove();
+  };
 }

@@ -1,6 +1,6 @@
 import '@revolist/ui/styles.css';
-import { ButtonControl as UiButton, Input as UiInput } from '@revolist/ui/react-control';
-import { Dropdown as UiDropdown } from '@revolist/ui/react';
+import { ButtonControl as UiButton } from '@revolist/ui/react-control';
+import { Dropdown as UiDropdown, SearchInput as UiSearchInput } from '@revolist/ui/react';
 // src/components/showcase/ECommerce.tsx
 
 import './ecommerce.scss';
@@ -20,7 +20,8 @@ import {
   ecommerceColumnTypes,
   ecommerceFilterConfig,
   ecommercePlugins,
-  formatEcommerceTotalSpend,
+  getEcommerceViewColumns,
+  type EcommerceColumnView,
   getSelectedEcommerceIndexes,
   getVisibleEcommerceColumns,
   normalizeEcommerceRows,
@@ -31,6 +32,7 @@ import {
   createEcommerceVisibleSourceSync,
   getEcommerceRowId,
   setEcommerceQuickFilter,
+  type EcommerceVisibleSourceSync,
   type EcommerceFilterPresetId,
 } from './ecommerce.filtering';
 
@@ -39,12 +41,30 @@ interface ECommerceProps {
   fields?: string[];
 }
 
-function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
+const EMPTY_ROWS: DataType[] = [];
+const SEGMENT_OPTIONS = [
+  { value: '', label: 'Saved segments' },
+  ...Object.entries(ECOMMERCE_FILTER_PRESETS).map(([value, preset]) => ({
+    value,
+    label: preset.label,
+  })),
+];
+const COLUMN_VIEW_OPTIONS = [
+  { value: 'overview', label: 'Customer overview' },
+  { value: 'all', label: 'All fields' },
+];
+const SEGMENT_CONFIG = { ariaLabel: 'Saved segments', nativeTabNavigation: true };
+const COLUMN_VIEW_CONFIG = { ariaLabel: 'Column view', nativeTabNavigation: true };
+
+function ECommerce({ rows = EMPTY_ROWS }: ECommerceProps) {
   const gridRef = useRef<HTMLRevoGridElement>(null);
   const [quickSearch, setQuickSearch] = useState('');
+  const [activePreset, setActivePreset] = useState('');
+  const [columnView, setColumnView] = useState<EcommerceColumnView>('overview');
+  const syncVisibleSourceRef = useRef<EcommerceVisibleSourceSync | undefined>(undefined);
   const rowsInputRef = useRef(rows);
   const [hiddenColumns, setHiddenColumns] = useState<ColumnProp[]>([]);
-  const [selectedRowsCount, setSelectedRowsCount] = useState(0);
+  const [, setSelectedRowsCount] = useState(0);
   const selectedIndexesRef = useRef<Set<number>>(new Set());
 
   const { isDark } = currentEcommerceTheme();
@@ -53,22 +73,15 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
 
   const [columns, setColumns] = useState(createEcommerceAnalyticsColumns);
   const [source, setSource] = useState(() => normalizeEcommerceRows(rows));
-  const [visibleRows, setVisibleRows] = useState(() => normalizeEcommerceRows(rows));
+  const [, setVisibleRows] = useState(() => normalizeEcommerceRows(rows));
+  const [empty, setEmpty] = useState(rows.length === 0);
 
   const columnTypes = useMemo(() => ecommerceColumnTypes, []);
   const plugins = useMemo(() => ecommercePlugins, []);
   const visibleColumns = useMemo(
-    () => getVisibleEcommerceColumns(columns, hiddenColumns),
-    [columns, hiddenColumns],
+    () => getVisibleEcommerceColumns(getEcommerceViewColumns(columns, columnView), hiddenColumns),
+    [columns, hiddenColumns, columnView],
   );
-  const totalSpend = useMemo(
-    () => formatEcommerceTotalSpend(visibleRows),
-    [visibleRows],
-  );
-  const totalRowsCount = visibleRows.length;
-  const rowsCountLabel = selectedRowsCount === totalRowsCount
-    ? String(totalRowsCount)
-    : `${selectedRowsCount}/${totalRowsCount}`;
 
   useEffect(() => {
     if (rowsInputRef.current === rows) return;
@@ -76,6 +89,7 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
     const normalized = normalizeEcommerceRows(rows);
     setSource(normalized);
     setVisibleRows(normalized);
+    setEmpty(normalized.length === 0);
   }, [rows]);
 
   useEffect(() => {
@@ -95,8 +109,10 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
     if (!grid) return;
     const syncVisibleSource = createEcommerceVisibleSourceSync(grid, (state) => {
       setVisibleRows(state.visibleRows);
+      setEmpty(state.empty);
       setSelectedRowsCount(state.visibleSelectedIds.size);
     }, () => new Set([...selectedIndexesRef.current].map(index => getEcommerceRowId(source[index]))));
+    syncVisibleSourceRef.current = syncVisibleSource;
     grid.addEventListener('afterfilterapply', syncVisibleSource);
     grid.addEventListener('aftertrimmed', syncVisibleSource);
     grid.addEventListener('aftersourceset', syncVisibleSource);
@@ -106,6 +122,7 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
       grid.removeEventListener('aftertrimmed', syncVisibleSource);
       grid.removeEventListener('aftersourceset', syncVisibleSource);
       syncVisibleSource.cancel();
+      if (syncVisibleSourceRef.current === syncVisibleSource) syncVisibleSourceRef.current = undefined;
     };
   }, [source]);
 
@@ -131,6 +148,7 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
     setRows: (nextRows) => {
       setSource(nextRows);
       setVisibleRows(nextRows);
+      setEmpty(nextRows.length === 0);
     },
     getColumns: () => columns,
     setColumns: (nextColumns) => setColumns(nextColumns),
@@ -147,6 +165,7 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
   ) => {
     selectedIndexesRef.current = getSelectedEcommerceIndexes(event, source);
     setSelectedRowsCount(event.detail.count);
+    void syncVisibleSourceRef.current?.();
   };
 
   const applyQuickSearch = (text: string) => {
@@ -154,60 +173,33 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
     if (gridRef.current) setEcommerceQuickFilter(gridRef.current, text);
   };
 
+
   return (
-    <div className="ecommerce-shell grow">
-      <div className="ecommerce-toolbar">
-        <div className="ecommerce-toolbar__main">
-          <span className="ecommerce-chip">
-            <span>Rows</span>
-            <strong>{rowsCountLabel}</strong>
-          </span>
-          <label className="ecommerce-filter">
-            <span aria-hidden="true">⌕</span>
-            <UiInput
-              id="customerSearch"
-              type="search"
-              aria-label="Search customers"
-              placeholder="Search customers"
-              value={quickSearch}
-              onChange={(event) => applyQuickSearch(event.target.value)}
-            />
-          </label>
-          <label className="ecommerce-preset">
-            <span className="sr-only">Advanced filter example</span>
-            <UiDropdown
-              value=""
-              onChange={async (nextValue) => {
-                const grid = gridRef.current;
-                if (grid) {
-                  await applyEcommerceFilterPreset(
-                    grid,
-                    (String(nextValue) || undefined) as EcommerceFilterPresetId | undefined,
-                  );
-                }
-              }}
-              source={[{ value: '', label: 'Advanced examples' }, ...Object.entries(ECOMMERCE_FILTER_PRESETS).map(([value, preset]) => ({ value, label: preset.label }))]}
-              config={{ nativeTabNavigation: true, topLayer: true, ariaLabel: 'Advanced filter example' }}
-            />
-          </label>
-        </div>
-        <div className="ecommerce-toolbar__aside">
-          <span className="ecommerce-chip">
-            <span>Spend</span>
-            <strong>{totalSpend}</strong>
-          </span>
-          <UiButton
-            type="button"
-            className="ecommerce-button ecommerce-button--export"
-            onClick={exportToExcel}
-          >
-            Export
-          </UiButton>
-        </div>
+    <div className="ecommerce-shell grow" data-view={columnView}>
+      <header className="ecommerce-heading">
+        <div><h1>Customer analytics</h1><p>Explore spending, loyalty, and purchase behavior.</p></div>
+      </header>
+      <div className="ecommerce-toolbar" aria-label="Customer controls">
+        <UiSearchInput rootClassName="ecommerce-search" aria-label="Search customers"
+          placeholder="Search customers, cities, products…"
+          value={quickSearch} onValueChange={applyQuickSearch} />
+        <UiDropdown className="rv-select ecommerce-preset" source={SEGMENT_OPTIONS} value={activePreset} config={SEGMENT_CONFIG}
+          placeholder="Saved segments" onChange={async (nextValue) => {
+            const value = String(nextValue ?? '');
+            setActivePreset(value);
+            const grid = gridRef.current;
+            if (grid) await applyEcommerceFilterPreset(grid, (value || undefined) as EcommerceFilterPresetId | undefined);
+          }} />
+        <UiDropdown className="rv-select ecommerce-view" source={COLUMN_VIEW_OPTIONS} value={columnView} config={COLUMN_VIEW_CONFIG}
+          onChange={(value) => setColumnView(value as EcommerceColumnView)} />
+        <UiButton type="button" className="ecommerce-export rv-btn-primary" onClick={exportToExcel}>Export</UiButton>
       </div>
+      <div className="ecommerce-table">
       <RevoGrid
         className="ecommerce-grid skip-style cell-border"
         range
+        rowSize={48}
+        canMoveColumns={true}
         ref={gridRef}
         columns={visibleColumns}
         source={source}
@@ -222,9 +214,12 @@ function ECommerce({ rows = [], fields = [] }: ECommerceProps) {
         theme={theme}
         onRowselected={handleRowSelected}
       />
-      {visibleRows.length === 0 && (
-        <div className="ecommerce-empty" role="status" aria-live="polite">No customers match these filters.</div>
+      {empty && (
+        <div className="ecommerce-empty" role="status" aria-live="polite">
+          <strong>No customers found</strong><span>Try another search or choose a different segment.</span>
+        </div>
       )}
+      </div>
     </div>
   );
 }
