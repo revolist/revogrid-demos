@@ -16,6 +16,8 @@ async function bootstrap() {
       break;
     }
     case 'angular': {
+      const { publishFacade } = await import('@angular/compiler');
+      publishFacade(globalThis);
       const { mount } = await import('./entry-angular');
       await mount('#app');
       break;

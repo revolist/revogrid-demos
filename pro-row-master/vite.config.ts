@@ -11,7 +11,7 @@ const localProCss = fileURLToPath(new URL('../../../packages/pro/dist/revogrid-p
 export default defineConfig(({ command, mode }) => ({
   base: './',
   resolve: {
-    alias: command === 'serve'
+    alias: process.env.LOCAL_PACKAGES === 'true'
       ? {
         '@revolist/revogrid-pro/dist/revogrid-pro.css': localProCss,
         '@revolist/revogrid-pro': localProEntry,

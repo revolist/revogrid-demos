@@ -30,7 +30,8 @@ async function bootstrap() {
         }
         case 'angular': {
             await import('zone.js')
-            await import('@angular/compiler')
+            const { publishFacade } = await import('@angular/compiler');
+            publishFacade(globalThis)
             document.querySelector('#app')!.innerHTML =
                 '<planning-views-grid></planning-views-grid>'
             const [{ bootstrapApplication }, { PlanningViewsGridComponent }] =

@@ -1,5 +1,4 @@
 import { renderControl } from '@revolist/ui';
-import '@revolist/ui/styles.css';
 import { dispatchByEvent, type ColumnRegular, type DataType } from '@revolist/revogrid';
 import { ROW_MASTER, type RowMasterConfig, type TreeConfig } from '@revolist/revogrid-pro';
 

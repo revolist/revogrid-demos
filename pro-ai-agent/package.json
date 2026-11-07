@@ -30,7 +30,7 @@
     "@revolist/angular-datagrid": "4.31.3",
     "@revolist/react-datagrid": "4.31.3",
     "@revolist/revogrid": "4.31.3",
-    "@revolist/revogrid-pro": "npm:@revolist/rv-pro-trial@4.0.2-rc",
+    "@revolist/revogrid-pro": "npm:@revolist/rv-pro-trial@4.0.1",
     "@revolist/vue3-datagrid": "4.31.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -38,10 +38,10 @@
     "tslib": "^2.4.0",
     "vue": "^3.5.21",
     "zone.js": "~0.15.0",
-    "@revolist/ui": "file:../vendor/revolist-ui-3.0.14.tgz",
+    "@revolist/ui": "4.0.1",
     "preact": "10.29.1",
-    "@revolist/pivot": "link:../../../packages/pivot",
-    "@revolist/charts": "link:../../../packages/charts"
+    "@revolist/pivot": "npm:@revolist/pivot-trial@4.0.1",
+    "@revolist/charts": "npm:@revolist/charts-trial@4.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.3.18",

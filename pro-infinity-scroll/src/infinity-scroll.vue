@@ -80,7 +80,9 @@ const loadData = async (
   return result;
 };
 const infinityScroll = computed<Partial<InfinityScrollConfig>>(() => ({
-  chunkSize: 50,
+  // Published 4.0.1 cached reads reference Node process; use supported direct reads until the fixed release.
+    query: false,
+    chunkSize: 50,
   bufferSize: 150,
   preloadThreshold: 0.75,
   total: rows.value.length,
