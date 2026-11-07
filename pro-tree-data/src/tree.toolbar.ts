@@ -43,8 +43,7 @@ function TreeToolbar(actions: TreeToolbarActions, state: { exporting: boolean; s
       onChange(checked: boolean) {
         state.stickyParents = checked;
         update();
-        actions.state.stickyParents = checked;
-        update();
+        actions.setStickyParents(checked);
       },
     }),
   );
