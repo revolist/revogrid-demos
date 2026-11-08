@@ -156,7 +156,6 @@ export function load(parentSelector: string): (() => void) | undefined {
     }
 
     function render(view: PlanningView) {
-        status.element.hidden = priority.element.hidden = view !== 'kanban'
         activeGridAbort?.abort()
         activeGridAbort = new AbortController()
         activeView = view

@@ -133,14 +133,12 @@ import {
                     <span class="planning-demo__filter">
                         <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.project, className: 'rv-select', value: filters.projectId }" (valueChange)="setProject($event)" />
                     </span>
-                    @if (activeView === 'kanban') {
-                        <span class="planning-demo__filter">
-                            <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.status, className: 'rv-select', value: filters.statuses.length > 1 ? 'active' : filters.statuses[0] || '' }" (valueChange)="setStatus($event)" />
-                        </span>
-                        <span class="planning-demo__filter">
-                            <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.priority, className: 'rv-select', value: filters.priorities[0]?.toString() ?? '' }" (valueChange)="setPriority($event)" />
-                        </span>
-                    }
+                    <span class="planning-demo__filter">
+                        <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.status, className: 'rv-select', value: filters.statuses.length > 1 ? 'active' : filters.statuses[0] || '' }" (valueChange)="setStatus($event)" />
+                    </span>
+                    <span class="planning-demo__filter">
+                        <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.priority, className: 'rv-select', value: filters.priorities[0]?.toString() ?? '' }" (valueChange)="setPriority($event)" />
+                    </span>
                 </div>
                 <button rvControl class="rv-choice-chip planning-demo__active"
                     type="button"

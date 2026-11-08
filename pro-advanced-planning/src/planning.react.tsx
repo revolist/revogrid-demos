@@ -213,18 +213,16 @@ export default function PlanningViews() {
                         <Dropdown className="rv-select" {...planningFilterDropdowns.project} value={filters.projectId}
                             onChange={value => changeFilters(current => ({ ...current, projectId: value as PlanningFilters['projectId'] }))} />
                     </span>
-                    {activeView === 'kanban' && <>
-                        <span className="planning-demo__filter">
-                            <Dropdown className="rv-select" {...planningFilterDropdowns.status}
-                                value={filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''}
-                                onChange={value => changeFilters(current => ({ ...current, statuses: value ? [String(value)] : [] }))} />
-                        </span>
-                        <span className="planning-demo__filter">
-                            <Dropdown className="rv-select" {...planningFilterDropdowns.priority}
-                                value={String(filters.priorities[0] ?? '')}
-                                onChange={value => changeFilters(current => ({ ...current, priorities: value ? [Number(value)] : [] }))} />
-                        </span>
-                    </>}
+                    <span className="planning-demo__filter">
+                        <Dropdown className="rv-select" {...planningFilterDropdowns.status}
+                            value={filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''}
+                            onChange={value => changeFilters(current => ({ ...current, statuses: value ? [String(value)] : [] }))} />
+                    </span>
+                    <span className="planning-demo__filter">
+                        <Dropdown className="rv-select" {...planningFilterDropdowns.priority}
+                            value={String(filters.priorities[0] ?? '')}
+                            onChange={value => changeFilters(current => ({ ...current, priorities: value ? [Number(value)] : [] }))} />
+                    </span>
                 </div>
                 <UiButton
                     type="button"
