@@ -10,7 +10,7 @@ const localProCss = fileURLToPath(new URL(
   '../../../packages/pro/dist/revogrid-pro.css',
   import.meta.url,
 ));
-const cssAliases = existsSync(localProCss)
+const cssAliases = process.env.LOCAL_PACKAGES === 'true' && existsSync(localProCss)
   ? { '@revolist/revogrid-pro/dist/revogrid-pro.css': localProCss }
   : trialCssAliases;
 

@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 import vue from '@vitejs/plugin-vue';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { trialCssAliases } from '../vite.trial-aliases';
 
 const localProDist = [
   '../../../packages/pro/dist/',
@@ -12,7 +13,7 @@ const localProDist = [
   .map((relativePath) => new URL(relativePath, import.meta.url))
   .find((directory) => existsSync(new URL('revogrid-pro.js', directory)));
 
-export const localProductAliases = localProDist
+export const localProductAliases = process.env.LOCAL_PACKAGES === 'true' && localProDist
   ? [
       {
         find: '@revolist/revogrid/loader',
@@ -71,7 +72,7 @@ export const localProductAliases = localProDist
         ),
       },
     ]
-  : [];
+  : Object.entries(trialCssAliases).map(([find, replacement]) => ({ find, replacement }));
 
 export default defineConfig(({ mode }) => ({
   base: './',

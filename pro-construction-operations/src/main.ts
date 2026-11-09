@@ -18,7 +18,8 @@ async function bootstrap() {
     }
     case 'angular': {
       await import('zone.js');
-      await import('@angular/compiler');
+      const { publishFacade } = await import('@angular/compiler');
+      publishFacade(globalThis);
       document.querySelector('#app')!.innerHTML = '<construction-operations-grid></construction-operations-grid>';
       const [{ bootstrapApplication }, { ConstructionFabricationGanttComponent }] = await Promise.all([import('@angular/platform-browser'), import('./angular')]);
       await bootstrapApplication(ConstructionFabricationGanttComponent);

@@ -1,4 +1,3 @@
-import searchIcon from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?url'
 import '@revolist/ui/styles.css';
 import { Dropdown, SearchInput } from '@revolist/ui/react';
 import { ButtonControl as UiButton } from '@revolist/ui/react-control';
@@ -33,6 +32,8 @@ import {
     filterPlanningTasks,
     ganttColumns,
     ganttConfig,
+    toPlanningGanttSource,
+    ganttTaskEditorDialog,
     ganttDependencies,
     ganttResources,
     gridColumnTypes,
@@ -58,6 +59,7 @@ import './planning.scss'
 
 type PlanningGridProps = React.ComponentProps<typeof RevoGrid> & {
     gantt?: typeof ganttConfig
+    ganttTaskEditorDialog?: typeof ganttTaskEditorDialog
     ganttResources?: typeof ganttResources
     ganttAssignments?: ReturnType<typeof toGanttAssignments>
     ganttDependencies?: typeof ganttDependencies
@@ -108,7 +110,7 @@ export default function PlanningViews() {
         []
     )
     const [isDark, setIsDark] = useState(() => currentTheme().isDark())
-    const ganttPlugins = useMemo(() => [GanttPlugin, AdvanceFilterPlugin, FilterHeaderPlugin], [])
+    const ganttPlugins = useMemo(() => [GanttPlugin, AdvanceFilterPlugin], [])
     const kanbanPlugins = useMemo(() => [KanbanPlugin, AdvanceFilterPlugin], [])
     const schedulerPlugins = useMemo(() => [EventSchedulerPlugin], [])
     const emptySource = useMemo<never[]>(() => [], [])
@@ -149,6 +151,7 @@ export default function PlanningViews() {
         () => filterPlanningTasks(tasks, filters),
         [tasks, filters]
     )
+    const ganttSource = useMemo(() => toPlanningGanttSource(visibleTasks), [visibleTasks])
     useEffect(() => observeCurrentTheme(setIsDark), [])
     const handlePlanningEdit = (
         event: CustomEvent<PlanningEditDetail>
@@ -203,7 +206,6 @@ export default function PlanningViews() {
                     aria-label="Search tasks"
                     placeholder="Search tasks…"
                     value={filters.query}
-                    icon={<img src={searchIcon} alt="" />}
                     onValueChange={(query) => changeFilters((current) => ({ ...current, query }))}
                 />
                 <div className="planning-demo__filters">
@@ -211,18 +213,16 @@ export default function PlanningViews() {
                         <Dropdown className="rv-select" {...planningFilterDropdowns.project} value={filters.projectId}
                             onChange={value => changeFilters(current => ({ ...current, projectId: value as PlanningFilters['projectId'] }))} />
                     </span>
-                    {activeView === 'kanban' && <>
-                        <span className="planning-demo__filter">
-                            <Dropdown className="rv-select" {...planningFilterDropdowns.status}
-                                value={filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''}
-                                onChange={value => changeFilters(current => ({ ...current, statuses: value ? [String(value)] : [] }))} />
-                        </span>
-                        <span className="planning-demo__filter">
-                            <Dropdown className="rv-select" {...planningFilterDropdowns.priority}
-                                value={String(filters.priorities[0] ?? '')}
-                                onChange={value => changeFilters(current => ({ ...current, priorities: value ? [Number(value)] : [] }))} />
-                        </span>
-                    </>}
+                    <span className="planning-demo__filter">
+                        <Dropdown className="rv-select" {...planningFilterDropdowns.status}
+                            value={filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''}
+                            onChange={value => changeFilters(current => ({ ...current, statuses: value ? [String(value)] : [] }))} />
+                    </span>
+                    <span className="planning-demo__filter">
+                        <Dropdown className="rv-select" {...planningFilterDropdowns.priority}
+                            value={String(filters.priorities[0] ?? '')}
+                            onChange={value => changeFilters(current => ({ ...current, priorities: value ? [Number(value)] : [] }))} />
+                    </span>
                 </div>
                 <UiButton
                     type="button"
@@ -281,10 +281,12 @@ export default function PlanningViews() {
                     theme={isDark ? 'darkCompact' : 'compact'}
                     hideAttribution
                     plugins={ganttPlugins}
-                    source={visibleTasks}
+                    source={ganttSource}
                     columns={ganttColumns}
+                    rowSize={40}
                     rowOrder={false}
                     gantt={ganttConfig}
+                    ganttTaskEditorDialog={ganttTaskEditorDialog}
                     ganttDependencies={visibleGanttDependencies}
                     ganttResources={ganttResources}
                     ganttAssignments={ganttAssignments}

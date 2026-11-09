@@ -880,3 +880,67 @@ revo-grid.ecommerce-grid {
     flex: 1 1 100%;
   }
 }
+
+// Customer workspace: horizontal scrolling belongs to the grid, never the page.
+.ecommerce-shell { --rv-control-height: 40px; padding: 24px; box-sizing: border-box; overflow: hidden; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+.ecommerce-heading {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 28px; flex-shrink: 0;
+  h1 { margin: 0 0 6px; font-size: 28px; line-height: 1.2; font-weight: 600; letter-spacing: -.7px; }
+  p { margin: 0; color: var(--ecommerce-text-3); font-size: 14px; line-height: 1.5; }
+}
+.ecommerce-shell .ecommerce-toolbar {
+  padding: 18px 0; border-bottom: 0; display: flex; flex-direction: row; align-items: center; gap: 12px; flex-wrap: wrap;
+  .ecommerce-preset, .ecommerce-view { width: 220px; max-width: 100%; min-width: 0; }
+  .rv-search-input { width: 100%; }
+}
+.ecommerce-toolbar .ecommerce-export { margin-inline-start: auto; flex: 0 0 auto; }
+.ecommerce-search { flex: 1 1 280px; max-width: 470px; min-width: 0; }
+.ecommerce-table {
+  display: flex; flex-direction: column; position: relative; flex: 1; min-height: 240px; overflow: hidden; border: 1px solid var(--ecommerce-border); border-radius: 8px;
+  .column-group-panel { border: 0; border-bottom: 1px solid var(--ecommerce-border); padding: 9px 14px; font-size: 12px; }
+  revo-grid.ecommerce-grid { min-height: 0 !important; height: 0 !important; flex: 1 1 auto; }
+}
+.ecommerce-shell revo-grid.ecommerce-grid {
+  --revo-grid-header-font-weight: 500;
+  .rgCell { padding-inline: 14px !important; font-size: 13px; }
+  .rgHeaderCell { font-size: 13px; }
+  .analytics-avatar-select { min-width: 0; }
+  .analytics-avatar-select > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+.ecommerce-shell .ecommerce-empty {
+  position: absolute; z-index: 10; top: 130px; inset-inline: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; margin: 0; padding: 24px; background: var(--ecommerce-surface); border: 0; border-radius: 0; color: var(--ecommerce-text-3);
+  strong { color: var(--ecommerce-text-1); font-size: 18px; }
+}
+.ecommerce-shell .ecommerce-empty[hidden] { display: none; }
+@media (max-width: 800px) {
+  .ecommerce-shell { padding: 16px; }
+  .ecommerce-heading { align-items: flex-start; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .ecommerce-heading h1 { font-size: 24px; }
+  .ecommerce-shell .ecommerce-toolbar { gap: 10px; }
+  .ecommerce-search { max-width: none; flex-basis: 100%; }
+}
+.ecommerce-shell[data-view='overview'] revo-grid.ecommerce-grid.summary-header.filter-header {
+  --rv-header-label-height: 44px;
+  --rv-header-height: 84px;
+  .summary-container { display: none; }
+  .summary-header-content { display: flex; align-items: center; height: 100%; font-weight: 500; }
+}
+.ecommerce-shell revo-grid.ecommerce-grid > .group-panel {
+  min-height: 40px;
+  box-sizing: border-box;
+  padding: 8px 14px;
+  font-size: 12px;
+}
+@media (max-width: 800px) {
+  .ecommerce-shell .ecommerce-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+  }
+  .ecommerce-shell .ecommerce-toolbar .ecommerce-search { grid-column: 1 / -1; width: 100%; min-width: 0; }
+  .ecommerce-shell .ecommerce-toolbar :is(.ecommerce-preset, .ecommerce-view) { width: 100%; min-width: 0; max-width: 100%; }
+}
+
+@media (max-width: 800px) {
+  .ecommerce-shell .ecommerce-toolbar .ecommerce-export { grid-column: 2; justify-self: end; }
+}

@@ -98,3 +98,9 @@ test('master detail uses its Row Master scrollbar without making the overlay scr
 
   assert.doesNotMatch(styles, /\.row-master-grid\s+\.rv-overlay\s*\{[^}]*overflow(?:-y)?:\s*(?:auto|scroll)/s);
 });
+
+// Component consumers bypass main.ts, so shared presentation travels with component styles.
+test('component styles load the public UI stylesheet without coupling Node data modules to CSS', async () => {
+  assert.match(await readSource('row-master.scss'), /@import "@revolist\/ui\/styles\.css"/);
+  assert.doesNotMatch(await readSource('row-master.shared.ts'), /import ['"][^'"]+\.css['"]/);
+});

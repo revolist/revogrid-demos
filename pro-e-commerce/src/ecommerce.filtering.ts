@@ -1,3 +1,4 @@
+import type { ColumnRegular, ColumnGrouping } from '@revolist/revogrid';
 import type { AdvanceFilterPlugin, FilterAst } from '@revolist/revogrid-pro';
 
 export type EcommerceFilterAst = FilterAst;
@@ -105,6 +106,7 @@ export interface EcommerceDerivedState<Row = Record<string, unknown>> {
   totalSpend: number;
   selectedIds: Set<string>;
   visibleSelectedIds: Set<string>;
+  /** True only when the grid has no visible rows, including synthetic group headers. */
   empty: boolean;
 }
 
@@ -139,7 +141,8 @@ export function createEcommerceDerivedState<Row extends Record<string, unknown>>
     ),
     selectedIds: new Set(selectedIds),
     visibleSelectedIds: new Set([...selectedIds].filter(id => visibleIds.has(id))),
-    empty: customerRows.length === 0,
+    // Collapsed groups still render visible headers that users must be able to expand.
+    empty: visibleRows.length === 0,
   };
 }
 
@@ -187,4 +190,47 @@ export function createEcommerceVisibleSourceSync<Row extends Record<string, unkn
     revision += 1;
   };
   return sync as EcommerceVisibleSourceSync;
+}
+
+/** Clear native, advanced and quick filters through the public filter owner. */
+export async function resetEcommerceFilters(grid: HTMLRevoGridElement) {
+  setEcommerceQuickFilter(grid, '');
+  const plugins = await grid.getPlugins();
+  const plugin = plugins.find(plugin => typeof (plugin as { clearFiltering?: unknown }).clearFiltering === 'function') as Pick<AdvanceFilterPlugin, 'clearFiltering'> | undefined;
+  if (!plugin) throw new Error('AdvanceFilterPlugin is required to reset customer filters.');
+  await plugin.clearFiltering();
+}
+
+export type EcommerceColumnView = 'overview' | 'all';
+
+/** A focused default view; the full dataset remains available without losing column state. */
+export function getEcommerceViewColumns(
+  columns: (ColumnRegular | ColumnGrouping)[],
+  view: EcommerceColumnView,
+): (ColumnRegular | ColumnGrouping)[] {
+  if (view === 'all') return columns;
+  const flattened = columns.flatMap(column => 'children' in column ? column.children : [column]);
+  const overview = [
+    ['_checkbox', '', 46], ['Customer', 'Customer', 240],
+    ['Membership Type', 'Membership', 140], ['City', 'City', 150],
+    ['Total Spend', 'Total spend', 150], ['Lifetime Value', 'Lifetime value', 160],
+    ['Average Rating', 'Rating', 155], ['Spend Change (%)', 'Spend change', 160],
+  ] as const;
+  return overview.flatMap(([prop, name, size]) => {
+    const column = flattened.find(column => column.prop === prop);
+    if (!column) return [];
+    const { summaryVNode: _summary, ...rest } = column;
+    return [{ ...rest, name, size, minSize: size }];
+  });
+}
+
+export function formatEcommerceAverageSpend(rows: any[]) {
+  const total = rows.reduce((sum, row) => sum + ecommerceSpendNumber(row['Total Spend']), 0);
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact', style: 'currency', currency: 'USD', maximumFractionDigits: 1,
+  }).format(rows.length ? total / rows.length : 0);
+}
+
+export function formatEcommerceCustomerCount(count: number) {
+  return new Intl.NumberFormat('en-US').format(count);
 }

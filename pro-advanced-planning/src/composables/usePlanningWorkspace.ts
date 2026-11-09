@@ -28,6 +28,8 @@ import {
     filterGanttDependencies,
     ganttColumns,
     ganttConfig,
+    toPlanningGanttSource,
+    ganttTaskEditorDialog,
     ganttDependencies,
     ganttResources,
     planningDataGridFormatting,
@@ -63,7 +65,7 @@ const gridPlugins = [
     ColumnStretchPlugin,
     ColumnHidePlugin,
 ]
-const ganttPlugins = [GanttPlugin, AdvanceFilterPlugin, FilterHeaderPlugin]
+const ganttPlugins = [GanttPlugin, AdvanceFilterPlugin]
 const kanbanPlugins = [KanbanPlugin, AdvanceFilterPlugin]
 // Scheduler projects resource rows, so task-table filter rules do not apply
 // there. It retains its own native eventScheduler.filters boundary.
@@ -102,6 +104,7 @@ export function usePlanningWorkspace() {
     const ganttAssignments = computed(() =>
         toGanttAssignments(tasks.value)
     )
+    const ganttSource = computed(() => toPlanningGanttSource(tasks.value))
     const visibleGanttDependencies = computed(() =>
         filterGanttDependencies(ganttDependencyState.value, tasks.value)
     )
@@ -165,6 +168,8 @@ export function usePlanningWorkspace() {
         ganttAssignments,
         ganttColumns,
         ganttConfig,
+        ganttSource,
+        ganttTaskEditorDialog,
         ganttPlugins,
         ganttResources,
         planningDataGridContextMenu: dataGridContextMenu,

@@ -1,5 +1,6 @@
 import exportIcon from '@fortawesome/fontawesome-free/svgs/solid/download.svg?raw';
-import { h, render } from 'preact';
+import { h } from 'preact';
+import { renderPreactInto } from '@revolist/ui/preact-mount';
 import { IconButton } from '@revolist/ui/preact';
 import '@revolist/ui/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
@@ -88,6 +89,8 @@ export function load(parentSelector: string, rows?: InfinityScrollUser[]) {
     return result;
   };
   const infinityScroll: Partial<InfinityScrollConfig> = {
+    // Published 4.0.1 cached reads reference Node process; use supported direct reads until the fixed release.
+    query: false,
     chunkSize: 50,
     bufferSize: 150,
     preloadThreshold: 0.75,
@@ -111,7 +114,7 @@ export function load(parentSelector: string, rows?: InfinityScrollUser[]) {
     }
   };
   const renderExportButton = (disabled: boolean) => {
-    render(h(IconButton, { label: 'Export all to Excel', icon: exportIcon, disabled, onClick: exportAll }), exportHost);
+    renderPreactInto(exportHost, h(IconButton, { label: 'Export all to Excel', icon: exportIcon, disabled, onClick: exportAll }));
   };
   renderExportButton(false);
 
@@ -124,7 +127,7 @@ export function load(parentSelector: string, rows?: InfinityScrollUser[]) {
 
   return () => {
     disconnectTheme();
-    render(null, exportHost);
+    renderPreactInto(exportHost, null);
     grid.remove();
     container.remove();
   };

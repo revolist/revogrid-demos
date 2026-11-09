@@ -11,7 +11,7 @@ const localProCss = fileURLToPath(new URL('../../../packages/pro/dist/revogrid-p
 const localCoreEntry = fileURLToPath(new URL('../../../node_modules/@revolist/revogrid/dist/index.js', import.meta.url));
 const localCoreLoader = fileURLToPath(new URL('../../../node_modules/@revolist/revogrid/loader/index.js', import.meta.url));
 
-const aliases = existsSync(localProEntry)
+const aliases = process.env.LOCAL_PACKAGES === 'true' && existsSync(localProEntry)
   ? [
       { find: '@revolist/revogrid/loader', replacement: localCoreLoader },
       { find: '@revolist/revogrid', replacement: localCoreEntry },

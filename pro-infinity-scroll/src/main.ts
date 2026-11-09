@@ -24,7 +24,8 @@ async function bootstrap() {
     }
     case 'angular': {
       await import('zone.js');
-      await import('@angular/compiler');
+      const { publishFacade } = await import('@angular/compiler');
+      publishFacade(globalThis);
       document.querySelector('#app')!.innerHTML = '<infinity-scroll-grid></infinity-scroll-grid>';
       const [{ bootstrapApplication }, { InfinityScrollGridComponent }] = await Promise.all([
         import('@angular/platform-browser'),

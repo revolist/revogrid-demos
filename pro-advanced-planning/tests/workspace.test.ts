@@ -407,10 +407,6 @@ test('hides unsupported structural planning actions', () => {
     assert.match(ganttConfigSource, /contextMenu:\s*\{\s*row:\s*false\s*\}/)
     assert.match(
         columnsSource,
-        /createDefaultTaskTableColumn\('assignees'\)[\s\S]*?readonly:\s*true/
-    )
-    assert.match(
-        columnsSource,
         /createDefaultTaskTableColumn\('name'\)[\s\S]*?rowDrag:\s*false/
     )
     assert.match(
@@ -920,7 +916,7 @@ test('provides a stable 100-task fixture across three projects', () => {
     )
 })
 
-test('uses varied multi-day work with parallel owner schedules', () => {
+test('uses varied multi-day work with staggered owner schedules', () => {
     const tasks = createTasks()
     const regularTasks = tasks.filter(({ type }) => type !== 'milestone')
     assert.ok(regularTasks.every(({ duration, durationIsElapsed }) =>

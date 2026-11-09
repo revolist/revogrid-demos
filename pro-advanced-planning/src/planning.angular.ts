@@ -34,6 +34,8 @@ import {
     filterPlanningTasks,
     ganttColumns,
     ganttConfig,
+    toPlanningGanttSource,
+    ganttTaskEditorDialog,
     ganttDependencies,
     ganttResources,
     gridColumnTypes,
@@ -131,14 +133,12 @@ import {
                     <span class="planning-demo__filter">
                         <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.project, className: 'rv-select', value: filters.projectId }" (valueChange)="setProject($event)" />
                     </span>
-                    @if (activeView === 'kanban') {
-                        <span class="planning-demo__filter">
-                            <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.status, className: 'rv-select', value: filters.statuses.length > 1 ? 'active' : filters.statuses[0] || '' }" (valueChange)="setStatus($event)" />
-                        </span>
-                        <span class="planning-demo__filter">
-                            <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.priority, className: 'rv-select', value: filters.priorities[0]?.toString() ?? '' }" (valueChange)="setPriority($event)" />
-                        </span>
-                    }
+                    <span class="planning-demo__filter">
+                        <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.status, className: 'rv-select', value: filters.statuses.length > 1 ? 'active' : filters.statuses[0] || '' }" (valueChange)="setStatus($event)" />
+                    </span>
+                    <span class="planning-demo__filter">
+                        <rv-ui component="Dropdown" [props]="{ ...planningFilterDropdowns.priority, className: 'rv-select', value: filters.priorities[0]?.toString() ?? '' }" (valueChange)="setPriority($event)" />
+                    </span>
                 </div>
                 <button rvControl class="rv-choice-chip planning-demo__active"
                     type="button"
@@ -185,10 +185,12 @@ import {
                         [hideAttribution]="true"
                         [theme]="theme"
                         [plugins]="ganttPlugins"
-                        [source]="tasks"
+                        [source]="ganttSource"
                         [columns]="ganttColumns"
+                        [rowSize]="40"
                         [rowOrder]="false"
                         [gantt]="ganttConfig"
+                        [ganttTaskEditorDialog]="ganttTaskEditorDialog"
                         [ganttDependencies]="visibleGanttDependencies"
                         [ganttResources]="ganttResources"
                         [ganttAssignments]="ganttAssignments"
@@ -279,13 +281,14 @@ export class PlanningViewsGridComponent {
     readonly planningDataGridFormatting = planningDataGridFormatting
     readonly ganttColumns = ganttColumns
     readonly ganttConfig = ganttConfig
+    readonly ganttTaskEditorDialog = ganttTaskEditorDialog
     ganttDependencyState = [...ganttDependencies]
     readonly kanbanConfig = createKanbanConfig()
     readonly ganttResources = ganttResources
     readonly schedulerConfig = schedulerConfig
     readonly calendarConfig = calendarConfig
     readonly schedulerResources = schedulerResources
-    readonly ganttPlugins = [GanttPlugin, AdvanceFilterPlugin, FilterHeaderPlugin]
+    readonly ganttPlugins = [GanttPlugin, AdvanceFilterPlugin]
     readonly gridPlugins = [
         RowOrderPlugin,
         RowSelectPlugin,
@@ -304,6 +307,7 @@ export class PlanningViewsGridComponent {
     readonly schedulerPlugins = [EventSchedulerPlugin]
     readonly empty: never[] = []
     ganttAssignments = toGanttAssignments(this.tasks)
+    ganttSource = toPlanningGanttSource(this.tasks)
     visibleGanttDependencies = filterGanttDependencies(
         this.ganttDependencyState,
         this.tasks
@@ -315,6 +319,7 @@ export class PlanningViewsGridComponent {
             this.filters
         )
         this.ganttAssignments = toGanttAssignments(this.tasks)
+        this.ganttSource = toPlanningGanttSource(this.tasks)
         this.visibleGanttDependencies = filterGanttDependencies(
             this.ganttDependencyState,
             this.tasks

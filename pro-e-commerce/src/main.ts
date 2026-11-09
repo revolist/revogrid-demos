@@ -25,7 +25,8 @@ async function bootstrap() {
     }
     case 'angular': {
       await import('zone.js');
-      await import('@angular/compiler');
+      const { publishFacade } = await import('@angular/compiler');
+      publishFacade(globalThis);
       document.querySelector('#app')!.innerHTML = '<ecommerce-grid></ecommerce-grid>';
       const [{ bootstrapApplication }, { ECommerceGridComponent }] = await Promise.all([
         import('@angular/platform-browser'),

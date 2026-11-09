@@ -32,6 +32,8 @@ import {
     filterPlanningTasks,
     ganttColumns,
     ganttConfig,
+    toPlanningGanttSource,
+    ganttTaskEditorDialog,
     ganttDependencies,
     ganttResources,
     gridColumnTypes,
@@ -142,7 +144,7 @@ export function load(parentSelector: string): (() => void) | undefined {
             planningStore.createSnapshot(),
             filters
         )
-        activeGrid.source = allTasks
+        activeGrid.source = activeView === 'gantt' ? toPlanningGanttSource(allTasks) : allTasks
 
         if (activeView === 'gantt') {
             activeGrid.ganttAssignments = toGanttAssignments(allTasks)
@@ -154,7 +156,6 @@ export function load(parentSelector: string): (() => void) | undefined {
     }
 
     function render(view: PlanningView) {
-        status.element.hidden = priority.element.hidden = view !== 'kanban'
         activeGridAbort?.abort()
         activeGridAbort = new AbortController()
         activeView = view
@@ -218,10 +219,12 @@ export function load(parentSelector: string): (() => void) | undefined {
             grid.kanban = createKanbanConfig()
             grid.filter = filterConfigs.kanban
         } else if (view === 'gantt') {
-            grid.plugins = [GanttPlugin, AdvanceFilterPlugin, FilterHeaderPlugin]
+            grid.plugins = [GanttPlugin, AdvanceFilterPlugin]
             grid.columns = ganttColumns
+            grid.rowSize = 40
             grid.rowOrder = false
             grid.gantt = ganttConfig
+            grid.ganttTaskEditorDialog = ganttTaskEditorDialog
             grid.ganttDependencies = visibleGanttDependencies
             grid.ganttResources = ganttResources
             grid.ganttAssignments = toGanttAssignments(allTasks)
@@ -258,7 +261,7 @@ export function load(parentSelector: string): (() => void) | undefined {
 
         panel.replaceChildren(grid)
         activeGrid = grid
-        grid.source = allTasks
+        grid.source = view === 'gantt' ? toPlanningGanttSource(allTasks) : allTasks
         switcher.querySelectorAll('button').forEach((button) => {
             const selected = button.dataset.view === activeView
             button.classList.toggle('on', selected)

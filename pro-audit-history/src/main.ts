@@ -24,7 +24,8 @@ async function bootstrap() {
     }
     case 'angular': {
       await import('zone.js');
-      await import('@angular/compiler');
+      const { publishFacade } = await import('@angular/compiler');
+      publishFacade(globalThis);
       document.querySelector('#app')!.innerHTML = '<audit-history-grid></audit-history-grid>';
       const [{ bootstrapApplication }, { AuditHistoryGridComponent }] = await Promise.all([
         import('@angular/platform-browser'),

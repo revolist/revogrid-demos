@@ -28,7 +28,8 @@ async function bootstrap() {
     }
     case 'angular': {
       await import('zone.js');
-      await import('@angular/compiler');
+      const { publishFacade } = await import('@angular/compiler');
+      publishFacade(globalThis);
       document.querySelector('#app')!.innerHTML =
         '<ai-view-assistant-grid></ai-view-assistant-grid>';
       const [{ bootstrapApplication }, { AiAssistantGridComponent }] =

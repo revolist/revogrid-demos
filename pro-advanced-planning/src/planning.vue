@@ -25,18 +25,16 @@
                         <Dropdown class="rv-select" v-bind="planningFilterDropdowns.project" :value="filters.projectId"
                             @update:model-value="value => changeFilters({ ...filters, projectId: value as PlanningFilters['projectId'] })" />
                     </span>
-                    <template v-if="activeView === 'kanban'">
-                        <span class="planning-demo__filter">
-                            <Dropdown class="rv-select" v-bind="planningFilterDropdowns.status"
-                                :value="filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''"
-                                @update:model-value="value => changeFilters({ ...filters, statuses: value ? [String(value)] : [] })" />
-                        </span>
-                        <span class="planning-demo__filter">
-                            <Dropdown class="rv-select" v-bind="planningFilterDropdowns.priority"
-                                :value="String(filters.priorities[0] ?? '')"
-                                @update:model-value="value => changeFilters({ ...filters, priorities: value ? [Number(value)] : [] })" />
-                        </span>
-                    </template>
+                    <span class="planning-demo__filter">
+                        <Dropdown class="rv-select" v-bind="planningFilterDropdowns.status"
+                            :value="filters.statuses.length > 1 ? 'active' : filters.statuses[0] || ''"
+                            @update:model-value="value => changeFilters({ ...filters, statuses: value ? [String(value)] : [] })" />
+                    </span>
+                    <span class="planning-demo__filter">
+                        <Dropdown class="rv-select" v-bind="planningFilterDropdowns.priority"
+                            :value="String(filters.priorities[0] ?? '')"
+                            @update:model-value="value => changeFilters({ ...filters, priorities: value ? [Number(value)] : [] })" />
+                    </span>
                 </div>
                 <button v-rv-control class="rv-choice-chip planning-demo__active" type="button" :class="{ on: isActiveTasksPreset }"
                     :aria-pressed="isActiveTasksPreset" data-demo-action="apply_active_tasks" @click="applyActiveTasksPreset">Active tasks</button>
@@ -95,10 +93,12 @@
             hide-attribution
             :theme="theme"
             :plugins="ganttPlugins"
-            :source="tasks"
+            :source="ganttSource"
             :columns="ganttColumns"
+            :row-size="40"
             :row-order.prop="false"
             :gantt.prop="ganttConfig"
+            :gantt-task-editor-dialog.prop="ganttTaskEditorDialog"
             :gantt-dependencies.prop="visibleGanttDependencies"
             :gantt-resources.prop="ganttResources"
             :gantt-assignments.prop="ganttAssignments"
@@ -149,6 +149,8 @@ const {
     ganttAssignments,
     ganttColumns,
     ganttConfig,
+    ganttSource,
+    ganttTaskEditorDialog,
     ganttFilterConfig,
     ganttPlugins,
     ganttResources,

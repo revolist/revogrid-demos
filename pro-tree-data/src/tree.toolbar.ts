@@ -1,5 +1,4 @@
 import { h as preactH } from 'preact';
-import { useState } from 'preact/hooks';
 import { ButtonGroup, IconButton, Switch } from '@revolist/ui/preact';
 import { renderPreactInto } from '@revolist/ui/preact-mount';
 import expandIcon from '@fortawesome/fontawesome-free/svgs/solid/angles-down.svg?raw';
@@ -13,16 +12,17 @@ interface TreeToolbarActions {
   setStickyParents: (checked: boolean) => void;
 }
 
-function TreeToolbar(actions: TreeToolbarActions) {
-  const [exporting, setExporting] = useState(false);
-  const [stickyParents, setStickyParents] = useState(true);
+function TreeToolbar(actions: TreeToolbarActions, state: { exporting: boolean; stickyParents: boolean }, update: () => void) {
+  const { exporting, stickyParents } = state;
 
   async function exportToExcel() {
-    setExporting(true);
+    state.exporting = true;
+    update();
     try {
       await actions.exportToExcel();
     } finally {
-      setExporting(false);
+      state.exporting = false;
+      update();
     }
   }
 
@@ -41,7 +41,8 @@ function TreeToolbar(actions: TreeToolbarActions) {
       label: 'Sticky parents',
       checked: stickyParents,
       onChange(checked: boolean) {
-        setStickyParents(checked);
+        state.stickyParents = checked;
+        update();
         actions.setStickyParents(checked);
       },
     }),
@@ -49,6 +50,8 @@ function TreeToolbar(actions: TreeToolbarActions) {
 }
 
 export function mountTreeToolbar(host: HTMLElement, actions: TreeToolbarActions) {
-  renderPreactInto(host, preactH(TreeToolbar, actions));
+  const state = { exporting: false, stickyParents: true };
+  const update = () => renderPreactInto(host, TreeToolbar(actions, state, update));
+  update();
   return () => renderPreactInto(host, null);
 }

@@ -1,3 +1,4 @@
+import type { Sheet, SheetData } from 'write-excel-file/browser';
 import type {
   ColumnFilterConfig,
   ColumnGrouping,
@@ -11,6 +12,7 @@ import {
   isGrouping,
 } from '@revolist/revogrid';
 import {
+  createHistogramBrushStructuredFilterType,
   ColumnDropdown,
   ColumnGroupPanelPlugin,
   ColumnHidePlugin,
@@ -20,6 +22,7 @@ import {
   columnTypeRenderer,
   type ExcelExportCellData,
   type ExcelExportContextTransformer,
+  type ExcelExportProvider,
   type ExportExcelEvent,
   type ColumnContextMenuOpenContext,
   type ContextMenuActionContext,
@@ -166,6 +169,11 @@ export const ecommercePlugins = Array.from(
 );
 
 export const ecommerceFilterConfig = {
+  // The 4.0.1 trial bar renderer eagerly reads absent point coordinates.
+  // Positioned charts keep the native histogram brush and range filtering usable.
+  structuredFilterTypes: [createHistogramBrushStructuredFilterType({
+    chart: { type: 'area', types: ['area', 'line'] },
+  })],
   groupedFilter: {},
   selection: {
     syncCellTemplate: {
@@ -223,8 +231,34 @@ export function createEcommerceAnalyticsColumns(): (
   });
 }
 
+export { getEcommerceViewColumns, formatEcommerceAverageSpend, formatEcommerceCustomerCount, type EcommerceColumnView } from './ecommerce.filtering';
+
+/** Keep ZIP worker code in the public writer bundle, outside the obfuscated Pro trial. */
+export const ecommerceExcelExportProvider: ExcelExportProvider = {
+  id: 'ecommerce-xlsx',
+  async export(context) {
+    const { default: writeXlsxFile } = await import('write-excel-file/browser');
+    const sheetOptions = {
+      ...(context.gridDerivedOptions ?? {}),
+      ...(context.providerOptions ?? {}),
+    };
+    // Widths belong to sheets. A second-argument columns array selects object rows
+    // in write-excel-file v4 and would reinterpret this already-formatted matrix.
+    const sheets: Sheet<File | Blob | ArrayBuffer>[] = [
+      { ...sheetOptions, sheet: context.sheetName, data: context.cellRows as SheetData },
+      ...(context.additionalWorksheets ?? []).map(sheet => ({
+        ...sheetOptions,
+        sheet: sheet.sheetName,
+        data: sheet.cellRows as SheetData,
+      })),
+    ];
+    await writeXlsxFile(sheets).toFile(context.workbookName);
+  },
+};
+
 export function createEcommerceExcelExportConfig(): ExportExcelEvent {
   return {
+    provider: ecommerceExcelExportProvider,
     sheetName: 'Customer Analytics',
     workbookName: 'customer-analytics.xlsx',
     writingOptions: {

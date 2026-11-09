@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
+const publicProStyles = readFileSync(new URL(import.meta.resolve('@revolist/revogrid-pro/styles.css')), 'utf8');
+
 const styles = readFileSync(
   new URL('../src/project-tracker-styles/_grid.scss', import.meta.url),
   'utf8',
@@ -34,10 +36,9 @@ test('dark selection header filters stay unboxed while text filters keep their s
     headerFilterStyles,
     /\.filter-input\s*\{[\s\S]*?justify-content:\s*center\s*!important;/,
   );
-  assert.match(
-    darkStyles,
-    /\.filter-input input\[type="text"\]\s*\{[\s\S]*?border-color:\s*token\(dark-border\)\s*!important;[\s\S]*?background:\s*token\(dark-elevated\)\s*!important;[\s\S]*?&:disabled\s*\{[\s\S]*?border-color:\s*token\(dark-border\)\s*!important;/,
-  );
+  // The installed Pro stylesheet owns text-input surface and disabled states.
+  assert.match(publicProStyles, /\.filter-input input\[type=text\]:not\(:disabled\)[^{]*\{[^}]*background-color:var\(--revo-grid-background,transparent\)/);
+  assert.match(publicProStyles, /\.filter-input input\[type=text\]:disabled[^{]*\{[^}]*visibility:hidden/);
   assert.match(
     darkStyles,
     /\.filter-header-selection-trigger\.rv-filter\s*\{[\s\S]*?border-color:\s*transparent\s*!important;[\s\S]*?background:\s*transparent\s*!important;/,
@@ -48,15 +49,16 @@ test('dark selection header filters stay unboxed while text filters keep their s
   );
 });
 
-test('row selection checkboxes use the shared Pro checkbox glyph', () => {
-  assert.match(
-    styles,
-    /\.cell-checkbox[\s\S]*?input\[type="checkbox"\]:not\(\.rv-checkbox\)\s*\{\s*@include project-checkbox;/,
-  );
-  assert.match(
-    styles,
-    /\.cell-header-checkbox-container[\s\S]*?input\[type="checkbox"\]:not\(\.rv-checkbox\)\s*\{\s*@include project-checkbox;/,
-  );
+test('row selection uses the shared Pro plugin and public checkbox styles', () => {
+  const plugins = readFileSync(new URL('../src/project-tracker/plugins.ts', import.meta.url), 'utf8');
+  assert.match(plugins, /projectPlugins\s*=\s*\[[\s\S]*?RowSelectPlugin/);
+  assert.match(publicProStyles, /\.rv-checkbox\{[^}]*appearance:none/);
+  assert.match(publicProStyles, /\.rv-checkbox:checked/);
+  for (const variant of ['project-table.ts', 'project-table.react.tsx', 'project-table.vue', 'project-table.angular.ts']) {
+    const source = readFileSync(new URL(`../src/${variant}`, import.meta.url), 'utf8');
+    assert.match(source, /import ['"]@revolist\/ui\/styles\.css['"]/);
+    assert.match(source, /projectRowSelect/);
+  }
 });
 
 test('all framework variants synchronize the grid theme', () => {
@@ -100,7 +102,7 @@ test('semantic block columns fill the complete grid cell', () => {
   assert.match(renderers, /cellProperties:\s*\(\)\s*=>\s*\(\{[\s\S]*?class:\s*'project-block-cell'/);
   assert.match(
     styles,
-    /\.rgCell\.project-block-cell[\s\S]*?padding:\s*0\s*!important/,
+    /\.rgCell:is\(\.project-block-cell, \.project-timeline-cell\)[\s\S]*?padding:\s*0\s*!important/,
   );
   assert.match(
     tokens,
@@ -138,7 +140,7 @@ test('dark project skill tags retain the shared dark label foreground', () => {
   );
   assert.match(
     darkStyles,
-    /\.selected-tag:has\(\.project-skill--#\{"" \+ \$name\}\)[\s\S]*?button\s*\{[\s\S]*?color:\s*list\.nth\(\$pair,\s*2\)/,
+    /\.selected-tag:has\(\.project-skill--#\{"" \+ \$name\}\)\s*\{[\s\S]*?color:\s*list\.nth\(\$pair,\s*2\)/,
   );
 });
 
@@ -191,7 +193,9 @@ test('the project Sort menu exposes additive multi-column sorting', () => {
   assert.match(actions, /updateColumnSorting\(column,\s*sort\.order,\s*additive\)/);
   assert.match(toolbar, /action:\s*'sort';\s*value:\s*ProjectSortValue;\s*additive:\s*boolean/);
   assert.match(toolbar, /Shift-click to add another sort/);
-  assert.match(toolbar, /additive:\s*event\.shiftKey/);
+  assert.match(toolbar, /onClickCapture:[^\n]*shiftKey = event\.shiftKey/);
+  assert.match(toolbar, /onKeyDownCapture:[^\n]*shiftKey = event\.shiftKey/);
+  assert.match(toolbar, /additive:\s*shiftKey/);
 });
 
 test('all framework variants forward additive toolbar sorting', () => {

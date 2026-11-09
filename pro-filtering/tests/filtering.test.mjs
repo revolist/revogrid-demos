@@ -101,11 +101,11 @@ test('all framework examples bind filter badges declaratively', async () => {
   const packageJson = JSON.parse(await readSource('../package.json'));
   assert.equal(
     packageJson.dependencies['@revolist/revogrid-pro'],
-    'npm:@revolist/rv-pro-trial@2.8.6',
+    'npm:@revolist/rv-pro-trial@4.0.1',
   );
 
   const styles = await readSource('filtering.scss');
-  assert.match(styles, /\.order-explorer__filter-badge/);
+  assert.match(config, /badgeClassName: 'order-explorer__filter-badge'/);
   assert.match(styles, /\.order-explorer__active-filters[\s\S]*?padding-bottom:\s*8px/);
 });
 
@@ -144,7 +144,7 @@ test('all frameworks configure the default preset with declarative badges', asyn
   }
 });
 
-test('Vite uses monorepo-local Core and Pro aliases only when the parent workspace exists', async () => {
+test('Vite uses monorepo-local Core and Pro aliases only when explicitly enabled in the parent workspace', async () => {
   const [config, angular, tsconfig] = await Promise.all([
     readSource('../vite.config.ts'),
     readSource('filtering.angular.ts'),
@@ -156,7 +156,7 @@ test('Vite uses monorepo-local Core and Pro aliases only when the parent workspa
   assert.match(config, /\.\.\/\.\.\/\.\.\/node_modules\/@revolist\/revogrid\/dist\/index\.js/);
   assert.match(
     config,
-    /const aliases = existsSync\(localProEntry\)[\s\S]*?\? \[[\s\S]*?localCoreLoader[\s\S]*?localCoreEntry[\s\S]*?localProCss[\s\S]*?localProEntry[\s\S]*?: Object\.entries\(trialCssAliases\)/,
+    /const aliases = process\.env\.LOCAL_PACKAGES === 'true' && existsSync\(localProEntry\)[\s\S]*?\? \[[\s\S]*?localCoreLoader[\s\S]*?localCoreEntry[\s\S]*?localProCss[\s\S]*?localProEntry[\s\S]*?: Object\.entries\(trialCssAliases\)/,
   );
   assert.match(config, /alias: aliases/);
   assert.match(tsconfig, /\.\.\/\.\.\/\.\.\/packages\/pro\/dist\/index\.d\.ts/);
@@ -239,7 +239,9 @@ test('showcase stays focused on local filtering', async () => {
   for (const source of [typescript, react, vue, angular, main, styles]) {
     assert.doesNotMatch(source, /remote/i);
   }
-  assert.match(styles, /\.order-explorer__search-input[\s\S]*?height:\s*36px/);
+  assert.match(typescript, /createSearchInput/);
+  for (const source of [react, vue, angular]) assert.match(source, /SearchInput/);
+  assert.match(styles, /\.order-explorer__search-field[\s\S]*?min-width:\s*0/);
 });
 
 test('framework examples follow their lifecycle conventions', async () => {
@@ -288,8 +290,8 @@ test('showcase controls keep the host background visible', async () => {
   const toolbarBlock = styles.match(/\.order-explorer__toolbar\s*\{([^}]*)\}/)?.[1] ?? '';
   const gridBlock = styles.match(/\.order-explorer__grid\s*\{([^}]*)\}/)?.[1] ?? '';
 
-  assert.match(toolbarBlock, /margin-inline:\s*10px/);
-  assert.match(styles, /\.order-explorer__search-input\s*\{[^}]*background:\s*transparent/);
+  assert.match(toolbarBlock, /margin-inline:\s*0/);
+  assert.doesNotMatch(styles, /\.order-explorer__search-input\s*\{/); // Shared SearchInput owns its surface.
   assert.doesNotMatch(gridBlock, /(?:^|\s)border:/);
   assert.doesNotMatch(gridBlock, /border-radius:/);
   assert.doesNotMatch(styles, /background:\s*var\(--rv-ui-surface,\s*#fff\)/);

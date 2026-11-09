@@ -90,7 +90,9 @@ export class InfinityScrollGridComponent implements OnDestroy {
 
   private createConfig(): Partial<InfinityScrollConfig> {
     return {
-      chunkSize: 50,
+      // Published 4.0.1 cached reads reference Node process; use supported direct reads until the fixed release.
+    query: false,
+    chunkSize: 50,
       bufferSize: 150,
       preloadThreshold: 0.75,
       total: this.dataset.length,
