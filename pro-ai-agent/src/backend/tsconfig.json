@@ -15,9 +15,6 @@
       "node"
     ],
     "paths": {
-      "@revolist/revogrid-pro": [
-        "../../../../../packages/pro"
-      ],
       "@revolist/revogrid": [
         "../../../../../node_modules/@revolist/revogrid"
       ],
