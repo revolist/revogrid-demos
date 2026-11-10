@@ -39,7 +39,7 @@ The repository includes `.npmrc` for the public `@revolist` trial registry, so
 no token or npm login is required. This example installs these trial packages
 under the production import names:
 
-- `@revolist/revogrid-pro` → `@revolist/rv-pro-trial@4.0.1`
+- `@revolist/revogrid-pro` → `@revolist/rv-pro-trial@4.0.6`
 - `@revolist/kanban` → `@revolist/kanban-trial@4.0.1`
 - `@revolist/gantt` → `@revolist/gantt-trial@4.0.1`
 - `@revolist/scheduler` → `@revolist/scheduler-trial@4.0.1`

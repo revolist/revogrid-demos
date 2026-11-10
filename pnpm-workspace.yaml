@@ -24,7 +24,7 @@ minimumReleaseAgeExclude:
   - '@revolist/react-datagrid@4.31.3'
   - '@revolist/revogrid-column-date@2.0.27'
   - '@revolist/revogrid@4.31.3'
-  - '@revolist/rv-pro-trial@4.0.1'
+  - '@revolist/rv-pro-trial@4.0.6'
   - '@revolist/scheduler-trial@4.0.1'
   - '@revolist/svelte-datagrid@4.31.3'
   - '@revolist/vue3-datagrid@4.31.3'
