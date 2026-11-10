@@ -2976,6 +2976,9 @@ packages:
   '@revolist/revogrid@4.31.3':
     resolution: {integrity: sha512-QDMBGY+aO1lj/RKXlLqk7fTzzlRXuPIUW+YTzpWB4rmLVoHMbrJloxc1An+BcGNfV7tgy2B74iihKb8GWktPfA==}
 
+  '@revolist/rv-pro-trial@4.0.1':
+    resolution: {integrity: sha512-WFk8OMiXQZDuHgm0EHX4LlWjr7FjkBSrU2VW3YNe7Z1UpGP7KYLdWTt960A0Oruf/LV83BJ9xyt3p+NLZj+3Hg==, tarball: https://trial.rv-grid.com/@revolist/rv-pro-trial/-/16d6de3f7a47a343ab49e6b5d25b05ccc795f769}
+
   '@revolist/rv-pro-trial@4.0.6':
     resolution: {integrity: sha512-0B5u8HERIgb7XU1KuEjV7Au0+4Bd3qKU2asjXC7Sc8IucpOJD1fvyVZSTq3ABO7W5rJ/ipBXX23rrIAm+71dOA==, tarball: https://trial.rv-grid.com/@revolist/rv-pro-trial/-/60f2c5658938d9921ef5b369a73c27b808947880}
 
@@ -6414,6 +6417,14 @@ snapshots:
       '@stencil/core': 4.45.0
 
   '@revolist/revogrid@4.31.3': {}
+
+  '@revolist/rv-pro-trial@4.0.1':
+    dependencies:
+      '@formulajs/formulajs': 4.6.1
+      '@revolist/revogrid': 4.31.3
+      '@tanstack/query-core': 5.104.5
+      preact: 10.29.1
+      write-excel-file: 4.1.1
 
   '@revolist/rv-pro-trial@4.0.6':
     dependencies:
