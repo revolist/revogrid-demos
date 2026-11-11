@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@revolist/revogrid": "4.31.4",
+    "@revolist/revogrid": "4.31.5",
     "@revolist/revogrid-pro": "workspace:*",
     "@tanstack/ai": "1.0.0",
     "@tanstack/ai-openai": "1.0.0",
