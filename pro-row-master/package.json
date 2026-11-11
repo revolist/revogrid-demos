@@ -28,7 +28,7 @@
     "@revolist/angular-datagrid": "4.31.3",
     "@revolist/react-datagrid": "4.31.3",
     "@revolist/revogrid": "4.31.3",
-    "@revolist/revogrid-pro": "npm:@revolist/rv-pro-trial@4.0.6",
+    "@revolist/revogrid-pro": "npm:@revolist/rv-pro-trial@4.0.9",
     "@revolist/vue3-datagrid": "4.31.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -36,7 +36,7 @@
     "tslib": "^2.4.0",
     "vue": "^3.5.21",
     "zone.js": "~0.15.0",
-    "@revolist/ui": "4.0.1",
+    "@revolist/ui": "4.0.9",
     "preact": "10.29.1"
   },
   "devDependencies": {
