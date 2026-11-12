@@ -36,7 +36,7 @@
     "tslib": "^2.4.0",
     "vue": "^3.5.21",
     "zone.js": "~0.15.0",
-    "@revolist/ui": "4.0.12",
+    "@revolist/ui": "4.0.13",
     "preact": "10.29.1"
   },
   "devDependencies": {
