@@ -31,7 +31,7 @@
     "@revolist/angular-datagrid": "4.31.5",
     "@revolist/react-datagrid": "4.31.5",
     "@revolist/revogrid": "4.31.5",
-    "@revolist/revogrid-pro": "npm:@revolist/rv-pro-trial@4.0.13",
+    "@revolist/revogrid-pro": "npm:@revolist/rv-pro-trial@4.0.15",
     "@revolist/vue3-datagrid": "4.31.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -39,7 +39,7 @@
     "tslib": "^2.4.0",
     "vue": "^3.5.21",
     "zone.js": "~0.15.0",
-    "@revolist/ui": "4.0.13",
+    "@revolist/ui": "4.0.15",
     "preact": "10.29.1",
     "write-excel-file": "4.1.1"
   },
