@@ -101,7 +101,7 @@ test('all framework examples bind filter badges declaratively', async () => {
   const packageJson = JSON.parse(await readSource('../package.json'));
   assert.equal(
     packageJson.dependencies['@revolist/revogrid-pro'],
-    'npm:@revolist/rv-pro-trial@4.0.1',
+    'npm:@revolist/rv-pro-trial@4.0.18',
   );
 
   const styles = await readSource('filtering.scss');
