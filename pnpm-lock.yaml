@@ -57,8 +57,8 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -157,8 +157,8 @@ importers:
         specifier: ^3.1.20
         version: 3.2.4
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -242,8 +242,8 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -324,11 +324,11 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/gantt':
-        specifier: npm:@revolist/gantt-trial@4.0.18
-        version: '@revolist/gantt-trial@4.0.18'
+        specifier: npm:@revolist/gantt-trial@4.0.20
+        version: '@revolist/gantt-trial@4.0.20'
       '@revolist/kanban':
-        specifier: npm:@revolist/kanban-trial@4.0.18
-        version: '@revolist/kanban-trial@4.0.18'
+        specifier: npm:@revolist/kanban-trial@4.0.20
+        version: '@revolist/kanban-trial@4.0.20'
       '@revolist/react-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -336,14 +336,14 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/scheduler':
-        specifier: npm:@revolist/scheduler-trial@4.0.18
-        version: '@revolist/scheduler-trial@4.0.18'
+        specifier: npm:@revolist/scheduler-trial@4.0.20
+        version: '@revolist/scheduler-trial@4.0.20'
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -421,11 +421,11 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/charts':
-        specifier: npm:@revolist/charts-trial@4.0.18
-        version: '@revolist/charts-trial@4.0.18(@revolist/revogrid@4.31.5)'
+        specifier: npm:@revolist/charts-trial@4.0.20
+        version: '@revolist/charts-trial@4.0.20(@revolist/revogrid@4.31.5)'
       '@revolist/pivot':
-        specifier: npm:@revolist/pivot-trial@4.0.18
-        version: '@revolist/pivot-trial@4.0.18'
+        specifier: npm:@revolist/pivot-trial@4.0.20
+        version: '@revolist/pivot-trial@4.0.20'
       '@revolist/react-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -433,11 +433,11 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -512,8 +512,8 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -582,8 +582,8 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -649,8 +649,8 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/gantt':
-        specifier: npm:@revolist/gantt-trial@4.0.18
-        version: '@revolist/gantt-trial@4.0.18'
+        specifier: npm:@revolist/gantt-trial@4.0.20
+        version: '@revolist/gantt-trial@4.0.20'
       '@revolist/react-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -658,8 +658,8 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -752,8 +752,8 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/gantt':
-        specifier: npm:@revolist/gantt-trial@4.0.18
-        version: '@revolist/gantt-trial@4.0.18'
+        specifier: npm:@revolist/gantt-trial@4.0.20
+        version: '@revolist/gantt-trial@4.0.20'
       '@revolist/react-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -761,14 +761,14 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/scheduler':
-        specifier: npm:@revolist/scheduler-trial@4.0.18
-        version: '@revolist/scheduler-trial@4.0.18'
+        specifier: npm:@revolist/scheduler-trial@4.0.20
+        version: '@revolist/scheduler-trial@4.0.20'
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -867,8 +867,8 @@ importers:
         specifier: ^2.0.27
         version: 2.0.27
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -943,11 +943,11 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -1028,11 +1028,11 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -1125,11 +1125,11 @@ importers:
         specifier: 2.0.11
         version: 2.0.11
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -1210,11 +1210,11 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -1295,14 +1295,14 @@ importers:
         specifier: 2.0.11
         version: 2.0.11
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/svelte-datagrid':
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -1377,11 +1377,11 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -1456,11 +1456,11 @@ importers:
         specifier: 4.31.5
         version: 4.31.5
       '@revolist/revogrid-pro':
-        specifier: npm:@revolist/rv-pro-trial@4.0.18
-        version: '@revolist/rv-pro-trial@4.0.18'
+        specifier: npm:@revolist/rv-pro-trial@4.0.20
+        version: '@revolist/rv-pro-trial@4.0.20'
       '@revolist/ui':
-        specifier: 4.0.18
-        version: 4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
+        specifier: 4.0.20
+        version: 4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
       '@revolist/vue3-datagrid':
         specifier: 4.31.5
         version: 4.31.5
@@ -2944,19 +2944,19 @@ packages:
   '@revolist/angular-datagrid@4.31.5':
     resolution: {integrity: sha512-QvB9Jh9p1taa/kXPyM6HQUV/Tlwq9uZzCrrdu73o5dglCBdnCuGTTDeIZXtLSY+wOxxTvdnwzdDZcEBNFZUeMQ==}
 
-  '@revolist/charts-trial@4.0.18':
-    resolution: {integrity: sha512-plIDzehZ7j9NsAevnHXYUKBUvJ/9Wn89LvRW6h98KzbztKx1A348rOk+6Cv7ej/s1FHyAfRPYoR8BHo21WfrxQ==, tarball: https://trial.rv-grid.com/@revolist/charts-trial/-/068290310f8e49d1a50723c2358313a132a0fcba}
+  '@revolist/charts-trial@4.0.20':
+    resolution: {integrity: sha512-T/4QnvHvaPeXz4RGN6S97aiwAbMwZ7XAI/DZB1AJgrOHr/Kljt2WuSie6DxmQIUIs83KcW/FP/vRRkSV5RXI6g==, tarball: https://trial.rv-grid.com/@revolist/charts-trial/-/1301fa0ca05eadfc2476522f61cfe0a689c8c7e3}
     peerDependencies:
       '@revolist/revogrid': 4.31.5
 
-  '@revolist/gantt-trial@4.0.18':
-    resolution: {integrity: sha512-MOsEM/w3pPO7B+hesCumspZkTiUWK2nPWJP/T9TtKFZs6ybU3ed+sSAwnodZ1YWC9nKhkMbg8q6F+aNVkVTnPA==, tarball: https://trial.rv-grid.com/@revolist/gantt-trial/-/4852fadac1029838cf968b69a8de9541858c6d47}
+  '@revolist/gantt-trial@4.0.20':
+    resolution: {integrity: sha512-KGCfKkgzZAHDVV2uEFhQLBKIhtVEIJIb9CXtWzq2zXItLuJtWGW+DkS23ypdG/ux3sK1zpmeCccjDijQ3ah9Pw==, tarball: https://trial.rv-grid.com/@revolist/gantt-trial/-/243e15bc4446167f655fb8ee5fd8f431b4668dab}
 
-  '@revolist/kanban-trial@4.0.18':
-    resolution: {integrity: sha512-I3F7FtANB9shu+bU88xBZt0kzeOwrz1Wpa/9xDFGR7Mrl+9/2ME8fS4NHowv1HH26SF+ofRE6JEWf+U3C5fpDw==, tarball: https://trial.rv-grid.com/@revolist/kanban-trial/-/9b8f5327fedfe6a226b78c13f976b661468dc41f}
+  '@revolist/kanban-trial@4.0.20':
+    resolution: {integrity: sha512-mv35zzF1GEHmtTkse397Ejwi8kulUiCZzzFSWmAJAPslFiqhKHKNg/4jsyo5r5v539ZpslRj0/4mA0XF3MwS/A==, tarball: https://trial.rv-grid.com/@revolist/kanban-trial/-/6eba8d12245e7400b2b9a8d7d94b41e8c7544502}
 
-  '@revolist/pivot-trial@4.0.18':
-    resolution: {integrity: sha512-IA03+OpYJgjhisiVIKwdvJPd9pPvDDsAmMtGvMM/lMvHa3N2gQXpVhy4uuaWOIdp+D9GxBA73IuT1trY2ybXiA==, tarball: https://trial.rv-grid.com/@revolist/pivot-trial/-/48472731cbc07019196e42aadf8bc153b26cbfe0}
+  '@revolist/pivot-trial@4.0.20':
+    resolution: {integrity: sha512-CqGLp4HaBmcKM9pPrw9j9kzQrfVdgnWankn1Dk/pJpbS3G7a2eLqoA4GF3fQPYjiHL41LyV9uZabPvSFR6naHg==, tarball: https://trial.rv-grid.com/@revolist/pivot-trial/-/992612819e57b427f22b77b27dd28977ac744450}
 
   '@revolist/react-datagrid@4.31.5':
     resolution: {integrity: sha512-52344noEjDvWEX0MXaGNjMYD0+Tbcxy0dDaWojonzcLfHTcfGDvu9ffkHRohF2PR3RVUkcMzbzD2WheNeQNeyQ==}
@@ -2976,17 +2976,17 @@ packages:
   '@revolist/revogrid@4.31.5':
     resolution: {integrity: sha512-tWgNJpYPDrk/1tBYW4xZfgRNiab6ttZBqXwkeTdNX0fksNXnVsEXBEWegUvfkQs77QDRKcg2z1dUEop4G/Cttg==}
 
-  '@revolist/rv-pro-trial@4.0.18':
-    resolution: {integrity: sha512-xPive7i0RAJfre8FRjE9fMuhqfMuTGYiEJHa8gis9YMxQE5EqK4nVMKvuK0Sm/cs73fBM9mXqoxhgzi41Q+zRg==, tarball: https://trial.rv-grid.com/@revolist/rv-pro-trial/-/cdf2ff35b40a7159c13cc5afc4b9ecfaaad8f4ee}
+  '@revolist/rv-pro-trial@4.0.20':
+    resolution: {integrity: sha512-/hy5oM5xXrjG5qp1YjUkw1jGv7sluHdXYoC4Dcd3l7Zgsi8nqnWzn9C0W15qUWezzdiolEj6trhpyEPs3VQUvA==, tarball: https://trial.rv-grid.com/@revolist/rv-pro-trial/-/aed4d2e7ef49f568fa4ee88a0b40777fe4fc7a9a}
 
-  '@revolist/scheduler-trial@4.0.18':
-    resolution: {integrity: sha512-qkQ7V4GI24Eu/bubgg/FvJ72QxhBKyeKPIzGQOZ/g4AxMHQlV6pV91UtsHNxjnll0ZlIb8UdQmSeNd4az3N2Yw==, tarball: https://trial.rv-grid.com/@revolist/scheduler-trial/-/399d38c6c98cac2bb98053b5a56bc804ee61133e}
+  '@revolist/scheduler-trial@4.0.20':
+    resolution: {integrity: sha512-W260PUyovr3jnWkqcvuzZAs/WlL6LmwAu5CqMtLkshRof4RC5zkTwTdnWZfrqv440uml1sOwahGjT9t3Fh+UQQ==, tarball: https://trial.rv-grid.com/@revolist/scheduler-trial/-/f7a790d8108edca50aa4203efa14c2792498e84e}
 
   '@revolist/svelte-datagrid@4.31.5':
     resolution: {integrity: sha512-L2nq50PphVvkzBKHiww33RvXLvo2FQXQOtWXQDa5zxhcKIQ42kutBJPbWE4CVe6ar50OcE2/1ZTl6au7G5V8Ow==}
 
-  '@revolist/ui@4.0.18':
-    resolution: {integrity: sha512-49kKhfeiEnHmeti/flpMwQWyu8Fv/+v/EI/eNei6tALcXuPtRSFM7NJEWQU9k8BlyqLoAYxTwDo/aF1HBLJgSA==}
+  '@revolist/ui@4.0.20':
+    resolution: {integrity: sha512-Wq9nqPfGL6OoIz2sDvUeVWMGDpiNzPCTQUcsMosIFVC0LemKAFpIFLoP0JyBbrNFc8WzMjC25NG9Virl0dq+Pw==}
     peerDependencies:
       '@angular/core': '>=20'
       pdfjs-dist: ^6.4.299
@@ -6355,7 +6355,7 @@ snapshots:
       '@stencil/core': 4.45.0
       tslib: 2.8.1
 
-  '@revolist/charts-trial@4.0.18(@revolist/revogrid@4.31.5)':
+  '@revolist/charts-trial@4.0.20(@revolist/revogrid@4.31.5)':
     dependencies:
       '@revolist/revogrid': 4.31.5
       '@tanstack/query-core': 5.104.5
@@ -6367,28 +6367,28 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@revolist/gantt-trial@4.0.18':
+  '@revolist/gantt-trial@4.0.20':
     dependencies:
       '@fortawesome/fontawesome-free': 7.3.1
       '@revolist/revogrid': 4.31.5
       '@revolist/revogrid-column-date': 2.0.27
       '@revolist/revogrid-column-select': 3.2.4
-      '@revolist/rv-pro-trial': 4.0.18
+      '@revolist/rv-pro-trial': 4.0.20
       '@tanstack/query-core': 5.104.5
 
-  '@revolist/kanban-trial@4.0.18':
+  '@revolist/kanban-trial@4.0.20':
     dependencies:
       '@fortawesome/fontawesome-free': 7.3.1
       '@revolist/revogrid': 4.31.5
-      '@revolist/rv-pro-trial': 4.0.18
+      '@revolist/rv-pro-trial': 4.0.20
       '@tanstack/query-core': 5.104.5
 
-  '@revolist/pivot-trial@4.0.18':
+  '@revolist/pivot-trial@4.0.20':
     dependencies:
       '@fortawesome/fontawesome-free': 7.3.1
-      '@revolist/charts-trial': 4.0.18(@revolist/revogrid@4.31.5)
+      '@revolist/charts-trial': 4.0.20(@revolist/revogrid@4.31.5)
       '@revolist/revogrid': 4.31.5
-      '@revolist/rv-pro-trial': 4.0.18
+      '@revolist/rv-pro-trial': 4.0.20
       '@tanstack/query-core': 5.104.5
       fflate: 0.8.3
       preact: 10.29.1
@@ -6415,7 +6415,7 @@ snapshots:
 
   '@revolist/revogrid@4.31.5': {}
 
-  '@revolist/rv-pro-trial@4.0.18':
+  '@revolist/rv-pro-trial@4.0.20':
     dependencies:
       '@formulajs/formulajs': 4.6.1
       '@revolist/revogrid': 4.31.5
@@ -6423,11 +6423,11 @@ snapshots:
       preact: 10.29.1
       write-excel-file: 4.1.1
 
-  '@revolist/scheduler-trial@4.0.18':
+  '@revolist/scheduler-trial@4.0.20':
     dependencies:
       '@fortawesome/fontawesome-free': 7.3.1
       '@revolist/revogrid': 4.31.5
-      '@revolist/rv-pro-trial': 4.0.18
+      '@revolist/rv-pro-trial': 4.0.20
       '@tanstack/query-core': 5.104.5
       pdfmake: 0.3.9
 
@@ -6435,7 +6435,7 @@ snapshots:
     dependencies:
       '@revolist/revogrid': 4.31.5
 
-  '@revolist/ui@4.0.18(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))':
+  '@revolist/ui@4.0.20(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))':
     optionalDependencies:
       '@angular/core': 22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1)
       react: 18.3.1
