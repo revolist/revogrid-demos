@@ -56,7 +56,7 @@
   height: 100%;
   min-height: 0;
 }
-.ai-view-demo__assistant .rv-ai-chat-viewport {
+.ai-view-demo__assistant .rv-ai-mounted-chat .rv-ai-chat-viewport {
   max-height: none;
 }
 .ai-view-demo__assistant .rv-ai-chat,
@@ -70,8 +70,7 @@
   align-items: center;
 }
 .ai-view-demo .rv-ai-chat-empty-slot {
-  order: -1;
-  margin-block-end: 1rem;
+  margin-block-start: 1rem;
 }
 .ai-view-demo__avatar {
   display: block;
