@@ -59,6 +59,32 @@
 .ai-view-demo__assistant .rv-ai-chat-viewport {
   max-height: none;
 }
+.ai-view-demo__assistant .rv-ai-chat,
+.ai-view-demo__assistant .rv-ai-assistant {
+  background: transparent;
+}
+
+.ai-view-demo .rv-ai-chat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.ai-view-demo .rv-ai-chat-empty-slot {
+  order: -1;
+  margin-block-end: 1rem;
+}
+.ai-view-demo__avatar {
+  display: block;
+  width: 144px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 50%;
+}
+.ai-view-demo__avatar--dark { display: none; }
+.ai-view-demo:has(revo-grid[theme^='dark']) {
+  .ai-view-demo__avatar--light { display: none; }
+  .ai-view-demo__avatar--dark { display: block; }
+}
 
 @media (max-width: 760px) {
   .ai-view-demo {
