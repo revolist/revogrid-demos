@@ -31,6 +31,7 @@ import {
   type AiAssistantConfig,
 } from '@revolist/revogrid-pro';
 import { createLocalAiDemoActions } from './AiAssistant.actions';
+import { renderAiWelcomeAvatar } from './AiAssistant.avatar';
 import {
   aiViewColumns,
   aiViewFields,
@@ -131,6 +132,7 @@ export function createAiAssistantDemoConfig(
       controlsMountTo,
       showNewConversation: true,
       emptyState: {
+        renderContent: renderAiWelcomeAvatar,
         title: 'What would you like to do?',
         description:
           'Ask me to filter orders, summarize amounts, or update the grid.',
