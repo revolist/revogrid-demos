@@ -1486,6 +1486,7 @@ test('headcount squares show and highlight the selected quarter', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
+    await revealCompany(page, 'Lumen Photonics');
     const track = page.getByRole('group', { name: 'Lumen Photonics headcount by quarter' });
     await track.waitFor();
     assert.equal(await track.getByRole('button').count(), 8);
@@ -1505,6 +1506,10 @@ test('headcount squares show and highlight the selected quarter', async () => {
     assert.match(await tooltip.locator('.rv-metric-history__row.is-active').innerText(), /Q3 2025/);
     await page.keyboard.press('Escape');
     await tooltip.waitFor({ state: 'hidden' });
+    await page.locator('revo-grid.workbench-grid').evaluate(async grid => {
+      const rows = await grid.getVisibleSource();
+      await grid.scrollToRow(rows.findIndex(row => row.provinceHead && row.province === 'South Holland'));
+    });
     const groupTrack = page.getByRole('group', { name: 'South Holland headcount by quarter' });
     await groupTrack.getByRole('button').first().hover();
     await tooltip.waitFor({ state: 'visible' });
