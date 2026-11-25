@@ -17,6 +17,17 @@ after(async () => {
   if (server) await new Promise((resolve, reject) => server.httpServer.close((error) => error ? reject(error) : resolve()));
 });
 
+async function revealCompany(page, name) {
+  await page.waitForFunction(async label => {
+    const grid = document.querySelector('revo-grid.workbench-grid');
+    return grid?.getVisibleSource && (await grid.getVisibleSource()).some(row => row.label === label);
+  }, name);
+  await page.locator('revo-grid.workbench-grid').evaluate(async (grid, label) => {
+    const rows = await grid.getVisibleSource();
+    await grid.scrollToRow(rows.findIndex(row => row.label === label));
+  }, name);
+}
+
 test('campaign sorting, paging and filtering use the current data', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
@@ -91,6 +102,11 @@ test('scale-up province shading follows expansion', async () => {
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
+    // Filter the virtualized grid so South Holland is rendered before checking its color.
+    await page.locator('.rv-search-action-bar').getByLabel('Filter', { exact: true }).click();
+    await page.locator('.workbench-filter-panel').getByRole('combobox', { name: 'Province' }).click();
+    await page.getByRole('option', { name: 'South Holland', exact: true }).click();
+    await page.keyboard.press('Escape');
     const expand = page.getByRole('button', { name: 'Expand South Holland' }).first();
     await expand.waitFor();
     const color = async (name) => page.locator('.rgRow').filter({ has: page.getByRole('button', { name }) }).locator('.rgCell').first().evaluate((cell) => getComputedStyle(cell).backgroundColor);
@@ -255,6 +271,7 @@ test('scale-up index uses financial data and screening does not change scores', 
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
+    await revealCompany(page, 'Lumen Photonics');
     await page.getByRole('button', { name: 'Open Lumen Photonics' }).waitFor();
     for (const selector of ['.rv-ranking', '.rv-group-cell', '.rv-identity-cell', '.rv-choice-status', '.rv-metric-detail', '.rv-split-value', '.rv-cell-action']) {
       assert.ok(await page.locator(selector).count() > 0, `Missing shared cell type: ${selector}`);
@@ -285,6 +302,7 @@ test('scale-up financial editing recomputes the index and first-year companies s
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
+    await revealCompany(page, 'Lumen Photonics');
     await page.getByRole('button', { name: 'Open Lumen Photonics' }).click();
     let dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
@@ -323,6 +341,7 @@ test('scale-up company profile navigates data and enforces screening stages', as
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
+    await revealCompany(page, 'Lumen Photonics');
     await page.getByRole('button', { name: 'Open Lumen Photonics' }).click();
     const dialog = page.getByRole('dialog');
     assert.match(await dialog.innerText(), /company-011/);
@@ -676,6 +695,7 @@ test('scale-up screening controls fit and work on mobile', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   try {
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
+    await revealCompany(page, 'Lumen Photonics');
     await page.getByRole('button', { name: 'Open Lumen Photonics' }).click();
     const dialog = page.getByRole('dialog');
     const group = dialog.getByRole('group', { name: 'Founder still leads it' });
@@ -1395,6 +1415,7 @@ test('scale-up summary uses reusable charts and updates with filtering', async (
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
+    await revealCompany(page, 'Lumen Photonics');
     await page.getByRole('button', { name: 'Open Lumen Photonics' }).waitFor();
     await page.locator('.rv-dot-histogram').first().waitFor();
     assert.equal(await page.locator('.rv-dot-histogram').count(), 4);

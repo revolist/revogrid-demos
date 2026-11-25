@@ -47,6 +47,25 @@ test('all twelve examples share navigation and forecast mounts and cleans up', a
 });
 
 
+test('trial sparklines render unpinned cells in each trend view', async () => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const errors = [];
+  await page.addInitScript(() => {
+    const error = console.error.bind(console);
+    Object.defineProperty(console, 'error', { get: () => error, set() {}, configurable: false });
+  });
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  page.on('pageerror', error => errors.push(error.message));
+  try {
+    for (const id of ['campaign-performance', 'product-kpis', 'supplier-quality']) {
+      await page.goto(`${url}#${id}`);
+      await page.locator('.rgCol .rgCell').first().waitFor();
+      await page.locator('.rgCol .rv-comparison-sparkline').first().waitFor();
+    }
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+});
+
 test('brand delivery calendar stays inside the editor and saves the selected day', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {

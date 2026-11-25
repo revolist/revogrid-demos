@@ -193,7 +193,7 @@ export const campaigns: Example = {
                 comparisonSparkline: {
                   label: 'Daily conversions over 30 days', minValue: 0,
                   maxValue: (model: DataType) => Math.max(1, ...model.trend), preserveAspectRatio: 'xMidYMid meet' as const,
-                  series: [{ color: demoColors.purple, fill: 'solid' as const, fillOpacity: 0.12, endpoint: true, segmentLines: true }],
+                  series: [{ color: demoColors.purple, fill: 'solid' as const, fillOpacity: 0.12, endpoint: true, segmentLines: true, belowThreshold: { value: 0, color: demoColors.purple } }],
                 },
               },
               column,

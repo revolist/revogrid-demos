@@ -563,7 +563,8 @@ export const supplierQuality: Example = {
             };
           },
           showSparkline: model => (model.reading as Reading).lots.length > 0,
-          sparkline: { label: model => `Spend trend for ${model.label}`, series: [{ color: '#a3a3a3', endpoint: 'hollow' }], tooltip: (_model, index, values) => `Period ${index + 1}: ${money(values[0] ?? 0)}` },
+          // Trial 4.2.1 evaluates the threshold even when omitted; zero preserves nonnegative trends.
+          sparkline: { label: model => `Spend trend for ${model.label}`, series: [{ color: '#a3a3a3', endpoint: 'hollow', belowThreshold: { value: 0, color: '#a3a3a3' } }], tooltip: (_model, index, values) => `Period ${index + 1}: ${money(values[0] ?? 0)}` },
         },
       },
       {
