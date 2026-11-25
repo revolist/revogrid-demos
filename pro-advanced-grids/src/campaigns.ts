@@ -29,6 +29,8 @@ import {
   type Example,
 } from './workbench-ui';
 
+const formatFilterNumber = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format;
+
 const channels = ['LinkedIn Ads', 'Microsoft Ads', 'Twitch', 'TikTok', 'Pinterest', 'Meta Ads'];
 const states = ['Live', 'Learning', 'Limited', 'Paused', 'Ended'];
 const statusBadgeClass = (status: string) => `pill ${status === 'Live' ? 'good' : status === 'Limited' ? 'warn' : status === 'Learning' ? 'info' : ''}`;
@@ -98,7 +100,7 @@ export const campaigns: Example = {
       prop: 'roas',
       name: 'ROAS',
       filter: ['number', FIlTER_SLIDER],
-      filterAstValueEditor: { kind: 'slider', min: 0, max: Math.max(1, ...rows.map(row => Number(toGridRow(row).roas) || 0)), step: 'any' },
+      filterAstValueEditor: { kind: 'slider', min: 0, max: Math.max(1, ...rows.map(row => Number(toGridRow(row).roas) || 0)), step: 'any', formatValue: formatFilterNumber },
       size: 128,
       sortable: true,
       columnProperties: () => ({ class: 'campaign-number-header' }),
@@ -166,7 +168,7 @@ export const campaigns: Example = {
       ).flatMap(([prop, name, size, format, detail]) => {
         const column: ColumnRegular = { prop, name, size, sortable: true };
         column.filter = ['number', FIlTER_SLIDER];
-        column.filterAstValueEditor = { kind: 'slider', min: 0, max: Math.max(1, ...rows.map(row => Number(toGridRow(row)[prop]) || 0)), step: 'any' };
+        column.filterAstValueEditor = { kind: 'slider', min: 0, max: Math.max(1, ...rows.map(row => Number(toGridRow(row)[prop]) || 0)), step: 'any', formatValue: formatFilterNumber };
         column.columnProperties = () => ({ class: 'campaign-number-header' });
         if (prop === 'spend') column.order = 'desc';
         column.cellTemplate = metricStackRenderer;
@@ -193,7 +195,7 @@ export const campaigns: Example = {
                 comparisonSparkline: {
                   label: 'Daily conversions over 30 days', minValue: 0,
                   maxValue: (model: DataType) => Math.max(1, ...model.trend), preserveAspectRatio: 'xMidYMid meet' as const,
-                  series: [{ color: demoColors.purple, fill: 'solid' as const, fillOpacity: 0.12, endpoint: true, segmentLines: true, belowThreshold: { value: 0, color: demoColors.purple } }],
+                  series: [{ color: demoColors.purple, fill: 'solid' as const, fillOpacity: 0.12, endpoint: true, segmentLines: true }],
                 },
               },
               column,
@@ -205,7 +207,7 @@ export const campaigns: Example = {
         prop: 'buyers',
         name: 'New Buyers',
         filter: ['number', FIlTER_SLIDER],
-        filterAstValueEditor: { kind: 'slider', min: 0, max: 100, step: 1 },
+        filterAstValueEditor: { kind: 'slider', min: 0, max: 100, step: 1, formatValue: formatFilterNumber },
         size: 128,
         sortable: true,
         columnProperties: () => ({ class: 'campaign-number-header' }),

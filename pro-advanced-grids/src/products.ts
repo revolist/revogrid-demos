@@ -284,8 +284,8 @@ export const productKpis: Example = {
           maxValue: row => Math.max(1, ...row.trend, ...row.priorTrend),
           emptyText: row => [...row.trend, ...row.priorTrend].some((value: number) => value > 0) ? undefined : row.disposition ?? 'No sales',
           series: [
-            { prop: 'priorTrend', color: demoColors.purpleLight, fill: 'gradient', fillOpacity: .1, segmentLines: true, belowThreshold: { value: 0, color: demoColors.purpleLight } },
-            { color: demoColors.purple, fill: 'gradient', fillOpacity: .16, segmentLines: true, belowThreshold: { value: 0, color: demoColors.purple } },
+            { prop: 'priorTrend', color: demoColors.purpleLight, fill: 'gradient', fillOpacity: .1, segmentLines: true },
+            { color: demoColors.purple, fill: 'gradient', fillOpacity: .16, segmentLines: true },
           ],
         },
       },

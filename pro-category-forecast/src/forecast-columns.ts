@@ -176,6 +176,7 @@ export function createColumns(options: ColumnOptions): ColumnData {
           title: department.name,
           actionLabel: `${row.collapsed ? text.expand : text.collapse} ${department.name}`,
           expanded: !row.collapsed,
+          showDetailsWhenCollapsed: true,
           className: `forecast-department-card${row.collapsed ? ' is-collapsed' : ''}${options.hasGrowthDraft(row.department) ? ' has-growth-draft' : ''}`,
           style: { '--tone': department.color, '--tint': department.tint, '--surface': department.surface },
           parts: { rail: 'forecast-rail', railContent: 'forecast-rail-content', icon: 'forecast-rail-icon', label: 'forecast-rail-label', details: 'forecast-department-details' },
