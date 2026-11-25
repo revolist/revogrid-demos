@@ -24,7 +24,7 @@ test('feature repositories track their public main branches', async () => {
 
 test('child metadata is complete and remains the source for feature copy', async () => {
   const catalog = await loadCatalog();
-  assert.equal(catalog.length, 20);
+  assert.equal(catalog.length, 22);
   for (const slug of featureSlugs) {
     const showcase = catalog.find((entry) => entry.slug === slug);
     assert.ok(showcase);
@@ -44,7 +44,7 @@ test('every catalog source has a build manifest and gallery media', async () => 
 
 test('gallery publishes every detail and canonical demo route', async () => {
   const manifest = JSON.parse(await readFile(join(output, 'manifest.json'), 'utf8'));
-  assert.equal(manifest.showcases.length, 20);
+  assert.equal(manifest.showcases.length, 22);
   for (const showcase of manifest.showcases) {
     await access(join(output, showcase.slug, 'index.html'));
     await access(join(output, showcase.slug, 'demo', 'index.html'));
@@ -69,8 +69,9 @@ test('all generated internal links and media references resolve', async () => {
   }
 });
 
-test('home page renders twenty keyboard-reachable showcase links', async () => {
+test('home page renders a keyboard-reachable link for each showcase', async () => {
   const html = await readFile(join(output, 'index.html'), 'utf8');
-  assert.equal((html.match(/class="showcase-card"/g) ?? []).length, 20);
-  assert.equal((html.match(/href="\/(?:pivot|gantt|kanban|scheduler|core|ai-agent|core-project-portfolio|excel|ecommerce|project-table|filtering|infinity-scroll|column-collapse|data-grid-context-menu|row-master|audit-history|tree-data|planning|construction-operations|construction-gantt-simple)\/"/g) ?? []).length, 20);
+  const catalog = await loadCatalog();
+  assert.equal((html.match(/class="showcase-card"/g) ?? []).length, catalog.length);
+  for (const { slug } of catalog) assert.ok(html.includes(`href="/${slug}/"`), slug);
 });

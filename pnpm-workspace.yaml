@@ -1,4 +1,6 @@
 packages:
+  - "pro-advanced-grids"
+  - "pro-category-forecast"
   - "core-free"
   - "core-ai-prompts"
   - "pro-ai-agent"
@@ -17,19 +19,19 @@ packages:
   - "pro-row-master"
   - "pro-audit-history"
 minimumReleaseAgeExclude:
-  - '@revolist/charts-trial@4.0.25'
-  - '@revolist/ui@4.0.25'
+  - '@revolist/charts-trial@4.2.1'
+  - '@revolist/ui@4.2.1'
   - '@revolist/angular-datagrid@4.31.5'
-  - '@revolist/gantt-trial@4.0.25'
-  - '@revolist/kanban-trial@4.0.25'
-  - '@revolist/pivot-trial@4.0.25'
+  - '@revolist/gantt-trial@4.2.1'
+  - '@revolist/kanban-trial@4.2.1'
+  - '@revolist/pivot-trial@4.2.1'
   - '@revolist/react-datagrid@4.31.5'
   - '@revolist/revogrid-column-date@2.0.27'
   - '@revolist/revogrid@4.31.5'
-  - '@revolist/rv-pro-trial@4.0.25'
-  - '@revolist/scheduler-trial@4.0.25'
+  - '@revolist/rv-pro-trial@4.2.1'
+  - '@revolist/scheduler-trial@4.2.1'
   - '@revolist/svelte-datagrid@4.31.5'
   - '@revolist/vue3-datagrid@4.31.5'
 
 overrides:
-  '@revolist/revogrid': '4.31.5'
+  '@revolist/revogrid': '4.32.0'

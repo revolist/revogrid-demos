@@ -1,0 +1,23 @@
+rv-calendar-field { display: flex; width: 100%; gap: 4px; }
+.workbench rv-calendar-field input { flex: 1; min-width: 0; }
+.workbench rv-calendar-field input::-webkit-calendar-picker-indicator { display: none; }
+.workbench rv-calendar-field .ui-calendar-field__trigger { flex: none; width: 34px; padding: 0; }
+.ui-calendar-field__popup { box-sizing: border-box; width: 250px; max-width: calc(100vw - 24px); padding: 12px; background: #fff; border: 1px solid #e4e4e4; border-radius: 10px; box-shadow: 0 8px 24px #0002; }
+
+.workbench--service-visits .visit-kitchen-date rv-calendar-field {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+.workbench--service-visits .visit-kitchen-date rv-calendar-field input[type='date'] {
+  width: 0;
+  padding: 5px 8px;
+  border: 0;
+}
+.workbench--service-visits .visit-kitchen-date .ui-calendar-field__trigger {
+  border: 0;
+  border-left: 1px solid var(--border);
+  border-radius: 0;
+}

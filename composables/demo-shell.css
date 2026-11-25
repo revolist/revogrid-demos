@@ -1,0 +1,70 @@
+.demo-shell {
+  border: 0;
+  border-radius: 16px;
+  background: #f8f8f8;
+}
+.demo-shell__heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 53px;
+  padding: 8px 16px;
+}
+.demo-shell__heading > div:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.demo-shell__body {
+  border: 1px solid var(--border, var(--outline, #e4e4e4));
+  border-radius: 16px;
+  overflow: clip;
+}
+.demo-shell .demo-shell__body > :is(.workbench-stats, .workbench-toolbar, .forecast-summary) {
+  border-top: 0;
+}
+
+.demo-shell .demo-shell__heading button.demo-shell__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 !important;
+  border: 1px solid #171717 !important;
+  border-radius: 8px;
+  background: #171717 !important;
+  color: #fff !important;
+}
+.demo-shell .demo-shell__heading button.demo-shell__add::before { content: none !important; }
+.demo-shell .demo-shell__heading button.demo-shell__add svg { width: 14px; height: 14px; fill: currentColor; }
+.demo-shell .demo-shell__heading button.demo-shell__add:hover { background: #333 !important; }
+
+/* Keep grid surfaces distinct from the demo shell, without covering cell states. */
+.demo-shell revo-grid[theme] {
+  background-color: #fff;
+}
+.demo-shell revo-grid revogr-header .rgHeaderCell {
+  border-bottom: 1px solid var(--border, var(--outline, #e4e4e4));
+}
+
+/* Compact add actions inside grid cells. */
+.demo-shell button.demo-cell-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.demo-shell button.demo-cell-add:hover { background: #e9e7ef; }
+.demo-shell button.demo-cell-add:focus-visible { outline: 2px solid #6647f0; outline-offset: 1px; }

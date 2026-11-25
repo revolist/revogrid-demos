@@ -88,7 +88,17 @@
     "dev:audit-history": "pnpm --filter revogrid-demo-pro-audit-history dev",
     "dev:audit-history:react": "pnpm --filter revogrid-demo-pro-audit-history dev:react",
     "dev:audit-history:vue": "pnpm --filter revogrid-demo-pro-audit-history dev:vue",
-    "dev:audit-history:angular": "pnpm --filter revogrid-demo-pro-audit-history dev:angular"
+    "dev:audit-history:angular": "pnpm --filter revogrid-demo-pro-audit-history dev:angular",
+    "dev:advanced": "pnpm --filter revogrid-demo-pro-advanced-grids dev",
+    "dev:advanced:ts": "pnpm --filter revogrid-demo-pro-advanced-grids dev:ts",
+    "dev:advanced:react": "pnpm --filter revogrid-demo-pro-advanced-grids dev:react",
+    "dev:advanced:vue": "pnpm --filter revogrid-demo-pro-advanced-grids dev:vue",
+    "dev:advanced:angular": "pnpm --filter revogrid-demo-pro-advanced-grids dev:angular",
+    "dev:forecast": "pnpm --filter revogrid-demo-pro-category-forecast dev",
+    "dev:forecast:ts": "pnpm --filter revogrid-demo-pro-category-forecast dev:ts",
+    "dev:forecast:react": "pnpm --filter revogrid-demo-pro-category-forecast dev:react",
+    "dev:forecast:vue": "pnpm --filter revogrid-demo-pro-category-forecast dev:vue",
+    "dev:forecast:angular": "pnpm --filter revogrid-demo-pro-category-forecast dev:angular"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.6.3",
@@ -101,7 +111,7 @@
   },
   "pnpm": {
     "overrides": {
-      "@revolist/revogrid": "4.31.5"
+      "@revolist/revogrid": "4.32.0"
     }
   }
 }

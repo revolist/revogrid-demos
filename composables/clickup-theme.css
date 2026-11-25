@@ -1,0 +1,131 @@
+/* ClickUp-inspired demo theme with distinct semantic status colors. */
+:where(.workbench, .forecast, .workbench-nav) {
+  --demo-accent: #6647f0;
+  --demo-accent-hover: #5336dc;
+  --demo-accent-soft: #f0edff;
+  --demo-ink: #252139;
+  --demo-border: #e5e1ef;
+  --rv-ui-accent: #6647f0;
+  --rv-ui-accent-hover: #5336dc;
+  --rv-ui-accent-fg: #fff;
+  --rv-ui-focus-ring: #bcb0ff;
+}
+.workbench.workbench {
+  --action: var(--demo-accent);
+  --border: var(--demo-border);
+  --muted: #6f6a80;
+  color: var(--demo-ink);
+}
+.forecast.forecast {
+  --primary: var(--demo-accent);
+  --outline: var(--demo-border);
+  --ink: var(--demo-ink);
+  --muted: #6f6a80;
+}
+:where(.workbench, .forecast) revo-grid,
+:where(.workbench, .forecast) .rv-configurator-panel {
+  --rv-ui-accent: #6647f0;
+  --rv-ui-accent-hover: #5336dc;
+  --rv-ui-accent-fg: #fff;
+  --rv-ui-focus-ring: #bcb0ff;
+  --revo-grid-primary: #6647f0;
+  --revo-grid-header-focused-bg: #eeeaff;
+  --revo-grid-focused-bg: #f4f1ff;
+}
+.workbench-nav.workbench-nav a[aria-current] {
+  background: var(--demo-accent);
+  color: #fff;
+}
+.workbench-nav.workbench-nav a:not([aria-current]):hover { background: var(--demo-accent-soft); color: #5336dc; }
+.workbench .workbench-heading button.primary,
+.workbench .workbench-actions button.primary,
+.forecast .forecast-button.primary {
+  background: var(--demo-accent);
+  border-color: var(--demo-accent);
+  color: #fff;
+}
+.workbench .workbench-heading button.primary:hover:not(:disabled),
+.workbench .workbench-actions button.primary:hover:not(:disabled),
+.forecast .forecast-button.primary:hover:not(:disabled) {
+  background: var(--demo-accent-hover);
+  border-color: var(--demo-accent-hover);
+}
+.workbench .cohort-tabs button[aria-selected='true'],
+.workbench .reliability-tabs button[aria-selected='true'],
+.workbench .reliability-detail__tabs button[aria-selected='true'],
+.workbench .scale-profile__tabs button[aria-selected='true'],
+.workbench .visit-kitchen-tabs button[aria-selected='true'],
+.forecast .forecast-profile-tabs button[aria-selected='true'] {
+  color: var(--demo-accent);
+  border-bottom-color: var(--demo-accent) !important;
+}
+.workbench .workbench-segments button[aria-pressed='true'] {
+  background: var(--demo-accent-soft) !important;
+  color: #5336dc;
+}
+:where(.workbench, .forecast, .workbench-nav) :focus-visible {
+  outline-color: var(--demo-accent);
+}
+
+/* Shared status and chart tokens, scoped to the demo. */
+:where(.workbench, .forecast) {
+  --demo-positive: #00a58f;
+  --demo-positive-text: #087d6e;
+  --demo-warning: #f08a36;
+  --demo-warning-text: #a24c09;
+  --demo-negative: #ed3d69;
+  --demo-negative-text: #b3234a;
+  --rv-status-positive: var(--demo-positive);
+  --rv-status-warning: var(--demo-warning);
+  --rv-status-negative: var(--demo-negative);
+  --rv-variance-bar-positive: var(--demo-positive);
+  --rv-variance-bar-negative: var(--demo-negative);
+  --rv-diverging-bars-positive: var(--demo-positive);
+  --rv-diverging-bars-negative: var(--demo-negative);
+  --rv-metric-stack-positive: var(--demo-positive-text);
+  --rv-metric-stack-negative: var(--demo-negative-text);
+  --rv-metric-detail-positive: var(--demo-positive-text);
+  --rv-metric-detail-negative: var(--demo-negative-text);
+  --rv-visual-positive: var(--demo-positive-text);
+  --rv-visual-negative: var(--demo-negative-text);
+  --rv-heat-positive: #d7f4ed;
+  --rv-heat-very-positive: #a8e4d8;
+  --rv-heat-positive-color: #086457;
+  --rv-heat-very-positive-color: #064d44;
+  --rv-heat-negative: #ffe5eb;
+  --rv-heat-very-negative: #ffb8c9;
+  --rv-heat-negative-color: #922143;
+  --rv-heat-very-negative-color: #861b3c;
+}
+.workbench .reliability-value.is-healthy { color: var(--demo-positive-text); }
+.workbench .reliability-value.is-at-risk { color: var(--demo-warning-text); }
+.workbench .reliability-value.is-exhausted { color: var(--demo-negative-text); }
+.workbench .reliability-chart__legend span:before { background: var(--demo-positive); }
+.workbench .reliability-chart__legend .is-at-risk:before { background: var(--demo-warning); }
+.workbench .reliability-chart__legend .is-exhausted:before { background: var(--demo-negative); }
+
+.workbench.workbench .cohort-heat.high { background: #86ded0; }
+.workbench.workbench .cohort-heat.medium { background: #b9eee4; }
+.workbench.workbench .cohort-heat.low { background: #d7f4ed; }
+.workbench.workbench .cohort-heat.very-low { background: #edf9f6; }
+.workbench.workbench .cohort-heat.risk-low { background: #fff7ed; color: #944309; }
+.workbench.workbench .cohort-heat.risk-caution { background: #ffe5ce; color: #944309; }
+.workbench.workbench .cohort-heat.risk-watch { background: #ffe4eb; color: #9a2346; }
+.workbench.workbench .cohort-heat.risk-high { background: #ffc5d4; color: #9a2346; }
+.workbench.workbench--job-schedule .job-schedule__identity.is-on-hold small { color: #944309; background: #fff2e7; border-color: #ffdbbb; }
+.workbench.workbench--job-schedule .job-schedule__identity.is-late small { color: #9a2346; background: #fff0f3; border-color: #ffd1dd; }
+.workbench.workbench--job-schedule .job-schedule__identity.is-complete small { color: #087d6e; background: #e8f8f4; border-color: #c5eee7; }
+
+/* Keep emphasis at medium weight inside demo surfaces, including shared UI. */
+:is(.workbench, .forecast) :is(strong, b, h1, h2, h3, h4, h5, h6,
+  .rv-metric-tile__label, .rv-metric-tile__value, .rv-btn,
+  .rv-segmented-switch-label, .rv-identity-cell__action,
+  .rv-visual-section__title, .rv-metric-stack__value,
+  .rv-group-cell__action-label, .rv-split-value__badge) {
+  font-weight: 500 !important;
+}
+
+/* Chart tooltips are mounted on the document body rather than inside the demo. */
+body:has(:is(.workbench, .forecast)) :is(.rv-tooltip, .grid-tooltip) :is(strong, b) {
+  font-weight: 500;
+}

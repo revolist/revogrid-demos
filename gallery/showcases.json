@@ -225,5 +225,51 @@
     "frameworks": ["ts", "react", "vue", "angular"],
     "highlights": ["Shared task model", "Coordinated planning views", "Enterprise workflows"],
     "media": { "poster": "assets/pro-advanced-planning-walkthrough-poster.png", "walkthroughMp4": "assets/pro-advanced-planning-walkthrough.mp4" }
+  },
+  {
+    "slug": "advanced-grids",
+    "title": "Advanced Grid Workbench",
+    "summary": "Explore campaign analytics, product planning, field service, quality, budgets, and more in one workbench.",
+    "edition": "Pro",
+    "sourceDir": "pro-advanced-grids",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-advanced-grids",
+    "productUrl": "https://pro.rv-grid.com/",
+    "frameworks": [
+      "ts",
+      "react",
+      "vue",
+      "angular"
+    ],
+    "highlights": [
+      "Twelve scenarios",
+      "Interactive grid controls",
+      "In-memory editing"
+    ],
+    "media": {
+      "poster": "assets/preview.png"
+    }
+  },
+  {
+    "slug": "category-forecast",
+    "title": "Retail Demand Forecast",
+    "summary": "Plan department forecasts, compare actuals with targets, and explore monthly retail performance.",
+    "edition": "Pro",
+    "sourceDir": "pro-category-forecast",
+    "repositoryUrl": "https://github.com/revolist/revogrid-demos/tree/main/pro-category-forecast",
+    "productUrl": "https://pro.rv-grid.com/",
+    "frameworks": [
+      "ts",
+      "react",
+      "vue",
+      "angular"
+    ],
+    "highlights": [
+      "Monthly forecasts",
+      "Department assumptions",
+      "Plan attainment"
+    ],
+    "media": {
+      "poster": "assets/preview.png"
+    }
   }
 ]
