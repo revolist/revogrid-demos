@@ -1377,6 +1377,10 @@ test('province expand arrows open and close multiple groups', async () => {
   try {
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
     for (const name of ['South Holland', 'Drenthe', 'Groningen']) {
+      await page.locator('revo-grid.workbench-grid').evaluate(async (grid, province) => {
+        const rows = await grid.getVisibleSource();
+        await grid.scrollToRow(rows.findIndex(row => row.provinceHead && row.province === province));
+      }, name);
       const expand = page.getByRole('button', { name: `Expand ${name}`, exact: true }).first();
       await expand.waitFor();
       assert.equal(await expand.locator('.rv-expand-icon.is-expand').count(), 1);
@@ -1388,6 +1392,10 @@ test('province expand arrows open and close multiple groups', async () => {
       await collapse.locator('.rv-expand-icon').click();
       await expand.waitFor();
     }
+    await page.locator('revo-grid.workbench-grid').evaluate(async grid => {
+      const rows = await grid.getVisibleSource();
+      await grid.scrollToRow(rows.findIndex(row => row.provinceHead && row.province === 'South Holland'));
+    });
     const keyboard = page.getByRole('button', { name: 'Expand South Holland', exact: true }).first();
     await keyboard.focus();
     await page.keyboard.press('Enter');
