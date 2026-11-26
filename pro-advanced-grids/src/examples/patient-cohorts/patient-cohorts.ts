@@ -1,8 +1,8 @@
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Switch } from '@revolist/ui/react';
-import { stretchedColumnWidth } from '../../composables/column-stretch';
-import { mountTabs, type ElementFactory } from '@revolist/ui/native';
+import { stretchedColumnWidth } from '../../../../composables/column-stretch';
+import { badgeClassName, mountTabs, type ElementFactory } from '@revolist/ui/native';
 import { renderSortMenuHeader, entityCellRenderer, visualCellRenderer, heatActionRenderer } from '@revolist/revogrid-pro';
 import { createBenchmarkCardContent } from '@revolist/ui/benchmark-card';
 import '@revolist/ui/benchmark-card.scss';
@@ -17,7 +17,7 @@ import {
   select,
   total,
   type Example,
-} from './workbench-ui';
+} from '../../shared/workbench-ui';
 
 type Outcome = 'verified' | 'booked' | 'arrived' | 'started' | 'hold';
 interface Signal {
@@ -373,7 +373,7 @@ export const patientCohorts: Example = {
           if (model.footer)
             return h('strong', { class: 'cohort-footer-label' }, [
               h('span', {}, `Visible Signals `),
-              h('span', {}, String(model.count)),
+              h('span', { class: badgeClassName({ variant: 'neutral', shape: 'rounded' }) }, String(model.count)),
             ]);
           return entityCellRenderer!(h, { model, value: model.label, column: {
             prop: 'label', entityCell: {
@@ -382,11 +382,11 @@ export const patientCohorts: Example = {
                 expanded: !!model.open, actionClassName: 'cell-action', actionLabel: `${model.open ? 'Collapse' : 'Expand'} ${model.label}`,
                 leading: (h: ElementFactory) => h('svg', { class: 'cohort-wave', 'aria-hidden': 'true', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [h('path', { d: 'M22 12h-4l-3 9L9 3l-3 9H2' })]),
                 detail: showNotes ? String(model.note ?? '') : undefined,
-                trailing: (h: ElementFactory) => h('span', { class: 'cohort-count' }, String(model.count)),
+                trailing: (h: ElementFactory) => h('span', { class: `${badgeClassName({ variant: 'neutral', shape: 'rounded' })} cohort-count` }, String(model.count)),
               } : {
                 kind: 'identity', interactive: false, className: 'cohort-signal', label: String(model.label),
                 detail: showNotes ? String(model.note ?? '') : undefined,
-                prefix: (h: ElementFactory) => h('span', { class: 'cohort-id' }, String(model.id)),
+                prefix: (h: ElementFactory) => h('span', { class: `${badgeClassName({ variant: 'neutral', shape: 'rounded' })} cohort-id` }, String(model.id)),
               },
               onActivate: () => { if (expanded.has(model.label)) expanded.delete(model.label); else expanded.add(model.label); refresh(); },
             },
@@ -396,6 +396,7 @@ export const patientCohorts: Example = {
       },
       {
         prop: 'answers',
+        columnType: 'number',
         name: 'Answers',
         columnTemplate: sortableHeader('answers', 'Answers'),
         size: 127,
@@ -404,6 +405,7 @@ export const patientCohorts: Example = {
       },
       ...outcomes.map((key) => ({
         prop: key,
+        columnType: 'number',
         name: key[0].toUpperCase() + key.slice(1),
         columnTemplate: sortableHeader(key, key[0].toUpperCase() + key.slice(1)),
         size: 145,

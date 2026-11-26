@@ -1,0 +1,275 @@
+/* The standalone showcase defaults to light; honor the host's dark theme. */
+:is([data-theme='dark'], .dark) .workbench {
+  --border: var(--rv-ui-border, #3a3a3a);
+  --muted: var(--rv-ui-text-muted, #a3a3a3);
+  --action: var(--rv-ui-text, #f5f5f5);
+  background: var(--rv-ui-surface, #1f1f1f);
+  color: var(--rv-ui-text, #f5f5f5);
+}
+
+:is([data-theme='dark'], .dark) .workbench.workbench {
+  --demo-ink: var(--rv-ui-text, #f5f5f5);
+  --demo-border: var(--rv-ui-border, #3a3a3a);
+  --demo-positive-text: var(--rv-ui-success, #86efac);
+  --demo-warning-text: var(--rv-ui-warning, #fcd34d);
+  --demo-negative-text: var(--rv-ui-danger, #fca5a5);
+  --rv-heat-positive: color-mix(in srgb, var(--rv-ui-success, #86efac) 20%, var(--rv-ui-surface, #1f1f1f));
+  --rv-heat-very-positive: color-mix(in srgb, var(--rv-ui-success, #86efac) 35%, var(--rv-ui-surface, #1f1f1f));
+  --rv-heat-positive-color: var(--rv-ui-success, #86efac);
+  --rv-heat-very-positive-color: var(--rv-ui-text, #f5f5f5);
+  --rv-heat-negative: color-mix(in srgb, var(--rv-ui-danger, #fca5a5) 20%, var(--rv-ui-surface, #1f1f1f));
+  --rv-heat-very-negative: color-mix(in srgb, var(--rv-ui-danger, #fca5a5) 35%, var(--rv-ui-surface, #1f1f1f));
+  --rv-heat-negative-color: var(--rv-ui-danger, #fca5a5);
+  --rv-heat-very-negative-color: var(--rv-ui-text, #f5f5f5);
+}
+
+:is([data-theme='dark'], .dark) .workbench.workbench .cohort-heat {
+  color: var(--rv-ui-text, #f5f5f5);
+  background: color-mix(in srgb, var(--rv-ui-success, #86efac) 12%, var(--rv-ui-surface, #1f1f1f));
+}
+
+:is([data-theme='dark'], .dark) .workbench.workbench .cohort-heat.medium {
+  background: color-mix(in srgb, var(--rv-ui-success, #86efac) 20%, var(--rv-ui-surface, #1f1f1f));
+}
+
+:is([data-theme='dark'], .dark) .workbench.workbench .cohort-heat.high {
+  background: color-mix(in srgb, var(--rv-ui-success, #86efac) 30%, var(--rv-ui-surface, #1f1f1f));
+}
+
+:is([data-theme='dark'], .dark) .workbench.workbench .cohort-heat:is(.risk-low, .risk-caution) {
+  background: color-mix(in srgb, var(--rv-ui-warning, #fcd34d) 20%, var(--rv-ui-surface, #1f1f1f));
+  color: var(--rv-ui-text, #f5f5f5);
+}
+
+:is([data-theme='dark'], .dark) .workbench.workbench .cohort-heat:is(.risk-watch, .risk-high) {
+  background: color-mix(in srgb, var(--rv-ui-danger, #fca5a5) 25%, var(--rv-ui-surface, #1f1f1f));
+  color: var(--rv-ui-text, #f5f5f5);
+}
+
+:is([data-theme='dark'], .dark) .workbench :is(
+  .demo-shell__body, .workbench-stats, .workbench-stat, .workbench-toolbar,
+  .workbench-grid, .workbench-grid .rgHeaderCell, .quality-summary,
+  .quality-rail, .reliability-grid-shell, .job-schedule__popover,
+  .scale-profile__section-content, .workbench-dialog, .rv-pagination-panel
+) {
+  background-color: var(--rv-ui-surface, #1f1f1f);
+  color: var(--rv-ui-text, #f5f5f5);
+  border-color: var(--rv-ui-border, #3a3a3a);
+}
+
+:is([data-theme='dark'], .dark) .workbench .cohort-tabs button[aria-selected='true'] {
+  color: var(--rv-ui-text, #f5f5f5);
+}
+
+:is([data-theme='dark'], .dark) .workbench .workbench-grid {
+  --revo-grid-header-background: var(--rv-ui-surface, #1f1f1f);
+}
+
+:is([data-theme='dark'], .dark) :is(
+  .workbench--supplier-quality, .workbench--job-schedule, .workbench--reliability-index,
+  .workbench--service-visits, .workbench--scale-up-index,
+  .workbench--sales-to-target, .workbench--brand-scorecard, .workbench--project-budget
+) .workbench-grid .rgCell {
+  background: var(--rv-ui-surface, #1f1f1f);
+  color: var(--rv-ui-text, #f5f5f5);
+}
+
+:is([data-theme='dark'], .dark) .workbench--service-visits .workbench-grid .rgRow:not([selected]) .rgCell.cell-checkbox {
+  background: var(--rv-ui-surface, #1f1f1f) !important;
+}
+
+:is([data-theme='dark'], .dark) .workbench--service-visits .workbench-grid .rgRow[selected] .rgCell {
+  background: var(--rv-ui-selected-bg, #283447) !important;
+}
+
+:is([data-theme='dark'], .dark) .workbench--supplier-quality .workbench-grid .rgRow.quality-subgroup .rgCell:not(:has(.quality-rail)),
+:is([data-theme='dark'], .dark) .workbench--scale-up-index .workbench-grid revogr-data[type='rgRow'] .rgRow:has(.province-cell:not(.is-expanded)) .rgCell,
+:is([data-theme='dark'], .dark) .workbench--project-budget .workbench-grid revogr-data[type='rowPinEnd'] .rgCell {
+  background: var(--rv-ui-surface-hover, #2f2f2f);
+}
+
+:is([data-theme='dark'], .dark) .workbench--supplier-quality .rv-strip-plot {
+  background: linear-gradient(90deg, var(--rv-ui-surface-hover, #2f2f2f) 53%, transparent 53%);
+}
+
+:is([data-theme='dark'], .dark) .workbench--sales-to-target {
+  --sales-heat-far-behind: color-mix(in srgb, var(--rv-ui-danger) 35%, var(--rv-ui-surface));
+  --sales-heat-behind: color-mix(in srgb, var(--rv-ui-danger) 20%, var(--rv-ui-surface));
+  --sales-heat-close: var(--rv-ui-surface-hover);
+  --sales-heat-on-target: color-mix(in srgb, var(--rv-ui-success) 20%, var(--rv-ui-surface));
+  --sales-heat-ahead: color-mix(in srgb, var(--rv-ui-success) 35%, var(--rv-ui-surface));
+}
+
+:is([data-theme='dark'], .dark) .workbench--sales-to-target .sales-tile.far-behind {
+  background: var(--sales-heat-far-behind);
+  color: var(--rv-ui-text);
+}
+:is([data-theme='dark'], .dark) .workbench--sales-to-target .sales-tile.bad {
+  background: var(--sales-heat-behind);
+  color: var(--rv-ui-text);
+}
+:is([data-theme='dark'], .dark) .workbench--sales-to-target .sales-tile.warn {
+  background: var(--sales-heat-close);
+  color: var(--rv-ui-text, #f5f5f5);
+}
+:is([data-theme='dark'], .dark) .workbench--sales-to-target .sales-tile.good {
+  background: var(--sales-heat-on-target);
+  color: var(--rv-ui-text);
+}
+:is([data-theme='dark'], .dark) .workbench--sales-to-target .sales-tile.ahead {
+  background: var(--sales-heat-ahead);
+  color: var(--rv-ui-text);
+}
+:is([data-theme='dark'], .dark) .workbench--sales-to-target .sales-legend__scale .rv-segmented-bar__part:not(:last-child) {
+  border-color: var(--rv-ui-surface, #1f1f1f);
+}
+
+:is([data-theme='dark'], .dark) .workbench--reliability-index .workbench-grid .rgRow[data-row-chart-active='true'] .rgCell {
+  background: var(--rv-ui-surface-hover, #2f2f2f);
+}
+:is([data-theme='dark'], .dark) .workbench--reliability-index .reliability-chart {
+  border-color: var(--rv-ui-border, #3a3a3a);
+}
+:is([data-theme='dark'], .dark) .workbench--reliability-index .reliability-alert.is-paging {
+  background: var(--rv-ui-danger-surface, #472a30);
+  color: var(--rv-ui-danger, #fca5a5);
+}
+
+:is([data-theme='dark'], .dark) .workbench--brand-scorecard :is(.brand-section, .brand-section-compact) {
+  background: var(--rv-ui-surface-hover, #2f2f2f);
+  color: var(--rv-ui-text, #f5f5f5);
+  --rv-section-compact-rail: var(--rv-ui-selected-bg);
+  --rv-section-compact-color: var(--rv-ui-accent-text);
+}
+
+:is([data-theme='dark'], .dark) .workbench--brand-scorecard .brand-section > span {
+  background: var(--rv-ui-selected-bg);
+  color: var(--rv-ui-accent-text);
+}
+
+:is([data-theme='dark'], .dark) .workbench--brand-scorecard :is(
+  .brand-heading .cell-action, .brand-section strong, .brand-leaders,
+  .brand-portfolio .brand-portfolio-name
+) {
+  color: var(--rv-ui-text, #f5f5f5);
+}
+
+:is([data-theme='dark'], .dark) .workbench--brand-scorecard :is(.brand-new, .brand-empty-hatch),
+:is([data-theme='dark'], .dark) .workbench--brand-scorecard revogr-data[type='rowPinStart'] .rgCell:has(> .brand-no-sales) {
+  background: repeating-linear-gradient(135deg, var(--rv-ui-surface-hover) 0 2px, var(--rv-ui-surface) 2px 5px);
+  color: var(--rv-ui-text-muted, #a3a3a3);
+}
+
+:is([data-theme='dark'], .dark) .workbench :is(
+  .quality-summary__item, .scale-profile__section, .scale-profile__section-heading,
+  .budget-profile__tabs, .budget-profile__weekly-head, .product-profile__summary-row
+) {
+  background: var(--rv-ui-surface-hover, #2f2f2f) !important;
+  color: var(--rv-ui-text, #f5f5f5);
+  border-color: var(--rv-ui-border, #3a3a3a) !important;
+}
+
+:is([data-theme='dark'], .dark) .workbench :is(
+  .quality-rail__key, .quality-rail p, .quality-summary__item small,
+  .workbench-heading p, .workbench-stat span, .workbench-stat small,
+  .reliability-alert
+) {
+  color: var(--rv-ui-text-muted, #a3a3a3);
+}
+
+/* Explicit state selectors outrank the light showcase palette. */
+:is([data-theme='dark'], .dark) .workbench.workbench .cohort-heat.low {
+  background: color-mix(in srgb, var(--rv-ui-success) 12%, var(--rv-ui-surface));
+}
+:is([data-theme='dark'], .dark) .workbench.workbench .cohort-heat.very-low {
+  background: color-mix(in srgb, var(--rv-ui-success) 7%, var(--rv-ui-surface));
+}
+:is([data-theme='dark'], .dark) .workbench :is(.workbench-dialog, .job-schedule__popover) :is(input:not([type='checkbox']):not([type='radio']), textarea) {
+  background: var(--rv-ui-surface-sunken);
+  color: var(--rv-ui-text);
+  border-color: var(--rv-ui-border);
+}
+:is([data-theme='dark'], .dark) .workbench :is(.scale-drawer-close, .workbench-filter-panel) {
+  background: var(--rv-ui-surface-elevated);
+  color: var(--rv-ui-text);
+  border-color: var(--rv-ui-border);
+}
+:is([data-theme='dark'], .dark) .workbench .pill.good { background: var(--rv-ui-success-surface); color: var(--rv-ui-success); }
+:is([data-theme='dark'], .dark) .workbench .pill.warn { background: var(--rv-ui-warning-surface); color: var(--rv-ui-warning); }
+:is([data-theme='dark'], .dark) .workbench .pill.bad { background: var(--rv-ui-danger-surface); color: var(--rv-ui-danger); }
+
+:is([data-theme='dark'], .dark) .workbench--service-visits :is(.visit-cell--booked, .visit-cell--booked .cell-action) {
+  background: var(--rv-ui-selected-bg);
+  color: var(--rv-ui-accent-text);
+}
+:is([data-theme='dark'], .dark) .workbench--service-visits :is(.visit-cell--completed, .visit-cell--completed .cell-action) {
+  background: var(--rv-ui-success-surface);
+  color: var(--rv-ui-success);
+}
+:is([data-theme='dark'], .dark) .workbench--service-visits :is(.visit-cell--missed, .visit-cell--missed .cell-action) {
+  background: var(--rv-ui-danger-surface);
+  color: var(--rv-ui-danger);
+}
+:is([data-theme='dark'], .dark) .workbench--service-visits :is(.visit-cell--awaiting, .visit-cell--awaiting .cell-action) {
+  background: var(--rv-ui-warning-surface);
+  color: var(--rv-ui-warning);
+}
+
+:is([data-theme='dark'], .dark) .workbench--brand-scorecard :is(.brand-section.sales, .brand-section.margin, .brand-section.customers, .brand-section.stock, .brand-section-compact.sales, .brand-section-compact.margin, .brand-section-compact.customers, .brand-section-compact.stock) {
+  background: var(--rv-ui-surface-hover);
+  --rv-section-compact-rail: var(--rv-ui-selected-bg);
+  --rv-section-compact-color: var(--rv-ui-accent-text);
+}
+:is([data-theme='dark'], .dark) .workbench--brand-scorecard :is(.brand-section.sales, .brand-section.margin, .brand-section.customers, .brand-section.stock) > span {
+  background: var(--rv-ui-selected-bg);
+  color: var(--rv-ui-accent-text);
+}
+:is([data-theme='dark'], .dark) .workbench--brand-scorecard :is(.brand-overall-label, .brand-overall-rank, .brand-empty-rank),
+:is([data-theme='dark'], .dark) .workbench--brand-scorecard .rgRow:has(.brand-section-rank) .rgCell {
+  background: var(--rv-ui-surface-hover);
+  color: var(--rv-ui-text);
+}
+:is([data-theme='dark'], .dark) .workbench--brand-scorecard .brand-overall-rank.rank-1 { background: var(--rv-ui-warning-surface); color: var(--rv-ui-warning); }
+:is([data-theme='dark'], .dark) .workbench--brand-scorecard .brand-overall-rank.rank-2 { background: var(--rv-ui-selected-bg); color: var(--rv-ui-text); }
+:is([data-theme='dark'], .dark) .workbench--brand-scorecard .brand-overall-rank.rank-3 { background: var(--rv-ui-danger-surface); color: var(--rv-ui-danger); }
+
+:is([data-theme='dark'], .dark) .workbench--job-schedule .job-schedule__identity small,
+:is([data-theme='dark'], .dark) .workbench--job-schedule .job-schedule__slot-button {
+  background: var(--rv-ui-surface-hover); color: var(--rv-ui-text); border-color: var(--rv-ui-border);
+}
+:is([data-theme='dark'], .dark) .workbench--job-schedule :is(.job-schedule__identity.is-on-track small, .job-schedule__slot--planned button) {
+  background: var(--rv-ui-selected-bg); color: var(--rv-ui-accent-text); border-color: var(--rv-ui-border);
+}
+:is([data-theme='dark'], .dark) .workbench--job-schedule .job-schedule__identity.is-on-hold small { background: var(--rv-ui-warning-surface); color: var(--rv-ui-warning); border-color: var(--rv-ui-border); }
+:is([data-theme='dark'], .dark) .workbench--job-schedule :is(.job-schedule__identity.is-late small, .job-schedule__slot--missed button) { background: var(--rv-ui-danger-surface); color: var(--rv-ui-danger); border-color: var(--rv-ui-border); }
+:is([data-theme='dark'], .dark) .workbench--job-schedule .job-schedule__identity.is-complete small { background: var(--rv-ui-success-surface); color: var(--rv-ui-success); border-color: var(--rv-ui-border); }
+:is([data-theme='dark'], .dark) .workbench--job-schedule .job-schedule__slot--empty button:hover { background: var(--rv-ui-surface-hover); }
+:is([data-theme='dark'], .dark) .workbench--scale-up-index .province-card :is(strong, dd) { color: var(--rv-ui-text); }
+
+:is([data-theme='dark'], .dark) .workbench .workbench-grid {
+  --revo-grid-row-hover: var(--rv-ui-surface-hover);
+  --revo-selected-row: var(--rv-ui-selected-bg);
+}
+:is([data-theme='dark'], .dark) .workbench--sales-to-target .sales-region-rail {
+  background: var(--rv-ui-selected-bg);
+  color: var(--rv-ui-accent-text);
+}
+:is([data-theme='dark'], .dark) .workbench--sales-to-target .sales-region-rail.region-emea {
+  background: var(--rv-ui-selected-bg);
+}
+:is([data-theme='dark'], .dark) .workbench--sales-to-target .sales-region-rail.region-apac {
+  background: var(--rv-ui-warning-surface);
+}
+
+:is([data-theme='dark'], .dark) .workbench .workbench-dialog :is(.scale-edit__subtitle, .scale-edit__money, .scale-profile__tabs, .scale-profile__navigation, .workbench-actions) {
+  border-color: var(--rv-ui-border);
+}
+
+:is([data-theme='dark'], .dark) :is(.workbench--project-budget, .workbench--brand-scorecard) .sales-tile.good {
+  background: var(--rv-ui-success-surface);
+  color: var(--rv-ui-success);
+}
+:is([data-theme='dark'], .dark) :is(.workbench--project-budget, .workbench--brand-scorecard) .sales-tile.bad {
+  background: var(--rv-ui-danger-surface);
+  color: var(--rv-ui-danger);
+}

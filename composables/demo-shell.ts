@@ -29,7 +29,7 @@ export function createDemoBody(document: Document, ...children: Node[]) {
 
 /** Use the same accessible, compact creation action in each demo heading. */
 export function configureDemoAddButton(button: HTMLButtonElement, label: string, plusIcon: string) {
-  button.classList.add('demo-shell__add');
+  button.classList.add('demo-shell__add', 'rv-btn', 'rv-btn-primary');
   button.setAttribute('aria-label', label);
   button.removeAttribute('data-icon');
   button.innerHTML = plusIcon;

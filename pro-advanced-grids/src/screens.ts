@@ -1,16 +1,16 @@
 import { mountForecast } from '../../pro-category-forecast/src/forecast';
-import { brandScorecard } from './brands';
-import { projectBudget } from './budget';
-import { campaigns } from './campaigns';
-import { patientCohorts } from './patient-cohorts';
-import { productKpis } from './products';
-import { salesTargets } from './sales-targets';
-import { scaleUpIndex } from './scale-ups';
-import { visitPlanner } from './visits';
-import { jobSchedule } from './job-schedule';
-import { supplierQuality } from './supplier-quality';
-import { reliabilityIndex } from './reliability-index';
-import { mountScreen } from './workbench-ui';
+import { brandScorecard } from './examples/brands/brands';
+import { projectBudget } from './examples/budget/budget';
+import { campaigns } from './examples/campaigns/campaigns';
+import { patientCohorts } from './examples/patient-cohorts/patient-cohorts';
+import { productKpis } from './examples/products/products';
+import { salesTargets } from './examples/sales-targets/sales-targets';
+import { scaleUpIndex } from './examples/scale-ups/scale-ups';
+import { visitPlanner } from './examples/visits/visits';
+import { jobSchedule } from './examples/job-schedule/job-schedule';
+import { supplierQuality } from './examples/supplier-quality/supplier-quality';
+import { reliabilityIndex } from './examples/reliability-index/reliability-index';
+import { mountScreen } from './shared/workbench-ui';
 
 const screenExamples = [
   campaigns,

@@ -1,12 +1,12 @@
-import { createSegmentedBarElement } from './segmented-bar';
+import { createSegmentedBarElement } from '../../shared/segmented-bar';
 import { createProgressElement } from '@revolist/ui/native';
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SegmentedSwitch } from '@revolist/ui/react';
 import { createRecordNavigation } from '@revolist/ui/native';
 import { mountTabs } from '@revolist/ui/native';
-import { createDetailPanel } from '../../composables/detail-panel';
-import { ROW_ACTION_COLUMN_WIDTH } from '../../composables/row-action';
+import { createDetailPanel } from '../../../../composables/detail-panel';
+import { ROW_ACTION_COLUMN_WIDTH } from '../../../../composables/row-action';
 import { renderExpandIcon } from '@revolist/revogrid-pro';
 import { referenceStores } from './sales-reference-fixtures';
 import { attainment, periods } from './sales-periods';
@@ -27,7 +27,7 @@ import {
   personSelect,
   total,
   type Example,
-} from './workbench-ui';
+} from '../../shared/workbench-ui';
 
 const months = [
   'Nov',
@@ -144,7 +144,7 @@ export const salesTargets: Example = {
     const status = select(
       'Attainment filter',
       ['All stores', 'Behind', 'Close', 'On target'],
-      'All stores',
+      'Behind',
       refresh,
     );
     const sort = select(
@@ -178,7 +178,7 @@ export const salesTargets: Example = {
     }, true);
     const key = make('div', '', 'sales-legend');
     key.append(make('span', '% to target'), make('span', 'Behind'));
-    const scale = createSegmentedBarElement(document, { label: 'Target attainment from behind to ahead', total: 5, parts: ['#fda4af', '#ffe4e6', '#f3f3f3', '#d1fae5', '#6ee7b7'].map(color => ({ value: 1, color })) });
+    const scale = createSegmentedBarElement(document, { label: 'Target attainment from behind to ahead', total: 5, parts: ['var(--sales-heat-far-behind, #fda4af)', 'var(--sales-heat-behind, #ffe4e6)', 'var(--sales-heat-close, #f3f3f3)', 'var(--sales-heat-on-target, #d1fae5)', 'var(--sales-heat-ahead, #6ee7b7)'].map(color => ({ value: 1, color })) });
     scale.classList.add('sales-legend__scale'); key.append(scale);
     key.append(make('span', 'Ahead'));
     statusBar.append(asOf, statusGroup, key);
@@ -186,7 +186,7 @@ export const salesTargets: Example = {
     bench.onSearch(refresh);
     bench.onCompactChange(refresh);
     const ratioColumn = (index: number): ColumnRegular => ({
-      prop: `ratio${index}`, name: '% Target', size: 80, sortable: true, cellTemplate: visualCellRenderer,
+      prop: `ratio${index}`, name: '% Target', size: 80, sortable: true, columnType: 'number', cellTemplate: visualCellRenderer,
       visualCell: { format: (value) => {
         const ratio = value as number | null, rounded = ratio === null ? null : Math.round(ratio);
         const tone = rounded === null ? 'neutral' : rounded >= 108 ? 'very-positive' : rounded >= 100 ? 'positive' : rounded < 85 ? 'very-negative' : rounded < 95 ? 'negative' : 'warning';
@@ -206,7 +206,7 @@ export const salesTargets: Example = {
       },
     };
     const variance = (index: number): ColumnRegular => ({
-      prop: `variance${index}`, name: 'Variance', size: 80, sortable: true, cellTemplate: visualCellRenderer,
+      prop: `variance${index}`, name: 'Variance', size: 80, sortable: true, columnType: 'currency', cellTemplate: visualCellRenderer,
       visualCell: { format: (raw, model) => {
         if (model[`ratio${index}`] === null) return { kind: 'text', className: 'metric-number', text: '–' };
         const value = Number(raw);
@@ -255,7 +255,7 @@ export const salesTargets: Example = {
       ...['Month', 'Last 3 Months', 'Year to Date'].map((name, index) => ({
         name, children: [
           {
-            prop: `actual${index}`, name: 'Actual', size: 74, sortable: true, cellTemplate: visualCellRenderer,
+            prop: `actual${index}`, name: 'Actual', size: 74, sortable: true, columnType: 'currency', cellTemplate: visualCellRenderer,
             visualCell: { format: (value: unknown, model: DataType) => ({ kind: 'text' as const, className: 'metric-number', text: model[`ratio${index}`] === null && !value ? '–' : storeMoney(Number(value)) }) },
           },
           ...(index < 2 ? [variance(index)] : []), ratioColumn(index), ...(index === 2 ? [history] : []),
@@ -435,11 +435,6 @@ export const salesTargets: Example = {
     const dollar = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
     const signedVariance = (value: number) => `${value < 0 ? '−' : '+'}${varianceMoney(Math.abs(value))}`;
     const periodLabel = (index: number) => `${months[index]} ${index < 2 ? 2025 : 2026}`;
-    function drawerClose(dialog: HTMLDialogElement) {
-      const close = button('×', () => dialog.close());
-      close.className = 'scale-drawer-close'; close.setAttribute('aria-label', 'Close');
-      dialog.querySelector('form')?.append(close);
-    }
     function showStore(store: Store, active: StoreTab = 'Overview') {
       const peers = rows.filter(row => matches(bench.currentQuery(), row.label, row.region, row.country ?? '') && (status.value === 'All stores' || status.value === standing(row)));
       if (!peers.includes(store)) peers.push(store);
@@ -530,9 +525,9 @@ export const salesTargets: Example = {
         const records = [['Month', 'Actual', 'Target'], ...months.map((name, index) => [periodLabel(index), store.missingSales[index] ? '' : store.sales[index], store.monthlyTargets?.[index] ?? ''])];
         const url = URL.createObjectURL(new Blob([records.map(record => record.map(quote).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' })); const link = make('a'); link.href = url; link.download = `${store.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-sales.csv`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 0);
       }); exportButton.dataset.icon = 'download'; extra.append(remove, exportButton);
-      bench.form(store.label, [body], () => { edit(store, true); return false; }, extra, 'Edit', () => tabControl.destroy());
-      const dialog = bench.heading.parentElement?.querySelector<HTMLDialogElement>('dialog.workbench-dialog');
-      if (dialog) { const actions = dialog.querySelector('.workbench-actions'); Array.from(actions?.children ?? []).find(child => child instanceof HTMLButtonElement && child.type === 'button' && child.textContent === 'Cancel')?.remove(); const submit = actions?.querySelector<HTMLButtonElement>('button[type=submit]'); if (submit) submit.dataset.icon = 'edit'; drawerClose(dialog); }
+      bench.form(store.label, [body], () => { edit(store, true); return false; }, extra, 'Edit',
+        () => tabControl.destroy(),
+        { cancel: false, submit: { icon: 'edit' }, close: { label: 'Close', className: 'scale-drawer-close' } });
     }
 
     function edit(store?: Store, fromView = false) {
@@ -560,8 +555,7 @@ export const salesTargets: Example = {
         if (store) { const previous = structuredClone(store); Object.assign(store, draft); folded.delete(store.region); refresh(); bench.report('Store saved.', () => { Object.assign(store, previous); refresh(); }); if (fromView) { showStore(store); return false; } }
         else { const created: Store = { ...draft, id: `store-new-${nextStore++}`, sales: months.map(() => 0), missingSales: months.map(() => true), priorTarget: null, opened: '' }; rows.push(created); folded.delete(created.region); refresh(); bench.report('Store created.', () => { const index = rows.indexOf(created); if (index >= 0) rows.splice(index, 1); refresh(); }); showStore(created); return false; }
         return true;
-      }, back, store ? 'Save Changes' : 'Create Store');
-      const dialog = bench.heading.parentElement?.querySelector<HTMLDialogElement>('dialog.workbench-dialog'); if (dialog) drawerClose(dialog);
+      }, back, store ? 'Save Changes' : 'Create Store', undefined, { close: { label: 'Close', className: 'scale-drawer-close' } });
     }
 
   },

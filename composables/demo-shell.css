@@ -33,19 +33,12 @@
   min-width: 32px;
   height: 32px;
   padding: 0 !important;
-  border: 1px solid #171717 !important;
   border-radius: 8px;
-  background: #171717 !important;
-  color: #fff !important;
 }
 .demo-shell .demo-shell__heading button.demo-shell__add::before { content: none !important; }
 .demo-shell .demo-shell__heading button.demo-shell__add svg { width: 14px; height: 14px; fill: currentColor; }
-.demo-shell .demo-shell__heading button.demo-shell__add:hover { background: #333 !important; }
 
 /* Keep grid surfaces distinct from the demo shell, without covering cell states. */
-.demo-shell revo-grid[theme] {
-  background-color: #fff;
-}
 .demo-shell revo-grid revogr-header .rgHeaderCell {
   border-bottom: 1px solid var(--border, var(--outline, #e4e4e4));
 }
@@ -66,5 +59,5 @@
   color: inherit;
   cursor: pointer;
 }
-.demo-shell button.demo-cell-add:hover { background: #e9e7ef; }
-.demo-shell button.demo-cell-add:focus-visible { outline: 2px solid #6647f0; outline-offset: 1px; }
+.demo-shell button.demo-cell-add:hover { background: var(--rv-ui-surface-hover); }
+.demo-shell button.demo-cell-add:focus-visible { outline: 2px solid var(--rv-ui-focus-ring); outline-offset: 1px; }

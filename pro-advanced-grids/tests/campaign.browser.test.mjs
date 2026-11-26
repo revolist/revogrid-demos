@@ -175,7 +175,7 @@ test('product KPI periods use the sample weekly sales and health', async () => {
     await firstWeek.focus(); await page.keyboard.press('Enter');
     await page.getByRole('dialog', { name: 'Week ending Apr 19' }).getByText('Profit', { exact: true }).waitFor();
     await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
-    const { productFixtures } = await import('../src/product-fixtures.ts');
+    const { productFixtures } = await import('../src/examples/products/product-fixtures.ts');
     const fixture = productFixtures.find(row => row.label === 'Granite Trail Boot');
     const salesFor = weeks => Math.round(fixture.weeks.slice(-weeks).reduce((total, week) => total + week[0], 0));
     await page.getByRole('button', { name: '4W, last 4 weeks' }).click();
@@ -310,7 +310,7 @@ test('scale-up financial editing recomputes the index and first-year companies s
     assert.equal(await dialog.getByLabel('Revenue FY25').inputValue(), '5.5');
     assert.equal(await dialog.getByLabel('EBITDA FY25').inputValue(), '1');
     await dialog.getByLabel('Revenue FY25').fill('54');
-    const { indexScore, percentChange } = await import('../src/scale-up-financials.ts');
+    const { indexScore, percentChange } = await import('../src/examples/scale-ups/scale-up-financials.ts');
     const expected = indexScore(percentChange(54, 5.1), 1 / 54 * 100, 54_000_000);
     assert.match(await dialog.innerText(), new RegExp(`Index score ${expected.toFixed(1)}`));
     await dialog.getByRole('button', { name: 'Save Changes' }).click();
@@ -484,8 +484,8 @@ test('brand style chart plots individual contributions and responds to mode and 
     await page.getByRole('searchbox').fill('Wildhaven');
     await page.waitForFunction(() => document.querySelector('.brand-month-summary')?.textContent.includes('8At a loss1'));
     await page.getByRole('button', { name: 'Months', exact: true }).click();
-    assert.equal(await selectValue(page.getByLabel('Charted metric')), 'Markdown');
-    await page.getByRole('img', { name: 'Wildhaven monthly range for Markdown' }).waitFor();
+    assert.equal(await selectValue(page.getByLabel('Charted metric')), 'Net Sales');
+    await page.getByRole('img', { name: 'Wildhaven monthly range for Net Sales' }).waitFor();
     await chooseSelect(page.getByLabel('Charted metric'), 'Profit per Style');
     assert.equal(await page.getByRole('button', { name: 'Styles', exact: true }).getAttribute('aria-pressed'), 'true');
   } finally { await page.close(); }
@@ -1521,6 +1521,7 @@ test('brand range and style charts expose their real data in tooltips', async ()
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url.replace('#campaign-performance', '#brand-scorecard'));
+    await chooseSelect(page.getByLabel('Charted metric'), 'Markdown');
     const range = page.getByRole('img', { name: 'Aster Peak monthly range for Markdown' });
     await range.waitFor();
     await range.hover();

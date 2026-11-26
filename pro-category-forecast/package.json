@@ -18,6 +18,7 @@
     "build:react": "vite build --mode react",
     "build:vue": "vite build --mode vue",
     "build:angular": "vite build --mode angular",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "test:browser": "vite build --mode ts --outDir dist/browser-test && node --test tests/*.browser.test.mjs"
   },
   "dependencies": {

@@ -1,16 +1,16 @@
 import { createRecordNavigation } from '@revolist/ui/native';
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Legend, RadioGroup } from '@revolist/ui/react';
+import { Legend, RadioGroup, SegmentedSwitch } from '@revolist/ui/react';
 import { createMetricProgressRow, mountTabs } from '@revolist/ui/native';
-import { createDetailPanel } from '../../composables/detail-panel';
-import { ROW_ACTION_COLUMN_WIDTH } from '../../composables/row-action';
-import { demoColors } from '../../composables/demo-colors';
+import { createDetailPanel } from '../../../../composables/detail-panel';
+import { ROW_ACTION_COLUMN_WIDTH } from '../../../../composables/row-action';
+import { demoColors } from '../../../../composables/demo-colors';
 import { createMetricTileHistoryTooltip, METRIC_TILE_HISTORY_TOOLTIP } from '@revolist/revogrid-pro';
 import '@revolist/revogrid-pro/styles.css';
 import { createSegmentedSummaryElement } from '@revolist/revogrid-pro';
 import { renderExpandIcon } from '@revolist/revogrid-pro';
-import { renderColumnHeader, GridStatePlugin, metricDetailRenderer, splitValueRenderer, choiceStatusRenderer, cellActionRenderer, rankingRenderer, entityCellRenderer, type EntityCellPresentation } from '@revolist/revogrid-pro';
+import { renderColumnHeader, renderIconStack, GridStatePlugin, metricDetailRenderer, splitValueRenderer, choiceStatusRenderer, cellActionRenderer, rankingRenderer, entityCellRenderer, type EntityCellPresentation } from '@revolist/revogrid-pro';
 import { summarizeScreening } from './scale-up-screening';
 import { provincePaths, provincePathIndex } from './scale-up-map';
 import { indexScore, scoreComponents, averageScore, percentChange, quarterDirections, aggregateQuarterDirections, quarterDirectionLabel } from './scale-up-financials';
@@ -29,7 +29,7 @@ import {
   select,
   total,
   type Example,
-} from './workbench-ui';
+} from '../../shared/workbench-ui';
 
 import { provinces, flags, answers, euros, capital, createCompanies, type Flag, type Company } from './scale-up-data';
 
@@ -225,7 +225,7 @@ export const scaleUpIndex: Example = {
     const companyPresentation = (model: DataType, compact: boolean): EntityCellPresentation => {
       if (compact && model.total) return { kind: 'group', variant: 'inline', label: 'Netherlands', detail: model.label, interactive: false, leading: h => h('span', { 'aria-hidden': 'true' }, '🇳🇱') };
       if (compact && model.provinceHead) return { kind: 'group', variant: 'inline', label: model.province, expanded: !!model.expanded, actionLabel: `${model.expanded ? 'Collapse' : 'Expand'} ${model.province}`, leading: flagIcon(model), rank: { label: `#${model.rank}`, tone: rankTone(model.rank) } };
-      if (!model.company) return { kind: 'group', variant: 'inline', className: 'scale-company--summary', label: model.label, interactive: false, leading: h => h('span', { class: 'scale-company__stack', 'aria-hidden': 'true' }, [h('i', {}, '◒'), h('i', {}, '✦'), h('i', {}, '●')]) };
+      if (!model.company) return { kind: 'group', variant: 'inline', className: 'scale-company--summary', label: model.label, interactive: false, leading: h => renderIconStack(h, { items: [{ content: '◒', color: '#171717' }, { content: '✦', color: '#7960db' }, { content: '●', color: '#ed9a00' }] }) };
       const company = model.company as Company;
       return { kind: 'identity', label: model.label, detail: model.subtitle, actionLabel: `Open ${model.label}`, leading: h => companyLogo(h, model), ...(company.stage && company.stage !== 'Tracked' ? { badge: { text: company.stage, tone: company.stage === 'In Talks' ? 'positive' : 'neutral' } } : {}) };
     };
@@ -233,6 +233,7 @@ export const scaleUpIndex: Example = {
     let columns: ColumnData = groupedMetrics([
       {
         prop: 'rank',
+        columnType: 'number',
         name: 'Rank',
         size: 72,
         cellTemplate: rankingRenderer,
@@ -263,21 +264,21 @@ export const scaleUpIndex: Example = {
       },
       ...screeningColumns,
       {
-        prop: 'revenue', name: 'Revenue', size: 136, cellTemplate: metricDetailRenderer,
+        prop: 'revenue', name: 'Revenue', size: 136, columnType: 'currency', cellTemplate: metricDetailRenderer,
         metricDetail: { format: (value, model) => ({
           value: euros(Number(value)), detail: model.growth == null ? '—' : `${model.growth >= 0 ? '↗ +' : '↘ '}${Number(model.growth).toFixed(1)}%`,
           track: { kind: 'meter', value: Number(value), max: Number(model.revenueMaximum) || 1, label: 'Revenue scale', ...(model.company && model.revenueBenchmark != null ? { reference: Number(model.revenueBenchmark) } : {}) },
         }) },
       },
       {
-        prop: 'margin', name: 'EBITDA', size: 112, cellTemplate: metricDetailRenderer,
+        prop: 'margin', name: 'EBITDA', size: 112, columnType: 'number', cellTemplate: metricDetailRenderer,
         metricDetail: { format: (value, model) => {
           const margin = Number(value ?? 0), benchmark = Number(model.marginBenchmark ?? 0);
           return { value: value == null ? '—' : pct(Number(value)), valueTone: margin < 0 ? 'negative' : 'neutral', alignValue: 'positive-negative', track: { kind: 'variance', value: margin, min: -25, max: 25, reference: benchmark, label: `EBITDA ${pct(margin)}, benchmark ${pct(benchmark)}` } };
         } },
       },
       {
-        prop: 'staff', name: 'Staff', size: 112, cellTemplate: metricDetailRenderer,
+        prop: 'staff', name: 'Staff', size: 112, columnType: 'number', cellTemplate: metricDetailRenderer,
         metricDetail: { format: (value, model) => ({
           value: value == null ? 'None' : number(Number(value)),
           detail: model.staffGrowth == null ? '—' : `${Number(model.staffGrowth) >= 0 ? '↗ +' : '↘ '}${Number(model.staffGrowth).toFixed(1)}%`,
@@ -298,7 +299,7 @@ export const scaleUpIndex: Example = {
         }) },
       },
       {
-        prop: 'score', name: 'Score', size: 100, cellTemplate: splitValueRenderer,
+        prop: 'score', name: 'Score', size: 100, columnType: 'number', cellTemplate: splitValueRenderer,
         splitValue: { format: (value, model) => ({
           value: value == null ? 'Not scored' : Number(value).toFixed(1), badge: value != null,
           detail: model.scoreChange == null ? 'New' : `${Number(model.scoreChange) > 0 ? '+' : ''}${Number(model.scoreChange).toFixed(1)}`,
@@ -642,8 +643,11 @@ export const scaleUpIndex: Example = {
       const section = (title: string, subtitle: string) => { const { card, body } = createDetailPanel(title, subtitle, { card: 'scale-profile__section', heading: 'scale-profile__section-heading', body: 'scale-profile__section-content' }); panel.append(card); return body; };
       const signed = (value: number | null, suffix = '%') => value == null ? '—' : `${value > 0 ? '+' : ''}${value.toFixed(1)}${suffix}`;
       let legendRoot: ReturnType<typeof createRoot> | undefined;
+      const screeningRoots: ReturnType<typeof createRoot>[] = [];
+      const releaseScreening = () => screeningRoots.splice(0).forEach(root => root.unmount());
       function showTab(tab: typeof active) {
         legendRoot?.unmount(); legendRoot = undefined;
+        releaseScreening();
         active = tab; tabControl.update(tabProps(tab));
         controls.forEach((control, index) => { const selected = names[index] === tab; control.setAttribute('aria-selected', String(selected)); control.tabIndex = selected ? 0 : -1; });
         panel.setAttribute('aria-labelledby', controls[names.indexOf(tab)].id); panel.replaceChildren();
@@ -664,9 +668,18 @@ export const scaleUpIndex: Example = {
           const screening = section('Screen', 'What the first call confirmed');
           for (const [key, question] of [['Founder', 'Founder still leads it'], ['Exports', 'A quarter of sales abroad'], ['Raising', 'Open to a round in 12 months'], ['Audited', 'Audited FY25 accounts']] as const) {
             const row = make('div', '', 'scale-profile__screen-row'); const label = make('span', question); label.title = question; row.append(label);
-            const group = make('div', '', 'scale-profile__screen-options'); group.setAttribute('role', 'group'); group.setAttribute('aria-label', question);
+            const group = make('div');
             const selected = key === 'Audited' ? company.audited : company.screening[key];
-            for (const answer of answers) { const option = button(answer, () => setScreen(company, key, answer, () => showCompany(company, 'Overview'))); option.setAttribute('aria-pressed', String(answer === selected)); option.className = `scale-profile__answer answer-${answer === 'N/A' ? 'na' : answer.toLowerCase()}`; group.append(option); }
+            const root = createRoot(group);
+            screeningRoots.push(root);
+            root.render(createElement(SegmentedSwitch, {
+              role: 'group', ariaLabel: question, className: 'scale-profile__screen-options',
+              itemClassName: 'scale-profile__answer', value: selected,
+              options: answers.map(answer => ({ value: answer, label: answer, className: `answer-${answer === 'N/A' ? 'na' : answer.toLowerCase()}` })),
+              onChange: (answer: string | number) => {
+                if (typeof answer === 'string') setScreen(company, key, answer, () => showCompany(company, 'Overview'));
+              },
+            }));
             row.append(group); screening.append(row);
           }
           const details = section('Details', 'Where it runs and what it does');
@@ -727,14 +740,9 @@ export const scaleUpIndex: Example = {
         const rows = [['Company', 'Province', 'City', 'Sector', 'Revenue FY23', 'Revenue FY24', 'Revenue FY25', 'EBITDA FY24', 'EBITDA FY25', 'Staff', 'Score'], [company.label, company.province, company.city, company.sectorName, company.priorRevenue, company.previousRevenue, company.revenue, company.previousEbitda, company.margin == null ? null : company.margin * company.revenue / 100, company.staff, score(company)]];
         const url = URL.createObjectURL(new Blob([rows.map(row => row.map(quote).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' })); const link = make('a'); link.href = url; link.download = `${company.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-index.csv`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 0);
       }); exportButton.dataset.icon = 'download'; extra.append(remove, exportButton);
-      bench.form(company.label, [body], () => { edit(company, true); return false; }, extra, 'Edit', () => { legendRoot?.unmount(); tabControl.destroy(); });
-      const dialog = bench.heading.parentElement?.querySelector<HTMLDialogElement>('dialog.workbench-dialog');
-      if (dialog) {
-        const actions = dialog.querySelector('.workbench-actions');
-        Array.from(actions?.children ?? []).find(child => child instanceof HTMLButtonElement && child.type === 'button' && child.textContent === 'Cancel')?.remove();
-        const submit = actions?.querySelector<HTMLButtonElement>('button[type=submit]'); if (submit) submit.dataset.icon = 'edit';
-        const close = button('×', () => dialog.close()); close.className = 'scale-drawer-close'; close.setAttribute('aria-label', 'Close'); dialog.querySelector('form')?.append(close);
-      }
+      bench.form(company.label, [body], () => { edit(company, true); return false; }, extra, 'Edit',
+        () => { releaseScreening(); legendRoot?.unmount(); tabControl.destroy(); },
+        { cancel: false, submit: { icon: 'edit' }, close: { label: 'Close', className: 'scale-drawer-close' } });
     }
 
     function edit(company?: Company, fromView = false) {
@@ -815,9 +823,9 @@ export const scaleUpIndex: Example = {
           showCompany(created); return false;
         }
         return true;
-      }, extra, company ? 'Save Changes' : 'Create Company', () => choiceRoots.forEach(root => root.unmount()));
-      const dialog = bench.heading.parentElement?.querySelector<HTMLDialogElement>('dialog.workbench-dialog');
-      if (dialog) { const close = button('×', () => dialog.close()); close.className = 'scale-drawer-close'; close.setAttribute('aria-label', 'Close'); dialog.querySelector('form')?.append(close); }
+      }, extra, company ? 'Save Changes' : 'Create Company',
+        () => choiceRoots.forEach(root => root.unmount()),
+        { close: { label: 'Close', className: 'scale-drawer-close' } });
     }
 
   },

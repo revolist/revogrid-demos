@@ -5,10 +5,6 @@
   --demo-accent-soft: #f0edff;
   --demo-ink: #252139;
   --demo-border: #e5e1ef;
-  --rv-ui-accent: #6647f0;
-  --rv-ui-accent-hover: #5336dc;
-  --rv-ui-accent-fg: #fff;
-  --rv-ui-focus-ring: #bcb0ff;
 }
 .workbench.workbench {
   --action: var(--demo-accent);
@@ -22,34 +18,11 @@
   --ink: var(--demo-ink);
   --muted: #6f6a80;
 }
-:where(.workbench, .forecast) revo-grid,
-:where(.workbench, .forecast) .rv-configurator-panel {
-  --rv-ui-accent: #6647f0;
-  --rv-ui-accent-hover: #5336dc;
-  --rv-ui-accent-fg: #fff;
-  --rv-ui-focus-ring: #bcb0ff;
-  --revo-grid-primary: #6647f0;
-  --revo-grid-header-focused-bg: #eeeaff;
-  --revo-grid-focused-bg: #f4f1ff;
-}
 .workbench-nav.workbench-nav a[aria-current] {
   background: var(--demo-accent);
   color: #fff;
 }
 .workbench-nav.workbench-nav a:not([aria-current]):hover { background: var(--demo-accent-soft); color: #5336dc; }
-.workbench .workbench-heading button.primary,
-.workbench .workbench-actions button.primary,
-.forecast .forecast-button.primary {
-  background: var(--demo-accent);
-  border-color: var(--demo-accent);
-  color: #fff;
-}
-.workbench .workbench-heading button.primary:hover:not(:disabled),
-.workbench .workbench-actions button.primary:hover:not(:disabled),
-.forecast .forecast-button.primary:hover:not(:disabled) {
-  background: var(--demo-accent-hover);
-  border-color: var(--demo-accent-hover);
-}
 .workbench .cohort-tabs button[aria-selected='true'],
 .workbench .reliability-tabs button[aria-selected='true'],
 .workbench .reliability-detail__tabs button[aria-selected='true'],
@@ -63,7 +36,7 @@
   background: var(--demo-accent-soft) !important;
   color: #5336dc;
 }
-:where(.workbench, .forecast, .workbench-nav) :focus-visible {
+:where(.workbench, .forecast, .workbench-nav) :focus-visible:not(.rv-btn) {
   outline-color: var(--demo-accent);
 }
 

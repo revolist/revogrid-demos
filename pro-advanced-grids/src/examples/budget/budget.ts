@@ -1,4 +1,4 @@
-import { createSegmentedBarElement } from './segmented-bar';
+import { createSegmentedBarElement } from '../../shared/segmented-bar';
 import bulkDeleteIcon from '@fortawesome/fontawesome-free/svgs/solid/trash.svg?raw';
 import bulkExportIcon from '@fortawesome/fontawesome-free/svgs/solid/download.svg?raw';
 import { mountActionBar } from '@revolist/ui/action-bar';
@@ -17,17 +17,17 @@ import riskIcon from '@fortawesome/fontawesome-free/svgs/solid/triangle-exclamat
 import compactRowsIcon from '@fortawesome/fontawesome-free/svgs/solid/bars.svg?raw';
 import comfortableRowsIcon from '@fortawesome/fontawesome-free/svgs/solid/table-list.svg?raw';
 import { createControl, createLegendElement, createNumberStepperElement, mountTabs } from '@revolist/ui/native';
-import { createDetailPanel } from '../../composables/detail-panel';
-import { ROW_ACTION_COLUMN_WIDTH } from '../../composables/row-action';
-import { demoColors } from '../../composables/demo-colors';
-import { demoPortrait } from '../../composables/demo-portraits';
+import { createDetailPanel } from '../../../../composables/detail-panel';
+import { ROW_ACTION_COLUMN_WIDTH } from '../../../../composables/row-action';
+import { demoColors } from '../../../../composables/demo-colors';
+import { demoPortrait } from '../../../../composables/demo-portraits';
 import { createMetricTileElement, releaseMetricElement } from '@revolist/ui/native';
 import '@revolist/ui/metric-panel.scss';
 import { createChartHost } from '@revolist/charts/core';
 import { createAreaLineChart } from '@revolist/charts/area-line';
 import { createColumnLineChart } from '@revolist/charts/column-line';
 import { createTimeRangeColumnType, entityCellRenderer, visualCellRenderer, cellActionRenderer, renderSortMenuHeader } from '@revolist/revogrid-pro';
-import { calendarField } from './ui-calendar-field';
+import { calendarField } from '../../shared/ui-calendar-field';
 import { planAmount, partsAmount, primaryBasis, type BudgetParts, type BudgetPlan } from './budget-components';
 import { budgetActivityFixtures } from './budget-activity-fixtures';
 import { availableDecisions, previewDecision, type BudgetDecision } from './budget-decisions';
@@ -50,7 +50,8 @@ import {
   select,
   total,
   type Example,
-} from './workbench-ui';
+  type WorkbenchFormHandle,
+} from '../../shared/workbench-ui';
 
 const workstreams = [
   'Discovery',
@@ -279,11 +280,11 @@ export const projectBudget: Example = {
       { prop: 'basis', name: 'Basis', size: 168, cellTemplate: visualCellRenderer, visualCell: { format: value => ({ kind: 'text', className: 'budget-basis', text: String(value ?? '') }) } },
       { prop: 'schedule', name: 'Schedule', size: 216, columnType: 'budgetSchedule' },
       ...(['budget', 'actual'] as const).map(key => ({
-        prop: key, name: key === 'budget' ? 'Budget' : 'Actual', size: 96, columnTemplate: header(key, key === 'budget' ? 'Budget' : 'Actual'), cellTemplate: visualCellRenderer,
+        prop: key, name: key === 'budget' ? 'Budget' : 'Actual', size: 96, columnType: 'currency', columnTemplate: header(key, key === 'budget' ? 'Budget' : 'Actual'), cellTemplate: visualCellRenderer,
         visualCell: { format: (value: unknown) => ({ kind: 'text' as const, className: 'metric-number', text: typeof value === 'number' ? money(value) : '–' }) },
       })),
       {
-        prop: 'spent', name: 'Spent', size: 88, columnTemplate: header('spent', 'Spent'), cellTemplate: visualCellRenderer,
+        prop: 'spent', name: 'Spent', size: 88, columnType: 'number', columnTemplate: header('spent', 'Spent'), cellTemplate: visualCellRenderer,
         visualCell: { format: (value, model) => {
           const schedule = model.line ?? model.schedule;
           const health = schedule ? budgetHealth({ ...schedule, budget: model.budget, actual: model.actual, forecast: model.forecast }) : 'ok';
@@ -292,7 +293,7 @@ export const projectBudget: Example = {
         } },
       },
       {
-        prop: 'forecast', name: 'Forecast', size: 104, columnTemplate: header('forecast', 'Forecast'), cellTemplate: visualCellRenderer,
+        prop: 'forecast', name: 'Forecast', size: 104, columnType: 'currency', columnTemplate: header('forecast', 'Forecast'), cellTemplate: visualCellRenderer,
         visualCell: {
           format: (value, model) => {
             const line = model.line as Line | undefined, text = money(Number(value));
@@ -304,7 +305,7 @@ export const projectBudget: Example = {
         },
       },
       {
-        prop: 'delta', name: 'Over/Under', size: 128, sortable: true, columnTemplate: header('delta', 'Over/Under'), cellTemplate: visualCellRenderer,
+        prop: 'delta', name: 'Over/Under', size: 128, columnType: 'currency', sortable: true, columnTemplate: header('delta', 'Over/Under'), cellTemplate: visualCellRenderer,
         visualCell: { format: (value, model) => {
           const line = model.line as Line | undefined, delta = Number(value);
           const quantityDelta = line && line.unit !== 'Fixed fee' && line.rate > 0 ? Math.round(((model.forecast - line.baseFee) / line.rate - line.units) * 10) / 10 : 0;
@@ -403,6 +404,13 @@ export const projectBudget: Example = {
       ).length;
       const cards = [
         {
+          name: 'At Risk',
+          value: money(risk),
+          detailLead: `${overCount} of ${visible.length}`, detailRest: ' lines over',
+          progress: reserve ? (risk / reserve) * 100 : 0,
+          captionLead: `${reserve ? Math.round((risk / reserve) * 100) : 0}%`, captionRest: ` of contingency, ${money(Math.max(0, reserve - risk))} spare`,
+        },
+        {
           name: 'Total Budget',
           value: money(summary.budget),
           detailLead: money(reserve), detailRest: ' contingency',
@@ -425,26 +433,19 @@ export const projectBudget: Example = {
           progress: 43,
           captionLead: '43%', captionRest: ' of the time to launch gone, Mar 2',
         },
-        {
-          name: 'At Risk',
-          value: money(risk),
-          detailLead: `${overCount} of ${visible.length}`, detailRest: ' lines over',
-          progress: reserve ? (risk / reserve) * 100 : 0,
-          captionLead: `${reserve ? Math.round((risk / reserve) * 100) : 0}%`, captionRest: ` of contingency, ${money(Math.max(0, reserve - risk))} spare`,
-        },
       ];
       bench.summary.hidden = false;
       releaseCards();
-      const accents = [demoColors.purple, demoColors.teal, demoColors.blue, demoColors.pink];
+      const accents = [demoColors.pink, demoColors.purple, demoColors.teal, demoColors.blue];
       const trend = [4, 5, 6, 8, 10, 12, 18, 26, 30, 32];
-      const icons = [walletIcon, spendIcon, forecastIcon, riskIcon];
+      const icons = [riskIcon, walletIcon, spendIcon, forecastIcon];
       bench.summary.replaceChildren(...cards.map((card, index) => createMetricTileElement(document, {
         label: card.name,
         value: card.value,
         visual: {
           accent: accents[index], iconSvg: icons[index], trend,
           detailLead: card.detailLead, detailRest: card.detailRest,
-          ...(index === 2 ? { detailTone: 'negative' as const } : {}),
+          ...(card.name === 'Forecast' ? { detailTone: 'negative' as const } : {}),
           progress: { value: card.progress, label: `${card.captionLead}${card.captionRest}`, captionLead: card.captionLead, captionRest: card.captionRest },
         },
       })));
@@ -491,9 +492,13 @@ export const projectBudget: Example = {
       const note = createControl(document, 'textarea'); note.setAttribute('aria-label', `Note to ${row.vendor}`); note.placeholder = 'What changed, if anything'; note.maxLength = 240;
       const error = make('p', '', 'scale-profile__error'); error.setAttribute('role', 'alert'); error.hidden = true;
       const section = (title: string, subtitle: string) => { const { card, body } = createDetailPanel(title, subtitle, { card: 'scale-profile__section', heading: 'scale-profile__section-heading', body: 'scale-profile__section-content' }); panel.append(card); return body; };
-      const dialog = () => bench.heading.parentElement?.querySelector('dialog');
+      let form: WorkbenchFormHandle | undefined;
       const changeAuthor = (id: string) => ({ noah: 'Noah Brennan', amara: 'Amara Okafor', sana: 'Sana Qureshi', mei: 'Mei Chen', rosa: 'Rosa Delgado', ines: 'Nia Bennett' } as Record<string, string>)[id] ?? id;
-      const setFooter = () => { const submit = dialog()?.querySelector<HTMLButtonElement>('.workbench-actions button[type=submit]'); if (submit) { submit.textContent = active === 'Overview' ? 'Decide' : active === 'Decision' ? 'Save Decision' : 'Edit Line'; submit.dataset.icon = active === 'Overview' ? 'trend' : active === 'Decision' ? 'check' : 'edit'; submit.disabled = active === 'Decision' && !choice; } };
+      const setFooter = () => form?.setSubmit({
+        label: active === 'Overview' ? 'Decide' : active === 'Decision' ? 'Save Decision' : 'Edit Line',
+        icon: active === 'Overview' ? 'trend' : active === 'Decision' ? 'check' : 'edit',
+        disabled: active === 'Decision' && !choice,
+      });
       const upcoming = row.activity.filter(entry => entry.id.includes('-u'));
       const billed = row.activity.filter(entry => !entry.id.includes('-u'));
       const finish = projectedFinish(row), daysLate = Math.max(0, finish - row.plannedEnd);
@@ -705,7 +710,7 @@ export const projectBudget: Example = {
       }
 
       renderTab(active);
-      bench.form(row.label, [body], () => {
+      form = bench.form(row.label, [body], () => {
         if (active === 'Overview') { renderTab('Decision'); return false; }
         if (active === 'Activity') { edit(row, true); return false; }
         if (!choice) return false;
@@ -721,8 +726,11 @@ export const projectBudget: Example = {
         const kind = choice === 'Adjust' ? 'forecast' : choice === 'Hold' ? 'held' : result.difference < 0 ? 'release' : 'cover';
         row.changes.unshift({ id: `local-${Date.now()}`, day: '2026-10-28', by: 'noah', kind, note: note.value.trim() || `${choice} decision`, detail: `${money(oldForecast)} to ${money(result.totals.forecast)}` });
         refresh(); bench.report(`${row.label} decision saved.`, () => { Object.assign(row, previous); reserve = previousReserve; refresh(); }); return true;
-      }, undefined, active === 'Overview' ? 'Decide' : active === 'Decision' ? 'Save Decision' : 'Edit Line', () => tabControl.destroy());
-      const currentDialog = dialog(); if (currentDialog) { const cancel = Array.from(currentDialog.querySelectorAll<HTMLButtonElement>('.workbench-actions button')).find(item => item.type === 'button' && item.textContent === 'Cancel'); if (cancel) cancel.textContent = 'Close'; const close = button('×', () => currentDialog.close()); close.className = 'scale-drawer-close'; close.setAttribute('aria-label', 'Close drawer'); currentDialog.querySelector('form')?.append(close); setFooter(); }
+      }, undefined, active === 'Overview' ? 'Decide' : active === 'Decision' ? 'Save Decision' : 'Edit Line', () => tabControl.destroy(), {
+        cancel: { label: 'Close' },
+        close: { label: 'Close drawer', className: 'scale-drawer-close' },
+      });
+      setFooter();
     }
 
     function editForecast(row: Line) {
@@ -815,8 +823,7 @@ export const projectBudget: Example = {
           rows.push(created); expanded.add(groupBy.value === 'Vendor' ? draft.vendor : draft.stream); refresh(); bench.report(`${value} added.`, () => { const index = rows.indexOf(created); if (index >= 0) rows.splice(index, 1); refresh(); });
         }
         return true;
-      }, back, row ? 'Save Changes' : 'Add Line');
-      const dialog = bench.heading.parentElement?.querySelector('dialog'); if (dialog) { const close = button('×', () => dialog.close()); close.className = 'scale-drawer-close'; close.setAttribute('aria-label', 'Close drawer'); dialog.querySelector('form')?.append(close); }
+      }, back, row ? 'Save Changes' : 'Add Line', undefined, { close: { label: 'Close drawer', className: 'scale-drawer-close' } });
     }
 
   },

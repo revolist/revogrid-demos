@@ -133,7 +133,7 @@
   width: 23px;
   height: 23px;
   min-width: 23px;
-  border: 1px solid #e4e4e4;
+  border: 1px solid var(--rv-ui-border, #e4e4e4);
   border-radius: 7px;
   color: #333;
   font-size: 12px;
@@ -142,7 +142,7 @@
   color: #737373;
 }
 .workbench--project-budget .rgCell:has(.budget-line.is-group) {
-  background: #fff;
+  background: var(--rv-ui-surface, #fff);
 }
 .workbench--project-budget .rgCell:has(.budget-line) .cell-action {
   background: transparent;
@@ -172,6 +172,8 @@
 .workbench .budget-sort-header {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  width: 100%;
   gap: 4px;
   padding: 0;
   border: 0;
@@ -188,7 +190,7 @@
   font-size: 0;
 }
 .budget-density svg { display: block; width: 14px; height: 14px; fill: currentColor; }
-.budget-density[aria-pressed='true'] { background: #f1f1f1; }
+.budget-density[aria-pressed='true'] { background: var(--rv-ui-surface-hover, #f1f1f1); }
 .workbench--project-budget .budget-track i.done {
   background: #00bb83;
 }
@@ -220,7 +222,7 @@
 .workbench--project-budget .metric-number { margin-inline-start: 0; }
 .workbench--project-budget .sales-tile { display: flex; justify-content: flex-end; gap: 8px; }
 .budget-driver { color: #737373; font-size: 11px; white-space: nowrap; }
-.budget-forecast-done { display: flex; align-items: center; gap: 6px; }
+.budget-forecast-cell, .budget-forecast-done { display: flex; justify-content: flex-end; width: 100%; align-items: center; gap: 6px; }
 .budget-forecast-done span:last-child { color: #737373; font-size: 12px; }
 .budget-forecast-cell .cell-action { padding: 0; font-weight: 400; }
 .sales-store {

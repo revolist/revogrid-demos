@@ -6,7 +6,7 @@ import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Legend, Menu, MenuItem, SegmentedSwitch } from '@revolist/ui/react';
 import { createControl, createNumberStepperElement, createProgressElement, mountTabs } from '@revolist/ui/native';
-import { createDetailPanel } from '../../composables/detail-panel';
+import { createDetailPanel } from '../../../../composables/detail-panel';
 import { createDropdownControl } from '@revolist/ui/dropdown/control';
 import targetIcon from '@fortawesome/fontawesome-free/svgs/solid/bullseye.svg?raw';
 import marginIcon from '@fortawesome/fontawesome-free/svgs/solid/chart-line.svg?raw';
@@ -23,9 +23,9 @@ import lampIcon from '@fortawesome/fontawesome-free/svgs/solid/lightbulb.svg?raw
 import helmetIcon from '@fortawesome/fontawesome-free/svgs/solid/helmet-safety.svg?raw';
 import bagIcon from '@fortawesome/fontawesome-free/svgs/solid/bag-shopping.svg?raw';
 
-import { ROW_ACTION_COLUMN_WIDTH } from '../../composables/row-action';
-import { demoColors } from '../../composables/demo-colors';
-import '@revolist/ui/styles/calendar.css';
+import { ROW_ACTION_COLUMN_WIDTH } from '../../../../composables/row-action';
+import { demoColors } from '../../../../composables/demo-colors';
+import '@revolist/ui/styles/calendar.scss';
 import { AdvanceFilterPlugin, GridPopoverPlugin, FIlTER_SELECTION, FIlTER_SLIDER, compileFilterAst, type FilterAst, type FilterAstEditorHandle } from '@revolist/revogrid-pro';
 import { productDetailFixtures } from './product-detail-fixtures';
 import { promotionNames, promotionReport, weeklyContribution } from './product-promotion-model';
@@ -47,7 +47,7 @@ import {
   personSelect,
   total,
   type Example,
-} from './workbench-ui';
+} from '../../shared/workbench-ui';
 import type { ColumnData, ColumnRegular } from '@revolist/revogrid';
 
 const productMoney = (value: number) =>
@@ -117,7 +117,7 @@ export const productKpis: Example = {
       label: fixture.label,
       sku: fixture.sku,
       region: fixture.department,
-      photo: index < catalogPositions.length ? `${import.meta.env.BASE_URL}product-photos/catalog.png` : undefined,
+      photo: index < catalogPositions.length ? new URL('../../../public/product-photos/catalog.png', import.meta.url).href : undefined,
       photoPosition: catalogPositions[index],
       disposition: fixture.returned ? 'Returned' : undefined,
       weeks: fixture.weeks.map((week) => [...week]),
@@ -259,7 +259,7 @@ export const productKpis: Example = {
         },
       },
       {
-        prop: 'revenue', name: 'Revenue', filter: ['number', FIlTER_SLIDER], filterAstValueEditor: { kind: 'slider', min: 0, max: Math.max(1, ...rows.map(row => total(row.data, value => value))), step: 'any' }, size: 140, sortable: true,
+        prop: 'revenue', name: 'Revenue', columnType: 'currency', filter: ['number', FIlTER_SLIDER], filterAstValueEditor: { kind: 'slider', min: 0, max: Math.max(1, ...rows.map(row => total(row.data, value => value))), step: 'any' }, size: 140, sortable: true,
         columnProperties: () => ({ class: 'product-number-header' }),
         cellTemplate: metricStackRenderer,
         metricStack: { format: (value, row) => previewWeek(row) ? { value: productMoney(previewWeek(row)![0]), layout: 'inline' } : !row.revenue
@@ -290,7 +290,7 @@ export const productKpis: Example = {
         },
       },
       {
-        prop: 'profit', name: 'Profit', filter: ['number', FIlTER_SLIDER], size: 124, sortable: true,
+        prop: 'profit', name: 'Profit', columnType: 'currency', filter: ['number', FIlTER_SLIDER], size: 124, sortable: true,
         columnProperties: () => ({ class: 'product-number-header' }),
         cellTemplate: metricStackRenderer,
         metricStack: { format: (value, row) => ({
@@ -499,8 +499,6 @@ export const productKpis: Example = {
     const formatDecision = (row: Product) => row.decision === 'cap' && row.cap != null ? `Cap at ${Math.round(row.cap * 100)}%` : row.decision ? decisionLabels[row.decision] ?? row.decision : 'No decision';
     const weekLabel = (index: number) => new Date(Date.UTC(2026, 9, 11 - (51 - index) * 7)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
     const signedMoney = (value: number) => `${value < 0 ? '−' : '+'}${Math.abs(value) < 1000 ? money(Math.abs(value)) : productMoney(Math.abs(value))}`;
-    const dialog = () => bench.heading.parentElement?.querySelector<HTMLDialogElement>('dialog.workbench-dialog');
-    const addClose = (node: HTMLDialogElement) => { const close = button('×', () => node.close()); close.className = 'scale-drawer-close'; close.setAttribute('aria-label', 'Close'); node.querySelector('form')?.append(close); };
     function showProduct(row: Product, active: ProductTab = 'Overview') {
       row = rows.find(item => item.id === row.id) ?? row;
       const health = productPeriodHealth(row.weeks.slice(-window), row.markdown, { weeklySalesTarget, marginFloor: minimumMargin, discountCeiling: maxDiscount }, { margin: row.margin, discount: row.discount });
@@ -558,7 +556,9 @@ export const productKpis: Example = {
         createElement(MenuItem, { key: 'clear', onClick: () => selectDecision(null) }, 'Clear Decision')));
       decisions.append(trigger, menuHost); extra.append(edit, decisions);
       renderTab(active);
-      bench.form(row.label, [body], () => false, extra, undefined, () => { tabControl.destroy(); actionRoot.unmount(); decisionRoot.unmount(); }); const node = dialog(); if (node) { const actions = node.querySelector('.workbench-actions'); Array.from(actions?.children ?? []).filter(child => child instanceof HTMLButtonElement).forEach(child => child.remove()); addClose(node); }
+      bench.form(row.label, [body], () => false, extra, undefined,
+        () => { tabControl.destroy(); actionRoot.unmount(); decisionRoot.unmount(); },
+        { cancel: false, submit: false, close: { label: 'Close', className: 'scale-drawer-close' } });
     }
 
     function editProduct(row?: Product, fromView = false) {
@@ -586,7 +586,7 @@ export const productKpis: Example = {
         if (row) { const previous = structuredClone(row); Object.assign(row, draft); row.weeks = row.weeks.map(week => weeklyContribution(week, row.landed, row.serve)); row.promo = row.weeks.map(week => week[5] ? (week[3] < 0 ? -1 : 1) : 0); row.margin = undefined; const updates: string[] = []; if (row.landed !== previous.landed) updates.push(`Landed cost set to ${Math.round(row.landed * 100)}% of list`); if (row.serve !== previous.serve) updates.push(`Cost to serve set to ${Math.round(row.serve * 100)}% of net`); if (row.listPrice !== previous.listPrice) updates.push(`List price set to ${money(row.listPrice)}`); if (!updates.length) updates.push('Product updated'); row.activity.unshift(...updates.map(text => ({ text, by: 'You', when: 'Today' }))); refresh(); bench.report('Product saved.', () => { Object.assign(row, previous); refresh(); }); if (fromView) { showProduct(row); return false; } }
         else { let sequence = 1; let sku = ''; do { sku = `${region.value.slice(0, 2).toUpperCase()}-NEW${sequence++}`; } while (rows.some(item => item.sku === sku)); const created: Product = { ...draft, id: `product-${sku}`, sku, onHand: 0, decision: null, cap: null, promotionRules: [], activity: [{ text: 'Product added', by: ownerId, when: 'Today' }], data: Array(52).fill(0), weeks: Array.from({ length: 52 }, (): ProductWeek => [0,0,0,0,0,null]), markdown: 0, promo: Array(52).fill(0) }; rows.push(created); bench.resetPage(); refresh(); bench.report('Product added.', () => { const index = rows.indexOf(created); if (index >= 0) rows.splice(index, 1); refresh(); }); showProduct(created); return false; }
         return true;
-      }, back, row ? 'Save Changes' : 'Add Product'); const node = dialog(); if (node) addClose(node);
+      }, back, row ? 'Save Changes' : 'Add Product', undefined, { close: { label: 'Close', className: 'scale-drawer-close' } });
     }
 
   },

@@ -77,3 +77,29 @@ test('a missed visit is not presented as an upcoming booking', async () => {
   assert.equal(serviceStates(kitchen, [missed, planned])[0].state, 'late');
   assert.equal(kitchenPlan(kitchen, [missed, planned])[0].next, planned);
 });
+
+test('bulk booking skips conflicts and checks earlier planned bookings', async () => {
+  const { planDueBookings } = await import('./visit-model.ts');
+  const kitchens = [1, 2, 3, 4, 5].map(id => ({ id, label: `Kitchen ${id}`, manager: 'M', volume: 'high', services: ['pest', 'grease'], priorDone: {} }));
+  const technicians = [{ name: 'Pest technician', service: 'pest' }, { name: 'Grease technician', service: 'grease' }];
+  const due = (kitchen, service = 'pest') => ({ kitchen, day: 8, service, status: 'Due', crew: '', report: '' });
+  const occupied = ['opening', 'afternoon', 'close'].map((window, index) => ({ ...due(index + 1), status: 'Booked', crew: 'Pest technician', window }));
+  const full = planDueBookings([due(4)], kitchens, occupied, technicians);
+  assert.equal(full.bookings.length, 0);
+  assert.match(full.skipped[0].reason, /Pick another time or technician/);
+  const partial = planDueBookings([due(1, 'grease'), due(1, 'pest'), due(2, 'pest'), due(3, 'pest'), due(4, 'pest'), due(5, 'pest')], kitchens, [], technicians);
+  assert.equal(partial.bookings.length, 4);
+  assert.equal(partial.skipped.length, 2);
+  assert.match(partial.skipped[0].reason, /already has a visit/);
+  assert.match(partial.skipped[1].reason, /Pick another time or technician/);
+  assert.deepEqual(partial.bookings.filter(visit => visit.service === 'pest').map(visit => visit.window), ['opening', 'afternoon', 'close']);
+});
+
+test('bulk booking rejects stale duplicate services and missing qualified crew', async () => {
+  const { planDueBookings } = await import('./visit-model.ts');
+  const kitchen = { id: 1, label: 'Test', manager: 'M', volume: 'high', services: ['pest', 'grease'], priorDone: {} };
+  const due = { kitchen: 1, day: 8, service: 'pest', status: 'Due', crew: '', report: '' };
+  const previous = { ...due, day: 7, status: 'Booked', crew: 'Pest technician', window: 'opening' };
+  assert.match(planDueBookings([due], [kitchen], [previous], [{ name: 'Pest technician', service: 'pest' }]).skipped[0].reason, /open visit/);
+  assert.match(planDueBookings([{ ...due, service: 'grease' }], [kitchen], [], []).skipped[0].reason, /certified/);
+});

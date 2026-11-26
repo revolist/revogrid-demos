@@ -221,7 +221,7 @@ body {
   padding: 8px;
   border: 1px solid var(--border);
   border-radius: 9px;
-  background: white;
+  background: var(--rv-ui-surface-elevated, white);
   box-shadow: 0 5px 20px #0002;
 }
 .workbench-search::before {
@@ -441,6 +441,13 @@ body {
   justify-content: end;
   gap: 7px;
 }
+.workbench-actions.rv-dialog__action-footer {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.workbench-actions > .rv-dialog__action-panel { width: 100%; }
 .rules-row {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
@@ -754,7 +761,7 @@ body {
   border-radius: 0 8px 8px 0;
 }
 .workbench .workbench-segments button[aria-pressed='true'] {
-  background: #f1f1f1;
+  background: var(--rv-ui-surface-hover, #f1f1f1);
   font-weight: 500;
 }
 .product-revenue {
@@ -1178,7 +1185,7 @@ body {
   position: relative;
   background: repeating-linear-gradient(
     to top,
-    #e9e9e9 0 1px,
+    var(--rv-ui-border, #e9e9e9) 0 1px,
     transparent 1px 28px
   );
 }
@@ -1300,23 +1307,23 @@ body {
 .brand-call small {
   padding: 2px 4px;
   border-radius: 4px;
-  background: #eee;
+  background: var(--rv-ui-surface-hover, #eee);
   font-size: 9px;
 }
 .brand-call .call-grow {
-  color: #337c64;
-  background: #e9f5ef;
+  color: var(--rv-ui-success, #337c64);
+  background: var(--rv-ui-success-surface, #e9f5ef);
 }
 .brand-call .call-trim {
-  color: #966d27;
-  background: #fff3d7;
+  color: var(--rv-ui-warning, #966d27);
+  background: var(--rv-ui-warning-surface, #fff3d7);
 }
 .brand-call .call-exit {
-  color: #a44040;
-  background: #f8e6e4;
+  color: var(--rv-ui-danger, #a44040);
+  background: var(--rv-ui-danger-surface, #f8e6e4);
 }
-.brand-value.good.strong { background: #ecfdf5; }
-.brand-value.bad.strong { background: #fff1f2; }
+.brand-value.good.strong { background: var(--rv-ui-success-surface, #ecfdf5); }
+.brand-value.bad.strong { background: var(--rv-ui-danger-surface, #fff1f2); }
 @media (max-width: 650px) {
   .workbench--brand-scorecard .brand-chart-controls {
     width: 150px;
@@ -1339,7 +1346,7 @@ body {
   font-size: 12px;
 }
 .budget-filters button[aria-pressed='true'] {
-  background: #f1f1f1;
+  background: var(--rv-ui-surface-hover, #f1f1f1);
   font-weight: 500;
 }
 .budget-filters button:not(:first-child)::before {
@@ -1610,14 +1617,14 @@ body {
   width: 16px;
   min-height: 16px;
   padding: 0;
-  border: 1px solid #dedede;
+  border: 1px solid var(--rv-ui-border, #dedede);
   border-radius: 4px;
-  background-color: #fff;
+  background-color: var(--rv-ui-surface, #fff);
 }
 .workbench-grid .rv-checkbox:checked,
 .workbench-grid .rv-checkbox:indeterminate {
-  background: #171717;
-  border-color: #171717;
+  background: var(--rv-ui-accent, #171717);
+  border-color: var(--rv-ui-accent, #171717);
 }
 .workbench-grid .cell-action {
   border: 0;
@@ -1675,9 +1682,9 @@ body {
 .workbench--campaign-performance .workbench-share > span { width: 28px; text-align: right; }
 .workbench--campaign-performance .rv-bullet-chart-value { justify-content: flex-end; }
 .workbench--campaign-performance .rv-bullet-chart-value > .rv-bullet-chart { flex: 0 0 56px; }
-.workbench--campaign-performance .workbench-grid revogr-data .rgCell { box-shadow: inset 0 -1px #e4e4e4; }
-.workbench--campaign-performance .workbench-grid.campaign-column-lines revogr-data .rgCell { box-shadow: inset 0 -1px #e4e4e4, inset -1px 0 #e4e4e4; }
-.workbench--campaign-performance .workbench-grid.campaign-row-stripes revogr-data .rgRow:nth-child(even) .rgCell { background: #f8f8f8; }
+.workbench--campaign-performance .workbench-grid revogr-data .rgCell { box-shadow: inset 0 -1px var(--rv-ui-border, #e4e4e4); }
+.workbench--campaign-performance .workbench-grid.campaign-column-lines revogr-data .rgCell { box-shadow: inset 0 -1px var(--rv-ui-border, #e4e4e4), inset -1px 0 var(--rv-ui-border, #e4e4e4); }
+.workbench--campaign-performance .workbench-grid.campaign-row-stripes revogr-data .rgRow:nth-child(even) .rgCell { background: var(--rv-ui-surface-hover, #f8f8f8); }
 :is(.workbench--campaign-performance, .workbench--product-kpis, .workbench--service-visits) .workbench-grid .rgHeaderCell.sortable {
   color: #404040;
 }

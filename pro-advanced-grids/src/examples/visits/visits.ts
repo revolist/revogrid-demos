@@ -1,12 +1,12 @@
 import { createControl, createButtonElement, createCheckboxElement, createProgressElement, mountTabs } from '@revolist/ui/native';
-import { ROW_ACTION_COLUMN_WIDTH } from '../../composables/row-action';
-import { calendarField } from './ui-calendar-field';
+import { ROW_ACTION_COLUMN_WIDTH } from '../../../../composables/row-action';
+import { calendarField } from '../../shared/ui-calendar-field';
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Badge, CalendarNavigator, CalendarPicker, Checkbox, Menu, MenuItem, MultiSelect, RadioGroup } from '@revolist/ui/react';
 import { renderDateSlotHeader } from '@revolist/revogrid-pro';
 import { diffInCalendarDays, type ISODateString } from '@revolist/ui/dates';
-import '@revolist/ui/styles/calendar.css';
+import '@revolist/ui/styles/calendar.scss';
 import type { ColumnData, ColumnRegular } from '@revolist/revogrid';
 import {
   button,
@@ -19,12 +19,12 @@ import {
   personSelect,
   selectOptions,
   type Example,
-} from './workbench-ui';
+} from '../../shared/workbench-ui';
 
 import { GridPopoverPlugin, createTimeRangeSlotHeaderFormatter, statusActionRenderer, progressDetailRenderer, identityCellRenderer, cellActionRenderer, visualCellRenderer } from '@revolist/revogrid-pro';
 import { KeyedRowSelectionPlugin } from '@revolist/revogrid-pro';
 import { initialKitchens, initialVisits, technicians, areaManagers } from './visit-fixtures';
-import { services, serviceStates, kitchenPlan, coverage, dueVisits, effectiveStatus, suggestCrew, bookingError, kitchenError, visitWindows, type VisitWindow, type Kitchen, type Visit, type Service, type Status } from './visit-model';
+import { services, serviceStates, kitchenPlan, coverage, dueVisits, effectiveStatus, suggestCrew, bookingError, planDueBookings, kitchenError, visitWindows, type VisitWindow, type Kitchen, type Visit, type Service, type Status } from './visit-model';
 
 const serviceKeys: Service[] = ['clean', 'pest', 'grease', 'hood', 'fridge', 'fire'];
 const serviceLabels = serviceKeys.map(key => services[key].label);
@@ -122,16 +122,17 @@ export const visitPlanner: Example = {
       button('Book Visit', () => bookVisit(), true),
     );
     const bookDue = (due: Visit[]) => {
-      const added: Visit[] = [];
-      for (const visit of due) {
-        const suggestion = suggestCrew(visit.service, visit.day, visits, technicians);
-        const booking: Visit = { ...visit, ...suggestion, status: 'Awaiting', notes: '' };
-        visits.push(booking); added.push(booking);
+      if (!due.length) return;
+      const { bookings: added, skipped } = planDueBookings(due, kitchens, visits, technicians);
+      const skippedMessage = skipped.length ? ` ${skipped.length} ${skipped.length === 1 ? 'visit was' : 'visits were'} skipped; check availability and existing visits.` : '';
+      if (!added.length) {
+        bench.report(`Visits could not be booked.${skippedMessage}`);
+        return;
       }
-      if (!added.length) return;
+      visits.push(...added);
       const undoActivity = logActivities(added.map(visit => ({ kitchen: visit.kitchen, title: `${services[visit.service].label} booked`, detail: activityDate(visit.day) })));
       refresh();
-      bench.report(`${added.length} ${added.length === 1 ? 'visit' : 'visits'} booked. Each one awaits its vendor's confirmation.`, () => {
+      bench.report(`${added.length} ${added.length === 1 ? 'visit' : 'visits'} booked. Each one awaits its vendor's confirmation.${skippedMessage}`, () => {
         for (const booking of added) { const index = visits.indexOf(booking); if (index >= 0) visits.splice(index, 1); }
         undoActivity(); refresh();
       });
@@ -336,7 +337,7 @@ export const visitPlanner: Example = {
           const progress = createProgressElement(document, { label: `Coverage ${result.onTrack} of ${result.total}`, value: result.onTrack, max: result.total }); meter.append(progress, make('small', `${result.onTrack}/${result.total}`)); head.append(caption, meter); card.append(head);
           const grid = make('revo-grid', '', 'visit-kitchen-plan-grid');
           const compact = window.matchMedia('(max-width: 650px)').matches;
-          grid.readonly = true; grid.theme = 'compact'; grid.rowSize = 55; grid.hideAttribution = true; grid.style.setProperty('--revo-grid-header-height', '40px'); grid.style.height = `${40 + plan.length * 55 + 2}px`;
+          grid.readonly = true; grid.theme = bench.grid.theme; grid.rowSize = 55; grid.hideAttribution = true; grid.style.setProperty('--revo-grid-header-height', '40px'); grid.style.height = `${40 + plan.length * 55 + 2}px`;
           const columns: ColumnData = [
             { prop: 'service', name: 'Service', size: compact ? 138 : 162, cellTemplate: identityCellRenderer, identityCell: { format: (_value, model) => { const key = model.service as Service; return { label: services[key].label, detail: `Every ${services[key][kitchen.volume]} days`, labelElement: 'span', className: 'visit-plan-service' }; } } },
             ...(!compact ? [{ prop: 'lastDone', name: 'Last Done', size: 104, cellTemplate: visualCellRenderer, visualCell: { format: (_value: unknown, model: any) => ({ kind: 'text' as const, text: model.lastDone == null ? 'Never' : dateLabel.format(fixedDate(Number(model.lastDone))) }) } }] : []),
@@ -393,20 +394,18 @@ export const visitPlanner: Example = {
       showTab('plan');
       const edit = button('Edit', () => editKitchen(kitchen, true)); edit.dataset.icon = 'edit';
       const menuHost = make('div', '', 'visit-popover__menu-items'); const menuRoot = createRoot(menuHost);
-      bench.form(kitchen.label, [body], () => { bookVisit({ kitchen }, undefined, kitchen); return false; }, edit, 'Book Visit', () => { tabControl.destroy(); menuRoot.unmount(); });
-      const dialog = bench.heading.parentElement?.querySelector('dialog');
-      if (dialog) {
-        const actions = dialog.querySelector('.workbench-actions'); actions?.querySelector('button:nth-last-child(2)')?.remove();
-        const book = actions?.querySelector<HTMLButtonElement>('button[type=submit]'); if (book) book.dataset.icon = 'calendar-add';
-        const close = button('×', () => dialog.close()); close.className = 'visit-book-close'; close.setAttribute('aria-label', 'Close');
-        const menu = make('details', '', 'visit-kitchen-view__menu'); const trigger = createControl(document, 'summary'); trigger.textContent = '⋯'; trigger.setAttribute('aria-label', 'More actions'); trigger.setAttribute('role', 'button');
-        trigger.setAttribute('aria-haspopup', 'menu');
-        menuRoot.render(createElement(Menu, { label: 'Kitchen actions', onClose: () => { menu.open = false; trigger.focus(); } },
-          createElement(MenuItem, { onClick: () => { menu.open = false; editKitchen(kitchen, true); } }, 'Edit Kitchen'),
-          createElement(MenuItem, { onClick: () => { menu.open = false; removeKitchen(kitchen); } }, 'Remove Kitchen')));
-        menu.append(trigger, menuHost);
-        dialog.querySelector('form')?.append(menu, close);
-      }
+      const menu = make('details', '', 'visit-kitchen-view__menu'); const trigger = createControl(document, 'summary'); trigger.textContent = '⋯'; trigger.setAttribute('aria-label', 'More actions'); trigger.setAttribute('role', 'button');
+      trigger.setAttribute('aria-haspopup', 'menu');
+      menuRoot.render(createElement(Menu, { label: 'Kitchen actions', onClose: () => { menu.open = false; trigger.focus(); } },
+        createElement(MenuItem, { onClick: () => { menu.open = false; editKitchen(kitchen, true); } }, 'Edit Kitchen'),
+        createElement(MenuItem, { onClick: () => { menu.open = false; removeKitchen(kitchen); } }, 'Remove Kitchen')));
+      menu.append(trigger, menuHost);
+      bench.form(kitchen.label, [body], () => { bookVisit({ kitchen }, undefined, kitchen); return false; }, edit, 'Book Visit', () => { tabControl.destroy(); menuRoot.unmount(); }, {
+        cancel: false,
+        submit: { icon: 'calendar-add' },
+        close: { label: 'Close', className: 'visit-book-close' },
+        content: [menu],
+      });
     }
 
     function editKitchen(kitchen?: Kitchen, fromView = false) {
@@ -473,9 +472,7 @@ export const visitPlanner: Example = {
           showKitchen(draft); return false;
         }
         return true;
-      }, remove, kitchen ? 'Save Changes' : 'Add Kitchen', () => volumeRoot.unmount());
-      const dialog = bench.heading.parentElement?.querySelector('dialog');
-      if (dialog) { const close = button('×', () => dialog.close()); close.className = 'visit-book-close'; close.setAttribute('aria-label', 'Close'); dialog.querySelector('form')?.append(close); }
+      }, remove, kitchen ? 'Save Changes' : 'Add Kitchen', () => volumeRoot.unmount(), { close: { label: 'Close', className: 'visit-book-close' } });
     }
 
     function removeKitchen(kitchen: Kitchen) {
@@ -588,12 +585,7 @@ export const visitPlanner: Example = {
         }
         if (origin) { showKitchen(origin); return false; }
         return true;
-      }, origin ? button('Back', () => showKitchen(origin)) : undefined, editing ? 'Save Changes' : 'Book Visit', () => statusRoot.unmount());
-      const dialog = bench.heading.parentElement?.querySelector('dialog');
-      if (dialog) {
-        const close = button('×', () => dialog.close()); close.className = 'visit-book-close'; close.setAttribute('aria-label', 'Close');
-        dialog.querySelector('form')?.append(close);
-      }
+      }, origin ? button('Back', () => showKitchen(origin)) : undefined, editing ? 'Save Changes' : 'Book Visit', () => statusRoot.unmount(), { close: { label: 'Close', className: 'visit-book-close' } });
     }
 
     function showVisit(visit: Visit, anchor: HTMLElement) {

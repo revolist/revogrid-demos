@@ -4,12 +4,13 @@ import { SegmentedSwitch } from '@revolist/ui/react';
 import { createRecordNavigation } from '@revolist/ui/native';
 import sortIcon from '@fortawesome/fontawesome-free/svgs/solid/arrow-down-wide-short.svg?raw';
 import { mountTabs } from '@revolist/ui/native';
-import { createDetailPanel } from '../../composables/detail-panel';
+import { createDetailPanel } from '../../../../composables/detail-panel';
 import { createMetricTileHistoryTooltip, METRIC_TILE_HISTORY_TOOLTIP } from '@revolist/revogrid-pro';
 import '@revolist/revogrid-pro/styles.css';
 import { renderColumnHeader, visualCellRenderer, type VisualCellPresentation } from '@revolist/revogrid-pro';
-import { calendarField } from './ui-calendar-field';
+import { calendarField } from '../../shared/ui-calendar-field';
 import { brandSpread } from './brand-spread';
+import { brandRangeScale } from './brand-range';
 import { brandStyleFixtures } from './brand-style-fixtures';
 import { profitAxisMaximum, styleProfit, type BrandStyle } from './brand-style-model';
 import { comparableGrowth } from './brand-growth';
@@ -33,7 +34,7 @@ import {
   personSelect,
   total,
   type Example,
-} from './workbench-ui';
+} from '../../shared/workbench-ui';
 
 const decisions = ['Grow', 'Hold', 'Trim', 'Exit'];
 const colors = [
@@ -183,7 +184,7 @@ export const brandScorecard: Example = {
     const chart = select(
       'Charted metric',
       metrics.map((metric) => metric.label),
-      'Markdown',
+      'Net Sales',
       (value) => { view = value === 'Profit per Style' ? 'Styles' : 'Months'; refresh(); },
     );
     const decision = select(
@@ -200,7 +201,7 @@ export const brandScorecard: Example = {
       onChange: (mode: string | number) => {
         if (mode !== 'Months' && mode !== 'Styles') return;
         view = mode;
-        chart.value = mode === 'Styles' ? 'Profit per Style' : 'Markdown';
+        chart.value = mode === 'Styles' ? 'Profit per Style' : 'Net Sales';
         refresh();
       },
     }));
@@ -279,6 +280,10 @@ export const brandScorecard: Example = {
       const active = visible.filter((brand) => read(brand, 'sales') > 0);
       const allStyles = active.flatMap(brand => brand.styleRecords);
       const profitMaximum = profitAxisMaximum(allStyles);
+      const monthlyPoints = (brand: Brand) => brand.monthData.length
+        ? brand.monthData.flatMap((month, index) => { const value = monthlyMetric([month], selected.key, brand.styles); return value === null ? [] : [{ value, index }]; })
+        : brand.months.map((value, index) => ({ value: selected.key === 'sales' ? value : (read(brand, selected.key) * value) / (read(brand, 'sales') / 12), index }));
+      const rangeScale = brandRangeScale(active.flatMap(brand => monthlyPoints(brand).map(point => point.value)), selected.key === 'markdown' ? 45 : undefined);
       const bestProfit = Math.max(0, ...allStyles.map(styleProfit));
       const maxOrders = Math.max(1, ...allStyles.map(style => style.orders));
       const monthlyPortfolio = monthLabels.flatMap((month, index) => {
@@ -374,7 +379,7 @@ export const brandScorecard: Example = {
           { label: 'Returns', value: brandPct(aggregate(active, metrics[6])) },
           { label: 'Sell-through', value: active.length ? brandPct(aggregate(active, metrics.find(metric => metric.key === 'sellThrough')!)) : '–' },
         ],
-        ...(selected.key === 'markdown' || view === 'Styles' ? { axis: view === 'Styles' ? [profitMaximum, profitMaximum * 2 / 3, profitMaximum / 3, 0].map(brandCurrency) : ['45%', '30%', '15%', '0%'] } : {}),
+        axis: view === 'Styles' ? [profitMaximum, profitMaximum * 2 / 3, profitMaximum / 3, 0].map(brandCurrency) : rangeScale.ticks.map(selected.format),
       });
       const sectionPresentation = (model: DataType): VisualCellPresentation | undefined => {
         if (model.band) return portfolioSummary();
@@ -407,16 +412,13 @@ export const brandScorecard: Example = {
             }) };
           }
           if (!sold) return { kind: 'text', className: 'brand-no-sales', text: 'No sales' };
-          const points = brand.monthData.length
-            ? brand.monthData.flatMap((month, index) => { const value = monthlyMetric([month], selected.key, brand.styles); return value === null ? [] : [{ value, index }]; })
-            : brand.months.map((value, index) => ({ value: selected.key === 'sales' ? value : (read(brand, selected.key) * value) / (sold / 12), index }));
+          const points = monthlyPoints(brand);
           if (!points.length) return { kind: 'text', className: 'brand-no-sales', text: 'No data' };
-          const maximum = selected.key === 'sales' ? Math.max(...active.flatMap(item => item.months)) : Math.max(1, ...active.map(item => read(item, selected.key) * 1.7));
           const sorted = points.slice().sort((a, b) => a.value - b.value), middle = Math.floor(sorted.length / 2);
           const median = sorted.length % 2 ? sorted[middle].value : (sorted[middle - 1].value + sorted[middle].value) / 2;
           const low = sorted[0], high = sorted[sorted.length - 1];
           const month = (index: number) => `${monthLabels[index]} ${index < 3 ? 2025 : 2026}`;
-          const positions = [low.value, median, high.value].map(value => Math.min(96, Math.max(0, 20 + (value / (selected.key === 'markdown' ? 45 : maximum)) * 60))) as [number, number, number];
+          const positions = [low.value, median, high.value].map(rangeScale.position) as [number, number, number];
           return { kind: 'range', className: 'brand-range', color: brand.color, label: `${brand.label} monthly range for ${selected.label}`, values: positions,
             tooltip: { title: brand.label, subtitle: `${selected.label} by month`, rows: [
               { label: `Highest, ${month(high.index)}`, value: selected.format(high.value), color: brand.color },
@@ -450,7 +452,7 @@ export const brandScorecard: Example = {
         ...(!compact ? [{ prop: 'group', name: 'Section', size: 148, pin: 'colPinStart', columnTemplate: () => undefined, cellTemplate: visualCellRenderer, visualCell: { format: (_value: unknown, model: DataType) => sectionPresentation(model), onActivate: (model: DataType) => toggle(model.group) } } as ColumnRegular] : []),
         { prop: 'label', name: 'Next season call', size: compact ? 107 : 234, pin: 'colPinStart', columnTemplate: h => h('span', { class: 'brand-metric-label' }, selected.label), cellTemplate: visualCellRenderer, visualCell: { format: (_value, model) => labelPresentation(model), onActivate: model => toggle(model.group) } },
         ...visible.map((brand): ColumnRegular => ({
-          prop: brand.id, name: brand.label, size: 78,
+          prop: brand.id, name: brand.label, size: 78, columnType: 'number',
             columnTemplate(h) {
               return h(
                 'div',
@@ -476,7 +478,7 @@ export const brandScorecard: Example = {
                       }),
                     ],
                   ),
-                  cellAction(h, `Open ${brand.label}`, brand.label, () =>
+                  cellAction(h, `Open ${brand.label}`, brand.label.split(' ')[0], () =>
                     showBrand(brand),
                   ),
                 ],
@@ -486,7 +488,7 @@ export const brandScorecard: Example = {
             visualCell: { format: (_value, model) => brandPresentation(brand, model), onActivate: () => edit(brand) },
         })),
         {
-          prop: 'portfolio', name: 'Portfolio', size: 84,
+          prop: 'portfolio', name: 'Portfolio', size: 84, columnType: 'number',
           columnTemplate: h => renderColumnHeader(h, { className: 'brand-column-summary', label: 'Portfolio', subtitle: `${visible.length} brands` }),
           cellTemplate: visualCellRenderer,
           visualCell: { format: (_value, model) => {
@@ -542,8 +544,6 @@ export const brandScorecard: Example = {
     type BrandTab = 'Overview' | 'Styles' | 'Months' | 'Details';
     const metricSteps: Partial<Record<Metric['key'], number>> = { change: 5, average: 8, margin: 3, markdown: 3, returns: 2, profitPerStyle: 40000, repeat: 4, rating: 0.15, sellThrough: 5, agedStock: 4 };
     const metricValue = (metric: Metric, value: number) => `${metric.key === 'change' && value > 0 ? '+' : ''}${metric.format(value)}`;
-    const profileDialog = () => bench.heading.parentElement?.querySelector<HTMLDialogElement>('dialog.workbench-dialog');
-    const addDrawerClose = (dialog: HTMLDialogElement) => { const close = button('×', () => dialog.close()); close.className = 'scale-drawer-close'; close.setAttribute('aria-label', 'Close'); dialog.querySelector('form')?.append(close); };
     function showBrand(brand: Brand, active: BrandTab = 'Overview') {
       const visible = brands.filter(item => matches(bench.currentQuery(), item.label, item.decision) && (decision.value === 'All decisions' || decision.value === item.decision));
       if (reverse) visible.sort((a, b) => read(b, (metrics.find(metric => metric.label === chart.value) ?? metrics[0]).key) - read(a, (metrics.find(metric => metric.label === chart.value) ?? metrics[0]).key));
@@ -572,14 +572,29 @@ export const brandScorecard: Example = {
       const tabControl = mountTabs(tabs, tabProps(active));
       const controls = [...tabs.querySelectorAll<HTMLButtonElement>('[role=tab]')];
       body.append(head, tabs, panel);
+      let callRoot: ReturnType<typeof createRoot> | undefined;
+      const disposeCall = () => { callRoot?.unmount(); callRoot = undefined; };
       const section = (title: string, subtitle: string) => { const { card, body } = createDetailPanel(title, subtitle, { card: 'scale-profile__section', heading: 'scale-profile__section-heading', body: 'scale-profile__section-content' }); panel.append(card); return body; };
       const table = (label: string, headings: string[]) => { const result = make('table', '', 'brand-profile__table'); result.setAttribute('aria-label', label); const thead = make('thead'), tr = make('tr'); headings.forEach(name => tr.append(make('th', name))); thead.append(tr); result.append(thead); return result; };
       function showTab(tab: BrandTab) {
-        active = tab; tabControl.update(tabProps(tab)); panel.replaceChildren(); panel.setAttribute('aria-labelledby', controls[names.indexOf(tab)].id);
+        active = tab; tabControl.update(tabProps(tab)); disposeCall(); panel.replaceChildren(); panel.setAttribute('aria-labelledby', controls[names.indexOf(tab)].id);
         controls.forEach((control, index) => { const selected = names[index] === tab; control.setAttribute('aria-selected', String(selected)); control.tabIndex = selected ? 0 : -1; });
         if (tab === 'Overview') {
-          const call = section('Buy Call', "Next season's buy"); const group = make('div', '', 'brand-profile__calls'); group.setAttribute('role', 'group'); group.setAttribute('aria-label', 'Next season call');
-          for (const choice of decisions) { const control = button(choice, () => { if (brand.decision === choice) return; const previous = brand.decision; brand.decision = choice; refresh(); showBrand(brand, 'Overview'); bench.report(`Buy call set to ${choice}.`, () => { brand.decision = previous; refresh(); }); }); control.setAttribute('aria-pressed', String(brand.decision === choice)); group.append(control); }
+          const call = section('Buy Call', "Next season's buy");
+          const group = make('div');
+          callRoot = createRoot(group);
+          callRoot.render(createElement(SegmentedSwitch, {
+            role: 'group', ariaLabel: 'Next season call', className: 'brand-profile__calls',
+            value: brand.decision, options: decisions.map(value => ({ value, label: value })),
+            onChange: (choice: string | number) => {
+              if (typeof choice !== 'string' || brand.decision === choice) return;
+              const previous = brand.decision;
+              brand.decision = choice;
+              refresh();
+              showBrand(brand, 'Overview');
+              bench.report(`Buy call set to ${choice}.`, () => { brand.decision = previous; refresh(); });
+            },
+          }));
           call.append(group, make('small', callNotes[brand.decision], 'brand-profile__call-note'));
           const content = section('Against the Portfolio', 'Oct 2025 to Sep 2026, brands in view'); const grid = table(`${brand.label} against the portfolio on every line`, ['Line', 'Brand', 'Portfolio', 'Standing']); const tbody = make('tbody');
           for (const groupName of [...new Set(metrics.map(metric => metric.group))]) {
@@ -624,7 +639,9 @@ export const brandScorecard: Example = {
       showTab(active);
       const extra = make('div', '', 'scale-profile__footer-extra'); const remove = button('Remove', () => removeRecord(bench, brands, brand, brand.label, refresh)); remove.className = 'scale-profile__delete'; remove.dataset.icon = 'trash';
       const exportButton = button('Export CSV', () => { const quote = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`; const rows = [['Metric', 'Brand', 'Portfolio'], ...metrics.map(metric => [metric.label, read(brand, metric.key), aggregate(visible, metric)])]; const url = URL.createObjectURL(new Blob([rows.map(row => row.map(quote).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' })); const link = make('a'); link.href = url; link.download = `${brand.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-scorecard.csv`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 0); }); exportButton.dataset.icon = 'download'; extra.append(remove, exportButton);
-      bench.form(brand.label, [body], () => { edit(brand, true); return false; }, extra, 'Edit', () => tabControl.destroy()); const dialog = profileDialog(); if (dialog) { const actions = dialog.querySelector('.workbench-actions'); Array.from(actions?.children ?? []).find(child => child instanceof HTMLButtonElement && child.type === 'button' && child.textContent === 'Cancel')?.remove(); const submit = actions?.querySelector<HTMLButtonElement>('button[type=submit]'); if (submit) submit.dataset.icon = 'edit'; addDrawerClose(dialog); }
+      bench.form(brand.label, [body], () => { edit(brand, true); return false; }, extra, 'Edit',
+        () => { disposeCall(); tabControl.destroy(); },
+        { cancel: false, submit: { icon: 'edit' }, close: { label: 'Close', className: 'scale-drawer-close' } });
     }
 
     function edit(brand?: Brand, fromView = false) {
@@ -637,7 +654,17 @@ export const brandScorecard: Example = {
       const firstDrop = calendarField('First Delivery', brand?.firstDrop ?? '');
       const body = make('div', '', 'scale-edit brand-edit'); body.append(make('p', brand?.referenceId ?? 'Onboards with no sales until its first delivery sells.', 'scale-edit__subtitle'));
       const pair = (first: HTMLElement, second: HTMLElement) => { const row = make('div', '', 'scale-edit__pair'); row.append(first, second); return row; };
-      const statusField = field('Status', status), statusHint = make('small'); const refreshStatus = () => { statusHint.textContent = status.value === 'Onboarding' ? 'Active once its first delivery sells.' : status.value === 'Exiting' ? 'Exiting sells through with no new buy.' : 'Exiting sells through with no new buy.'; }; status.addEventListener('change', refreshStatus); refreshStatus(); statusField.append(statusHint);
+      const statusField = field('Status', status);
+      const statusHint = make('small');
+      const statusHints: Record<string, string> = {
+        Onboarding: 'Active once its first delivery sells.',
+        Active: 'Active brands can be bought and sold.',
+        Exiting: 'Exiting sells through with no new buy.',
+      };
+      const refreshStatus = () => { statusHint.textContent = statusHints[status.value] ?? ''; };
+      status.addEventListener('change', refreshStatus);
+      refreshStatus();
+      statusField.append(statusHint);
       const callField = field('Next Season Call', call), callHint = make('small'); const refreshCall = () => { callHint.textContent = callNotes[call.value]; }; call.addEventListener('change', refreshCall); refreshCall(); callField.append(callHint);
       const colorField = field('Mark Color', color); colorField.append(make('small', 'Colors its mark, bars and dots.'));
       const error = make('p', '', 'scale-profile__error'); error.hidden = true; error.setAttribute('role', 'alert');
@@ -651,7 +678,7 @@ export const brandScorecard: Example = {
         if (brand) { const previous = structuredClone(brand); Object.assign(brand, draft); refresh(); bench.report('Brand saved.', () => { Object.assign(brand, previous); refresh(); }); if (fromView) { showBrand(brand); return false; } }
         else { const created: Brand = { ...draft, id: `brand${nextId}`, referenceId: `brd-new-${nextId++}`, since: 2026, styles: 0, months: [], monthData: [], styleRecords: [], orders: 0, margin: 0, markdown: 0, returns: 0, repeat: 0, change: 0, newCustomers: 0, rating: 0, sellThrough: 0, units: 0, stockUnits: 0, stockCost: 0, agedStock: 0, isNew: true }; brands.push(created); refresh(); bench.report('Brand created.', () => { const index = brands.indexOf(created); if (index >= 0) brands.splice(index, 1); refresh(); }); showBrand(created); return false; }
         return true;
-      }, back, brand ? 'Save Changes' : 'Create Brand'); const dialog = profileDialog(); if (dialog) addDrawerClose(dialog);
+      }, back, brand ? 'Save Changes' : 'Create Brand', undefined, { close: { label: 'Close', className: 'scale-drawer-close' } });
     }
 
   },

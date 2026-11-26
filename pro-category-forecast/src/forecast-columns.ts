@@ -292,7 +292,7 @@ export function createColumns(options: ColumnOptions): ColumnData {
   };
 
   const monthColumns: ColumnRegular = {
-    prop: 'forecast-months', size: 54,
+    prop: 'forecast-months', size: 54, columnType: 'currency',
     dateRangeColumns: {
       start: '2025-11-01', end: '2026-10-01', unit: 'month',
       prop: slot => months[slot.index],
@@ -358,6 +358,7 @@ export function createColumns(options: ColumnOptions): ColumnData {
       prop: 'delta',
       name: text.planDelta,
       size: 72,
+      columnType: 'percentage',
       cellTemplate: (h, { model }) => {
         const value = (model as ForecastRow).attainment;
         return h(

@@ -1,6 +1,6 @@
-import { demoColors } from '../../composables/demo-colors';
+import { demoColors } from '../../../../composables/demo-colors';
 import { mountAreaChart } from '@revolist/ui/native';
-import '@revolist/ui/styles/charts.css';
+import '@revolist/ui/styles/charts.scss';
 
 export function campaignTrendChart(values: readonly number[], label: string, format: (value: number) => string) {
   const element = document.createElement('div');

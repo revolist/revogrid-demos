@@ -59,8 +59,8 @@
 .workbench--product-kpis .kpi-marks .good { background: #00a58f; }
 .workbench--product-kpis .kpi-marks .bad { background: #ed3d69; }
 .workbench--product-kpis .kpi-marks .near { background: #f08a36; }
-.workbench--product-kpis .workbench-grid:not(.product-column-lines) revogr-data .rgCell { box-shadow: inset 0 -1px #e4e4e4; }
-.workbench--product-kpis .workbench-grid.product-row-stripes revogr-data .rgRow:nth-child(even) .rgCell { background: #f8f8f8; }
+.workbench--product-kpis .workbench-grid:not(.product-column-lines) revogr-data .rgCell { box-shadow: inset 0 -1px var(--rv-ui-border, #e4e4e4); }
+.workbench--product-kpis .workbench-grid.product-row-stripes revogr-data .rgRow:nth-child(even) .rgCell { background: var(--rv-ui-surface-hover, #f8f8f8); }
 .workbench-grid .promo-strip span {
   position: relative;
   height: 7px;
@@ -180,30 +180,6 @@
 .scale-company__stage.active {
   color: #23765f;
   background: #e2f4ec;
-}
-.scale-company__stack {
-  display: flex;
-  align-items: center;
-  padding-left: 3px;
-}
-.scale-company__stack i {
-  display: grid;
-  place-items: center;
-  width: 17px;
-  height: 17px;
-  margin-left: -3px;
-  border: 2px solid white;
-  border-radius: 50%;
-  font-size: 8px;
-  font-style: normal;
-  color: white;
-  background: #171717;
-}
-.scale-company__stack i:nth-child(2) {
-  background: #7960db;
-}
-.scale-company__stack i:nth-child(3) {
-  background: #ed9a00;
 }
 .workbench-grid .scale-company--summary .cell-action {
   color: #737373;

@@ -92,6 +92,25 @@ export function bookingError(draft: Visit, kitchens: readonly Kitchen[], visits:
   return null;
 }
 
+/** Plan bulk bookings without mutating the schedule, checking each accepted
+ * booking against both the existing visits and the rest of this batch. */
+export function planDueBookings(due: readonly Visit[], kitchens: readonly Kitchen[], visits: readonly Visit[], technicians: readonly Technician[]) {
+  const bookings: Visit[] = [];
+  const skipped: { visit: Visit; reason: string }[] = [];
+  const scheduled = [...visits];
+  for (const visit of due) {
+    const suggestion = suggestCrew(visit.service, visit.day, scheduled, technicians);
+    const booking: Visit = { ...visit, ...suggestion, status: 'Awaiting', notes: '' };
+    const reason = bookingError(booking, kitchens, scheduled, technicians);
+    if (reason) skipped.push({ visit, reason });
+    else {
+      bookings.push(booking);
+      scheduled.push(booking);
+    }
+  }
+  return { bookings, skipped };
+}
+
 /** Validate a kitchen contract before adding it to the schedule. */
 export function kitchenError(draft: Kitchen, kitchens: readonly Kitchen[], managers: readonly string[]): string | null {
   const name = draft.label.trim();

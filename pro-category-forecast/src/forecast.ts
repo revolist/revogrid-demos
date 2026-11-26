@@ -10,7 +10,7 @@ import { CONFIGURATOR_AREA_ICONS } from '@revolist/ui/configurator-actions';
 import { createDetailPanel } from '../../composables/detail-panel';
 import { personPortrait } from '../../composables/demo-portraits';
 import '../../pro-advanced-grids/src/campaign-rich-options.css';
-import '@revolist/ui/styles/base.css';
+import '@revolist/ui/styles/base.scss';
 import { configureDemoAddButton, createDemoBody, createDemoHeading } from '../../composables/demo-shell';
 import { createDropdownControl } from '@revolist/ui/native';
 import { createMetricTileHistoryTooltip, METRIC_TILE_HISTORY_TOOLTIP } from '@revolist/revogrid-pro';
@@ -18,6 +18,9 @@ import '@revolist/revogrid-pro/styles.css';
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import {
   ColumnStretchPlugin,
+  ColumnNumber,
+  ColumnCurrency,
+  ColumnPercentage,
   CellMergePlugin,
   DateRangeColumnsPlugin,
   HeatmapPlugin,
@@ -78,7 +81,7 @@ export function mountForecast(
   ) => element(document, tag, className, value);
   const button = (label: string, action: () => void, primary = false) => {
     const control = createControl(document, 'button', {
-      class: primary ? 'forecast-button primary' : 'forecast-button',
+      class: primary ? 'forecast-button primary rv-btn rv-btn-primary' : 'forecast-button',
     });
     control.textContent = label;
     control.type = 'button';
@@ -258,6 +261,7 @@ export function mountForecast(
   host.append(section);
 
   grid.readonly = true;
+  grid.columnTypes = { ...grid.columnTypes, number: ColumnNumber, currency: ColumnCurrency, percentage: ColumnPercentage };
   grid.rowSize = 36;
   grid.style.setProperty('--revo-grid-header-height', '32px');
   grid.frameSize = 2;
@@ -473,7 +477,7 @@ export function mountForecast(
     const label = create('h2', '', title);
     label.id = 'forecast-dialog-title';
     const actions = create('div', 'forecast-form-actions');
-    const submit = createControl(document, 'button', { class: 'forecast-button primary' });
+    const submit = createControl(document, 'button', { class: 'forecast-button primary rv-btn rv-btn-primary' });
     submit.textContent = text.save;
     submit.type = 'submit';
     if (extra) actions.append(extra);

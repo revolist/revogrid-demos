@@ -1,6 +1,6 @@
 import { renderControl } from '@revolist/ui/native';
-import { demoColors } from '../../composables/demo-colors';
-import { ROW_ACTION_COLUMN_WIDTH } from '../../composables/row-action';
+import { demoColors } from '../../../../composables/demo-colors';
+import { ROW_ACTION_COLUMN_WIDTH } from '../../../../composables/row-action';
 import { createMetricTileHistoryTooltip, METRIC_TILE_HISTORY_TOOLTIP } from "@revolist/revogrid-pro";
 import type { ColumnData, DataType } from "@revolist/revogrid";
 import {
@@ -24,7 +24,7 @@ import {
   select,
   personSelect,
   type Example,
-} from "./workbench-ui";
+} from "../../shared/workbench-ui";
 
 import { buyers, divisions, tiers, initial, colors, money, read, score, rate, signed, percentChange, scoreChange, rateChange, lotDate, plot, type Division, type Tier, type Disposition, type Lot, type Supplier, type Reading, type QualityRow } from './supplier-quality-data';
 
@@ -183,6 +183,7 @@ export const supplierQuality: Example = {
               qualityRowClass: "quality-subgroup",
               expanded,
               reading: data,
+              accepted: data.rate, spend: data.spend, lots: data.lots.length,
               previous: read(inTier, months(), months()),
               trend: data.trend,
               plot: plot(data, highlight),
@@ -196,6 +197,7 @@ export const supplierQuality: Example = {
                   tier,
                   supplier,
                   reading: data,
+                  accepted: data.rate, spend: data.spend, lots: data.lots.length,
                   previous: read([supplier], months(), months()),
                   trend: data.trend,
                   plot: plot(data, highlight),
@@ -211,6 +213,7 @@ export const supplierQuality: Example = {
             qualityRowClass: "quality-subgroup",
             expanded: open,
             reading: data,
+            accepted: data.rate, spend: data.spend, lots: data.lots.length,
             previous: read(inDivision, months(), months()),
             trend: data.trend,
             plot: plot(data, highlight),
@@ -234,6 +237,7 @@ export const supplierQuality: Example = {
         label: `Total ${current.length} suppliers`,
         total: true,
         reading: all,
+        accepted: all.rate, spend: all.spend, lots: all.lots.length,
         previous: read(current, months(), months()),
         trend: all.trend,
         plot: plot(all, highlight),
@@ -258,31 +262,58 @@ export const supplierQuality: Example = {
     function showSupplier(supplier: Supplier) {
       const r = read([supplier], months());
       const list = make("div", "", "quality-detail");
-      list.append(
-        make(
-          "p",
-          `${supplier.division} · ${supplier.tier} · ${supplier.status}`,
-        ),
-        make("p", `Buyer: ${supplier.buyer}`),
-        make(
-          "p",
-          `${score(r)} average score · ${rate(r)} accepted · ${money(r.spend)} spend`,
-        ),
-      );
-      const recent = make("section");
-      recent.append(make("h3", "Inspected lots"));
-      for (const lot of r.lots)
-        recent.append(
-          make(
-            "p",
-            `${lot.product} · ${lot.score.toFixed(1)} · ${lot.disposition} · ${money(lot.value)}`,
-          ),
-        );
-      if (!r.lots.length) recent.append(make("p", "No lots inspected"));
-      list.append(
-        recent,
+      const meta = make("p", `${supplier.division} · ${supplier.tier} · ${supplier.status}`, "quality-detail__meta");
+      const buyer = make("p", `Buyer: ${supplier.buyer}`, "quality-detail__buyer");
+      const metrics = make("div", "", "quality-detail__metrics");
+      for (const [label, value] of [
+        ["Average score", score(r)],
+        ["Accepted", rate(r)],
+        ["Spend", money(r.spend)],
+      ]) {
+        const metric = make("div");
+        metric.append(make("span", label), make("strong", value));
+        metrics.append(metric);
+      }
+      list.append(meta, buyer, metrics);
+      const recent = make("section", "", "quality-detail__lots");
+      const heading = make("div", "", "quality-detail__lots-heading");
+      heading.append(make("h3", "Inspected lots"), make("span", `${r.lots.length} ${r.lots.length === 1 ? "lot" : "lots"}`));
+      recent.append(heading);
+      if (r.lots.length) {
+        const scroll = make("div", "", "quality-detail__table-scroll");
+        scroll.tabIndex = 0;
+        scroll.setAttribute("role", "region");
+        scroll.setAttribute("aria-label", "Inspected lots");
+        const table = make("table", "", "quality-detail__table");
+        table.setAttribute("aria-label", "Inspected lots");
+        const head = make("thead");
+        const header = make("tr");
+        for (const label of ["Lot", "Score", "Status", "Value"]) {
+          const cell = make("th", label);
+          cell.scope = "col";
+          header.append(cell);
+        }
+        head.append(header);
+        const body = make("tbody");
+        for (const lot of r.lots) {
+          const row = make("tr");
+          const status = make("td");
+          status.append(make("span", lot.disposition, `quality-detail__status is-${lot.disposition.toLowerCase()}`));
+          row.append(make("td", lot.product), make("td", lot.score.toFixed(1)), status, make("td", money(lot.value)));
+          body.append(row);
+        }
+        table.append(head, body);
+        scroll.append(table);
+        recent.append(scroll);
+      } else recent.append(make("p", "No lots inspected", "quality-detail__empty"));
+      const actions = make("div", "", "quality-detail__actions");
+      actions.append(
         button("Edit supplier", () => editSupplier(supplier)),
         button("Delete supplier", () => deleteSupplier(supplier)),
+      );
+      list.append(
+        recent,
+        actions,
       );
       bench.details(supplier.name, [list]);
     }
@@ -538,13 +569,15 @@ export const supplierQuality: Example = {
       },
       {
         prop: "accepted",
+        columnType: "number",
         name: "Accepted",
         size: 106,
         cellTemplate: metricStackRenderer,
         metricStack: { format: (_value, model) => { const r = model.reading as Reading; return { value: rate(r), detail: r.rate === null ? undefined : rateChange(r, model.previous as Reading) }; } },
       },
       {
-        prop: "trend",
+        prop: "spend",
+        columnType: "currency",
         name: "Spend",
         size: 160,
         cellTemplate: metricTrendRenderer,
@@ -563,11 +596,12 @@ export const supplierQuality: Example = {
             };
           },
           showSparkline: model => (model.reading as Reading).lots.length > 0,
-          sparkline: { label: model => `Spend trend for ${model.label}`, series: [{ color: '#a3a3a3', endpoint: 'hollow' }], tooltip: (_model, index, values) => `Period ${index + 1}: ${money(values[0] ?? 0)}` },
+          sparkline: { label: model => `Spend trend for ${model.label}`, series: [{ prop: 'trend', color: '#a3a3a3', endpoint: 'hollow' }], tooltip: (_model, index, values) => `Period ${index + 1}: ${money(values[0] ?? 0)}` },
         },
       },
       {
         prop: "lots",
+        columnType: "number",
         name: "Lots",
         size: 96,
         cellTemplate: metricStackRenderer,

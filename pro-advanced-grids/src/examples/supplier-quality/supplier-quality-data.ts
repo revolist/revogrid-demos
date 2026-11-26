@@ -1,4 +1,4 @@
-import { demoColors } from '../../composables/demo-colors';
+import { demoColors } from '../../../../composables/demo-colors';
 import type { MetricTileHistory } from '@revolist/revogrid-pro';
 
 export type Division = "Footwear" | "Apparel" | "Camp" | "Packs";
@@ -48,6 +48,9 @@ export type QualityRow = {
   expanded?: boolean;
   reading: Reading;
   previous: Reading;
+  accepted: number | null;
+  spend: number;
+  lots: number;
   plot: {
     value: number;
     size: number;

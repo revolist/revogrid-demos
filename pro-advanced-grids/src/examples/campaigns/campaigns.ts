@@ -2,11 +2,11 @@ import { mountTabs } from '@revolist/ui/native';
 import { SegmentedSwitch } from '@revolist/ui/react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { createDetailPanel } from '../../composables/detail-panel';
-import { personPortrait } from '../../composables/demo-portraits';
-import './campaign-rich-options.css';
-import { ROW_ACTION_COLUMN_WIDTH } from '../../composables/row-action';
-import { demoColors } from '../../composables/demo-colors';
+import { createDetailPanel } from '../../../../composables/detail-panel';
+import { personPortrait } from '../../../../composables/demo-portraits';
+import '../../campaign-rich-options.css';
+import { ROW_ACTION_COLUMN_WIDTH } from '../../../../composables/row-action';
+import { demoColors } from '../../../../composables/demo-colors';
 import { mountActionBar } from '@revolist/ui/action-bar';
 import { campaignWeeks, changePercent, safeRatio } from './campaign-detail-model';
 import { campaignTrendChart } from './campaign-trend-chart';
@@ -27,7 +27,7 @@ import {
   number,
   pct,
   type Example,
-} from './workbench-ui';
+} from '../../shared/workbench-ui';
 
 const formatFilterNumber = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format;
 
@@ -98,6 +98,7 @@ export const campaigns: Example = {
     filter.dataset.icon = 'filter';
     const bullet: ColumnRegular = {
       prop: 'roas',
+      columnType: 'number',
       name: 'ROAS',
       filter: ['number', FIlTER_SLIDER],
       filterAstValueEditor: { kind: 'slider', min: 0, max: Math.max(1, ...rows.map(row => Number(toGridRow(row).roas) || 0)), step: 'any', formatValue: formatFilterNumber },
@@ -134,7 +135,11 @@ export const campaigns: Example = {
         size: 88,
         sortable: true,
         cellTemplate: visualCellRenderer,
-        visualCell: { format: (_value, model) => ({ kind: 'text', text: String(model.status), className: statusBadgeClass(String(model.status)) }) },
+        visualCell: { format: (_value, model) => ({
+          kind: 'badge',
+          text: String(model.status),
+          tone: model.status === 'Live' ? 'positive' : model.status === 'Limited' ? 'warning' : 'neutral',
+        }) },
       },
       ...(
         [
@@ -166,7 +171,7 @@ export const campaigns: Example = {
           ],
         ] as const
       ).flatMap(([prop, name, size, format, detail]) => {
-        const column: ColumnRegular = { prop, name, size, sortable: true };
+        const column: ColumnRegular = { prop, name, size, sortable: true, columnType: prop === 'conversions' ? 'number' : 'currency' };
         column.filter = ['number', FIlTER_SLIDER];
         column.filterAstValueEditor = { kind: 'slider', min: 0, max: Math.max(1, ...rows.map(row => Number(toGridRow(row)[prop]) || 0)), step: 'any', formatValue: formatFilterNumber };
         column.columnProperties = () => ({ class: 'campaign-number-header' });
@@ -205,6 +210,7 @@ export const campaigns: Example = {
       bullet,
       {
         prop: 'buyers',
+        columnType: 'number',
         name: 'New Buyers',
         filter: ['number', FIlTER_SLIDER],
         filterAstValueEditor: { kind: 'slider', min: 0, max: 100, step: 1, formatValue: formatFilterNumber },
@@ -371,8 +377,6 @@ export const campaigns: Example = {
     const compactCount = (value: number) => new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
     const date = (offset: number) => new Date(Date.UTC(2026, 8, 6 + offset)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
     const percentage = (value: number | null) => value === null ? 'New' : `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
-    const dialog = () => bench.heading.parentElement?.querySelector<HTMLDialogElement>('dialog.workbench-dialog');
-    const addClose = (node: HTMLDialogElement) => { const close = button('×', () => node.close()); close.className = 'scale-drawer-close'; close.setAttribute('aria-label', 'Close'); node.querySelector('form')?.append(close); };
     function showCampaign(row: Campaign, active: CampaignTab = 'Overview') {
       row = rows.find(item => item.id === row.id) ?? row;
       const body = make('div', '', 'scale-profile campaign-profile');
@@ -438,7 +442,9 @@ export const campaigns: Example = {
         }
       }
       renderTab(active);
-      bench.form(row.label, [body], () => false, undefined, undefined, () => { trendSwitch?.unmount(); trendChart?.destroy(); tabControl.destroy(); }); const node = dialog(); if (node) addClose(node);
+      bench.form(row.label, [body], () => false, undefined, undefined,
+        () => { trendSwitch?.unmount(); trendChart?.destroy(); tabControl.destroy(); },
+        { close: { label: 'Close', className: 'scale-drawer-close' } });
     }
 
     function edit(row?: Campaign, fromView = false) {
@@ -474,7 +480,9 @@ export const campaigns: Example = {
         if (row) { const previous = structuredClone(row); Object.assign(row, draft); refresh(); bench.report('Campaign saved.', () => { Object.assign(row, previous); refresh(); }); if (fromView) { showCampaign(row); return false; } }
         else { const created: Campaign = { ...draft, id: `cmp_new_${nextId++}`, spend: 0, impressions: 0, clicks: 0, conversions: 0, previousSpend: 0, previousConversions: 0, revenue: 0, buyers: 0, trend: Array(30).fill(0), dailySpend: Array(30).fill(0), activeFrom: 30, activeTo: 29 }; rows.push(created); bench.resetPage(); refresh(); bench.report('Campaign created.', () => { const index = rows.indexOf(created); if (index >= 0) rows.splice(index, 1); refresh(); }); showCampaign(created); return false; }
         return true;
-      }, back, row ? 'Save Changes' : 'Create Campaign', () => [channel, audience, market, owner, status].forEach(control => control.destroy())); const node = dialog(); if (node) addClose(node);
+      }, back, row ? 'Save Changes' : 'Create Campaign',
+        () => [channel, audience, market, owner, status].forEach(control => control.destroy()),
+        { close: { label: 'Close', className: 'scale-drawer-close' } });
     }
 
   },

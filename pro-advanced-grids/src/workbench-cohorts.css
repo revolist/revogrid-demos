@@ -111,7 +111,8 @@
   height: 22px;
   min-width: 22px;
   min-height: 22px;
-  background: #f4f4f4;
+  background: var(--rv-ui-surface-hover, #f4f4f4);
+  color: var(--rv-ui-text, inherit);
   border-radius: 6px;
   font-size: 15px;
 }
@@ -126,15 +127,6 @@
   width: 16px;
   height: 16px;
   flex: none;
-}
-.cohort-count,
-.cohort-id,
-.cohort-footer-label > span:last-child {
-  border: 1px solid #e4e4e4;
-  border-radius: 5px;
-  padding: 2px 4px;
-  font-size: 11px;
-  font-weight: 400;
 }
 .cohort-count {
   margin-left: auto;
@@ -167,7 +159,6 @@
 .cohort-total {
   display: block;
   width: 100%;
-  text-align: right;
 }
 .cohort-total.risk {
   color: #e00028;
@@ -182,7 +173,7 @@
   padding: 0 10px;
   border: 0;
   border-radius: 0;
-  box-shadow: inset -1px -1px #e5e5e5;
+  box-shadow: inset -1px -1px var(--rv-ui-border, #e5e5e5);
   color: #006b50;
   font-size: 12px;
 }

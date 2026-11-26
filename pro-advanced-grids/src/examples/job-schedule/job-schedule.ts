@@ -7,11 +7,11 @@ import penIcon from "@fortawesome/fontawesome-free/svgs/solid/pen.svg?raw";
 import trashIcon from "@fortawesome/fontawesome-free/svgs/solid/trash.svg?raw";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
-import { Menu, MenuItem, MenuSeparator, NumberStepper } from "@revolist/ui/react";
+import { Menu, MenuItem, MenuSeparator, NumberStepper, StatusBadge } from "@revolist/ui/react";
 import { mountActionBar } from "@revolist/ui/action-bar";
-import { ROW_ACTION_COLUMN_WIDTH } from '../../composables/row-action';
-import { demoPortrait } from '../../composables/demo-portraits';
-import { calendarField } from "./ui-calendar-field";
+import { ROW_ACTION_COLUMN_WIDTH } from '../../../../composables/row-action';
+import { demoPortrait } from '../../../../composables/demo-portraits';
+import { calendarField } from "../../shared/ui-calendar-field";
 import type { ColumnData, ColumnRegular } from "@revolist/revogrid";
 import {
   GridPopoverPlugin,
@@ -35,7 +35,7 @@ import {
   select,
   personSelect,
   type Example,
-} from "./workbench-ui";
+} from "../../shared/workbench-ui";
 
 import { initialJobs, type Job, type JobType, type JobStatus, type Entry } from './job-schedule-data';
 
@@ -314,12 +314,29 @@ export const jobSchedule: Example = {
       });
     }
     function showJob(job: Job) {
-      bench.details(job.label, [
-        make("p", `${job.type} · ${job.status}`),
-        make("p", `${job.street} · Lead ${job.lead}`),
-        make("p", `Finish ${job.finish} · Due ${job.due}`),
-        button("Edit Job", () => editJob(job)),
-      ]);
+      const content = make("section", "", "job-detail");
+      const summary = make("div", "", "job-detail__summary");
+      const statusHost = make("span");
+      const statusRoot = createRoot(statusHost);
+      const tone = job.status === "Late" ? "danger" : job.status === "On Hold" ? "warning" : job.status === "Complete" || job.status === "On Track" ? "success" : "neutral";
+      statusRoot.render(createElement(StatusBadge, { label: job.status, tone }));
+      summary.append(make("span", job.type, "job-detail__type"), statusHost);
+      const heading = make("h3", "Job details");
+      const details = make("dl", "", "job-detail__fields");
+      for (const [label, value] of [
+        ["Location", [job.street, job.town].filter(Boolean).join(", ") || "—"],
+        ["Crew lead", job.lead || "Unassigned"],
+        ["Planned finish", job.finish || "—"],
+        ["Due date", job.due || "—"],
+      ]) {
+        const item = make("div");
+        item.append(make("dt", label), make("dd", value));
+        details.append(item);
+      }
+      const actions = make("div", "", "job-detail__actions");
+      actions.append(button("Edit Job", () => editJob(job)));
+      content.append(summary, heading, details, actions);
+      bench.details(job.label, [content], () => statusRoot.unmount());
     }
     function editJob(job?: Job) {
       const client = input(

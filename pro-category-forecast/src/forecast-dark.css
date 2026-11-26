@@ -1,0 +1,77 @@
+:is([data-theme='dark'], .dark) .forecast.forecast {
+  --ink: var(--rv-ui-text, #f5f5f5);
+  --muted: var(--rv-ui-text-muted, #a3a3a3);
+  --outline: var(--rv-ui-border, #3a3a3a);
+  --demo-ink: var(--rv-ui-text, #f5f5f5);
+  --demo-border: var(--rv-ui-border, #3a3a3a);
+  background: var(--rv-ui-surface, #1f1f1f);
+  color: var(--ink);
+}
+
+:is([data-theme='dark'], .dark) .forecast .forecast-grid .rgCell:has(.rv-bullet-chart__empty) {
+  background: repeating-linear-gradient(135deg, var(--rv-ui-surface-hover) 0 2px, var(--rv-ui-surface) 2px 3px);
+}
+
+:is([data-theme='dark'], .dark) .forecast .forecast-department-card {
+  background: color-mix(in srgb, var(--tint) 8%, var(--rv-ui-surface, #1f1f1f));
+  color: var(--rv-ui-text, #f5f5f5);
+}
+
+:is([data-theme='dark'], .dark) .forecast .forecast-rail {
+  background: color-mix(in srgb, var(--tint) 18%, var(--rv-ui-surface, #1f1f1f));
+  color: var(--rv-ui-text, #f5f5f5);
+  border-color: var(--rv-ui-border, #3a3a3a);
+}
+
+:is([data-theme='dark'], .dark) .forecast :is(
+  .forecast-department-details dd, .forecast-planner,
+  .forecast-profile-tabs .forecast-button[aria-selected='true']
+) {
+  color: var(--rv-ui-text, #f5f5f5);
+}
+
+:is([data-theme='dark'], .dark) .forecast .forecast-share {
+  background: var(--rv-ui-surface-hover, #2f2f2f);
+  color: var(--rv-ui-text-muted, #a3a3a3);
+}
+
+:is([data-theme='dark'], .dark) .forecast .summary-end {
+  background: repeating-linear-gradient(135deg, var(--rv-ui-surface-hover) 0 2px, var(--rv-ui-surface) 2px 3px);
+}
+
+:is([data-theme='dark'], .dark) .forecast .forecast-grid .rv-bullet-chart {
+  --rv-bullet-track: #3a3a40;
+  --rv-bullet-actual: #74747c;
+  --rv-bullet-outlook: #565660;
+  --rv-bullet-target: #a3a3ad;
+}
+
+:is([data-theme='dark'], .dark) .forecast :is(.forecast-missing, .rgCell:has(.forecast-no-plan)) {
+  background: repeating-linear-gradient(135deg, var(--rv-ui-surface-hover) 0 2px, var(--rv-ui-surface) 2px 5px);
+}
+
+:is([data-theme='dark'], .dark) .forecast :is(
+  .demo-shell__body, .forecast-summary, .forecast-grid,
+  .forecast-grid .rgHeaderCell, .forecast-filter-panel,
+  .forecast-profile-card-body, .forecast-profile-navigation,
+  .forecast-line-input
+) {
+  background: var(--rv-ui-surface, #1f1f1f);
+  color: var(--rv-ui-text, #f5f5f5);
+  border-color: var(--rv-ui-border, #3a3a3a);
+}
+
+:is([data-theme='dark'], .dark) .forecast :is(
+  .forecast-name--group, .forecast-grid revogr-data[type='rowPinEnd'] .rgCell,
+  .forecast-profile-card, .forecast-profile-footer, .forecast-profile-editor .forecast-form-actions
+) {
+  background: var(--rv-ui-surface-hover, #2f2f2f);
+  color: var(--rv-ui-text, #f5f5f5);
+  border-color: var(--rv-ui-border, #3a3a3a);
+}
+
+:is([data-theme='dark'], .dark) .forecast :where(input:not([type='range']), select, summary) {
+  background: var(--rv-ui-surface, #1f1f1f);
+  color: var(--rv-ui-text, #f5f5f5);
+  border-color: var(--rv-ui-border, #3a3a3a);
+}

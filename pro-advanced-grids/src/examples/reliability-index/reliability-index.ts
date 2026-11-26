@@ -2,8 +2,8 @@ import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Legend, SegmentedSwitch } from '@revolist/ui/react';
 import { badgeClassName, mountTabs } from '@revolist/ui/native';
-import { demoColors } from '../../composables/demo-colors';
-import { personPortrait } from '../../composables/demo-portraits';
+import { demoColors } from '../../../../composables/demo-colors';
+import { personPortrait } from '../../../../composables/demo-portraits';
 import type { ColumnData, ColumnRegular, DataType } from "@revolist/revogrid";
 import {
   renderCellAction,
@@ -27,7 +27,7 @@ import {
   matches,
   select,
   type Example,
-} from "./workbench-ui";
+} from "../../shared/workbench-ui";
 
 type Slo = {
   id: string;
@@ -513,11 +513,13 @@ export const reliabilityIndex: Example = {
       selectedId = row.id;
       const content = make("div", "", "reliability-detail");
       const tabs = make("div");
-      const panel = make("div");
-      panel.setAttribute("role", "tabpanel");
+      const detailSwitch = createRoot(tabs);
+      const panel = make("div", "", "reliability-detail__panel");
       const options = ["Overview", "Burn Rate", "Events", "Settings"].map(name => ({ value: name, label: name }));
-      const tabProps = (value: string) => ({ value, options, onChange: show, ariaLabel: "Reliability details", className: "reliability-detail__tabs rv-tabs--underline" });
-      const detailTabs = mountTabs(tabs, tabProps("Overview"));
+      const renderSwitch = (value: string) => detailSwitch.render(createElement(SegmentedSwitch, {
+        value, options, role: 'group', ariaLabel: 'Reliability details', className: 'reliability-detail__switch',
+        onChange: (next: string | number) => { if (typeof next === 'string') show(next); },
+      }));
       function detailChart(kind: "budget" | "burn") {
         const values = kind === "budget" ? row.trend : row.trend.map((value, index, all) => index ? Math.abs(value - all[index - 1]) : 0);
         const host = createChartHost(document, {
@@ -538,7 +540,7 @@ export const reliabilityIndex: Example = {
         return host;
       }
       function show(name: string) {
-        detailTabs.update(tabProps(name));
+        renderSwitch(name);
         panel.replaceChildren();
         if (name === "Overview") {
           panel.append(
@@ -574,20 +576,22 @@ export const reliabilityIndex: Example = {
                 : "No active incidents",
             ),
           );
-        } else
+        } else {
+          const actions = make("div", "", "reliability-detail__actions");
+          actions.append(button("Edit SLO", () => edit(row)), button("Delete SLO", () => remove(row)));
           panel.append(
             make("h3", "Settings"),
             make(
               "p",
               `Objective ${row.objective}% · Window ${row.window} days · ${row.team}`,
             ),
-            button("Edit SLO", () => edit(row)),
-            button("Delete SLO", () => remove(row)),
+            actions,
           );
+        }
       }
-      content.append(make("p", `${row.status} · ${row.service}`), tabs, panel);
+      content.append(make("p", `${row.status} · ${row.service}`, "reliability-detail__subtitle"), tabs, panel);
       show("Overview");
-      bench.details(row.name, [content], () => detailTabs.destroy());
+      bench.details(row.name, [content], () => detailSwitch.unmount());
     }
     function edit(row?: Slo) {
       const name = input("Name", row?.name ?? "");
@@ -726,19 +730,21 @@ export const reliabilityIndex: Example = {
       },
       {
         prop: "measured",
+        columnType: "number",
         name: "Budget Left",
         size: 112,
         columnTemplate: sortableHeader("budget", "Budget Left"),
         cellTemplate: visualCellRenderer,
-        visualCell: { format: (_value, model) => ({ kind: "text", element: "strong", className: `reliability-value is-${String(model.status).toLowerCase().replace(" ", "-")}`, text: signed(Number(model.measured)) }) },
+        visualCell: { format: (_value, model) => ({ kind: "text", element: "strong", className: `metric-number reliability-value is-${String(model.status).toLowerCase().replace(" ", "-")}`, text: signed(Number(model.measured)) }) },
       },
       {
         prop: "days",
+        columnType: "number",
         name: "Runs Out",
         size: 90,
         columnTemplate: sortableHeader("days", "Runs Out"),
         cellTemplate: visualCellRenderer,
-        visualCell: { format: (_value, model) => ({ kind: "text", className: model.status === "Exhausted" ? "reliability-value is-exhausted" : "", text: model.status === "Exhausted" ? "Spent" : `${model.days} days` }) },
+        visualCell: { format: (_value, model) => ({ kind: "text", className: model.status === "Exhausted" ? "metric-number reliability-value is-exhausted" : "metric-number", text: model.status === "Exhausted" ? "Spent" : `${model.days} days` }) },
       },
       {
         prop: "alert",

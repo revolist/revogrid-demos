@@ -1,5 +1,5 @@
 import { createCalendarField } from '@revolist/ui/native';
-import '@revolist/ui/styles/calendar.css';
+import '@revolist/ui/styles/calendar.scss';
 import '@revolist/ui/calendar/date-field.css';
 import './ui-calendar-field.css';
 

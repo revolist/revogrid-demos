@@ -3,16 +3,20 @@ import { TooltipController } from '@revolist/ui/core/popover-controller';
 import { createSearchActionBar } from '@revolist/ui/native';
 import '@revolist/ui/search-action-bar.scss';
 import { createToaster, mountToaster, type ToastController } from '@revolist/ui/toaster';
-import { personPortrait } from '../../composables/demo-portraits';
-import './campaign-rich-options.css';
-import { demoColors } from '../../composables/demo-colors';
+import { personPortrait } from '../../../composables/demo-portraits';
+import '../campaign-rich-options.css';
+import { demoColors } from '../../../composables/demo-colors';
 import { createDotHistogramElement, releaseSummaryChartElement, type DotHistogramOptions } from '@revolist/revogrid-pro';
 import '@revolist/revogrid-pro/styles.css';
-import { configureDemoAddButton, createDemoBody, createDemoHeading } from '../../composables/demo-shell';
-import { createButtonElement, createTextControl, createDropdownControl } from '@revolist/ui/native';
+import { configureDemoAddButton, createDemoBody, createDemoHeading } from '../../../composables/demo-shell';
+import { createButtonElement, createTextControl, createDropdownControl, createDialogCloseButton, mountDialogActionFooter, type NativeDialogAction } from '@revolist/ui/native';
+import { releasePreactElement } from '@revolist/ui/preact-mount';
 import type { ColumnData, ColumnRegular, DataType } from '@revolist/revogrid';
 import {
   renderCellAction,
+  ColumnNumber,
+  ColumnCurrency,
+  ColumnPercentage,
   CellMergePlugin,
   AdvanceFilterPlugin,
   ColumnHeaderMenuPlugin,
@@ -38,11 +42,11 @@ import {
 import '@revolist/revogrid-pro/styles.css';
 import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/brands.css';
-import './workbench.css';
+import '../workbench.css';
 import { arrangeToolbar, layouts } from './workbench-layout';
-import { campaignPage } from './campaign-paging';
-import { productPage } from './product-paging';
-import { visitPage } from './visit-paging';
+import { campaignPage } from '../examples/campaigns/campaign-paging';
+import { productPage } from '../examples/products/product-paging';
+import { visitPage } from '../examples/visits/visit-paging';
 
 export const make = <K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -183,6 +187,18 @@ export function groupedMetrics(columns: ColumnData): ColumnData {
   );
 }
 
+export interface WorkbenchFormOptions {
+  cancel?: false | { label?: string };
+  submit?: false | { icon?: string };
+  close?: { label: string; className?: string };
+  content?: HTMLElement[];
+}
+
+export interface WorkbenchFormHandle {
+  setSubmit: (update: { label?: string; icon?: string; disabled?: boolean }) => void;
+  close: () => void;
+}
+
 export interface Workbench {
   heading: HTMLElement;
   toolbar: HTMLElement;
@@ -206,7 +222,8 @@ export interface Workbench {
     extra?: HTMLElement,
     saveLabel?: string,
     cleanup?: () => void,
-  ) => void;
+    options?: WorkbenchFormOptions,
+  ) => WorkbenchFormHandle;
   report: (message: string, undo?: () => void) => void;
   toaster: ToastController;
   details: (title: string, content: HTMLElement[], cleanup?: () => void) => void;
@@ -269,6 +286,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
     if (!overlay.open) { cleanupForm(); overlay.replaceChildren(); }
   });
   const grid = make('revo-grid', '', 'workbench-grid cell-border');
+  grid.columnTypes = { number: ColumnNumber, currency: ColumnCurrency, percentage: ColumnPercentage };
   const hasAppearance = example.id === 'campaign-performance';
   let columnMovementEnabled = false;
   if (hasAppearance) {
@@ -532,40 +550,60 @@ export function mountScreen(host: HTMLElement, example: Example) {
         }),
       );
     },
-    form(title, fields, save, extra, saveLabel = 'Save', cleanup) {
+    form(title, fields, save, extra, saveLabel = 'Save', cleanup, options = {}) {
       cleanupForm();
-      formCleanup = cleanup;
       const form = make('form');
       const heading = make('h2', title);
       heading.id = 'workbench-dialog-title';
-      const actions = make('div', '', 'workbench-actions');
-      const submit = createButtonElement(document, { label: saveLabel, className: 'rv-btn rv-btn-primary primary' });
-      submit.removeAttribute('aria-label');
-      submit.type = 'submit';
-      if (extra) actions.append(extra);
-      actions.append(
-        button('Cancel', () => overlay.close()),
-        submit,
-      );
-      form.append(heading, ...fields, actions);
+      form.append(heading, ...fields);
+      let submit: false | NativeDialogAction = options.submit === false ? false : { label: saveLabel, ...options.submit };
+      const footer = mountDialogActionFooter(form, {
+        className: 'workbench-actions',
+        cancel: options.cancel === false ? false : { label: options.cancel?.label ?? 'Cancel', onClick: () => overlay.close() },
+        save: submit,
+      });
+      if (extra) footer.start.append(extra);
+      form.append(...(options.content ?? []));
+      const close = options.close && createDialogCloseButton(document, options.close.label, () => overlay.close());
+      if (close) {
+        if (options.close?.className) close.classList.add(options.close.className);
+        form.append(close);
+      }
+      let active = true;
+      formCleanup = () => {
+        active = false;
+        cleanup?.();
+        footer.destroy();
+        if (close) releasePreactElement(close);
+      };
       form.onsubmit = (event) => {
         event.preventDefault();
         if (save() !== false) overlay.close();
       };
       overlay.replaceChildren(form);
       if (!overlay.open) overlay.showModal();
+      return {
+        setSubmit(update) {
+          if (!active || submit === false) return;
+          submit = { ...submit, ...update };
+          footer.update({ save: submit });
+        },
+        close() { if (active && overlay.open) overlay.close(); },
+      };
     },
     report,
     toaster,
     details(title, content, cleanup) {
       cleanupForm();
-      formCleanup = cleanup;
       const heading = make('h2', title);
       heading.id = 'workbench-dialog-title';
-      const close = button('Close', () => overlay.close());
-      const actions = make('div', '', 'workbench-actions');
-      actions.append(close);
-      overlay.replaceChildren(heading, ...content, actions);
+      overlay.replaceChildren(heading, ...content);
+      const footer = mountDialogActionFooter(overlay, {
+        className: 'workbench-actions',
+        cancel: { label: 'Close', onClick: () => overlay.close() },
+        save: false,
+      });
+      formCleanup = () => { cleanup?.(); footer.destroy(); };
       if (!overlay.open) overlay.showModal();
     },
   });
