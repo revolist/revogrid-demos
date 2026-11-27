@@ -1,44 +1,28 @@
 /* ClickUp-inspired demo theme with distinct semantic status colors. */
 :where(.workbench, .forecast, .workbench-nav) {
-  --demo-accent: #6647f0;
-  --demo-accent-hover: #5336dc;
-  --demo-accent-soft: #f0edff;
-  --demo-ink: #252139;
-  --demo-border: #e5e1ef;
+  --demo-accent: var(--rv-ui-accent);
+  --demo-accent-hover: var(--rv-ui-accent-hover);
+  --demo-accent-soft: var(--rv-ui-selected-bg);
+  --demo-ink: var(--rv-ui-text);
+  --demo-border: var(--rv-ui-border);
 }
 .workbench.workbench {
   --action: var(--demo-accent);
   --border: var(--demo-border);
-  --muted: #6f6a80;
+  --muted: var(--rv-ui-text-muted);
   color: var(--demo-ink);
 }
 .forecast.forecast {
   --primary: var(--demo-accent);
   --outline: var(--demo-border);
   --ink: var(--demo-ink);
-  --muted: #6f6a80;
+  --muted: var(--rv-ui-text-muted);
 }
 .workbench-nav.workbench-nav a[aria-current] {
   background: var(--demo-accent);
-  color: #fff;
+  color: var(--rv-ui-accent-fg);
 }
-.workbench-nav.workbench-nav a:not([aria-current]):hover { background: var(--demo-accent-soft); color: #5336dc; }
-.workbench .cohort-tabs button[aria-selected='true'],
-.workbench .reliability-tabs button[aria-selected='true'],
-.workbench .reliability-detail__tabs button[aria-selected='true'],
-.workbench .scale-profile__tabs button[aria-selected='true'],
-.workbench .visit-kitchen-tabs button[aria-selected='true'],
-.forecast .forecast-profile-tabs button[aria-selected='true'] {
-  color: var(--demo-accent);
-  border-bottom-color: var(--demo-accent) !important;
-}
-.workbench .workbench-segments button[aria-pressed='true'] {
-  background: var(--demo-accent-soft) !important;
-  color: #5336dc;
-}
-:where(.workbench, .forecast, .workbench-nav) :focus-visible:not(.rv-btn) {
-  outline-color: var(--demo-accent);
-}
+.workbench-nav.workbench-nav a:not([aria-current]):hover { background: var(--demo-accent-soft); color: var(--rv-ui-accent-text); }
 
 /* Shared status and chart tokens, scoped to the demo. */
 :where(.workbench, .forecast) {

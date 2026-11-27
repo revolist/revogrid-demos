@@ -1,9 +1,9 @@
 // Fictional company grouping metadata. Financial values are consistent with the company history.
 export const referenceCompanies = [
   {
-    "label": "Lumen Photonics",
+    "label": "Lichtlijn Photonics",
     "province": "North Brabant",
-    "sector": "Photonic chips, Eindhoven",
+    "sector": "Diagnostic optics, Eindhoven",
     "revenue": 5500000.0,
     "margin": 18.2,
     "staff": 204,
@@ -11,8 +11,8 @@ export const referenceCompanies = [
     "staffGrowth": -4.2,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
-      "Raising": "Yes"
+      "Exports": "No",
+      "Raising": "N/A"
     },
     "seedScore": 42.6,
     "scoreChange": -24.7,
@@ -29,9 +29,9 @@ export const referenceCompanies = [
     "stage": "In Talks"
   },
   {
-    "label": "Orchard Protein Co.",
+    "label": "Meierij Protein Works",
     "province": "North Brabant",
-    "sector": "Plant proteins, Helmond",
+    "sector": "Fermentation ingredients, Helmond",
     "revenue": 70800000.0,
     "margin": -14.5,
     "staff": 162,
@@ -40,7 +40,7 @@ export const referenceCompanies = [
     "screening": {
       "Founder": "Yes",
       "Exports": "Yes",
-      "Raising": "Yes"
+      "Raising": "No"
     },
     "seedScore": 27.1,
     "scoreChange": 11.7,
@@ -57,9 +57,9 @@ export const referenceCompanies = [
     "stage": "Shortlisted"
   },
   {
-    "label": "Flowpath Mobility",
+    "label": "Stroomlijn Charging",
     "province": "North Brabant",
-    "sector": "EV charging, Eindhoven",
+    "sector": "Battery load management, Eindhoven",
     "revenue": 56500000.0,
     "margin": 19.5,
     "staff": 330,
@@ -67,8 +67,8 @@ export const referenceCompanies = [
     "staffGrowth": 16.2,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
-      "Raising": "N/A"
+      "Exports": "N/A",
+      "Raising": "Yes"
     },
     "seedScore": 86.2,
     "scoreChange": 44.8,
@@ -85,9 +85,9 @@ export const referenceCompanies = [
     "stage": "Shortlisted"
   },
   {
-    "label": "Nettle Packaging",
+    "label": "Tilburg Fibre Works",
     "province": "North Brabant",
-    "sector": "Fibre packaging, Tilburg",
+    "sector": "Acoustic fibre panels, Tilburg",
     "revenue": 53900000.0,
     "margin": -17.6,
     "staff": 307,
@@ -96,7 +96,7 @@ export const referenceCompanies = [
     "screening": {
       "Founder": "No",
       "Exports": "Yes",
-      "Raising": "No"
+      "Raising": "Yes"
     },
     "seedScore": 62.9,
     "scoreChange": 10.0,
@@ -112,18 +112,18 @@ export const referenceCompanies = [
     ]
   },
   {
-    "label": "Glacier Freight",
+    "label": "Delta Cold Logistics",
     "province": "North Brabant",
-    "sector": "Cold chain, Bergen op Zoom",
+    "sector": "Medical cold storage, Bergen op Zoom",
     "revenue": 45900000.0,
     "margin": -1.5,
     "staff": 70,
     "growth": 40.8,
     "staffGrowth": 6.1,
     "screening": {
-      "Founder": "No",
+      "Founder": "Yes",
       "Exports": "No",
-      "Raising": "N/A"
+      "Raising": "No"
     },
     "seedScore": 62.2,
     "scoreChange": 29.9,
@@ -142,7 +142,7 @@ export const referenceCompanies = [
   {
     "label": "Everwind Energy",
     "province": "South Holland",
-    "sector": "Grid batteries, Rotterdam",
+    "sector": "Industrial heat storage, Schiedam",
     "revenue": 54600000.0,
     "margin": 2.2,
     "staff": 224,
@@ -150,8 +150,8 @@ export const referenceCompanies = [
     "staffGrowth": 2.8,
     "screening": {
       "Founder": "Yes",
-      "Exports": "No",
-      "Raising": "Yes"
+      "Exports": "Yes",
+      "Raising": "No"
     },
     "seedScore": 30.0,
     "scoreChange": -35.2,
@@ -167,9 +167,9 @@ export const referenceCompanies = [
     ]
   },
   {
-    "label": "Aster Medical",
+    "label": "Delft Sonics",
     "province": "South Holland",
-    "sector": "Ultrasound devices, Delft",
+    "sector": "Hearing diagnostics, Leiden",
     "revenue": 36700000.0,
     "margin": 18.5,
     "staff": 318,
@@ -177,8 +177,8 @@ export const referenceCompanies = [
     "staffGrowth": -0.6,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
-      "Raising": "Yes"
+      "Exports": "No",
+      "Raising": "N/A"
     },
     "seedScore": 50.2,
     "scoreChange": 14.5,
@@ -197,15 +197,15 @@ export const referenceCompanies = [
   {
     "label": "Civic Legal AI",
     "province": "South Holland",
-    "sector": "Legal research, The Hague",
+    "sector": "Contract automation, Zoetermeer",
     "revenue": 37900000.0,
     "margin": 2.6,
     "staff": 146,
     "growth": 14.8,
     "staffGrowth": 12.3,
     "screening": {
-      "Founder": "Yes",
-      "Exports": "N/A",
+      "Founder": "No",
+      "Exports": "Yes",
       "Raising": "Yes"
     },
     "seedScore": 45.6,
@@ -224,16 +224,16 @@ export const referenceCompanies = [
   {
     "label": "Beacon Freight",
     "province": "South Holland",
-    "sector": "Port logistics, Rotterdam",
+    "sector": "Inland cargo scheduling, Dordrecht",
     "revenue": 10400000.0,
     "margin": 18.3,
     "staff": 355,
     "growth": 67.7,
     "staffGrowth": 0.9,
     "screening": {
-      "Founder": "No",
-      "Exports": "Yes",
-      "Raising": "N/A"
+      "Founder": "Yes",
+      "Exports": "N/A",
+      "Raising": "No"
     },
     "seedScore": 82.7,
     "scoreChange": 13.6,
@@ -251,16 +251,16 @@ export const referenceCompanies = [
   {
     "label": "Sproutline Agritech",
     "province": "South Holland",
-    "sector": "Greenhouse climate, Naaldwijk",
+    "sector": "Seedling analytics, Gouda",
     "revenue": 39900000.0,
     "margin": -4.5,
     "staff": 222,
     "growth": -9.7,
     "staffGrowth": -1.3,
     "screening": {
-      "Founder": "Yes",
+      "Founder": "No",
       "Exports": "Yes",
-      "Raising": "N/A"
+      "Raising": "Yes"
     },
     "seedScore": 23.5,
     "scoreChange": -25.9,
@@ -279,7 +279,7 @@ export const referenceCompanies = [
   {
     "label": "Maple Robotics",
     "province": "Drenthe",
-    "sector": "Inspection robots, Assen",
+    "sector": "Agricultural automation, Hoogeveen",
     "revenue": 61300000.0,
     "margin": -9.1,
     "staff": 54,
@@ -287,7 +287,7 @@ export const referenceCompanies = [
     "staffGrowth": -1.8,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "Yes"
     },
     "seedScore": 56.9,
@@ -307,7 +307,7 @@ export const referenceCompanies = [
   {
     "label": "Renewal Fibers",
     "province": "Drenthe",
-    "sector": "Bio-based fibres, Emmen",
+    "sector": "Recycled insulation, Meppel",
     "revenue": 24600000.0,
     "margin": 22.0,
     "staff": 211,
@@ -315,7 +315,7 @@ export const referenceCompanies = [
     "staffGrowth": 9.9,
     "screening": {
       "Founder": "Yes",
-      "Exports": "No",
+      "Exports": "Yes",
       "Raising": "Yes"
     },
     "seedScore": 87.2,
@@ -329,12 +329,13 @@ export const referenceCompanies = [
       0,
       1,
       1
-    ]
+    ],
+    "stage": "In Talks"
   },
   {
     "label": "Altair Energy",
     "province": "Groningen",
-    "sector": "Green hydrogen, Groningen",
+    "sector": "District heating, Veendam",
     "revenue": 67400000.0,
     "margin": 8.8,
     "staff": 162,
@@ -342,7 +343,7 @@ export const referenceCompanies = [
     "staffGrowth": 13.3,
     "screening": {
       "Founder": "Yes",
-      "Exports": "N/A",
+      "Exports": "No",
       "Raising": "Yes"
     },
     "seedScore": 39.9,
@@ -362,7 +363,7 @@ export const referenceCompanies = [
   {
     "label": "Mosaic Games",
     "province": "Groningen",
-    "sector": "Mobile games, Groningen",
+    "sector": "Educational games, Hoogezand",
     "revenue": 71100000.0,
     "margin": 5.1,
     "staff": 128,
@@ -370,7 +371,7 @@ export const referenceCompanies = [
     "staffGrowth": 14.3,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "N/A"
     },
     "seedScore": 46.4,
@@ -384,12 +385,13 @@ export const referenceCompanies = [
       1,
       0,
       1
-    ]
+    ],
+    "stage": "In Talks"
   },
   {
     "label": "Raincloud Compute",
     "province": "Groningen",
-    "sector": "Data centres, Delfzijl",
+    "sector": "Energy-efficient computing, Groningen",
     "revenue": 42600000.0,
     "margin": 16.9,
     "staff": 206,
@@ -397,7 +399,7 @@ export const referenceCompanies = [
     "staffGrowth": 4.6,
     "screening": {
       "Founder": "No",
-      "Exports": "No",
+      "Exports": "Yes",
       "Raising": "Yes"
     },
     "seedScore": 54.1,
@@ -416,7 +418,7 @@ export const referenceCompanies = [
   {
     "label": "Beaconlake Analytics",
     "province": "Utrecht",
-    "sector": "Retail analytics, Utrecht",
+    "sector": "Demand forecasting, Amersfoort",
     "revenue": 57900000.0,
     "margin": -6.4,
     "staff": 144,
@@ -424,7 +426,7 @@ export const referenceCompanies = [
     "staffGrowth": 15.2,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "Yes"
     },
     "seedScore": 41.8,
@@ -444,7 +446,7 @@ export const referenceCompanies = [
   {
     "label": "Pinebridge Payroll",
     "province": "Utrecht",
-    "sector": "Payroll, Nieuwegein",
+    "sector": "Workforce scheduling, Woerden",
     "revenue": 46700000.0,
     "margin": -15.6,
     "staff": 231,
@@ -452,7 +454,7 @@ export const referenceCompanies = [
     "staffGrowth": -4.5,
     "screening": {
       "Founder": "Yes",
-      "Exports": "No",
+      "Exports": "Yes",
       "Raising": "Yes"
     },
     "seedScore": 34.3,
@@ -471,7 +473,7 @@ export const referenceCompanies = [
   {
     "label": "Cairn Biomed",
     "province": "Utrecht",
-    "sector": "Enzyme therapies, Amersfoort",
+    "sector": "Rehabilitation devices, Zeist",
     "revenue": 28000000.0,
     "margin": -16.8,
     "staff": 282,
@@ -479,7 +481,7 @@ export const referenceCompanies = [
     "staffGrowth": 11.5,
     "screening": {
       "Founder": "Yes",
-      "Exports": "N/A",
+      "Exports": "No",
       "Raising": "Yes"
     },
     "seedScore": 17.8,
@@ -499,7 +501,7 @@ export const referenceCompanies = [
   {
     "label": "Vela Cycles",
     "province": "Utrecht",
-    "sector": "Cargo bikes, Zeist",
+    "sector": "Bicycle components, Houten",
     "revenue": 62400000.0,
     "margin": 19.6,
     "staff": 65,
@@ -507,7 +509,7 @@ export const referenceCompanies = [
     "staffGrowth": 12.1,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "No"
     },
     "seedScore": 71.7,
@@ -526,7 +528,7 @@ export const referenceCompanies = [
   {
     "label": "Daybreak Thermics",
     "province": "Overijssel",
-    "sector": "Heat pumps, Hengelo",
+    "sector": "Thermal insulation, Zwolle",
     "revenue": 35100000.0,
     "margin": 10.8,
     "staff": 262,
@@ -534,7 +536,7 @@ export const referenceCompanies = [
     "staffGrowth": 11.0,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "Yes"
     },
     "seedScore": 33.0,
@@ -554,7 +556,7 @@ export const referenceCompanies = [
   {
     "label": "Foxglove Software",
     "province": "Overijssel",
-    "sector": "Field service apps, Zwolle",
+    "sector": "Maintenance planning, Almelo",
     "revenue": 11100000.0,
     "margin": 0.9,
     "staff": 216,
@@ -562,7 +564,7 @@ export const referenceCompanies = [
     "staffGrowth": -2.3,
     "screening": {
       "Founder": "Yes",
-      "Exports": "No",
+      "Exports": "Yes",
       "Raising": "Yes"
     },
     "seedScore": 70.4,
@@ -581,7 +583,7 @@ export const referenceCompanies = [
   {
     "label": "Wavelength Sensors",
     "province": "Overijssel",
-    "sector": "Industrial sensors, Enschede",
+    "sector": "Acoustic sensors, Hengelo",
     "revenue": 6700000.0,
     "margin": 19.4,
     "staff": 63,
@@ -589,7 +591,7 @@ export const referenceCompanies = [
     "staffGrowth": 0.0,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "N/A"
     },
     "seedScore": 76.0,
@@ -609,7 +611,7 @@ export const referenceCompanies = [
   {
     "label": "Hearth Dairy",
     "province": "Overijssel",
-    "sector": "Dairy, Raalte",
+    "sector": "Cheese cultures, Deventer",
     "revenue": 61400000.0,
     "margin": -14.8,
     "staff": 150,
@@ -617,7 +619,7 @@ export const referenceCompanies = [
     "staffGrowth": 3.4,
     "screening": {
       "Founder": "No",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "No"
     },
     "seedScore": 47.8,
@@ -636,7 +638,7 @@ export const referenceCompanies = [
   {
     "label": "Fieldpath Drones",
     "province": "Flevoland",
-    "sector": "Crop drones, Lelystad",
+    "sector": "Orchard surveying, Dronten",
     "revenue": 27800000.0,
     "margin": 10.4,
     "staff": 321,
@@ -644,7 +646,7 @@ export const referenceCompanies = [
     "staffGrowth": 10.7,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "Yes"
     },
     "seedScore": 60.7,
@@ -664,7 +666,7 @@ export const referenceCompanies = [
   {
     "label": "Moonrise Cloud",
     "province": "Flevoland",
-    "sector": "Cloud backup, Almere",
+    "sector": "Data archiving, Zeewolde",
     "revenue": 44700000.0,
     "margin": 5.1,
     "staff": 189,
@@ -672,7 +674,7 @@ export const referenceCompanies = [
     "staffGrowth": 0.0,
     "screening": {
       "Founder": "Yes",
-      "Exports": "No",
+      "Exports": "Yes",
       "Raising": "N/A"
     },
     "seedScore": 69.0,
@@ -686,12 +688,13 @@ export const referenceCompanies = [
       1,
       -1,
       1
-    ]
+    ],
+    "stage": "In Talks"
   },
   {
-    "label": "Northstar Ventures",
+    "label": "Kade Climate Systems",
     "province": "North Holland",
-    "sector": "Climate software, Amsterdam",
+    "sector": "Building energy analytics, Haarlem",
     "revenue": 65200000.0,
     "margin": 18.3,
     "staff": 129,
@@ -699,7 +702,7 @@ export const referenceCompanies = [
     "staffGrowth": 1.6,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "Yes"
     },
     "seedScore": 85.7,
@@ -717,9 +720,9 @@ export const referenceCompanies = [
     "stage": "Shortlisted"
   },
   {
-    "label": "Waypoint Robotics",
+    "label": "IJ Works Robotics",
     "province": "North Holland",
-    "sector": "Warehouse robots, Zaandam",
+    "sector": "Packaging automation, Beverwijk",
     "revenue": 25200000.0,
     "margin": -7.5,
     "staff": 322,
@@ -727,7 +730,7 @@ export const referenceCompanies = [
     "staffGrowth": 13.4,
     "screening": {
       "Founder": "Yes",
-      "Exports": "N/A",
+      "Exports": "No",
       "Raising": "Yes"
     },
     "seedScore": 69.3,
@@ -747,7 +750,7 @@ export const referenceCompanies = [
   {
     "label": "Ripplefield Pay",
     "province": "North Holland",
-    "sector": "Payments, Amsterdam",
+    "sector": "Subscription billing, Amstelveen",
     "revenue": 44700000.0,
     "margin": 8.9,
     "staff": 219,
@@ -755,7 +758,7 @@ export const referenceCompanies = [
     "staffGrowth": 2.8,
     "screening": {
       "Founder": "No",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "N/A"
     },
     "seedScore": 71.2,
@@ -774,7 +777,7 @@ export const referenceCompanies = [
   {
     "label": "Bluecurrent Systems",
     "province": "North Holland",
-    "sector": "Water treatment, Haarlem",
+    "sector": "Flood monitoring, Hoorn",
     "revenue": 29300000.0,
     "margin": 12.6,
     "staff": 50,
@@ -782,7 +785,7 @@ export const referenceCompanies = [
     "staffGrowth": -2.0,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "No"
     },
     "seedScore": 65.6,
@@ -801,7 +804,7 @@ export const referenceCompanies = [
   {
     "label": "Greenleaf Foods",
     "province": "North Holland",
-    "sector": "Ready meals, Alkmaar",
+    "sector": "Plant-based ingredients, Purmerend",
     "revenue": 38600000.0,
     "margin": 13.5,
     "staff": 82,
@@ -809,7 +812,7 @@ export const referenceCompanies = [
     "staffGrowth": 6.5,
     "screening": {
       "Founder": "No",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "No"
     },
     "seedScore": 83.9,
@@ -829,7 +832,7 @@ export const referenceCompanies = [
   {
     "label": "Orion Diagnostics",
     "province": "Gelderland",
-    "sector": "Lab diagnostics, Nijmegen",
+    "sector": "Veterinary diagnostics, Wageningen",
     "revenue": 62000000.0,
     "margin": -13.7,
     "staff": 201,
@@ -837,7 +840,7 @@ export const referenceCompanies = [
     "staffGrowth": 3.1,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "Yes"
     },
     "seedScore": 19.1,
@@ -851,12 +854,13 @@ export const referenceCompanies = [
       1,
       0,
       1
-    ]
+    ],
+    "stage": "In Talks"
   },
   {
     "label": "Cedarframe Timber",
     "province": "Gelderland",
-    "sector": "Mass timber, Apeldoorn",
+    "sector": "Timber restoration, Ede",
     "revenue": 12700000.0,
     "margin": -2.4,
     "staff": 149,
@@ -864,7 +868,7 @@ export const referenceCompanies = [
     "staffGrowth": 16.4,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "N/A"
     },
     "seedScore": 69.8,
@@ -884,7 +888,7 @@ export const referenceCompanies = [
   {
     "label": "Solstice Hydrogen",
     "province": "Gelderland",
-    "sector": "Electrolysers, Arnhem",
+    "sector": "Industrial fuel cells, Zutphen",
     "revenue": 23900000.0,
     "margin": -5.9,
     "staff": 236,
@@ -892,7 +896,7 @@ export const referenceCompanies = [
     "staffGrowth": 2.6,
     "screening": {
       "Founder": "Yes",
-      "Exports": "N/A",
+      "Exports": "No",
       "Raising": "Yes"
     },
     "seedScore": 45.8,
@@ -911,7 +915,7 @@ export const referenceCompanies = [
   {
     "label": "Riverbend Fruitlab",
     "province": "Gelderland",
-    "sector": "Fruit breeding, Tiel",
+    "sector": "Orchard monitoring, Culemborg",
     "revenue": 46900000.0,
     "margin": 23.0,
     "staff": 70,
@@ -919,7 +923,7 @@ export const referenceCompanies = [
     "staffGrowth": 18.6,
     "screening": {
       "Founder": "No",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "No"
     },
     "seedScore": 72.7,
@@ -938,7 +942,7 @@ export const referenceCompanies = [
   {
     "label": "Cloudwell Care",
     "province": "Limburg",
-    "sector": "Home care software, Heerlen",
+    "sector": "Community care scheduling, Sittard",
     "revenue": 10500000.0,
     "margin": -18.1,
     "staff": 320,
@@ -946,7 +950,7 @@ export const referenceCompanies = [
     "staffGrowth": 5.3,
     "screening": {
       "Founder": "Yes",
-      "Exports": "N/A",
+      "Exports": "No",
       "Raising": "Yes"
     },
     "seedScore": 52.9,
@@ -966,7 +970,7 @@ export const referenceCompanies = [
   {
     "label": "TerraLoop Materials",
     "province": "Limburg",
-    "sector": "Recycled polymers, Geleen",
+    "sector": "Textile recycling, Roermond",
     "revenue": 53300000.0,
     "margin": -8.4,
     "staff": 255,
@@ -974,7 +978,7 @@ export const referenceCompanies = [
     "staffGrowth": 8.1,
     "screening": {
       "Founder": "No",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "N/A"
     },
     "seedScore": 27.5,
@@ -988,12 +992,13 @@ export const referenceCompanies = [
       1,
       1,
       1
-    ]
+    ],
+    "stage": "In Talks"
   },
   {
     "label": "Northport Logistics",
     "province": "Limburg",
-    "sector": "E-commerce fulfilment, Venlo",
+    "sector": "Parcel consolidation, Weert",
     "revenue": 51500000.0,
     "margin": -8.3,
     "staff": 212,
@@ -1001,7 +1006,7 @@ export const referenceCompanies = [
     "staffGrowth": 12.8,
     "screening": {
       "Founder": "No",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "No"
     },
     "seedScore": 48.0,
@@ -1021,7 +1026,7 @@ export const referenceCompanies = [
   {
     "label": "Aquifer Labs",
     "province": "Friesland",
-    "sector": "Water sensing, Leeuwarden",
+    "sector": "Water quality testing, Drachten",
     "revenue": 23400000.0,
     "margin": -0.9,
     "staff": 205,
@@ -1029,7 +1034,7 @@ export const referenceCompanies = [
     "staffGrowth": 9.0,
     "screening": {
       "Founder": "Yes",
-      "Exports": "N/A",
+      "Exports": "No",
       "Raising": "Yes"
     },
     "seedScore": 59.8,
@@ -1049,7 +1054,7 @@ export const referenceCompanies = [
   {
     "label": "Milkrun Robotics",
     "province": "Friesland",
-    "sector": "Milking robots, Leeuwarden",
+    "sector": "Livestock monitoring, Sneek",
     "revenue": 59900000.0,
     "margin": -9.0,
     "staff": 183,
@@ -1057,7 +1062,7 @@ export const referenceCompanies = [
     "staffGrowth": 10.2,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "N/A"
     },
     "seedScore": 61.9,
@@ -1071,12 +1076,13 @@ export const referenceCompanies = [
       1,
       1,
       1
-    ]
+    ],
+    "stage": "In Talks"
   },
   {
     "label": "Bluehaven Marine",
     "province": "Friesland",
-    "sector": "Workboats, Harlingen",
+    "sector": "Marine inspection, Dokkum",
     "revenue": 70600000.0,
     "margin": -3.0,
     "staff": 281,
@@ -1084,7 +1090,7 @@ export const referenceCompanies = [
     "staffGrowth": -2.1,
     "screening": {
       "Founder": "No",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "No"
     },
     "seedScore": 61.0,
@@ -1103,7 +1109,7 @@ export const referenceCompanies = [
   {
     "label": "Coastline Aquaculture",
     "province": "Zeeland",
-    "sector": "Shellfish farming, Yerseke",
+    "sector": "Seaweed cultivation, Middelburg",
     "revenue": 25700000.0,
     "margin": -8.9,
     "staff": 158,
@@ -1111,7 +1117,7 @@ export const referenceCompanies = [
     "staffGrowth": 12.1,
     "screening": {
       "Founder": "Yes",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "No"
     },
     "seedScore": 53.9,
@@ -1125,12 +1131,13 @@ export const referenceCompanies = [
       1,
       1,
       1
-    ]
+    ],
+    "stage": "In Talks"
   },
   {
     "label": "Harborwind Offshore",
     "province": "Zeeland",
-    "sector": "Offshore wind service, Vlissingen",
+    "sector": "Tidal energy maintenance, Goes",
     "revenue": 10700000.0,
     "margin": 3.7,
     "staff": 104,
@@ -1138,7 +1145,7 @@ export const referenceCompanies = [
     "staffGrowth": 11.8,
     "screening": {
       "Founder": "No",
-      "Exports": "Yes",
+      "Exports": "N/A",
       "Raising": "N/A"
     },
     "seedScore": 73.1,
@@ -1152,6 +1159,7 @@ export const referenceCompanies = [
       1,
       1,
       1
-    ]
+    ],
+    "stage": "In Talks"
   }
 ] as const;

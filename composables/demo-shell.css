@@ -38,9 +38,9 @@
 .demo-shell .demo-shell__heading button.demo-shell__add::before { content: none !important; }
 .demo-shell .demo-shell__heading button.demo-shell__add svg { width: 14px; height: 14px; fill: currentColor; }
 
-/* Keep grid surfaces distinct from the demo shell, without covering cell states. */
+/* The grid theme supplies column separators; the shell adds one header baseline. */
 .demo-shell revo-grid revogr-header .rgHeaderCell {
-  border-bottom: 1px solid var(--border, var(--outline, #e4e4e4));
+  border-bottom: 1px solid var(--border, var(--outline, var(--rv-ui-border)));
 }
 
 /* Compact add actions inside grid cells. */

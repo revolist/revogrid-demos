@@ -10,14 +10,19 @@ import { demoColors } from '../../../../composables/demo-colors';
 import { mountActionBar } from '@revolist/ui/action-bar';
 import { campaignWeeks, changePercent, safeRatio } from './campaign-detail-model';
 import { campaignTrendChart } from './campaign-trend-chart';
-import { createCampaigns, type Campaign } from './campaign-fixtures';
+import { campaignOwners, createCampaigns, type Campaign } from './campaign-fixtures';
 import { summarizeCampaigns } from './campaign-summary';
+import { compareCampaignCells } from './campaign-sorting';
 import { PopoverController } from '@revolist/ui/core/popover-controller';
 import type { ColumnData, ColumnRegular, DataType } from '@revolist/revogrid';
-import { bulletChartRenderer, comparisonSparklineRenderer, metricStackRenderer, progressLineRenderer, identityCellRenderer, cellActionRenderer, visualCellRenderer, KeyedRowSelectionPlugin, FIlTER_SELECTION, FIlTER_SLIDER, AdvanceFilterPlugin, compileFilterAst, type FilterAst, type FilterAstEditorHandle } from '@revolist/revogrid-pro';
+import { bulletChartRenderer, comparisonSparklineRenderer, metricStackRenderer, progressLineRenderer, identityCellRenderer, cellActionRenderer, visualCellRenderer, renderGroupCell, KeyedRowSelectionPlugin, FIlTER_SELECTION, FIlTER_SLIDER, AdvanceFilterPlugin, compileFilterAst, type FilterAst, type FilterAstEditorHandle } from '@revolist/revogrid-pro';
 import '@fortawesome/fontawesome-free/css/brands.css';
+import pauseIcon from '@fortawesome/fontawesome-free/svgs/solid/pause.svg?raw';
+import downloadIcon from '@fortawesome/fontawesome-free/svgs/solid/download.svg?raw';
+import trashIcon from '@fortawesome/fontawesome-free/svgs/solid/trash.svg?raw';
 import {
   button,
+  deleteButton,
   compactMoney,
   dropdown,
   field,
@@ -26,6 +31,7 @@ import {
   matches,
   number,
   pct,
+  select,
   type Example,
 } from '../../shared/workbench-ui';
 
@@ -64,7 +70,7 @@ const cpaText = new Intl.NumberFormat('en-US', {
 export const campaigns: Example = {
   id: 'campaign-performance',
   title: 'Marketing Campaign Analytics',
-  description: 'Paid media conversion and efficiency over the last 30 days',
+  description: 'Subscription acquisition and paid media efficiency over the last 30 days',
   setup(bench) {
     const rows = createCampaigns().sort((a, b) => b.spend - a.spend);
     bench.grid.filter = {
@@ -86,10 +92,29 @@ export const campaigns: Example = {
       },
     };
 
+    bench.grid.grouping = {
+      ...bench.grid.grouping,
+      groupCellTemplate: (h, { prop, group }) => {
+        // The first pinned column contains selection checkboxes.
+        const labelColumn = bench.grid.hideColumns?.includes('label') ? group.isLabelColumn : prop === 'label';
+        if (!labelColumn) return null;
+        return h('div', { style: { paddingInlineStart: `${group.depth * 12}px` } }, [
+          renderGroupCell(h, {
+            label: group.name,
+            actionLabel: `${group.expanded ? 'Collapse' : 'Expand'} ${group.name}`,
+            expanded: group.expanded,
+            onActivate: group.canExpand ? group.onExpand : undefined,
+            variant: 'tree',
+          }),
+        ]);
+      },
+    };
+
     const toaster = bench.toaster;
 
     let nextId = 1;
     let activeFilter: FilterAst | undefined;
+    let belowTargetOnly = false;
     let filterPlugin: AdvanceFilterPlugin | undefined;
     let filterRefreshVersion = 0;
     const filterPopover = new PopoverController();
@@ -125,14 +150,14 @@ export const campaigns: Example = {
             actionLabel: `Open ${model.label}`, detail: `${model.subtitleFlag || ''} ${model.subtitle || ''}`.trim(),
             leading: (h) => h('span', { class: 'cell-mark cell-mark--platform', 'aria-hidden': 'true' }, [h('i', { class: `fa-brands ${model.brandIcon}` })]),
           }),
-          onActivate: model => showCampaign(model.campaign),
+          onActivate: model => { if (model.campaign) showCampaign(model.campaign); },
         },
       },
       {
         prop: 'status',
         name: 'Status',
         filter: [FIlTER_SELECTION],
-        size: 88,
+        size: 112,
         sortable: true,
         cellTemplate: visualCellRenderer,
         visualCell: { format: (_value, model) => ({
@@ -156,7 +181,7 @@ export const campaigns: Example = {
           [
             'conversions',
             'Conversions',
-            128,
+            160,
             number,
             (row: Record<string, any>) =>
               row.change !== undefined ? signedPct(row.change) : 'New',
@@ -207,26 +232,50 @@ export const campaigns: Example = {
             ]
           : [column];
       }),
+      {
+        prop: 'trialStarts', name: 'Trials', size: 112, sortable: true, columnType: 'number',
+        cellTemplate: metricStackRenderer,
+        metricStack: { format: value => ({ value: typeof value === 'number' ? number(value) : '–' }) },
+      },
+      {
+        prop: 'paidRate', name: 'Paid %', size: 110, sortable: true, columnType: 'number',
+        cellTemplate: visualCellRenderer,
+        visualCell: { format: value => ({ kind: 'text', className: 'metric-number', text: typeof value === 'number' ? `${value.toFixed(1)}%` : '–' }) },
+      },
       bullet,
       {
         prop: 'buyers',
         columnType: 'number',
-        name: 'New Buyers',
+        name: 'New members',
         filter: ['number', FIlTER_SLIDER],
         filterAstValueEditor: { kind: 'slider', min: 0, max: 100, step: 1, formatValue: formatFilterNumber },
-        size: 128,
+        size: 160,
         sortable: true,
         columnProperties: () => ({ class: 'campaign-number-header' }),
         cellTemplate: progressLineRenderer,
         minValue: 0,
         maxValue: 100,
         formatValue: (value) => `${Math.round(value)}%`,
-        progressLineAriaLabel: 'Share of new buyers',
+        progressLineAriaLabel: 'Share of new members',
       },
-      { prop: 'actions', columnChooser: false, name: '', filter: false, size: ROW_ACTION_COLUMN_WIDTH, cellTemplate: cellActionRenderer, cellAction: { label: row => `Actions for ${row.label}`, visible: row => !row.total && !row.group, onActivate: row => showCampaign(row.campaign) } },
+      { prop: 'actions', columnChooser: false, name: '', filter: false, size: ROW_ACTION_COLUMN_WIDTH, cellTemplate: cellActionRenderer, cellAction: { label: row => `Actions for ${row.label}`, visible: row => !!row.campaign, onActivate: row => { if (row.campaign) showCampaign(row.campaign); } } },
     ];
+    for (const column of columns) {
+      if ('prop' in column && column.sortable) column.cellCompare = compareCampaignCells;
+    }
     bench.grid.resize = true;
-    bench.toolbar.append(filter);
+    const belowTarget = button('Below target', () => {
+      belowTargetOnly = !belowTargetOnly;
+      clearSelection();
+      bench.resetPage();
+      refresh();
+    });
+    const pacing = select('Budget used', ['All budgets', '90% or more', 'Below 90%'], 'All budgets', () => {
+      clearSelection();
+      bench.resetPage();
+      refresh();
+    });
+    bench.toolbar.append(filter, belowTarget, pacing);
     const actionHost = make('div', '', 'campaign-bulk-host');
     actionHost.hidden = true;
     bench.toolbar.insertAdjacentElement('afterend', actionHost);
@@ -243,11 +292,10 @@ export const campaigns: Example = {
       const link = document.createElement('a'); link.href = url; link.download = 'selected-campaigns.csv'; link.click();
       setTimeout(() => URL.revokeObjectURL(url), 0);
     };
-    const icon = (paths: string) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
     const actionIcons = {
-      pause: icon('<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'),
-      export: icon('<path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3"/>'),
-      delete: icon('<path d="M4 7h16M10 4h4M6 7l1 13h10l1-13M10 11v5m4-5v5"/>'),
+      pause: pauseIcon,
+      export: downloadIcon,
+      delete: trashIcon,
     };
     const actionBar = mountActionBar(actionHost, { label: 'Selected campaigns', count: 0, selectionLabel: '', positioning: { mode: 'inline' } });
     function renderSelection() {
@@ -262,7 +310,7 @@ export const campaigns: Example = {
         actions: [
           { id: 'pause', label: 'Pause', icon: actionIcons.pause, disabled: !selected.some(row => row.status !== 'Paused' && row.status !== 'Ended') },
           { id: 'export', label: 'Export', icon: actionIcons.export },
-          { id: 'delete', label: 'Delete', icon: actionIcons.delete, variant: 'danger-outline' },
+          { id: 'delete', label: 'Delete', icon: actionIcons.delete, variant: 'danger' },
           { id: 'clear', label: 'Clear' },
         ],
         onAction: action => {
@@ -300,46 +348,57 @@ export const campaigns: Example = {
         subtitleFlag: flags[row.market] ?? '',
         subtitle: `${row.market} · ${row.audience ?? row.channel}`,
         roas: row.spend ? row.revenue / row.spend : null,
+        paidRate: row.trialStarts ? row.conversions / row.trialStarts * 100 : null,
         cpa: row.conversions ? row.spend / row.conversions : null,
         change: row.previousConversions ? (row.conversions / row.previousConversions - 1) * 100 : undefined,
         cpaChange: row.previousConversions && row.previousSpend && row.conversions ? ((row.spend / row.conversions) / (row.previousSpend / row.previousConversions) - 1) * 100 : undefined,
       };
     }
 
-    function refresh() {
+    function refresh(updateSource = true) {
       const compiled = activeFilter && filterPlugin
         ? compileFilterAst(activeFilter, { columns: columns as ColumnRegular[], operators: filterPlugin.filterFunctionsIndexedByType })
         : undefined;
-      const filtered = rows.filter((row) => matches(bench.currentQuery(), row.label, row.channel, row.market, row.id, row.owner, row.audience) &&
-        (!compiled || compiled.matches(toGridRow(row))));
+      const candidates = rows.filter((row) => matches(bench.currentQuery(), row.label, row.channel, row.market, row.id, row.owner, row.audience) &&
+        (pacing.value === 'All budgets' || (row.budget > 0 && (pacing.value === '90% or more' ? row.spend / row.budget >= .9 : row.spend / row.budget < .9))));
+      const matchesGridFilter = (row: Campaign) => !compiled || compiled.matches(toGridRow(row));
+      const isBelowTarget = (row: Campaign) => row.spend > 0 && row.revenue / row.spend < row.target;
+      const matching = candidates.filter(matchesGridFilter);
+      const belowCount = summarizeCampaigns(matching).below;
+      const filtered = belowTargetOnly ? matching.filter(isBelowTarget) : matching;
       const summary = summarizeCampaigns(filtered);
       const { spend, budget, impressions, clicks, conversions, revenue } = summary;
       filter.textContent = activeFilter ? 'Filter (active)' : 'Filter';
       filter.setAttribute('aria-label', filter.textContent);
+      belowTarget.textContent = `Below target ${belowCount}`;
+      belowTarget.setAttribute('aria-pressed', String(belowTargetOnly));
       bench.setSubtitle(`${filtered.length} campaigns • ${summary.live} live in view • Sep 6 to Oct 5`);
       const compactNumber = (value: number) => new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
       const changeText = (value: number | null) => value === null ? 'New' : signedPct(value);
       bench.stats([
+        ['Below Target', number(summary.below), `of ${filtered.length} ${filtered.length === 1 ? 'campaign' : 'campaigns'}`],
         ['Spend', compactMoney(spend), `${budget ? Math.round(spend / budget * 100) : 0}% of ${compactMoney(budget)} budget`],
         ['Impressions', compactNumber(impressions), `${impressions ? pct(clicks / impressions * 100) : '0%'} CTR`],
         ['Conversions', compactNumber(conversions), changeText(summary.conversionChange)],
         ['Blended CPA', conversions ? cpaText.format(spend / conversions) : '–', conversions ? changeText(summary.cpaChange) : '–'],
         ['Blended ROAS', spend ? `${(revenue / spend).toFixed(1)}x` : '–', `Target ${summary.target.toFixed(1)}x`],
-        ['Below Target', number(summary.below), `of ${filtered.length} ${filtered.length === 1 ? 'campaign' : 'campaigns'}`],
       ]);
       const tone = (index: number, value: number | null, lowerIsBetter = false) => {
         const detail = bench.summary.children[index]?.querySelector('small');
         if (detail && value !== null) detail.classList.add((lowerIsBetter ? value <= 0 : value >= 0) ? 'campaign-change-good' : 'campaign-change-bad');
       };
-      tone(2, summary.conversionChange);
-      tone(3, summary.cpaChange, true);
-      bench.render(
-        window.matchMedia('(max-width: 650px)').matches ? [{ ...columns[0], size: 160 }, ...columns.slice(1)] : columns,
-        filtered.map(toGridRow),
-      );
+      tone(3, summary.conversionChange);
+      tone(4, summary.cpaChange, true);
+      if (updateSource) {
+        bench.render(
+          window.matchMedia('(max-width: 650px)').matches ? [{ ...columns[0], size: 160 }, ...columns.slice(1)] : columns,
+          (belowTargetOnly ? candidates.filter(isBelowTarget) : candidates).map(toGridRow),
+        );
+      }
+      bench.setGridEmpty(!filtered.length);
     }
 
-    bench.onCompactChange(refresh);
+    bench.onCompactChange(() => refresh());
 
     async function openFilters() {
       if (filterPopover.isOpen) { filterPopover.close(); return; }
@@ -356,21 +415,20 @@ export const campaigns: Example = {
     bench.grid.addEventListener('filterastchange', (event) => {
       activeFilter = event.detail.filterAst;
       if (event.detail.origin === 'ui') queueMicrotask(() => filterPopover.close());
-      bench.resetPage();
       const version = ++filterRefreshVersion;
       if (filterPlugin) {
-        refresh();
+        refresh(false);
       } else {
         void bench.grid.getPlugins().then(plugins => {
           if (version !== filterRefreshVersion) return;
           filterPlugin = plugins.find(plugin => plugin instanceof AdvanceFilterPlugin);
-          refresh();
+          refresh(false);
         });
       }
     });
 
     type CampaignTab = 'Overview' | 'Performance' | 'Audience';
-    const owners = ['Sana Qureshi', 'Kenji Tan', 'Priya Patel', 'Omar Haddad', 'Sofia Romero', 'Elijah Morgan'];
+    const owners = campaignOwners;
     const audiences = ['Prospecting', 'Retargeting', 'Brand Search', 'Lookalike', 'Winback'];
     const marketNames: Record<string, string> = { US: 'United States', GB: 'United Kingdom', CA: 'Canada', AU: 'Australia', DE: 'Germany', FR: 'France', ES: 'Spain', JP: 'Japan', BR: 'Brazil', MX: 'Mexico' };
     const dollars = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
@@ -385,13 +443,13 @@ export const campaigns: Example = {
       const identityText = make('div'); const title = make('div', '', 'campaign-profile__title'); title.append(make('strong', row.label), make('span', row.status, statusBadgeClass(row.status))); identityText.append(title, make('p', `${row.channel}  •  ${row.audience}  •  ${flags[row.market] ?? ''} ${row.market}`)); identity.append(icon, identityText); header.append(identity);
       const actions = make('div', '', 'campaign-profile__header-actions'); const editButton = button('Edit', () => edit(row, true)); editButton.dataset.icon = 'edit';
       const pause = button(row.status === 'Paused' ? 'Resume' : 'Pause', () => { const previous = row.status; row.status = row.status === 'Paused' ? 'Live' : 'Paused'; refresh(); showCampaign(row, active); bench.report(`${row.label} ${row.status === 'Paused' ? 'paused' : 'resumed'}.`, () => { row.status = previous; refresh(); }); });
-      const remove = button('Delete campaign', () => bench.form('Delete record?', [make('p', row.label)], () => {
+      const remove = deleteButton('Delete campaign', () => bench.form('Delete record?', [make('p', row.label)], () => {
         const index = rows.indexOf(row);
         if (index < 0) return;
         rows.splice(index, 1);
         refresh();
         toaster.show({ title: 'Campaign deleted', description: row.label, tone: 'success', action: { label: 'Undo', onClick: () => { rows.splice(Math.min(index, rows.length), 0, row); refresh(); } } });
-      })); actions.append(editButton, pause, remove); header.append(actions);
+      }, undefined, 'Delete', undefined, { submit: { variant: 'danger', icon: 'trash' } })); actions.append(editButton, pause, remove); header.append(actions);
       const tabs = make('div'); const panel = make('div', '', 'scale-profile__content'); panel.setAttribute('role', 'tabpanel'); panel.id = `campaign-panel-${row.id}`;
       const names: CampaignTab[] = ['Overview', 'Performance', 'Audience'];
       const tabOptions = names.map(name => ({ value: name, label: name, id: `campaign-${row.id}-${name}`, ariaControls: panel.id }));
@@ -413,6 +471,7 @@ export const campaigns: Example = {
           for (const [label, value, detail] of values) { const tile = make('div'); const comparison = make('small', detail); if ((label === 'Conversions' && detail.startsWith('-')) || (label === 'CPA' && detail.startsWith('+'))) comparison.className = 'campaign-change-bad'; else if ((label === 'Conversions' && detail.startsWith('+')) || (label === 'CPA' && detail.startsWith('-'))) comparison.className = 'campaign-change-good'; tile.append(make('small', label), make('strong', value), comparison); tiles.append(tile); } stats.append(tiles);
           const delivery = row.activeFrom > row.activeTo ? 'No delivery yet' : `Serving since ${date(row.activeFrom)}`;
           definitions('Campaign', [['Owner', row.owner || 'Unassigned'], ['Market', `${flags[row.market] ?? ''} ${marketNames[row.market] ?? row.market}`], ['Type', row.audience], ['Delivery', delivery]]);
+          definitions('Subscription funnel', [['Trial starts', number(row.trialStarts)], ['Paid subscriptions', number(row.conversions)], ['Trial to paid', row.trialStarts ? `${(row.conversions / row.trialStarts * 100).toFixed(1)}%` : '–']]);
           definitions('Budget', [['30-day budget', dollars(row.budget)], ['Spent', `${dollars(row.spend)}${row.budget ? `  ${Math.round(row.spend / row.budget * 100)}% paced` : ''}`], ['Revenue', dollars(row.revenue)], ['Target ROAS', `${row.target.toFixed(1)}x`]]);
         } else if (tab === 'Performance') {
           const chart = section('Daily Trend', 'Sep 6 to Oct 5'); const controls = make('div', '', 'campaign-profile__trend-controls'); const plot = make('div');
@@ -432,9 +491,9 @@ export const campaigns: Example = {
           for (const week of campaignWeeks(row.dailySpend, row.trend)) { const tr = make('tr'), cost = safeRatio(week.spend, week.conversions); tr.append(make('td', `${date(week.start)} to ${date(week.end)}`), make('td', dollars(week.spend)), make('td', number(week.conversions)), make('td', cost === null ? '–' : cpaText.format(cost))); tbody.append(tr); }
           const totalRow = make('tr', '', 'campaign-profile__total'); totalRow.append(make('td', '30 days'), make('td', dollars(row.spend)), make('td', number(row.conversions)), make('td', cpa == null ? '–' : cpaText.format(cpa))); tbody.append(totalRow); table.append(thead, tbody); content.append(table);
         } else {
-          const buyers = Math.round(row.conversions * row.buyers / 100), returning = Math.max(0, row.conversions - buyers); const mix = section('Buyer Mix', `${number(row.conversions)} conversions, last 30 days`);
+          const buyers = Math.round(row.conversions * row.buyers / 100), returning = Math.max(0, row.conversions - buyers); const mix = section('Member Mix', `${number(row.conversions)} conversions, last 30 days`);
           const bar = make('div', '', 'campaign-profile__buyer-bar'); const fill = make('i'); fill.style.width = `${Math.max(0, Math.min(100, row.buyers))}%`; bar.append(fill); mix.append(bar);
-          for (const [label, value, rate] of [['New buyers', buyers, row.buyers], ['Returning', returning, 100 - row.buyers]] as const) { const line = make('div', '', 'campaign-profile__buyer-row'); line.append(make('span', label), make('strong', number(value)), make('small', row.conversions ? `${Math.round(rate)}%` : '–')); mix.append(line); }
+          for (const [label, value, rate] of [['New members', buyers, row.buyers], ['Returning members', returning, 100 - row.buyers]] as const) { const line = make('div', '', 'campaign-profile__buyer-row'); line.append(make('span', label), make('strong', number(value)), make('small', row.conversions ? `${Math.round(rate)}%` : '–')); mix.append(line); }
           const ctr = safeRatio(row.clicks, row.impressions), conversionRate = safeRatio(row.conversions, row.clicks);
           definitions('Funnel', [['Impressions', compactCount(row.impressions)], ['Clicks', `${compactCount(row.clicks)}${ctr === null ? '' : `  ${(ctr * 100).toFixed(1)}% CTR`}`], ['Conversions', `${number(row.conversions)}${conversionRate === null ? '' : `  ${(conversionRate * 100).toFixed(1)}% of clicks`}`]]);
           const cpm = safeRatio(row.spend * 1000, row.impressions), cpc = safeRatio(row.spend, row.clicks), value = safeRatio(row.revenue, row.conversions);
@@ -478,7 +537,7 @@ export const campaigns: Example = {
         if (rows.some(item => item !== row && key(item.label) === key(name.value))) { error.hidden = false; error.textContent = 'Another campaign has this name.'; return false; }
         const marketCode = markets.find(code => marketNames[code] === market.value) ?? 'US'; const draft = { label: name.value.trim(), channel: channel.value, audience: audience.value, market: marketCode, owner: owner.value, status: status.value, budget: Number(budget.value), target: Number(target.value) };
         if (row) { const previous = structuredClone(row); Object.assign(row, draft); refresh(); bench.report('Campaign saved.', () => { Object.assign(row, previous); refresh(); }); if (fromView) { showCampaign(row); return false; } }
-        else { const created: Campaign = { ...draft, id: `cmp_new_${nextId++}`, spend: 0, impressions: 0, clicks: 0, conversions: 0, previousSpend: 0, previousConversions: 0, revenue: 0, buyers: 0, trend: Array(30).fill(0), dailySpend: Array(30).fill(0), activeFrom: 30, activeTo: 29 }; rows.push(created); bench.resetPage(); refresh(); bench.report('Campaign created.', () => { const index = rows.indexOf(created); if (index >= 0) rows.splice(index, 1); refresh(); }); showCampaign(created); return false; }
+        else { const created: Campaign = { ...draft, id: `cmp_new_${nextId++}`, spend: 0, impressions: 0, clicks: 0, conversions: 0, trialStarts: 0, previousSpend: 0, previousConversions: 0, revenue: 0, buyers: 0, trend: Array(30).fill(0), dailySpend: Array(30).fill(0), activeFrom: 30, activeTo: 29 }; rows.push(created); bench.resetPage(); refresh(); bench.report('Campaign created.', () => { const index = rows.indexOf(created); if (index >= 0) rows.splice(index, 1); refresh(); }); showCampaign(created); return false; }
         return true;
       }, back, row ? 'Save Changes' : 'Create Campaign',
         () => [channel, audience, market, owner, status].forEach(control => control.destroy()),

@@ -1,135 +1,135 @@
 // Offsets are days from 1 August 2026, the sample project timeline start.
 export const referenceSchedule: Record<string, { vendor: string; start: number; plannedEnd: number; done: boolean }> = {
-  "Stakeholder interviews": {
-    "vendor": "Lantern Studio",
-    "start": 2,
-    "plannedEnd": 13,
+  "Community listening sessions": {
+    "vendor": "Harbor Works",
+    "start": 0,
+    "plannedEnd": 18,
     "done": true
   },
-  "Service architecture review": {
-    "vendor": "Meridian Systems",
-    "start": 9,
-    "plannedEnd": 27,
+  "Building condition survey": {
+    "vendor": "Meridian Electrical",
+    "start": 4,
+    "plannedEnd": 31,
     "done": true
   },
-  "Content inventory": {
+  "Equipment inventory": {
     "vendor": "Nia Bennett",
-    "start": 16,
-    "plannedEnd": 27,
+    "start": 12,
+    "plannedEnd": 32,
     "done": true
   },
-  "Journey prototypes": {
-    "vendor": "Lantern Studio",
-    "start": 30,
-    "plannedEnd": 55,
+  "Studio layout studies": {
+    "vendor": "Harbor Works",
+    "start": 26,
+    "plannedEnd": 60,
     "done": true
   },
-  "Interface foundations": {
-    "vendor": "Lantern Studio",
-    "start": 44,
-    "plannedEnd": 97,
+  "Construction drawings": {
+    "vendor": "Harbor Works",
+    "start": 40,
+    "plannedEnd": 106,
     "done": false
   },
-  "Participant research": {
-    "vendor": "Brightpanel Research",
-    "start": 65,
-    "plannedEnd": 76,
+  "Accessibility consultation": {
+    "vendor": "Open Door Access",
+    "start": 60,
+    "plannedEnd": 84,
     "done": true
   },
-  "Portal application": {
-    "vendor": "Lantern Studio",
-    "start": 58,
-    "plannedEnd": 174,
+  "Main studio construction": {
+    "vendor": "Harbor Works",
+    "start": 52,
+    "plannedEnd": 184,
     "done": false
   },
-  "Account onboarding": {
-    "vendor": "Lantern Studio",
-    "start": 79,
-    "plannedEnd": 167,
+  "Workshop room fit-out": {
+    "vendor": "Harbor Works",
+    "start": 76,
+    "plannedEnd": 177,
     "done": false
   },
-  "Cloud hosting": {
-    "vendor": "Northstar Commerce",
-    "start": 2,
-    "plannedEnd": 242,
+  "Equipment rental": {
+    "vendor": "Northstar Equipment",
+    "start": 0,
+    "plannedEnd": 230,
     "done": false
   },
-  "Knowledge search": {
-    "vendor": "Searchlight Labs",
-    "start": 61,
-    "plannedEnd": 242,
+  "Tool storage rental": {
+    "vendor": "Workshop Storage Co.",
+    "start": 56,
+    "plannedEnd": 235,
     "done": false
   },
-  "Inclusive design review": {
+  "Access inspection": {
     "vendor": "Clearpath Access",
-    "start": 163,
-    "plannedEnd": 181,
+    "start": 150,
+    "plannedEnd": 190,
     "done": false
   },
-  "CRM integration": {
-    "vendor": "Meridian Systems",
-    "start": 65,
-    "plannedEnd": 167,
+  "Electrical installation": {
+    "vendor": "Meridian Electrical",
+    "start": 62,
+    "plannedEnd": 176,
     "done": false
   },
-  "Customer data sync": {
-    "vendor": "Meridian Systems",
-    "start": 79,
-    "plannedEnd": 139,
+  "Lighting installation": {
+    "vendor": "Meridian Electrical",
+    "start": 76,
+    "plannedEnd": 149,
     "done": false
   },
-  "Identity integration": {
-    "vendor": "Lantern Studio",
-    "start": 107,
-    "plannedEnd": 125,
+  "Access control installation": {
+    "vendor": "Harbor Works",
+    "start": 101,
+    "plannedEnd": 130,
     "done": false
   },
-  "Knowledge base migration": {
-    "vendor": "Lantern Studio",
-    "start": 72,
-    "plannedEnd": 132,
+  "Acoustic treatment": {
+    "vendor": "Harbor Works",
+    "start": 68,
+    "plannedEnd": 145,
     "done": false
   },
-  "Content clean-up": {
+  "Salvage and preparation": {
     "vendor": "In-house",
-    "start": 72,
-    "plannedEnd": 111,
+    "start": 68,
+    "plannedEnd": 118,
     "done": false
   },
-  "Case history import": {
-    "vendor": "Lantern Studio",
-    "start": 128,
-    "plannedEnd": 181,
+  "Furniture restoration": {
+    "vendor": "Harbor Works",
+    "start": 124,
+    "plannedEnd": 189,
     "done": false
   },
-  "Legacy link mapping": {
+  "Equipment installation": {
     "vendor": "Nia Bennett",
-    "start": 156,
-    "plannedEnd": 188,
+    "start": 150,
+    "plannedEnd": 196,
     "done": false
   },
-  "Quality assurance": {
+  "Safety inspection": {
     "vendor": "In-house",
-    "start": 170,
-    "plannedEnd": 209,
+    "start": 166,
+    "plannedEnd": 218,
     "done": false
   },
-  "Traffic testing": {
-    "vendor": "Stresswave Labs",
-    "start": 191,
-    "plannedEnd": 202,
+  "Sound testing": {
+    "vendor": "Soundcheck Acoustics",
+    "start": 184,
+    "plannedEnd": 210,
     "done": false
   },
-  "Support training": {
+  "Volunteer training": {
     "vendor": "In-house",
-    "start": 198,
-    "plannedEnd": 209,
+    "start": 192,
+    "plannedEnd": 216,
     "done": false
   },
-  "Launch support": {
-    "vendor": "Lantern Studio",
-    "start": 213,
-    "plannedEnd": 237,
+  "Opening support": {
+    "vendor": "Harbor Works",
+    "start": 207,
+    "plannedEnd": 238,
     "done": false
   }
 };

@@ -29,3 +29,19 @@ test('health compares spending to both forecast and elapsed time', () => {
   assert.equal(budgetHealth({ ...row, actual: 0 }), 'idle');
   assert.equal(budgetHealth({ ...row, actual: 28860 }), 'done');
 });
+
+test('billed activities fit the authored schedule and completed work ends after billing', async () => {
+  const { budgetActivityFixtures } = await import('./budget-activity-fixtures.ts');
+  const { referenceSchedule } = await import('./budget-reference-schedule.ts');
+  const epoch = Date.UTC(2026, 7, 1);
+  for (const [name, line] of Object.entries(budgetActivityFixtures)) {
+    const schedule = referenceSchedule[name];
+    assert.ok(schedule.start >= 0 && schedule.plannedEnd <= 243 && schedule.start < schedule.plannedEnd, name);
+    for (const entry of line.entries) {
+      const day = (Date.parse(entry.day) - epoch) / 86400000;
+      if (day > 88) continue;
+      assert.ok(day >= schedule.start, `${name}: billing before start`);
+      if (line.status === 'done') assert.ok(day <= schedule.plannedEnd, `${name}: billing after completion`);
+    }
+  }
+});

@@ -8,11 +8,11 @@ const defaults = { weeklySalesTarget: 20000, marginFloor: 25, discountCeiling: 2
 test('fictional sample produces its default period totals and health', () => {
   assert.equal(productFixtures.length, 29);
   const expected = [
-    ['Granite Trail Boot', 314036, 'On Track', ['met', 'met', 'met']],
-    ['Cloudline Mid Boot', 140657, 'At Risk', ['miss', 'met', 'met']],
-    ['Harbor Trail Runner', 416522, 'Off Track', ['met', 'miss', 'met']],
-    ['Ridgeline Weather Jacket', 496261, 'On Track', ['met', 'met', 'met']],
-    ['Mesa Trek Pant', 182911, 'At Risk', ['miss', 'met', 'met']],
+    ['Alder Summit Boot', 467954, 'On Track', ['met', 'met', 'met']],
+    ['Fernbank Walking Boot', 251365, 'On Track', ['near', 'met', 'met']],
+    ['Harbor Loop Running Shoe', 525658, 'Off Track', ['met', 'miss', 'met']],
+    ['Copper Peak Rain Jacket', 439027, 'On Track', ['met', 'met', 'met']],
+    ['Ridgeway Walking Pant', 278713, 'On Track', ['met', 'met', 'met']],
   ];
   for (const [name, revenue, status, marks] of expected) {
     const product = productFixtures.find((item) => item.label === name);
@@ -21,6 +21,12 @@ test('fictional sample produces its default period totals and health', () => {
     assert.equal(result.status, status);
     assert.deepEqual(result.marks, marks);
   }
+  assert.equal(new Set(productFixtures.map(product => product.sku)).size, 29);
+  for (const product of productFixtures) {
+    assert.equal(product.weeks.length, 52);
+    for (const [net, gross, discount] of product.weeks) assert.ok(Math.abs(net + discount - gross) < .02);
+  }
+  assert.ok(productFixtures.some(product => productPeriodHealth(product.weeks.slice(-13), product.markdown, defaults).discount >= .2));
 });
 
 test('health uses the period sales target, distinguishes near misses, and caps losses', () => {

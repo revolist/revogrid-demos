@@ -1,10 +1,19 @@
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SegmentedSwitch } from '@revolist/ui/react';
-import { createRecordNavigation } from '@revolist/ui/native';
+import { badgeClassName, createRecordNavigation } from '@revolist/ui/native';
 import sortIcon from '@fortawesome/fontawesome-free/svgs/solid/arrow-down-wide-short.svg?raw';
+import boxIcon from '@fortawesome/fontawesome-free/svgs/solid/box.svg?raw';
+import cubeIcon from '@fortawesome/fontawesome-free/svgs/solid/cube.svg?raw';
+import chartIcon from '@fortawesome/fontawesome-free/svgs/solid/chart-simple.svg?raw';
+import leafIcon from '@fortawesome/fontawesome-free/svgs/solid/leaf.svg?raw';
+import mountainIcon from '@fortawesome/fontawesome-free/svgs/solid/mountain-sun.svg?raw';
+import sunIcon from '@fortawesome/fontawesome-free/svgs/solid/sun.svg?raw';
+import bookIcon from '@fortawesome/fontawesome-free/svgs/solid/book-open.svg?raw';
+import starIcon from '@fortawesome/fontawesome-free/svgs/solid/star.svg?raw';
 import { mountTabs } from '@revolist/ui/native';
 import { createDetailPanel } from '../../../../composables/detail-panel';
+import { demoColors } from '../../../../composables/demo-colors';
 import { createMetricTileHistoryTooltip, METRIC_TILE_HISTORY_TOOLTIP } from '@revolist/revogrid-pro';
 import '@revolist/revogrid-pro/styles.css';
 import { renderColumnHeader, visualCellRenderer, type VisualCellPresentation } from '@revolist/revogrid-pro';
@@ -37,21 +46,18 @@ import {
 } from '../../shared/workbench-ui';
 
 const decisions = ['Grow', 'Hold', 'Trim', 'Exit'];
+const ordinal = (value: number) => `${value}${value % 100 >= 11 && value % 100 <= 13 ? 'th' : value % 10 === 1 ? 'st' : value % 10 === 2 ? 'nd' : value % 10 === 3 ? 'rd' : 'th'}`;
 const colors = [
-  '#6647f0', '#b52ac5', '#0091ff', '#00a58f',
-  '#8858d9', '#f08a36', '#3955a8', '#ed3d69',
+  demoColors.purple, demoColors.fuchsia, demoColors.blue, demoColors.teal,
+  demoColors.violet, demoColors.orange, demoColors.indigo, demoColors.pink,
 ];
-// Compact outline marks used in the scorecard header and section summaries.
-const brandMarks = [
-  'M2 15 7.5 4l3.2 5.3L12 7l4 8H2Zm5.5-11 2 3.3',
-  'M9 2C7.5 4.5 4 7.3 4 10.2a5 5 0 0 0 10 0C14 7.3 10.5 4.5 9 2Zm-2.6 9a2.6 2.6 0 0 0 2.6 2.6',
-  'M9 2.2 3 5v4.5c0 3.1 2.4 5.2 6 6.5 3.6-1.3 6-3.4 6-6.5V5L9 2.2Zm0 4.2a2.3 2.3 0 1 0 0 4.6 2.3 2.3 0 0 0 0-4.6Z',
-  'M15 2C8 2 4 4.6 4 10.5 4 13 6 15 8.5 15 14 15 16 9 15 2ZM3 16c3-4 5-6 9-8',
-  'M1.5 9h3L6 4l2.5 10L11 6l1.5 3H16.5',
-  'M2 14h14M4 11h10M6 9a3 3 0 0 1 6 0M9 1v2M3 4l1.5 1M15 4l-1.5 1',
-  'M9 2C7 5 4 7.8 4 10.6a5 5 0 0 0 10 0C14 8 11 5 9 2Zm0 5c-1 1.5-2 2.5-2 4a2 2 0 1 0 4 0c0-1.5-1-2.5-2-4Z',
-  'M3 13c2-1 3-3 4-6 1-2.5 5-3.5 7-2l-2 2 2 1-3 1c-1 3-3 5-8 4Zm3 0-1 3m4-3-1 3',
-];
+// Use the same Font Awesome SVG geometry in headers, section leaders and details.
+const brandMarks = [boxIcon, cubeIcon, chartIcon, leafIcon, mountainIcon, sunIcon, bookIcon, starIcon].map(svg => {
+  const viewBox = svg.match(/viewBox="([^"]+)"/)?.[1];
+  const path = svg.match(/<path\b[^>]*\sd="([^"]+)"/)?.[1];
+  if (!viewBox || !path) throw new Error('Invalid brand icon');
+  return { viewBox, path };
+});
 const brandPct = (value: number) => `${value.toFixed(1)}%`;
 const brandCurrency = (value: number) =>
   value >= 1e6
@@ -193,6 +199,9 @@ export const brandScorecard: Example = {
       'All decisions',
       refresh,
     );
+    let reviewOnly = false;
+    const reviewQueue = button('Review trim & exit', () => { reviewOnly = !reviewOnly; refresh(); });
+    reviewQueue.dataset.toolbar = 'search';
     const modes = make('div');
     const modesRoot = createRoot(modes);
     const renderModes = () => modesRoot.render(createElement(SegmentedSwitch, {
@@ -210,7 +219,7 @@ export const brandScorecard: Example = {
       modes,
       button('Add Brand', () => edit(), true),
     );
-    bench.toolbar.append(decision);
+    bench.toolbar.append(decision, reviewQueue);
     bench.grid.rowDefinitions = [{ type: 'rowPinStart', index: 0, size: 140 }];
     bench.onSearch(refresh);
     bench.onCompactChange(refresh);
@@ -265,16 +274,24 @@ export const brandScorecard: Example = {
       return total(active, (brand) => read(brand, metric.key));
     }
 
+    function matchesDecision(brand: Brand) {
+      return matches(bench.currentQuery(), brand.label, brand.decision) &&
+        (decision.value === 'All decisions' || brand.decision === decision.value);
+    }
+    function inReviewQueue(brand: Brand) { return brand.decision === 'Trim' || brand.decision === 'Exit'; }
+
     function refresh() {
       const selected =
         metrics.find((metric) => metric.label === chart.value) ?? metrics[0];
       renderModes();
-      const visible = brands.filter(
-        (brand) =>
-          matches(bench.currentQuery(), brand.label, brand.decision) &&
-          (decision.value === 'All decisions' ||
-            brand.decision === decision.value),
-      );
+      const matching = brands.filter(matchesDecision);
+      const reviewCount = matching.filter(inReviewQueue).length;
+      const count = make('span', String(reviewCount));
+      count.className = badgeClassName({ variant: 'neutral', shape: 'rounded' });
+      reviewQueue.replaceChildren(document.createTextNode('Review trim & exit '), count);
+      reviewQueue.setAttribute('aria-label', `Review trim and exit calls, ${reviewCount} ${reviewCount === 1 ? 'brand' : 'brands'}`);
+      reviewQueue.setAttribute('aria-pressed', String(reviewOnly));
+      const visible = matching.filter(brand => !reviewOnly || inReviewQueue(brand));
       if (reverse)
         visible.sort((a, b) => read(b, selected.key) - read(a, selected.key));
       const active = visible.filter((brand) => read(brand, 'sales') > 0);
@@ -334,13 +351,7 @@ export const brandScorecard: Example = {
           (metric) => metric.group === group,
         );
         const open = !collapsed.has(group);
-        if (open && !compact)
-          ranges.push({
-            row: start,
-            rowSpan: metricsInGroup.length + 1,
-            column: 0,
-            colType: 'colPinStart',
-          });
+        if (open && !compact) ranges.push({ row: start, rowSpan: metricsInGroup.length + 1, column: 0, colType: 'colPinStart' });
         start += open ? metricsInGroup.length + 1 : 1;
         return [
           { label: `${group} rank`, group, expanded: open, ranking: true },
@@ -356,14 +367,7 @@ export const brandScorecard: Example = {
             : []),
         ];
       });
-      if (!compact)
-        ranges.push({
-          row: 0,
-          column: 0,
-          colSpan: 2,
-          rowType: 'rowPinStart',
-          colType: 'colPinStart',
-        });
+      if (!compact) ranges.push({ row: 0, column: 0, colSpan: 2, rowType: 'rowPinStart', colType: 'colPinStart' });
       const toggle = (section: string) => {
         if (collapsed.has(section)) collapsed.delete(section);
         else collapsed.add(section);
@@ -391,7 +395,7 @@ export const brandScorecard: Example = {
         const ahead = ordered.filter(({ score }) => score! >= 1).length;
         return { kind: 'section', className: `${model.expanded ? 'brand-section' : 'brand-section-compact'} ${String(model.group).toLowerCase()}`, ...(model.expanded ? {} : { layout: 'compact' as const }), parts: { action: 'cell-action', leaders: 'brand-leaders', symbol: 'brand-leader-symbol' },
           title: model.expanded ? String(model.group).toUpperCase() : String(model.group), label: 'Beat the portfolio', value: `${ahead} of ${ordered.length}`, expanded: !!model.expanded, actionLabel: `${model.expanded ? 'Collapse' : 'Expand'} ${model.group}`,
-          ...(leading && trailing ? { leaders: [ { rank: '1st', label: leading.label, color: leading.color, path: brandMarks[brands.indexOf(leading) % brandMarks.length] }, { rank: `${active.length}th`, label: trailing.label, color: trailing.color, path: brandMarks[brands.indexOf(trailing) % brandMarks.length] } ] } : {}),
+          ...(leading && trailing ? { leaders: [ { rank: '1st', label: leading.label, color: leading.color, ...brandMarks[brands.indexOf(leading) % brandMarks.length], filled: true }, { rank: ordinal(active.length), label: trailing.label, color: trailing.color, ...brandMarks[brands.indexOf(trailing) % brandMarks.length], filled: true } ] } : {}),
         };
       };
       const labelPresentation = (model: DataType): VisualCellPresentation | undefined => {
@@ -451,6 +455,18 @@ export const brandScorecard: Example = {
       const columns: ColumnData = [
         ...(!compact ? [{ prop: 'group', name: 'Section', size: 148, pin: 'colPinStart', columnTemplate: () => undefined, cellTemplate: visualCellRenderer, visualCell: { format: (_value: unknown, model: DataType) => sectionPresentation(model), onActivate: (model: DataType) => toggle(model.group) } } as ColumnRegular] : []),
         { prop: 'label', name: 'Next season call', size: compact ? 107 : 234, pin: 'colPinStart', columnTemplate: h => h('span', { class: 'brand-metric-label' }, selected.label), cellTemplate: visualCellRenderer, visualCell: { format: (_value, model) => labelPresentation(model), onActivate: model => toggle(model.group) } },
+        {
+          prop: 'portfolio', name: 'Portfolio', size: 84, pin: 'colPinStart', columnType: 'number',
+          columnTemplate: h => renderColumnHeader(h, { className: 'brand-column-summary', label: 'Portfolio', subtitle: `${visible.length} brands` }),
+          cellTemplate: visualCellRenderer,
+          visualCell: { format: (_value, model) => {
+            if (model.ranking) return { kind: 'empty', className: 'brand-empty-rank' };
+            if (model.overall) return { kind: 'empty', className: 'brand-empty-hatch', hatch: true };
+            if (model.band && view === 'Styles') return { kind: 'stat-list', className: 'brand-month-summary', items: [{ label: 'Styles', value: String(allStyles.length) }, { label: 'At a loss', value: String(allStyles.filter(style => styleProfit(style) < 0).length) }, { label: 'Best style', value: allStyles.length ? brandCurrency(bestProfit) : '–' }] };
+            if (model.band) return orderedMonths.length && monthlyMedian !== null ? { kind: 'stat-list', className: 'brand-month-summary', items: [{ label: `Highest, ${orderedMonths[orderedMonths.length - 1].month}`, value: selected.format(orderedMonths[orderedMonths.length - 1].value) }, { label: 'Median', value: selected.format(monthlyMedian) }, { label: `Lowest, ${orderedMonths[0].month}`, value: selected.format(orderedMonths[0].value) }] } : { kind: 'text', element: 'small', text: 'No data' };
+            return model.metric ? { kind: 'text', element: 'strong', className: 'metric-number', text: `${model.metric.key === 'change' && model.portfolio > 0 ? '+' : ''}${model.metric.format(model.portfolio)}` } : undefined;
+          } },
+        },
         ...visible.map((brand): ColumnRegular => ({
           prop: brand.id, name: brand.label, size: 78, columnType: 'number',
             columnTemplate(h) {
@@ -462,19 +478,15 @@ export const brandScorecard: Example = {
                     'svg',
                     {
                       class: 'brand-symbol',
-                      viewBox: '0 0 18 18',
-                      fill: 'none',
-                      stroke: 'currentColor',
-                      'stroke-width': '1.1',
-                      'stroke-linecap': 'round',
-                      'stroke-linejoin': 'round',
+                      viewBox: brandMarks[brands.indexOf(brand) % brandMarks.length].viewBox,
+                      fill: 'currentColor',
                       'aria-hidden': 'true',
                     },
                     [
                       h('path', {
                         d: brandMarks[
                           brands.indexOf(brand) % brandMarks.length
-                        ],
+                        ].path,
                       }),
                     ],
                   ),
@@ -488,18 +500,6 @@ export const brandScorecard: Example = {
             visualCell: { format: (_value, model) => brandPresentation(brand, model), onActivate: () => edit(brand) },
         })),
         {
-          prop: 'portfolio', name: 'Portfolio', size: 84, columnType: 'number',
-          columnTemplate: h => renderColumnHeader(h, { className: 'brand-column-summary', label: 'Portfolio', subtitle: `${visible.length} brands` }),
-          cellTemplate: visualCellRenderer,
-          visualCell: { format: (_value, model) => {
-            if (model.ranking) return { kind: 'empty', className: 'brand-empty-rank' };
-            if (model.overall) return { kind: 'empty', className: 'brand-empty-hatch', hatch: true };
-            if (model.band && view === 'Styles') return { kind: 'stat-list', className: 'brand-month-summary', items: [{ label: 'Styles', value: String(allStyles.length) }, { label: 'At a loss', value: String(allStyles.filter(style => styleProfit(style) < 0).length) }, { label: 'Best style', value: allStyles.length ? brandCurrency(bestProfit) : '–' }] };
-            if (model.band) return orderedMonths.length && monthlyMedian !== null ? { kind: 'stat-list', className: 'brand-month-summary', items: [{ label: `Highest, ${orderedMonths[orderedMonths.length - 1].month}`, value: selected.format(orderedMonths[orderedMonths.length - 1].value) }, { label: 'Median', value: selected.format(monthlyMedian) }, { label: `Lowest, ${orderedMonths[0].month}`, value: selected.format(orderedMonths[0].value) }] } : { kind: 'text', element: 'small', text: 'No data' };
-            return model.metric ? { kind: 'text', element: 'strong', className: 'metric-number', text: `${model.metric.key === 'change' && model.portfolio > 0 ? '+' : ''}${model.metric.format(model.portfolio)}` } : undefined;
-          } },
-        },
-        {
           prop: 'spread', name: 'Spread', size: 124,
           columnTemplate: h => renderColumnHeader(h, { className: 'brand-column-summary', label: 'Spread', subtitle: 'Right is best' }),
           cellTemplate: visualCellRenderer,
@@ -511,12 +511,12 @@ export const brandScorecard: Example = {
             const sizeMetric = ['sales', 'orders', 'newCustomers', 'stockCost'].includes(metric.key);
             const result = brandSpread(active.map(brand => ({ value: metric.key === 'change' && brand.isNew ? null : Number(model[brand.id]), sales: read(brand, 'sales') })), sizeMetric ? null : Number(model.portfolio), 'lower' in metric && metric.lower, ['change', 'profitPerStyle'].includes(metric.key));
             if (!result) return;
-            return { kind: 'strip', options: { label: 'Relative position of each brand', domain: { min: 0, max: 1 }, reference: result.portfolio ?? undefined, zero: result.zero ?? undefined, points: result.points.map(point => { const brand = active[point.index]; return { value: point.position, size: point.size, color: `color-mix(in srgb, ${brand.color} 40%, white)`, borderColor: brand.color, title: `${brand.label} · ${metric.format(Number(model[brand.id]))}` }; }) } };
+            return { kind: 'strip', options: { label: 'Relative position of each brand', domain: { min: 0, max: 1 }, reference: result.portfolio ?? undefined, zero: result.zero ?? undefined, points: result.points.map(point => { const brand = active[point.index]; return { value: point.position, size: point.size, color: `color-mix(in srgb, ${brand.color} 40%, var(--rv-ui-surface))`, borderColor: brand.color, title: `${brand.label} · ${metric.format(Number(model[brand.id]))}` }; }) } };
           } },
         },
       ];
       bench.setSubtitle(
-        `Oct 2025 to Sep 2026 • ${visible.length} brands • ${total(visible, (brand) => brand.styles)} styles`,
+        `Oct 2025 to Sep 2026 • ${visible.length} ${visible.length === 1 ? 'brand' : 'brands'} • ${total(visible, (brand) => brand.styles)} styles`,
       );
       bench.stats([]);
       bench.summary.hidden = false;
@@ -538,14 +538,14 @@ export const brandScorecard: Example = {
       );
     }
 
-    const buyers: Record<string, string> = { lucas: 'Lucas Moreau', ingrid: 'Ingrid Solberg', amara: 'Amara Okafor', hana: 'Hana Mori', diego: 'Diego Alvarez' };
+    const buyers: Record<string, string> = { lucas: 'Rafael Costa', ingrid: 'Freya Lindholm', amara: 'Maya Bennett', hana: 'Keira Voss', diego: 'Mateo Rivas' };
     const hueColors: Record<string, string> = { blue: colors[0], fuchsia: colors[1], teal: colors[2], lime: colors[3], violet: colors[4], orange: colors[5], slate: colors[6], amber: colors[7] };
     const callNotes: Record<string, string> = { Grow: 'Buy deeper next season.', Hold: 'Buy as this season.', Trim: 'Buy less next season.', Exit: 'Sell through with no new buy.' };
     type BrandTab = 'Overview' | 'Styles' | 'Months' | 'Details';
     const metricSteps: Partial<Record<Metric['key'], number>> = { change: 5, average: 8, margin: 3, markdown: 3, returns: 2, profitPerStyle: 40000, repeat: 4, rating: 0.15, sellThrough: 5, agedStock: 4 };
     const metricValue = (metric: Metric, value: number) => `${metric.key === 'change' && value > 0 ? '+' : ''}${metric.format(value)}`;
     function showBrand(brand: Brand, active: BrandTab = 'Overview') {
-      const visible = brands.filter(item => matches(bench.currentQuery(), item.label, item.decision) && (decision.value === 'All decisions' || decision.value === item.decision));
+      const visible = brands.filter(item => matchesDecision(item) && (!reviewOnly || inReviewQueue(item)));
       if (reverse) visible.sort((a, b) => read(b, (metrics.find(metric => metric.label === chart.value) ?? metrics[0]).key) - read(a, (metrics.find(metric => metric.label === chart.value) ?? metrics[0]).key));
       if (!visible.includes(brand)) visible.push(brand);
       const position = visible.indexOf(brand);
@@ -560,8 +560,9 @@ export const brandScorecard: Example = {
       });
       meta.append(navigation);
       const heading = make('div', '', 'scale-profile__name');
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 18 18'); svg.setAttribute('aria-hidden', 'true'); svg.classList.add('brand-profile__mark'); svg.style.color = brand.color;
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path.setAttribute('d', brandMarks[Math.max(0, brands.indexOf(brand)) % brandMarks.length]); svg.append(path);
+      const mark = brandMarks[Math.max(0, brands.indexOf(brand)) % brandMarks.length];
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', mark.viewBox); svg.setAttribute('aria-hidden', 'true'); svg.classList.add('brand-profile__mark'); svg.style.color = brand.color;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path.setAttribute('d', mark.path); svg.append(path);
       heading.append(svg, make('strong', brand.label), make('span', brand.status, 'scale-profile__stage'), make('span', brand.decision, `scale-profile__stage ${brand.decision === 'Grow' ? 'active' : ''}`));
       head.append(meta, heading, make('p', `${brand.tier}  •  ${buyers[brand.buyerId] ?? ''}  •  Since ${brand.since}`, 'scale-profile__location'));
       const tabs = make('div');
@@ -637,7 +638,7 @@ export const brandScorecard: Example = {
         }
       }
       showTab(active);
-      const extra = make('div', '', 'scale-profile__footer-extra'); const remove = button('Remove', () => removeRecord(bench, brands, brand, brand.label, refresh)); remove.className = 'scale-profile__delete'; remove.dataset.icon = 'trash';
+      const extra = make('div', '', 'scale-profile__footer-extra'); const remove = button('Remove', () => removeRecord(bench, brands, brand, brand.label, refresh)); remove.classList.add('rv-btn-danger', 'scale-profile__delete'); remove.dataset.icon = 'trash';
       const exportButton = button('Export CSV', () => { const quote = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`; const rows = [['Metric', 'Brand', 'Portfolio'], ...metrics.map(metric => [metric.label, read(brand, metric.key), aggregate(visible, metric)])]; const url = URL.createObjectURL(new Blob([rows.map(row => row.map(quote).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' })); const link = make('a'); link.href = url; link.download = `${brand.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-scorecard.csv`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 0); }); exportButton.dataset.icon = 'download'; extra.append(remove, exportButton);
       bench.form(brand.label, [body], () => { edit(brand, true); return false; }, extra, 'Edit',
         () => { disposeCall(); tabControl.destroy(); },

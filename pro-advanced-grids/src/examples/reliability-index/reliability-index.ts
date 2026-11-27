@@ -21,6 +21,7 @@ import { createLollipopChart } from "@revolist/charts/lollipop";
 import { createSparklineChart } from "@revolist/charts/sparkline";
 import {
   button,
+  deleteButton,
   field,
   input,
   make,
@@ -48,190 +49,41 @@ type ViewRow = Slo & {
   ownerAvatar: string;
   status: "Exhausted" | "At Risk" | "Healthy";
 };
-const source: [
-  string,
-  string,
-  string,
-  number,
-  number,
-  number,
-  number,
-  Slo["alert"],
-][] = [
-  [
-    "Order journal durability",
-    "order-journal",
-    "Platform",
-    99.99,
-    30,
-    -78.6,
-    0,
-    "Quiet",
-  ],
-  [
-    "Mobile alert delivery",
-    "message-router",
-    "Messaging",
-    99.5,
-    28,
-    -53.4,
-    0,
-    "Quiet",
-  ],
-  ["Catalog search freshness", "catalog-indexer", "Search", 99, 7, -31.8, 0, "Quiet"],
-  [
-    "Settlement batch timeliness",
-    "settlement-runner",
-    "Payments",
-    99.5,
-    30,
-    -14.2,
-    0,
-    "Quiet",
-  ],
-  ["Risk scoring latency", "risk-engine", "Risk", 99.9, 28, -6.1, 0, "Quiet"],
-  [
-    "Transaction journal freshness",
-    "order-journal",
-    "Platform",
-    99.5,
-    28,
-    9.4,
-    12,
-    "Quiet",
-  ],
-  [
-    "Settlement API availability",
-    "settlement-runner",
-    "Payments",
-    99.9,
-    28,
-    19.2,
-    1,
-    "Quiet",
-  ],
-  ["Checkout API latency", "checkout-gateway", "Payments", 99, 28, 23.1, 25, "Quiet"],
-  [
-    "Event delivery success",
-    "event-relay",
-    "Platform",
-    99.9,
-    28,
-    34.8,
-    30,
-    "Paging",
-  ],
-  [
-    "Settlement reconciliation",
-    "settlement-reporter",
-    "Platform",
-    99.9,
-    30,
-    49.6,
-    10,
-    "Ticket",
-  ],
-  [
-    "Catalog query latency",
-    "catalog-indexer",
-    "Search",
-    99.5,
-    28,
-    53.7,
-    14,
-    "Quiet",
-  ],
-  [
-    "Checkout gateway availability",
-    "checkout-gateway",
-    "Payments",
-    99.95,
-    28,
-    61.3,
-    16,
-    "Quiet",
-  ],
-  [
-    "Event relay latency",
-    "event-relay",
-    "Platform",
-    99,
-    7,
-    65.8,
-    15,
-    "Quiet",
-  ],
-  [
-    "Mobile push latency",
-    "message-router",
-    "Messaging",
-    99,
-    7,
-    72.2,
-    17,
-    "Muted",
-  ],
-  [
-    "Settlement report freshness",
-    "settlement-reporter",
-    "Platform",
-    99,
-    7,
-    77.4,
-    22,
-    "Muted",
-  ],
-  [
-    "Receipt email delivery",
-    "message-router",
-    "Messaging",
-    99.5,
-    28,
-    82.6,
-    146,
-    "Quiet",
-  ],
-  [
-    "Returns API availability",
-    "checkout-gateway",
-    "Payments",
-    99.9,
-    28,
-    87.1,
-    209,
-    "Quiet",
-  ],
-  [
-    "Risk model availability",
-    "risk-engine",
-    "Risk",
-    99.95,
-    28,
-    92.4,
-    280,
-    "Quiet",
-  ],
+// Fictional service-health snapshots: objective, window, remaining budget and estimated days.
+const source: [string, string, string, number, number, number, number, Slo["alert"]][] = [
+  ["Order journal durability", "order-journal", "Platform", 99.95, 28, -67.2, 0, "Paging"],
+  ["Mobile alert delivery", "message-router", "Messaging", 99.9, 30, -42.8, 0, "Quiet"],
+  ["Catalog search freshness", "catalog-indexer", "Search", 99.5, 7, -24.6, 0, "Ticket"],
+  ["Settlement batch timeliness", "settlement-runner", "Payments", 99.9, 28, -12.7, 0, "Quiet"],
+  ["Risk scoring latency", "risk-engine", "Risk", 99.95, 30, -3.8, 0, "Quiet"],
+  ["Transaction journal freshness", "order-journal", "Platform", 99.9, 7, 5.6, 3, "Paging"],
+  ["Settlement API availability", "settlement-runner", "Payments", 99.95, 30, 13.8, 6, "Quiet"],
+  ["Checkout API latency", "checkout-gateway", "Payments", 99.5, 7, 21.4, 9, "Ticket"],
+  ["Event delivery success", "event-relay", "Platform", 99.95, 30, 38.2, 18, "Quiet"],
+  ["Settlement reconciliation", "settlement-reporter", "Platform", 99.5, 28, 44.1, 21, "Quiet"],
+  ["Catalog query latency", "catalog-indexer", "Search", 99.9, 30, 48.6, 8, "Quiet"],
+  ["Checkout gateway availability", "checkout-gateway", "Payments", 99.99, 28, 57.9, 32, "Quiet"],
+  ["Event relay latency", "event-relay", "Platform", 99.5, 28, 63.4, 26, "Muted"],
+  ["Mobile push latency", "message-router", "Messaging", 99.5, 30, 69.8, 41, "Quiet"],
+  ["Settlement report freshness", "settlement-reporter", "Platform", 99.9, 7, 75.3, 38, "Muted"],
+  ["Receipt email delivery", "message-router", "Messaging", 99.95, 30, 80.2, 87, "Quiet"],
+  ["Returns API availability", "checkout-gateway", "Payments", 99.95, 7, 85.6, 123, "Quiet"],
+  ["Risk model availability", "risk-engine", "Risk", 99.99, 30, 94.1, 192, "Quiet"],
 ];
 const rows: Slo[] = source.map(
   ([name, service, team, objective, window, budget, days, alert], id) => ({
     id: `slo-${id}`,
-    name,
-    service,
-    team,
-    objective,
-    window,
-    budget,
-    days,
-    alert,
+    name, service, team, objective, window, budget, days, alert,
     kind: name.toLowerCase().includes("latency") ? "Latency" : "Availability",
-    owner: ["Rina Patel", "Milo Chen", "Sofia Reyes", "Avery Brooks"][
-      id % 4
-    ],
-    trend: Array.from({ length: 30 }, (_, i) =>
-      (id === 7 || id === 8) && i === 24
-        ? -28
-        : 53 + Math.sin(i * 0.73 + id * 0.4) * 2.6 + Math.cos(i * 1.35 + id) * 0.9,
-    ),
+    owner: ["Rina Patel", "Milo Chen", "Sofia Reyes", "Avery Brooks"][id % 4],
+    // A stepped workload profile and occasional incident provide varied fictional histories.
+    trend: Array.from({ length: 30 }, (_, day) => {
+      const openingBudget = 62 + (id % 5) * 5;
+      const baseline = openingBudget + (budget - openingBudget) * day / 29;
+      const variation = day === 29 ? 0 : ((day * 11 + id * 7) % 9 - 4) * 0.45;
+      const incident = day === 9 + (id * 3) % 17 ? 9 + (id % 4) * 3 : 0;
+      return baseline + variation - incident;
+    }),
   }),
 );
 const signed = (value: number) => `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
@@ -241,13 +93,15 @@ const level = (budget: number): ViewRow["status"] =>
 export const reliabilityIndex: Example = {
   id: "reliability-index",
   title: "Service Reliability Dashboard",
-  description: "18 SLOs • 5 exhausted • 1 paging",
+  description: "18 SLOs • 5 exhausted • 2 paging",
   setup(bench) {
     const data = structuredClone(rows);
     let tab: "All" | ViewRow["status"] = "All";
-    let sort: "budget" | "name" | "days" | "alert" = "budget";
+    let sort: "triage" | "budget" | "name" | "days" | "alert" = "triage";
     let ascending = true;
-    let selectedId = "slo-0";
+    let selectedId = "";
+    let chartView: "History" | "Compare" = "Compare";
+    let disposed = false;
     let activeChart:
       | Awaited<ReturnType<typeof createLollipopChart>>
       | undefined;
@@ -328,6 +182,10 @@ export const reliabilityIndex: Example = {
               matches(query, row.name, row.service, row.team, row.owner)),
         )
         .sort((a, b) => {
+          if (sort === "triage") {
+            const paging = Number(b.alert === "Paging") - Number(a.alert === "Paging");
+            return paging || a.measured - b.measured || a.days - b.days || a.name.localeCompare(b.name);
+          }
           const result =
             sort === "name"
               ? a.name.localeCompare(b.name)
@@ -367,8 +225,10 @@ export const reliabilityIndex: Example = {
       refresh();
     }
     let legendRoot: ReturnType<typeof createRoot> | undefined;
+    let chartSwitchRoot: ReturnType<typeof createRoot> | undefined;
     function renderChart(visibleRows: ViewRow[]) {
       legendRoot?.unmount(); legendRoot = undefined;
+      chartSwitchRoot?.unmount(); chartSwitchRoot = undefined;
       const generation = ++chartGeneration;
       hoverLink.reset();
       activeChart = undefined;
@@ -377,11 +237,11 @@ export const reliabilityIndex: Example = {
       const header = make("div", "", "reliability-chart__head");
       const text = make("div");
       text.append(
-        make("strong", "Budget Index"),
+        make("strong", "Selected service"),
         make(
           "small",
           chosen
-            ? `${chosen.name}  •  ${signed(chosen.measured)}  •  ${chosen.objective}% over ${chosen.window}d`
+            ? `${chosen.name} • ${chosen.status} • ${chosen.alert} • ${signed(chosen.measured)} remaining`
             : "No SLOs match",
         ),
       );
@@ -396,6 +256,38 @@ export const reliabilityIndex: Example = {
         chartPanel.append(
           make("p", "No matching SLOs", "reliability-chart__empty"),
         );
+        return;
+      }
+      const switchHost = make("div", "", "reliability-chart__switch");
+      chartSwitchRoot = createRoot(switchHost);
+      chartSwitchRoot.render(createElement(SegmentedSwitch, {
+        value: chartView, role: 'group', ariaLabel: 'Chart view',
+        options: [{ value: 'History', label: 'History' }, { value: 'Compare', label: 'Compare' }],
+        onChange: (value: string | number) => {
+          if (value === 'History' || value === 'Compare') { chartView = value; queueMicrotask(() => { if (!disposed) renderChart(visible()); }); }
+        },
+      }));
+      chartPanel.append(switchHost);
+      if (chartView === 'History' && chosen) {
+        const last = chosen.trend.at(-1) ?? 0;
+        const values = chosen.trend.map(value => chosen.budget + value - last);
+        const history = createChartHost(document, {
+          mount: (container, signal) => createSparklineChart({
+            container, signal, data: values,
+            x: values.map((_, index) => `Day ${index + 1}`),
+            plotType: 'area', color: chosen.budget < 0 ? demoColors.pink : demoColors.tealMuted,
+            seriesOverrides: { value: { fillOpacity: 0.12, lineWidth: 1.5 } },
+            rendererOptions: { transitions: false }, showTooltip: true,
+          }),
+          onError: (_error, container) => { container.textContent = 'Chart unavailable'; },
+        });
+        history.className = 'reliability-chart__plot reliability-chart__plot--history';
+        history.setAttribute('role', 'group');
+        history.setAttribute('aria-label', `${chosen.name} sample budget history over 30 days`);
+        const caption = make('p', 'Illustrative 30-day history · own objective', 'reliability-chart__caption');
+        const dates = make('div', '', 'reliability-chart__dates');
+        dates.append(make('span', '30 days ago'), make('span', 'Today'));
+        chartPanel.append(caption, history, dates);
         return;
       }
       const minimumBudget = Math.min(-100, Math.floor(visibleRows.reduce((minimum, row) => Math.min(minimum, row.measured), 0) / 100) * 100);
@@ -423,9 +315,9 @@ export const reliabilityIndex: Example = {
               minimumSize: { width: 1, height: 1 },
               transitions: false,
               theme: {
-                grid: "#efefef",
-                foreground: "#737373",
-                muted: "#737373",
+                grid: "var(--rv-ui-border)",
+                foreground: "var(--rv-ui-text-muted)",
+                muted: "var(--rv-ui-text-muted)",
               },
               tooltip: {
                 className: "reliability-chart-tooltip demo-chart-tooltip",
@@ -443,7 +335,7 @@ export const reliabilityIndex: Example = {
                 formatter: ({ tagName, value, attributes }) =>
                   attributes["data-pivot-chart-lollipop-stem"] !== undefined
                     ? {
-                        stroke: "#d1d1d1",
+                        stroke: "var(--rv-ui-border)",
                         strokeWidth: 1.5,
                         strokeDasharray: "3 3",
                       }
@@ -503,7 +395,7 @@ export const reliabilityIndex: Example = {
       legendRoot = createRoot(legend);
       legendRoot.render(createElement(Legend, {
         label: "Reliability status", className: "reliability-chart__legend",
-        items: ([['Healthy', '#00a58f'], ['At Risk', '#f08a36'], ['Exhausted', '#ed3d69']] as const).map(([name, color]) => ({
+        items: ([['Healthy', demoColors.teal], ['At Risk', demoColors.orange], ['Exhausted', demoColors.pink]] as const).map(([name, color]) => ({
           id: name, label: `${name} ${visibleRows.filter(row => row.status === name).length}`, color,
         })),
       }));
@@ -511,6 +403,7 @@ export const reliabilityIndex: Example = {
     }
     function showDetails(row: ViewRow) {
       selectedId = row.id;
+      renderChart(visible());
       const content = make("div", "", "reliability-detail");
       const tabs = make("div");
       const detailSwitch = createRoot(tabs);
@@ -578,7 +471,7 @@ export const reliabilityIndex: Example = {
           );
         } else {
           const actions = make("div", "", "reliability-detail__actions");
-          actions.append(button("Edit SLO", () => edit(row)), button("Delete SLO", () => remove(row)));
+          actions.append(button("Edit SLO", () => edit(row)), deleteButton("Delete SLO", () => remove(row)));
           panel.append(
             make("h3", "Settings"),
             make(
@@ -684,10 +577,17 @@ export const reliabilityIndex: Example = {
         },
         undefined,
         "Delete",
+        undefined,
+        { submit: { variant: "danger", icon: "trash" } },
       );
     }
     const sortableHeader = (key: typeof sort, label: string): NonNullable<ColumnRegular["columnTemplate"]> => (h) =>
-      renderCellAction(h, { className: "reliability-sort", label: `Sort ${label}`, text: `${label} ↕`, onActivate: event => { event.stopPropagation(); sortBy(key); } });
+      renderCellAction(h, {
+        className: key === "name" ? "reliability-sort reliability-sort--name" : "reliability-sort",
+        label: `Sort ${label}`,
+        text: `${label} ↕`,
+        onActivate: event => { event.stopPropagation(); sortBy(key); },
+      });
     const columns: ColumnData = [
       {
         prop: "name",
@@ -756,9 +656,11 @@ export const reliabilityIndex: Example = {
       },
     ];
     bench.onDispose(() => {
+      disposed = true;
       legendRoot?.unmount();
       statusTabs?.destroy();
       chartGeneration++;
+      chartSwitchRoot?.unmount();
       hoverLink.destroy();
       activeChart = undefined;
     });

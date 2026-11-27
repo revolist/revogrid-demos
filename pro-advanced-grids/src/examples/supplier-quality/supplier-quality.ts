@@ -13,10 +13,14 @@ import {
   renderSortMenuHeader,
   timelineRenderer,
   cellActionRenderer,
+  createDotHistogramElement,
+  createSegmentedSummaryElement,
+  releaseSummaryChartElement,
   type MergeData,
 } from "@revolist/revogrid-pro";
 import {
   button,
+  deleteButton,
   field,
   input,
   make,
@@ -63,10 +67,16 @@ export const supplierQuality: Example = {
       "All Divisions",
       refresh,
     );
+    const exceptions = select(
+      "Quality queue",
+      ["All suppliers", "Rejected or rework", "Rejected lots", "Rework lots"],
+      "All suppliers",
+      refresh,
+    );
     divisionFilter.dataset.toolbar = "main";
     const add = button("Add Supplier", () => editSupplier(), true);
     bench.heading.append(add);
-    bench.toolbar.append(divisionFilter, groupMode, period);
+    bench.toolbar.append(divisionFilter, groupMode, period, exceptions);
     bench.onSearch(refresh);
     bench.onCompactChange(refresh);
     function months() {
@@ -79,11 +89,15 @@ export const supplierQuality: Example = {
     function filtered() {
       const query = bench.currentQuery();
       return suppliers.filter(
-        (s) =>
-          (divisionFilter.value === "All Divisions" ||
-            s.division === divisionFilter.value) &&
-          (!query ||
-            matches(query, s.name, s.division, s.tier, s.buyer, s.status)),
+        (s) => {
+          if (divisionFilter.value !== "All Divisions" && s.division !== divisionFilter.value) return false;
+          if (query && !matches(query, s.name, s.division, s.tier, s.buyer, s.status)) return false;
+          if (exceptions.value === "All suppliers") return true;
+          const reading = read([s], months());
+          if (exceptions.value === "Rejected lots") return reading.rejected > 0;
+          if (exceptions.value === "Rework lots") return reading.rework > 0;
+          return reading.rejected + reading.rework > 0;
+        },
       );
     }
     function summary(rows: Supplier[]) {
@@ -93,6 +107,12 @@ export const supplierQuality: Example = {
       bench.summary.className = "workbench-stats quality-summary";
       bench.summary.replaceChildren();
       for (const [key, label, value, detail] of [
+        [
+          "rejected",
+          "Rejected",
+          String(data.rejected),
+          signed(data.rejected - previous.rejected, 0),
+        ],
         ["score", "Avg Score", score(data), scoreChange(data, previous)],
         ["rate", "Accepted", rate(data), rateChange(data, previous)],
         [
@@ -106,12 +126,6 @@ export const supplierQuality: Example = {
           "Lots",
           String(data.lots.length),
           percentChange(data.lots.length, previous.lots.length),
-        ],
-        [
-          "rejected",
-          "Rejected",
-          String(data.rejected),
-          signed(data.rejected - previous.rejected, 0),
         ],
       ] as const) {
         const card = button("", () => {
@@ -245,6 +259,12 @@ export const supplierQuality: Example = {
       bench.render(columns, rows as unknown as DataType[], [], [totalRow]);
     }
     function toggleDivision(division: Division) {
+      if (groupMode.value === "Divisions") {
+        groupMode.value = "Tiers";
+        expandedDivisions.add(division);
+        refresh();
+        return;
+      }
       if (expandedDivisions.has(division)) expandedDivisions.delete(division);
       else expandedDivisions.add(division);
       refresh();
@@ -279,7 +299,31 @@ export const supplierQuality: Example = {
       const heading = make("div", "", "quality-detail__lots-heading");
       heading.append(make("h3", "Inspected lots"), make("span", `${r.lots.length} ${r.lots.length === 1 ? "lot" : "lots"}`));
       recent.append(heading);
+      const charts: HTMLElement[] = [];
       if (r.lots.length) {
+        const layout = make("div", "", "quality-detail__lot-layout");
+        const distribution = make("aside", "", "quality-detail__distribution");
+        distribution.append(make("h4", "Score distribution"), make("p", `${period.value} · ${r.lots.length} inspected`));
+        const histogram = createDotHistogramElement(document, {
+          values: r.lots.map(lot => lot.score), label: `Scores for ${r.lots.length} inspected lots`,
+          bins: 11, maxPoints: r.lots.length, maxStack: r.lots.length,
+          formatValue: value => value.toFixed(1),
+          tooltip: (value, index) => ({ title: r.lots[index].product, subtitle: r.lots[index].disposition, metricLabel: 'Score', metricValue: value.toFixed(1) }),
+        });
+        const scores = r.lots.map(lot => lot.score);
+        const low = Math.min(...scores), high = Math.max(...scores);
+        const bins = new Map<number, number>();
+        for (const value of scores) {
+          const bin = high === low ? 0 : Math.round((value - low) / (high - low) * 10);
+          bins.set(bin, (bins.get(bin) ?? 0) + 1);
+        }
+        histogram.style.setProperty('--rv-dot-histogram-height', `${Math.max(36, Math.max(...bins.values()) * 5 + 4)}px`);
+        const dispositions = createSegmentedSummaryElement(document, {
+          label: `${r.accepted} accepted, ${r.rework} rework, ${r.rejected} rejected`,
+          parts: [{ label: 'Accepted', value: r.accepted, color: demoColors.teal }, { label: 'Rework', value: r.rework, color: demoColors.orange }, { label: 'Rejected', value: r.rejected, color: demoColors.pink }],
+        });
+        charts.push(histogram, dispositions);
+        distribution.append(histogram, make('h4', 'Disposition'), dispositions);
         const scroll = make("div", "", "quality-detail__table-scroll");
         scroll.tabIndex = 0;
         scroll.setAttribute("role", "region");
@@ -304,18 +348,19 @@ export const supplierQuality: Example = {
         }
         table.append(head, body);
         scroll.append(table);
-        recent.append(scroll);
+        layout.append(scroll, distribution);
+        recent.append(layout);
       } else recent.append(make("p", "No lots inspected", "quality-detail__empty"));
       const actions = make("div", "", "quality-detail__actions");
       actions.append(
         button("Edit supplier", () => editSupplier(supplier)),
-        button("Delete supplier", () => deleteSupplier(supplier)),
+        deleteButton("Delete supplier", () => deleteSupplier(supplier)),
       );
       list.append(
         recent,
         actions,
       );
-      bench.details(supplier.name, [list]);
+      bench.details(supplier.name, [list], () => charts.forEach(releaseSummaryChartElement));
     }
     function deleteSupplier(supplier: Supplier) {
       bench.form(
@@ -333,11 +378,13 @@ export const supplierQuality: Example = {
         },
         undefined,
         "Delete",
+        undefined,
+        { submit: { variant: "danger", icon: "trash" } },
       );
     }
     function editSupplier(
       supplier?: Supplier,
-      initialDivision: Division = "Footwear",
+      initialDivision: Division = "Electronics",
       initialTier: Tier = "Trial",
     ) {
       const name = input("Name", supplier?.name ?? "");
@@ -486,7 +533,7 @@ export const supplierQuality: Example = {
           format: (_value, model) => {
             if (!model.divisionHead) return;
             const row = model as QualityRow, r = row.divisionReading!, n = r.lots.length;
-            const expanded = expandedDivisions.has(row.division);
+            const expanded = groupMode.value !== "Divisions" && expandedDivisions.has(row.division);
             return {
               className: `quality-rail${row.divisionCompact ? " quality-rail--compact" : ""}`, title: `${row.division}  ${row.divisionCount}`,
               actionLabel: `${row.division}, ${expanded ? "fold" : "expand"} its tiers`, expanded,
@@ -513,6 +560,8 @@ export const supplierQuality: Example = {
           format: (_value, model) => {
             const row = model as QualityRow & { total?: boolean };
             if (row.total)
+              return { kind: "identity", label: row.label, interactive: false };
+            if (row.divisionHead && row.divisionCompact)
               return { kind: "identity", label: row.label, interactive: false };
             if (row.group)
               return {
@@ -596,7 +645,7 @@ export const supplierQuality: Example = {
             };
           },
           showSparkline: model => (model.reading as Reading).lots.length > 0,
-          sparkline: { label: model => `Spend trend for ${model.label}`, series: [{ prop: 'trend', color: '#a3a3a3', endpoint: 'hollow' }], tooltip: (_model, index, values) => `Period ${index + 1}: ${money(values[0] ?? 0)}` },
+          sparkline: { label: model => `Spend trend for ${model.label}`, series: [{ prop: 'trend', color: 'var(--rv-ui-text-muted)', endpoint: 'hollow' }], tooltip: (_model, index, values) => `Period ${index + 1}: ${money(values[0] ?? 0)}` },
         },
       },
       {

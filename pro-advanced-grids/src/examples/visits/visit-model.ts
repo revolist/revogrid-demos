@@ -1,10 +1,10 @@
 export const services = {
-  clean: { label: 'Deep Clean', short: 'Clean', high: 14, moderate: 14 },
-  pest: { label: 'Pest Control', short: 'Pest', high: 30, moderate: 30 },
-  grease: { label: 'Grease Trap', short: 'Grease', high: 60, moderate: 60 },
-  hood: { label: 'Hood Cleaning', short: 'Hood', high: 90, moderate: 180 },
-  fire: { label: 'Fire Suppression', short: 'Fire', high: 180, moderate: 180 },
-  fridge: { label: 'Refrigeration', short: 'Cooling', high: 90, moderate: 90 },
+  air: { label: 'Air Handling', short: 'Air', high: 14, moderate: 14 },
+  water: { label: 'Water Quality', short: 'Water', high: 30, moderate: 30 },
+  electrical: { label: 'Electrical Safety', short: 'Electrical', high: 60, moderate: 60 },
+  lift: { label: 'Lift Inspection', short: 'Lift', high: 90, moderate: 180 },
+  fire: { label: 'Fire Systems', short: 'Fire', high: 180, moderate: 180 },
+  climate: { label: 'Heating and Cooling', short: 'Climate', high: 90, moderate: 90 },
 } as const;
 export type Service = keyof typeof services;
 export type Status = 'Booked' | 'Awaiting' | 'Completed' | 'Missed' | 'Due';
@@ -62,8 +62,12 @@ export function dueVisits(kitchen: Kitchen, visits: readonly Visit[], states: re
   return result;
 }
 
-export const visitWindows: Record<VisitWindow, string> = { opening: 'Before opening', afternoon: 'Afternoon lull', close: 'After close' };
-const preferredWindow: Record<Service, VisitWindow> = { clean: 'close', pest: 'opening', grease: 'opening', hood: 'close', fridge: 'afternoon', fire: 'afternoon' };
+export const visitWindows: Record<VisitWindow, string> = { opening: 'Morning', afternoon: 'Afternoon', close: 'Evening' };
+/** Find the visit occupying a technician's date and time, excluding an edited visit. */
+export function technicianConflict(crew: string, day: number, window: VisitWindow | undefined, visits: readonly Visit[], exclude?: Visit): Visit | undefined {
+  return visits.find(item => item !== exclude && item.crew === crew && item.day === day && item.window === window);
+}
+const preferredWindow: Record<Service, VisitWindow> = { air: 'close', water: 'opening', electrical: 'opening', lift: 'close', climate: 'afternoon', fire: 'afternoon' };
 /** Select an available qualified technician, preferring the least-used crew that week. */
 export function suggestCrew(service: Service, day: number, visits: readonly Visit[], technicians: readonly Technician[]) {
   const choices = technicians.filter(person => person.service === service);
@@ -80,15 +84,15 @@ export function suggestCrew(service: Service, day: number, visits: readonly Visi
 /** Check contract, duplicate booking, calendar and technician conflicts before saving. */
 export function bookingError(draft: Visit, kitchens: readonly Kitchen[], visits: readonly Visit[], technicians: readonly Technician[], exclude?: Visit): string | null {
   const kitchen = kitchens.find(item => item.id === draft.kitchen);
-  if (!kitchen) return 'Pick the kitchen to visit.';
-  if (!kitchen.services.includes(draft.service)) return 'Pick a service for this kitchen.';
+  if (!kitchen) return 'Pick the site to visit.';
+  if (!kitchen.services.includes(draft.service)) return 'Pick a service for this site.';
   const existing = visits.find(item => item !== exclude && item.kitchen === kitchen.id && item.service === draft.service && item.status !== 'Completed');
   if (existing) return 'This service already has an open visit. Move that visit instead.';
   if (!Number.isFinite(draft.day) || draft.day < today) return 'Pick today or a later day.';
   if (visits.some(item => item !== exclude && item.kitchen === kitchen.id && item.day === draft.day)) return `${kitchen.label} already has a visit that day.`;
   if (!technicians.some(person => person.name === draft.crew && person.service === draft.service)) return 'Pick a technician certified for this service.';
-  const clash = visits.find(item => item !== exclude && item.crew === draft.crew && item.day === draft.day && item.window === draft.window);
-  if (clash) return `${draft.crew} is at ${kitchens.find(item => item.id === clash.kitchen)?.label ?? 'another kitchen'} then. Pick another time or technician.`;
+  const clash = technicianConflict(draft.crew, draft.day, draft.window, visits, exclude);
+  if (clash) return `${draft.crew} is at ${kitchens.find(item => item.id === clash.kitchen)?.label ?? 'another site'} then. Pick another time or technician.`;
   return null;
 }
 
@@ -114,9 +118,9 @@ export function planDueBookings(due: readonly Visit[], kitchens: readonly Kitche
 /** Validate a kitchen contract before adding it to the schedule. */
 export function kitchenError(draft: Kitchen, kitchens: readonly Kitchen[], managers: readonly string[]): string | null {
   const name = draft.label.trim();
-  if (!name) return "Add the kitchen's name.";
+  if (!name) return "Add the site's name.";
   if (name.length > 40) return 'Keep the name under 40 characters.';
-  if (kitchens.some(item => item.id !== draft.id && item.label.trim().toLowerCase() === name.toLowerCase())) return 'Another kitchen already has this name.';
+  if (kitchens.some(item => item.id !== draft.id && item.label.trim().toLowerCase() === name.toLowerCase())) return 'Another site already has this name.';
   if (!draft.address?.trim()) return 'Add the street address the crews drive to.';
   if (!managers.includes(draft.manager)) return 'Pick the area manager who hosts visits.';
   if (!draft.services.length) return 'Keep at least one service in the plan.';

@@ -1,4 +1,5 @@
 import { createSegmentedBarElement } from '../../shared/segmented-bar';
+import { demoTargetHeat } from '../../../../composables/demo-colors';
 import { createProgressElement } from '@revolist/ui/native';
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -9,7 +10,8 @@ import { createDetailPanel } from '../../../../composables/detail-panel';
 import { ROW_ACTION_COLUMN_WIDTH } from '../../../../composables/row-action';
 import { renderExpandIcon } from '@revolist/revogrid-pro';
 import { referenceStores } from './sales-reference-fixtures';
-import { attainment, periods } from './sales-periods';
+import { memberCounts } from './sales-membership';
+import { attainment, comparablePeriods } from './sales-periods';
 import { renderCellAction, renderColumnHeader, divergingBarsRenderer, entityCellRenderer, visualCellRenderer, cellActionRenderer, type MergeData } from '@revolist/revogrid-pro';
 import type { ColumnData, ColumnRegular, DataType } from '@revolist/revogrid';
 import {
@@ -21,6 +23,7 @@ import {
   make,
   matches,
   money,
+  number,
   pct,
   removeRecord,
   select,
@@ -51,34 +54,34 @@ type Region = 'Americas' | 'EMEA' | 'APAC';
 type StoreFixture = readonly [Region, string, string, string, string?];
 // Fictional store locations and their region and operating context.
 const fixtures: StoreFixture[] = [
-  ['Americas', 'Portland Riverfront', 'United States', '🇺🇸'],
-  ['Americas', 'Seattle Fremont', 'United States', '🇺🇸'],
-  ['Americas', 'Miami Design District', 'United States', '🇺🇸', 'Refit'],
-  ['Americas', 'Austin South Congress', 'United States', '🇺🇸'],
-  ['Americas', 'Columbia Outlet', 'United States', '🇺🇸'],
-  ['Americas', 'Vancouver Kitsilano', 'Canada', '🇨🇦'],
-  ['Americas', 'Calgary Beltline', 'Canada', '🇨🇦'],
-  ['Americas', 'Toronto Distillery', 'Canada', '🇨🇦'],
-  ['Americas', 'Mexico City Condesa', 'Mexico', '🇲🇽'],
-  ['Americas', 'Monterrey San Pedro', 'Mexico', '🇲🇽'],
-  ['Americas', 'São Paulo Jardins', 'Brazil', '🇧🇷'],
-  ['EMEA', 'London Spitalfields', 'United Kingdom', '🇬🇧'],
-  ['EMEA', 'Manchester Northern Quarter', 'United Kingdom', '🇬🇧'],
-  ['EMEA', 'Edinburgh Leith', 'United Kingdom', '🇬🇧'],
-  ['EMEA', 'Bath Outlet', 'United Kingdom', '🇬🇧'],
-  ['EMEA', 'Munich Schwabing', 'Germany', '🇩🇪'],
-  ['EMEA', 'Hamburg Altona', 'Germany', '🇩🇪', 'Refit'],
-  ['EMEA', 'Paris Canal Saint-Martin', 'France', '🇫🇷'],
-  ['EMEA', 'Lyon Croix-Rousse', 'France', '🇫🇷'],
-  ['EMEA', 'Annecy Lakeside', 'France', '🇫🇷'],
-  ['EMEA', 'Madrid Chamberí', 'Spain', '🇪🇸'],
-  ['EMEA', 'Barcelona Poblenou', 'Spain', '🇪🇸', 'Pre-opening'],
-  ['APAC', 'Tokyo Kichijoji', 'Japan', '🇯🇵'],
-  ['APAC', 'Osaka Namba', 'Japan', '🇯🇵'],
-  ['APAC', 'Hakone Outlet', 'Japan', '🇯🇵'],
-  ['APAC', 'Melbourne Carlton', 'Australia', '🇦🇺'],
-  ['APAC', 'Sydney Newtown', 'Australia', '🇦🇺'],
-  ['APAC', 'Hobart Battery Point', 'Australia', '🇦🇺'],
+  ['Americas', 'Denver Union Station', 'United States', '🇺🇸'],
+  ['Americas', 'Minneapolis North Loop', 'United States', '🇺🇸'],
+  ['Americas', 'Charlotte South End', 'United States', '🇺🇸'],
+  ['Americas', 'Nashville Gulch', 'United States', '🇺🇸', 'Refit'],
+  ['Americas', 'Boulder Outlet', 'United States', '🇺🇸'],
+  ['Americas', 'Victoria Inner Harbour', 'Canada', '🇨🇦'],
+  ['Americas', 'Ottawa ByWard', 'Canada', '🇨🇦'],
+  ['Americas', 'Halifax Waterfront', 'Canada', '🇨🇦'],
+  ['Americas', 'Guadalajara Americana', 'Mexico', '🇲🇽'],
+  ['Americas', 'Puebla Centro', 'Mexico', '🇲🇽'],
+  ['Americas', 'Curitiba Batel', 'Brazil', '🇧🇷'],
+  ['EMEA', 'Bristol Harbourside', 'United Kingdom', '🇬🇧'],
+  ['EMEA', 'Liverpool Baltic Triangle', 'United Kingdom', '🇬🇧'],
+  ['EMEA', 'Glasgow Finnieston', 'United Kingdom', '🇬🇧'],
+  ['EMEA', 'York Outlet', 'United Kingdom', '🇬🇧'],
+  ['EMEA', 'Berlin Kreuzberg', 'Germany', '🇩🇪'],
+  ['EMEA', 'Cologne Ehrenfeld', 'Germany', '🇩🇪'],
+  ['EMEA', 'Bordeaux Chartrons', 'France', '🇫🇷'],
+  ['EMEA', 'Nantes Bouffay', 'France', '🇫🇷', 'Refit'],
+  ['EMEA', 'Strasbourg Petite France', 'France', '🇫🇷'],
+  ['EMEA', 'Valencia Ruzafa', 'Spain', '🇪🇸'],
+  ['EMEA', 'Bilbao Abando', 'Spain', '🇪🇸'],
+  ['APAC', 'Kyoto Gion', 'Japan', '🇯🇵'],
+  ['APAC', 'Fukuoka Tenjin', 'Japan', '🇯🇵'],
+  ['APAC', 'Kobe Outlet', 'Japan', '🇯🇵'],
+  ['APAC', 'Brisbane West End', 'Australia', '🇦🇺'],
+  ['APAC', 'Adelaide Norwood', 'Australia', '🇦🇺', 'Pre-opening'],
+  ['APAC', 'Perth Fremantle', 'Australia', '🇦🇺'],
 ];
 const regions: Region[] = ['Americas', 'EMEA', 'APAC'];
 const compactStoreCurrency = new Intl.NumberFormat('en-US', {
@@ -107,6 +110,7 @@ interface Store {
   opened: string;
   priorTarget: number | null;
   missingSales: boolean[];
+  members: number;
 }
 export const salesTargets: Example = {
   id: 'sales-to-target',
@@ -119,7 +123,7 @@ export const salesTargets: Example = {
       const reference = referenceStores.find(store => store.name === label);
       if (!reference) throw new Error(`Missing reference store: ${label}`);
       return {
-        id: reference.id, label, region, country, flag, note,
+        id: reference.id, label, region, country, flag, note, members: memberCounts[reference.id] ?? 0,
         format: reference.format, status: reference.status, managerId: reference.managerId,
         opened: reference.opened ?? '', priorTarget: reference.priorTarget,
         target: reference.target ?? 0,
@@ -129,6 +133,23 @@ export const salesTargets: Example = {
       };
     });
     const folded = new Set<Store['region']>();
+    let regionRows: DataType[] = [];
+    const regionNavigation = select(
+      'Jump to region',
+      ['Jump to region', ...regions],
+      'Jump to region',
+      value => {
+        if (!regions.includes(value as Region)) return;
+        const region = value as Region;
+        folded.delete(region);
+        bench.grid.addEventListener('aftersourceset', () => {
+          const index = regionRows.findIndex(row => row.regionLabel === region);
+          if (index >= 0) requestAnimationFrame(() => { void bench.grid.scrollToRow(index); });
+        }, { once: true });
+        refresh();
+      },
+    );
+    regionNavigation.dataset.toolbar = 'search';
     const monthLabels = months.map(
       (label, index) => `${label} ${index < 2 ? 2025 : 2026}`,
     );
@@ -143,7 +164,7 @@ export const salesTargets: Example = {
     );
     const status = select(
       'Attainment filter',
-      ['All stores', 'Behind', 'Close', 'On target'],
+      ['All stores', 'Behind', 'Close', 'On target', 'No comparison'],
       'Behind',
       refresh,
     );
@@ -178,11 +199,11 @@ export const salesTargets: Example = {
     }, true);
     const key = make('div', '', 'sales-legend');
     key.append(make('span', '% to target'), make('span', 'Behind'));
-    const scale = createSegmentedBarElement(document, { label: 'Target attainment from behind to ahead', total: 5, parts: ['var(--sales-heat-far-behind, #fda4af)', 'var(--sales-heat-behind, #ffe4e6)', 'var(--sales-heat-close, #f3f3f3)', 'var(--sales-heat-on-target, #d1fae5)', 'var(--sales-heat-ahead, #6ee7b7)'].map(color => ({ value: 1, color })) });
+    const scale = createSegmentedBarElement(document, { label: 'Target attainment from behind to ahead', total: 5, parts: [`var(--sales-heat-far-behind, ${demoTargetHeat.farBehind})`, `var(--sales-heat-behind, ${demoTargetHeat.behind})`, `var(--sales-heat-close, ${demoTargetHeat.close})`, `var(--sales-heat-on-target, ${demoTargetHeat.onTarget})`, `var(--sales-heat-ahead, ${demoTargetHeat.ahead})`].map(color => ({ value: 1, color })) });
     scale.classList.add('sales-legend__scale'); key.append(scale);
     key.append(make('span', 'Ahead'));
-    statusBar.append(asOf, statusGroup, key);
-    bench.toolbar.append(statusBar, status, sort, fold);
+    statusBar.append(statusGroup, asOf, key);
+    bench.toolbar.append(statusBar, status, sort, fold, regionNavigation);
     bench.onSearch(refresh);
     bench.onCompactChange(refresh);
     const ratioColumn = (index: number): ColumnRegular => ({
@@ -201,7 +222,7 @@ export const salesTargets: Example = {
       cellTemplate: divergingBarsRenderer,
       divergingBars: {
         label: 'Monthly variance across the fiscal year',
-        maxAbs: (model) => Math.max(1, ...model.history.map(Math.abs)),
+        maxAbs: (model) => Math.max(1, ...model.history.map((value: number | null) => Math.abs(value ?? 0))),
         highlightIndex: (model) => model.history.length - 1,
       },
     };
@@ -210,7 +231,7 @@ export const salesTargets: Example = {
       visualCell: { format: (raw, model) => {
         if (model[`ratio${index}`] === null) return { kind: 'text', className: 'metric-number', text: '–' };
         const value = Number(raw);
-        return { kind: 'text', className: `sales-variance ${value < 0 ? 'bad' : 'good'}`, tone: value < 0 ? 'negative' : 'positive', text: `${value < 0 ? '▾' : '▴'} ${varianceMoney(Math.abs(value))}` };
+        return { kind: 'text', className: `sales-variance ${value < 0 ? 'bad' : 'good'}`, tone: value < 0 ? 'negative' : 'positive', text: `${value < 0 ? '▼' : '▲'} ${varianceMoney(Math.abs(value))}` };
       } },
     });
     const columns: ColumnData = groupedMetrics([
@@ -245,18 +266,24 @@ export const salesTargets: Example = {
                 if (model.total || model.group) return compact
                   ? { kind: 'group', variant: 'inline', className: 'sales-total-compact', label: model.label, detail: model.subtitle, interactive: false }
                   : { kind: 'identity', className: 'sales-total-detail', label: model.subtitle, labelElement: 'span', interactive: false };
-                return { kind: 'identity', className: 'sales-store', label: model.label, actionLabel: `Open ${model.label}`, actionClassName: 'cell-action', detailPosition: 'inline', ...(!compact && model.note ? { detail: `• ${model.note}` } : {}), ...(compact && model.flag ? { leading: h => h('span', { class: 'sales-store__flag', 'aria-hidden': 'true' }, model.flag) } : {}) };
+                const reason = model.store.missingSales[month] ? 'No sales' : (model.store.monthlyTargets?.[month] ?? model.store.target * season[month]) <= 0 ? 'No target' : '';
+                const detail = [model.note, reason].filter(Boolean).join(' · ');
+                return { kind: 'identity', className: 'sales-store', label: model.label, actionLabel: `Open ${model.label}`, actionClassName: 'cell-action', detailPosition: 'inline', ...(detail ? { detail: `• ${detail}` } : {}), ...(compact && model.flag ? { leading: h => h('span', { class: 'sales-store__flag', 'aria-hidden': 'true' }, model.flag) } : {}) };
               },
               onActivate: model => showStore(model.store),
             },
           },
         ],
       },
+      {
+        prop: 'members', name: 'Memberships', size: 140, sortable: true, columnType: 'number', cellTemplate: visualCellRenderer,
+        visualCell: { format: (value: unknown) => ({ kind: 'text' as const, className: 'metric-number', text: number(Number(value)) }) },
+      },
       ...['Month', 'Last 3 Months', 'Year to Date'].map((name, index) => ({
         name, children: [
           {
             prop: `actual${index}`, name: 'Actual', size: 74, sortable: true, columnType: 'currency', cellTemplate: visualCellRenderer,
-            visualCell: { format: (value: unknown, model: DataType) => ({ kind: 'text' as const, className: 'metric-number', text: model[`ratio${index}`] === null && !value ? '–' : storeMoney(Number(value)) }) },
+            visualCell: { format: (value: unknown, model: DataType) => ({ kind: 'text' as const, className: 'metric-number', text: model[`hasActual${index}`] ? storeMoney(Number(value)) : '–' }) },
           },
           ...(index < 2 ? [variance(index)] : []), ratioColumn(index), ...(index === 2 ? [history] : []),
         ],
@@ -295,23 +322,19 @@ export const salesTargets: Example = {
       const scores = months.map((_, index) =>
         total(stores, (row) => row.sales[index]),
       );
-      const targets = season.map((fraction, index) =>
-        total(
-          stores,
-          (row) => row.monthlyTargets?.[index] ?? row.target * fraction,
-        ),
-      );
-      const result = periods(scores, targets, month);
-      // A future or not-yet-trading period has no reading, rather than zero sales.
-      for (const [index, from] of [[0, month], [1, Math.max(0, month - 2)], [2, 0]] as const) {
-        const hasReading = stores.some(store => store.missingSales.slice(from, month + 1).some(missing => !missing));
-        if (!hasReading) result[`ratio${index}`] = null;
-      }
+      const result = comparablePeriods(stores.map(store => ({
+        sales: store.sales, missingSales: store.missingSales,
+        targets: season.map((fraction, index) => store.monthlyTargets?.[index] ?? store.target * fraction),
+      })), month);
       return {
         ...result,
+        members: total(stores, store => store.members),
         history: scores
           .slice(0, month + 1)
-          .map((value, index) => value - targets[index]),
+          .map((_, index) => {
+            const comparable = stores.filter(row => !row.missingSales[index] && (row.monthlyTargets?.[index] ?? row.target * season[index]) > 0);
+            return comparable.length ? total(comparable, row => row.sales[index] - (row.monthlyTargets?.[index] ?? row.target * season[index])) : null;
+          }),
       };
     }
 
@@ -321,7 +344,7 @@ export const salesTargets: Example = {
         row.monthlyTargets?.[month] ?? row.target * season[month],
       );
       return ratio === null
-        ? 'No target'
+        ? 'No comparison'
         : ratio >= 100
           ? 'On target'
           : Math.round(ratio) >= 95
@@ -337,15 +360,39 @@ export const salesTargets: Example = {
         (row) =>
           status.value === 'All stores' || status.value === standing(row),
       );
-      asOf.textContent = `Stores in ${months[month]} ${month < 2 ? 2025 : 2026}`;
       statusRoot.render(createElement(SegmentedSwitch, {
         role: 'group', ariaLabel: 'Store attainment', value: status.value,
-        options: ['Behind', 'Close', 'On target'].map(value => ({ value, label: `${value === 'On target' ? 'On Target' : value}  ${matching.filter(row => standing(row) === value).length}`, buttonAttributes: { 'data-status': value } })),
+        options: ['Behind', 'Close', 'On target', 'No comparison'].map(value => ({ value, label: `${value === 'On target' ? 'On Target' : value}  ${matching.filter(row => standing(row) === value).length}`, buttonAttributes: { 'data-status': value } })),
         onChange: (value: string | number) => { if (typeof value === 'string') { status.value = value; refresh(); } },
       }));
       const regionCount = new Set(list.map((row) => row.region)).size;
+      regionNavigation.setOptions([
+        { value: 'Jump to region', label: 'Jump to region' },
+        ...regions.map(region => {
+          const regionStores = list.filter(row => row.region === region);
+          const comparable = regionStores.filter(row => !row.missingSales[month] &&
+            (row.monthlyTargets?.[month] ?? row.target * season[month]) > 0);
+          const actual = total(comparable, row => row.sales[month]);
+          const target = total(comparable, row => row.monthlyTargets?.[month] ?? row.target * season[month]);
+          const rate = attainment(actual, target);
+          return {
+            value: region,
+            label: `${region} · ${rate === null ? 'No comparison' : `${Math.round(rate)}% of target`}`,
+            disabled: regionStores.length === 0,
+          };
+        }),
+      ]);
+      const largestShortfall = list.reduce<{ label: string; gap: number } | undefined>((largest, row) => {
+        if (row.missingSales[month]) return largest;
+        const target = row.monthlyTargets?.[month] ?? row.target * season[month];
+        const gap = target - row.sales[month];
+        return target > 0 && gap > (largest?.gap ?? 0) ? { label: row.label, gap } : largest;
+      }, undefined);
+      asOf.textContent = largestShortfall
+        ? `Largest gap: ${largestShortfall.label} (−${compactMoney(largestShortfall.gap)})`
+        : 'No sales shortfall in view';
       bench.setSubtitle(
-        `${months[month]} ${month < 2 ? 2025 : 2026} closed • ${list.length} stores${window.matchMedia('(max-width: 650px)').matches ? '' : ` • ${regionCount} regions`}`,
+        `${months[month]} ${month < 2 ? 2025 : 2026} closed • ${list.length} co-op stores${window.matchMedia('(max-width: 650px)').matches ? '' : ` • ${regionCount} regions`}`,
       );
       const grand = {
         label: 'Grand Total',
@@ -417,6 +464,7 @@ export const salesTargets: Example = {
         folded.size === regions.length ? 'Expand regions' : 'Collapse regions';
       const compact = window.matchMedia('(max-width: 650px)').matches;
       bench.mergeCells(compact ? [] : ranges);
+      regionRows = data;
       bench.render(
         compact ? [...compactColumns] : [...columns],
         data,
@@ -469,20 +517,20 @@ export const salesTargets: Example = {
           const result = read([store]);
           const content = section('Against Target', `Three periods to ${periodLabel(month)}`);
           const periodsInfo = [
-            ['Month', periodLabel(month), result.actual0, result.variance0, result.ratio0],
-            ['Last 3 Months', `${months[Math.max(0, month - 2)]} to ${periodLabel(month)}`, result.actual1, result.variance1, result.ratio1],
-            ['Year to Date', `Nov 2025 to ${periodLabel(month)}`, result.actual2, result.variance2, result.ratio2],
+            ['Month', periodLabel(month), result.comparableActual0, result.target0, result.variance0, result.ratio0],
+            ['Last 3 Months', `${months[Math.max(0, month - 2)]} to ${periodLabel(month)}`, result.comparableActual1, result.target1, result.variance1, result.ratio1],
+            ['Year to Date', `Nov 2025 to ${periodLabel(month)}`, result.comparableActual2, result.target2, result.variance2, result.ratio2],
           ] as const;
-          for (const [title, label, actual, variance, ratio] of periodsInfo) {
+          for (const [title, label, actual, target, variance, ratio] of periodsInfo) {
             const item = make('div', '', 'sales-profile__period');
             const line = make('div', '', 'sales-profile__period-heading');
             const titleText = make('span'); titleText.append(make('strong', title), make('small', label));
-            const state = ratio == null ? 'No target' : ratio >= 100 ? 'On Target' : Math.round(ratio) >= 95 ? 'Close' : 'Behind';
+            const state = ratio == null ? 'No comparison' : ratio >= 100 ? 'On Target' : Math.round(ratio) >= 95 ? 'Close' : 'Behind';
             line.append(titleText, make('span', state, `sales-profile__standing ${state.toLowerCase().replace(' ', '-')}`));
             const track = createProgressElement(document, { label: `${title} attainment`, value: ratio, max: 100 });
             const summary = make('div', '', 'sales-profile__period-summary');
-            const detail = make('span'); detail.append(make('strong', ratio == null ? '—' : `${Math.round(ratio)}%`), make('small', ratio == null ? 'No target' : `${storeMoney(actual)} of ${storeMoney(actual - variance)}`));
-            summary.append(detail, make('span', ratio == null ? '' : `${variance < 0 ? '▾' : '▴'} ${signedVariance(variance)}`, variance < 0 ? 'negative' : 'positive'));
+            const detail = make('span'); detail.append(make('strong', ratio == null ? '—' : `${Math.round(ratio)}%`), make('small', ratio == null ? 'No comparable sales and target' : `${storeMoney(actual)} comparable sales / ${storeMoney(target)} target`));
+            summary.append(detail, make('span', ratio == null ? '' : `${variance < 0 ? '▼' : '▲'} ${signedVariance(variance)}`, variance < 0 ? 'negative' : 'positive'));
             item.append(line, track, summary); content.append(item);
           }
           const chart = section('By Month', "FY26 sales, a tick at each month's target");
@@ -504,14 +552,14 @@ export const salesTargets: Example = {
           const tbody = make('tbody'); months.forEach((name, index) => {
             const tr = make('tr'); const actual = store.sales[index], target = targets[index], missing = store.missingSales[index], ratio = missing ? null : attainment(actual, target);
             const date = make('td', `${name} ${index < 2 ? 2025 : 2026}`); if (index > month) date.append(make('small', ' Open'));
-            const variance = make('td', missing || !target ? 'No variance' : `${actual < target ? '▾' : '▴'} ${signedVariance(actual - target)}`, missing || !target ? 'muted' : actual < target ? 'negative' : 'positive');
+            const variance = make('td', missing || !target ? 'No variance' : `${actual < target ? '▼' : '▲'} ${signedVariance(actual - target)}`, missing || !target ? 'muted' : actual < target ? 'negative' : 'positive');
             const rate = make('td'); rate.append(make('span', ratio == null ? '—' : `${Math.round(ratio)}%`, `sales-profile__rate ${ratio == null ? '' : ratio >= 108 ? 'ahead' : ratio >= 100 ? 'good' : ratio < 95 ? 'bad' : 'warn'}`));
             tr.append(date, make('td', missing ? 'None' : storeMoney(actual)), make('td', target ? storeMoney(target) : 'None'), variance, rate); tbody.append(tr);
           }); table.append(thead, tbody); content.append(table);
         } else {
           const details = section('Details', 'Where it trades and who runs it'); const list = make('dl', '', 'scale-profile__details');
           const opened = store.opened ? new Date(`${store.opened}T00:00:00Z`).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'long', day: 'numeric', year: 'numeric' }) : 'Not opened';
-          for (const [label, value] of [['Store code', store.id], ['Region', store.region], ['Country', `${store.flag ?? ''} ${store.country ?? ''}`], ['Format', store.format], ['Status', store.status], ['Manager', managers[store.managerId] ?? ''], ['Opened', opened]]) list.append(make('dt', label), make('dd', value)); details.append(list);
+          for (const [label, value] of [['Store code', store.id], ['Region', store.region], ['Country', `${store.flag ?? ''} ${store.country ?? ''}`], ['Format', store.format], ['Status', store.status], ['Manager', managers[store.managerId] ?? ''], ['Active memberships', number(store.members)], ['Opened', opened]]) list.append(make('dt', label), make('dd', value)); details.append(list);
           const targetContent = section('Targets', 'Net sales per fiscal year'); const targetList = make('dl', '', 'scale-profile__details');
           for (const [label, value] of [['FY26 target', store.target ? dollar(store.target) : 'None'], ['FY25 target', store.priorTarget ? dollar(store.priorTarget) : 'None'], ['Refit closure', store.status === 'Refit' && store.missingSales[10] ? 'Sep 2026' : 'None']]) targetList.append(make('dt', label), make('dd', value)); targetContent.append(targetList);
         }
@@ -519,7 +567,7 @@ export const salesTargets: Example = {
 
       showTab(active);
       const extra = make('div', '', 'scale-profile__footer-extra');
-      const remove = button('Delete', () => removeRecord(bench, rows, store, store.label, refresh)); remove.className = 'scale-profile__delete'; remove.dataset.icon = 'trash';
+      const remove = button('Delete', () => removeRecord(bench, rows, store, store.label, refresh)); remove.classList.add('rv-btn-danger', 'scale-profile__delete'); remove.dataset.icon = 'trash';
       const exportButton = button('Export CSV', () => {
         const quote = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
         const records = [['Month', 'Actual', 'Target'], ...months.map((name, index) => [periodLabel(index), store.missingSales[index] ? '' : store.sales[index], store.monthlyTargets?.[index] ?? ''])];
@@ -537,13 +585,16 @@ export const salesTargets: Example = {
       const statusControl = select('Status', ['Pre-opening', 'Trading', 'Refit'], store?.status ?? 'Pre-opening');
       const manager = personSelect('Manager', Object.values(managers), managers[store?.managerId ?? 'mgr_ms']);
       const target = input('FY26 Sales Target', store?.target ? String(store.target) : '', 'number'); target.min = '0'; target.step = '1'; target.placeholder = '3200000';
+      const members = input('Active memberships', String(store?.members ?? 0), 'number'); members.min = '0'; members.step = '1'; members.required = true;
       const body = make('div', '', 'scale-edit sales-edit'); body.append(make('p', store?.id ?? 'No sales until its first closed month.', 'scale-edit__subtitle'));
       const pair = (first: HTMLElement, second: HTMLElement) => { const row = make('div', '', 'scale-edit__pair'); row.append(first, second); return row; };
       const countryField = field('Country', country); const countryHint = make('small');
       const updateCountryHint = () => { const selected = countryOptions.find(item => item.country === country.value); countryHint.textContent = `Sits under ${selected?.region ?? ''}.`; }; country.addEventListener('change', updateCountryHint); updateCountryHint(); countryField.append(countryHint);
       const moneyField = field('FY26 Sales Target', target); const box = make('div', '', 'scale-edit__money'); box.append(make('span', '$'), target); moneyField.append(box, make('small', 'Net sales for Nov to Oct, phased by the season curve over the months the store trades.'));
       const error = make('p', '', 'scale-profile__error'); error.setAttribute('role', 'alert'); error.hidden = true;
-      body.append(field('Name', name), pair(countryField, field('Format', format)), pair(field('Status', statusControl), field('Manager', manager)), moneyField, error);
+      const membershipField = field('Active memberships', members);
+      membershipField.append(make('small', 'Totals add memberships across stores; people may belong to more than one store.'));
+      body.append(field('Name', name), pair(countryField, field('Format', format)), pair(field('Status', statusControl), field('Manager', manager)), membershipField, moneyField, error);
       const back = fromView && store ? button('Back', () => showStore(store)) : undefined;
       bench.form(store ? 'Edit Store' : 'New Store', [body], () => {
         const key = (value: string) => value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -551,7 +602,7 @@ export const salesTargets: Example = {
         if (rows.some(row => row !== store && key(row.label) === key(name.value))) { error.textContent = 'Another store has this name.'; error.hidden = false; return false; }
         const location = countryOptions.find(item => item.country === country.value)!; const targetValue = target.value ? Number(target.value) : 0;
         const monthlyTargets = store?.monthlyTargets && store.target ? store.monthlyTargets.map(value => value * targetValue / store.target) : season.map(value => value * targetValue);
-        const draft = { label: name.value.trim(), country: location.country, flag: location.flag, region: location.region, format: format.value, status: statusControl.value, managerId: Object.keys(managers).find(id => managers[id] === manager.value) ?? 'mgr_ms', target: targetValue, monthlyTargets, note: statusControl.value === 'Trading' ? undefined : statusControl.value };
+        const draft = { label: name.value.trim(), country: location.country, flag: location.flag, region: location.region, format: format.value, status: statusControl.value, managerId: Object.keys(managers).find(id => managers[id] === manager.value) ?? 'mgr_ms', members: Number(members.value), target: targetValue, monthlyTargets, note: statusControl.value === 'Trading' ? undefined : statusControl.value };
         if (store) { const previous = structuredClone(store); Object.assign(store, draft); folded.delete(store.region); refresh(); bench.report('Store saved.', () => { Object.assign(store, previous); refresh(); }); if (fromView) { showStore(store); return false; } }
         else { const created: Store = { ...draft, id: `store-new-${nextStore++}`, sales: months.map(() => 0), missingSales: months.map(() => true), priorTarget: null, opened: '' }; rows.push(created); folded.delete(created.region); refresh(); bench.report('Store created.', () => { const index = rows.indexOf(created); if (index >= 0) rows.splice(index, 1); refresh(); }); showStore(created); return false; }
         return true;

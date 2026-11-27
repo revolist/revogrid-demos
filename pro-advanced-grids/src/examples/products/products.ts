@@ -1,11 +1,12 @@
 import bulkDeleteIcon from '@fortawesome/fontawesome-free/svgs/solid/trash.svg?raw';
 import bulkExportIcon from '@fortawesome/fontawesome-free/svgs/solid/download.svg?raw';
+import saveViewIcon from '@fortawesome/fontawesome-free/svgs/solid/floppy-disk.svg?raw';
 import { mountActionBar } from '@revolist/ui/action-bar';
 import { KeyedRowSelectionPlugin } from '@revolist/revogrid-pro';
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Legend, Menu, MenuItem, SegmentedSwitch } from '@revolist/ui/react';
-import { createControl, createNumberStepperElement, createProgressElement, mountTabs } from '@revolist/ui/native';
+import { badgeClassName, createControl, createNumberStepperElement, createProgressElement, mountTabs } from '@revolist/ui/native';
 import { createDetailPanel } from '../../../../composables/detail-panel';
 import { createDropdownControl } from '@revolist/ui/dropdown/control';
 import targetIcon from '@fortawesome/fontawesome-free/svgs/solid/bullseye.svg?raw';
@@ -30,6 +31,7 @@ import { AdvanceFilterPlugin, GridPopoverPlugin, FIlTER_SELECTION, FIlTER_SLIDER
 import { productDetailFixtures } from './product-detail-fixtures';
 import { promotionNames, promotionReport, weeklyContribution } from './product-promotion-model';
 import { productPeriodHealth, type ProductWeek } from './product-guardrails';
+import { estimatedWeeksOfCover, replenishmentEstimate } from './product-replenishment';
 import { productFixtures } from './product-fixtures';
 import { RowSelectPlugin, createTimeRangeColumnType, createTimeRangeDates, comparisonSparklineRenderer, metricStackRenderer, identityCellRenderer, statusSegmentsRenderer, cellActionRenderer } from '@revolist/revogrid-pro';
 import {
@@ -90,6 +92,23 @@ interface Product {
   activity: { text: string; by: string; when: string }[];
 }
 
+interface DecisionView {
+  name: string;
+  weeks: number;
+  guardrail: number | null;
+  weeklySalesTarget: number;
+  minimumMargin: number;
+  maxDiscount: number;
+}
+const decisionViewsKey = 'revogrid-demo-product-decision-views-v1';
+function loadDecisionViews(): DecisionView[] {
+  try {
+    const value: unknown = JSON.parse(globalThis.localStorage.getItem(decisionViewsKey) ?? '[]');
+    if (!Array.isArray(value)) return [];
+    return value.filter((view): view is DecisionView => view && typeof view.name === 'string' && view.name.trim().length > 0 && [4, 13, 26].includes(view.weeks) && (view.guardrail === null || [0, 1, 2, 3].includes(view.guardrail)) && [view.weeklySalesTarget, view.minimumMargin, view.maxDiscount].every(Number.isFinite));
+  } catch { return []; }
+}
+
 export const productKpis: Example = {
   id: 'product-kpis',
   title: 'Product Sales & Profitability',
@@ -117,7 +136,7 @@ export const productKpis: Example = {
       label: fixture.label,
       sku: fixture.sku,
       region: fixture.department,
-      photo: index < catalogPositions.length ? new URL('../../../public/product-photos/catalog.png', import.meta.url).href : undefined,
+      photo: index < catalogPositions.length ? new URL('../../../public/product-photos/catalog-generated.png', import.meta.url).href : undefined,
       photoPosition: catalogPositions[index],
       disposition: fixture.returned ? 'Returned' : undefined,
       weeks: fixture.weeks.map((week) => [...week]),
@@ -126,6 +145,8 @@ export const productKpis: Example = {
       promo: fixture.weeks.map((week) => week[5] ? (week[3] < 0 ? -1 : 1) : 0),
     }));
     let activeFilter: FilterAst | undefined;
+    let activeGuardrail: number | undefined;
+    let decisionViews = loadDecisionViews();
     let filterPlugin: AdvanceFilterPlugin | undefined;
     let filterEditor: FilterAstEditorHandle | undefined;
     let filterRefreshVersion = 0;
@@ -154,7 +175,7 @@ export const productKpis: Example = {
       value: window,
       ariaLabel: 'Reporting period',
       options: [4, 13, 26].map(weeks => ({ value: weeks, label: `${weeks}W`, ariaLabel: `${weeks}W, last ${weeks} weeks` })),
-      onChange: (weeks: string | number) => { if (typeof weeks === 'number') { window = weeks; refresh(); } },
+      onChange: (weeks: string | number) => { if (typeof weeks === 'number') { window = weeks; markViewModified(); refresh(); } },
     });
     const periodRoot = createRoot(periods);
     const renderPeriods = () => periodRoot.render(createElement(SegmentedSwitch, { ...periodProps(), role: 'group' }));
@@ -168,15 +189,85 @@ export const productKpis: Example = {
     filter.dataset.icon = 'filter';
     const targetsButton = button('Performance targets', openPerformanceTargets);
     targetsButton.dataset.icon = 'sliders';
+    targetsButton.classList.add('workbench-icon');
+    targetsButton.setAttribute('aria-label', 'Performance targets');
+    targetsButton.title = 'Performance targets';
+    const views = select('Decision view', ['Current view', ...decisionViews.map(view => view.name)], 'Current view', value => {
+      deleteView.disabled = value === 'Current view';
+      const view = decisionViews.find(item => item.name === value);
+      if (!view) return;
+      window = view.weeks;
+      activeGuardrail = view.guardrail ?? undefined;
+      weeklySalesTarget = view.weeklySalesTarget;
+      minimumMargin = view.minimumMargin;
+      maxDiscount = view.maxDiscount;
+      clearSelection(); bench.resetPage(); refresh();
+    });
+    const updateViews = (selected = 'Current view') => {
+      views.setOptions(['Current view', ...decisionViews.map(view => view.name)].map(value => ({ value, label: value })));
+      views.value = selected;
+      deleteView.disabled = selected === 'Current view';
+      try { globalThis.localStorage.setItem(decisionViewsKey, JSON.stringify(decisionViews)); } catch { /* The current session remains usable without storage. */ }
+    };
+    const saveView = button('Save view', () => {
+      const name = input('View name', '');
+      name.required = true;
+      bench.form('Save decision view', [make('p', 'Saves the reporting period, selected guardrail and performance targets. Search and advanced filters remain separate.'), field('View name', name)], () => {
+        const label = name.value.trim();
+        if (!label || label === 'Current view') return false;
+        const view: DecisionView = { name: label, weeks: window, guardrail: activeGuardrail ?? null, weeklySalesTarget, minimumMargin, maxDiscount };
+        decisionViews = [...decisionViews.filter(item => item.name !== label), view];
+        updateViews(label);
+      });
+    });
+    const deleteView = button('Delete view', () => {
+      decisionViews = decisionViews.filter(view => view.name !== views.value);
+      updateViews();
+    });
+    for (const [control, label, icon] of [[saveView, 'Save view', saveViewIcon], [deleteView, 'Delete view', bulkDeleteIcon]] as const) {
+      control.classList.add('workbench-icon', 'product-view-icon');
+      control.setAttribute('aria-label', label);
+      control.title = label;
+      control.innerHTML = icon;
+      control.querySelector('svg')?.setAttribute('aria-hidden', 'true');
+    }
+    deleteView.classList.add('rv-btn-danger');
+    deleteView.disabled = true;
+    const markViewModified = () => { views.value = 'Current view'; deleteView.disabled = true; };
     bench.grid.resize = true;
     bench.grid.classList.add('product-column-lines');
-    bench.toolbar.append(filter, targetsButton);
+    bench.toolbar.append(filter, targetsButton, views, saveView, deleteView);
     const bulkHost = make('div', '', 'campaign-bulk-host');
     bulkHost.hidden = true;
     bench.toolbar.insertAdjacentElement('afterend', bulkHost);
     let selectedIds = new Set<string>();
     const selectedProducts = () => rows.filter(row => selectedIds.has(row.id));
     const clearSelection = () => { void bench.grid.getPlugins().then(plugins => plugins.find(plugin => plugin instanceof KeyedRowSelectionPlugin)?.clear()); };
+    const needsStockReview = (row: Product) => {
+      const cover = estimatedWeeksOfCover(row.onHand, row.listPrice, row.weeks);
+      return cover !== null && cover < 4 && row.decision !== 'replenish';
+    };
+    const guardrailFilters = [
+      { label: 'Sales below target', shortLabel: 'Low sales' },
+      { label: 'Margin below floor', shortLabel: 'Low margin' },
+      { label: 'Discount above cap', shortLabel: 'High discount' },
+      { label: 'Cover < 4 wk', shortLabel: 'Low cover' },
+    ].map(({ label, shortLabel }, index) => {
+      const control = button(shortLabel, () => {
+        activeGuardrail = activeGuardrail === index ? undefined : index;
+        markViewModified();
+        clearSelection();
+        bench.resetPage();
+        refresh();
+      });
+      control.classList.add('workbench-quick-filter');
+      if (index === 3) control.title = 'Estimated from on-hand inventory and average weekly gross sales at list price over the last four weeks.';
+      const count = make('strong');
+      count.className = badgeClassName({ variant: 'neutral', shape: 'rounded' });
+      control.append(count);
+      return { control, count, label };
+    });
+    bench.toolbar.append(...guardrailFilters.map(({ control }) => control));
     const bulkBar = mountActionBar(bulkHost, { label: 'Selected products', count: 0, selectionLabel: '', positioning: { mode: 'inline' } });
     function renderBulk() {
       const selected = selectedProducts();
@@ -187,8 +278,9 @@ export const productKpis: Example = {
         selectionLabel: `${selected.length} ${selected.length === 1 ? 'product' : 'products'} selected`, positioning: { mode: 'inline' },
         actions: [
           { id: 'promos', label: 'Stop promos', disabled: !selected.some(row => row.decision !== 'stopPromos') },
+          { id: 'stock', label: 'Review low stock', disabled: !selected.some(needsStockReview) },
           { id: 'export', label: 'Export', icon: bulkExportIcon },
-          { id: 'delete', label: 'Delete', icon: bulkDeleteIcon, variant: 'danger-outline' },
+          { id: 'delete', label: 'Delete', icon: bulkDeleteIcon, variant: 'danger' },
           { id: 'clear', label: 'Clear' },
         ],
         onAction: action => {
@@ -199,9 +291,11 @@ export const productKpis: Example = {
             const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
             const link = document.createElement('a'); link.href = url; link.download = 'selected-products.csv'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 0); return;
           }
-          if (action === 'promos') {
-            const changed = selected.filter(row => row.decision !== 'stopPromos').map(row => ({ row, decision: row.decision, cap: row.cap, activity: [...row.activity] }));
-            changed.forEach(({ row }) => { row.decision = 'stopPromos'; row.cap = null; row.activity.unshift({ text: 'Decision set to Stop Promos', by: 'You', when: 'Today' }); });
+          if (action === 'promos' || action === 'stock') {
+            const decision = action === 'stock' ? 'replenish' : 'stopPromos';
+            const label = action === 'stock' ? 'Review Replenishment' : 'Stop Promos';
+            const changed = selected.filter(row => action === 'stock' ? needsStockReview(row) : row.decision !== decision).map(row => ({ row, decision: row.decision, cap: row.cap, activity: [...row.activity] }));
+            changed.forEach(({ row }) => { row.decision = decision; row.cap = null; row.activity.unshift({ text: `Decision set to ${label}`, by: 'You', when: 'Today' }); });
             clearSelection(); refresh(); bench.report(`${changed.length} ${changed.length === 1 ? 'product' : 'products'} updated.`, () => { changed.forEach(({ row, decision, cap, activity }) => { row.decision = decision; row.cap = cap; row.activity = activity; }); refresh(); });
           }
           if (action === 'delete') {
@@ -299,6 +393,12 @@ export const productKpis: Example = {
           layout: 'inline',
         }) },
       },
+      {
+        prop: 'stockCover', name: 'Est. cover', columnType: 'number', filter: ['number', FIlTER_SLIDER], size: 150, sortable: true,
+        columnProperties: () => ({ class: 'product-number-header', title: 'Estimated using on-hand inventory and average weekly gross sales at list price over the last four weeks.' }),
+        cellTemplate: metricStackRenderer,
+        metricStack: { format: value => ({ value: value == null ? '–' : `${Number(value).toFixed(1)} wk`, valueTone: value == null ? 'muted' : 'neutral', layout: 'inline' }) },
+      },
       { prop: 'promo', name: 'Promo Calendar', filter: false, size: 240, columnType: 'promotionCalendar' },
       {
         prop: 'status', name: 'KPI Status', filter: [FIlTER_SELECTION], size: 152, sortable: true,
@@ -320,12 +420,11 @@ export const productKpis: Example = {
     refresh();
 
     function refresh() {
-      bench.setSubtitle(`${window} weeks to Oct 11, vs prior ${window} weeks`);
       renderPeriods();
       const activeMonths = new Set(calendarDates.slots.slice(-window).map(slot => slot.date.slice(0, 7)));
       for (const date of calendarDates.labelDates) {
         const month = date.slice(0, 7);
-        bench.grid.style.setProperty(`--rv-time-range-month-${month}`, activeMonths.has(month) ? 'var(--rv-ui-text, #171717)' : 'var(--rv-ui-text-muted, #737373)');
+        bench.grid.style.setProperty(`--rv-time-range-month-${month}`, activeMonths.has(month) ? 'var(--rv-ui-text, var(--demo-palette-hex-171717))' : 'var(--rv-ui-text-muted, var(--demo-palette-hex-737373))');
       }
 
       const candidates = rows
@@ -350,9 +449,11 @@ export const productKpis: Example = {
             revenue: health.revenue,
             change: prior ? (health.revenue / prior - 1) * 100 : null,
             profit: health.profit,
+            stockCover: estimatedWeeksOfCover(row.onHand, row.listPrice, row.weeks),
             promo: row.promo.slice(-26),
             score: health.passes.filter(Boolean).length,
             healthScore: health.score,
+            guardrailsPassed: health.passes,
             marks: health.marks,
             status: row.disposition ?? health.status,
           };
@@ -364,16 +465,19 @@ export const productKpis: Example = {
       const visible = compiled ? candidates.filter(row => compiled.matches(row)) : candidates;
       filter.textContent = activeFilter ? 'Filter (active)' : 'Filter';
       filter.setAttribute('aria-label', filter.textContent);
-      bench.stats([
-        ['Revenue', compactMoney(total(visible, (row) => row.revenue))],
-        ['Gross profit', compactMoney(total(visible, (row) => row.profit))],
-        [
-          'Products on track',
-          String(visible.filter((row) => row.status === 'On Track').length),
-          `of ${visible.length} visible`,
-        ],
-      ]);
-      bench.render(columns, visible);
+      const measured = visible.filter(row => row.revenue > 0);
+      bench.setSubtitle(`${window} weeks to Oct 11 · ${measured.length} products with sales`);
+      guardrailFilters.forEach(({ control, count, label }, index) => {
+        const eligible = index === 3 ? visible.filter(row => row.stockCover != null) : measured;
+        const failures = eligible.filter(row => index === 3 ? row.stockCover! < 4 : !row.guardrailsPassed[index]).length;
+        count.textContent = String(failures);
+        control.setAttribute('aria-label', `${label}: ${failures} of ${eligible.length} products ${index === 3 ? 'with estimated cover' : 'with sales'}`);
+        control.setAttribute('aria-pressed', String(activeGuardrail === index));
+      });
+      const selected = activeGuardrail;
+      bench.render(columns, selected === undefined ? visible : selected === 3
+        ? visible.filter(row => row.stockCover != null && row.stockCover < 4)
+        : measured.filter(row => !row.guardrailsPassed[selected]));
     }
 
     async function openFilters() {
@@ -488,14 +592,14 @@ export const productKpis: Example = {
       const footer = make('div', '', 'product-targets__footer');
       const reset = button('Restore defaults', () => { Object.assign(draft, defaults); controls.forEach(({ entry, control }) => { control.value = draft[entry.key]; }); updatePreview(); });
       const cancel = button('Cancel', () => filterPopover?.close(true));
-      const apply = button('Apply targets', () => { weeklySalesTarget = draft.weeklySalesTarget; minimumMargin = draft.marginFloor; maxDiscount = draft.discountCeiling; filterPopover?.close(true); refresh(); }, true);
+      const apply = button('Apply targets', () => { weeklySalesTarget = draft.weeklySalesTarget; minimumMargin = draft.marginFloor; maxDiscount = draft.discountCeiling; markViewModified(); filterPopover?.close(true); refresh(); }, true);
       footer.append(reset, cancel, apply); host.append(footer);
       filterPopover.open(targetsButton, { label: 'Performance targets', content: host, className: 'product-targets-popover', align: 'start', cleanup: () => { legendRoot.unmount(); controls.forEach(({ control }) => control.destroy()); } });
     }
 
     type ProductTab = 'Overview' | 'Promotions' | 'Activity';
-    const owners: Record<string, { name: string; role: string }> = { own_ao: { name: 'Amara Okafor', role: 'Senior footwear planner' }, own_lm: { name: 'Lucas Moreau', role: 'Apparel planner' }, own_is: { name: 'Ingrid Solberg', role: 'Camp planner' }, own_da: { name: 'Diego Alvarez', role: 'Packs and accessories planner' }, own_hm: { name: 'Hana Mori', role: 'Associate climb planner' } };
-    const decisionLabels: Record<string, string> = { noChange: 'No Change', stopPromos: 'Stop Promos', raisePrice: 'Raise Price', clearance: 'Clearance', cap: 'Cap Discount' };
+    const owners: Record<string, { name: string; role: string }> = { own_ao: { name: 'Maya Bennett', role: 'Senior footwear planner' }, own_lm: { name: 'Rafael Costa', role: 'Apparel planner' }, own_is: { name: 'Freya Lindholm', role: 'Camp planner' }, own_da: { name: 'Mateo Rivas', role: 'Packs and accessories planner' }, own_hm: { name: 'Keira Voss', role: 'Associate climb planner' } };
+    const decisionLabels: Record<string, string> = { noChange: 'No Change', stopPromos: 'Stop Promos', raisePrice: 'Raise Price', clearance: 'Clearance', cap: 'Cap Discount', replenish: 'Review Replenishment' };
     const formatDecision = (row: Product) => row.decision === 'cap' && row.cap != null ? `Cap at ${Math.round(row.cap * 100)}%` : row.decision ? decisionLabels[row.decision] ?? row.decision : 'No decision';
     const weekLabel = (index: number) => new Date(Date.UTC(2026, 9, 11 - (51 - index) * 7)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
     const signedMoney = (value: number) => `${value < 0 ? '−' : '+'}${Math.abs(value) < 1000 ? money(Math.abs(value)) : productMoney(Math.abs(value))}`;
@@ -529,8 +633,9 @@ export const productKpis: Example = {
           if (!health.revenue) kpis.append(make('p', 'No sales in the period.', 'product-profile__muted'));
           else { const metrics = [ ['Revenue', productMoney(health.revenue), `target ${compactMoney(revenueTarget)}`, health.revenue / Math.max(1, revenueTarget)], ['Margin', `${(health.margin * 100).toFixed(1)}%`, `floor ${minimumMargin}%`, health.margin * 100 / Math.max(1, minimumMargin)], ['Discount', `${(health.discount * 100).toFixed(1)}%`, `ceiling ${maxDiscount}%`, maxDiscount / Math.max(1, health.discount * 100)] ] as const;
             metrics.forEach(([label, value, note, fraction], index) => { const item = make('div', '', 'product-profile__kpi'); const line = make('div'); line.append(make('span', label), make('span', `${value}, ${note}`)); const progress = createProgressElement(document, { max: 1, value: (health.scores[index] ?? fraction * 100) / 100, className: health.marks[index] ?? '', label: `${label}, ${health.marks[index] === 'met' ? 'met' : health.marks[index] === 'near' ? 'just short' : 'missed'}` }); item.append(line, progress); kpis.append(item); }); }
-          const details = make('section', '', 'product-profile__details'); details.setAttribute('aria-label', 'Details'); details.append(make('small', 'Details')); const list = make('dl', '', 'scale-profile__details'); const recentUnits = total(row.weeks.slice(-4), week => row.listPrice ? week[1] / row.listPrice : 0), cover = recentUnits ? row.onHand / (recentUnits / 4) : null;
-          for (const [label, value] of [['Owner', `${owners[row.ownerId]?.name ?? 'Unassigned'}  ${owners[row.ownerId]?.role ?? ''}`], ['Weeks of Cover', cover == null ? '–' : `${cover.toFixed(1)} weeks  ${number(row.onHand)} on hand`], ['Decision', formatDecision(row)], ['Note', row.note || '–']]) list.append(make('dt', label), make('dd', value)); details.append(list); panel.append(details);
+          const details = make('section', '', 'product-profile__details'); details.setAttribute('aria-label', 'Details'); details.append(make('small', 'Details')); const list = make('dl', '', 'scale-profile__details'); const estimate = replenishmentEstimate(row.onHand, row.listPrice, row.weeks);
+          const demand = estimate == null ? 'No recent demand estimate' : `${number(Math.round(estimate.averageUnits))} units / week${estimate.demandChange == null ? ' · no prior comparison' : ` · ${estimate.demandChange >= 0 ? '+' : ''}${(estimate.demandChange * 100).toFixed(1)}% vs prior 4 weeks`}`;
+          for (const [label, value] of [['Owner', `${owners[row.ownerId]?.name ?? 'Unassigned'}  ${owners[row.ownerId]?.role ?? ''}`], ['Estimated demand', demand], ['Estimated weeks of cover', estimate == null ? '–' : `${estimate.cover.toFixed(1)} weeks  ${number(row.onHand)} on hand`], ['Units to 8 weeks', estimate == null ? 'No recent demand estimate' : `${number(estimate.suggestedUnits)} suggested`], ['Decision', formatDecision(row)], ['Note', row.note || '–']]) list.append(make('dt', label), make('dd', value)); details.append(list, make('small', 'Estimates use gross sales at list price for the last four weeks.')); panel.append(details);
         } else if (tab === 'Promotions') {
           const events = promotionReport(row.weeks, window, row.markdown, row.landed, row.serve, row.promotionRules), content = section('Promotions', `${events.length} events, ${promo.length} weeks on promo`);
           const table = make('table', '', 'product-profile__table'); table.setAttribute('aria-label', `${row.label} promotions`); const thead = make('thead'), headings = make('tr'); for (const label of ['Event', 'Depth', 'Net', 'Profit', 'Payback']) headings.append(make('th', label)); thead.append(headings); const tbody = make('tbody');
@@ -548,7 +653,7 @@ export const productKpis: Example = {
       const menuHost = make('div', '', 'product-profile__decision-menu'); const decisionRoot = createRoot(menuHost);
       const closeDecisions = () => { decisions.open = false; trigger.focus(); };
       decisionRoot.render(createElement(Menu, { label: 'Product decision', onClose: closeDecisions },
-        ...([['noChange', 'No Change'], ['stopPromos', 'Stop Promos'], ['raisePrice', 'Raise Price'], ['clearance', 'Clearance']] as const).map(([value, label]) => createElement(MenuItem, { key: value, 'aria-pressed': row.decision === value, onClick: () => selectDecision(value) }, label)),
+        ...([['noChange', 'No Change'], ['stopPromos', 'Stop Promos'], ['raisePrice', 'Raise Price'], ['clearance', 'Clearance'], ['replenish', 'Review Replenishment']] as const).map(([value, label]) => createElement(MenuItem, { key: value, 'aria-pressed': row.decision === value, onClick: () => selectDecision(value) }, label)),
         createElement('details', { key: 'caps' },
           createElement('summary', { 'aria-haspopup': 'menu' }, 'Cap Discount'),
           createElement('div', { className: 'product-profile__caps' }, createElement(Menu, { label: 'Discount cap', onClose: () => { const caps = menuHost.querySelector('details'); if (caps) { caps.open = false; caps.querySelector('summary')?.focus(); } } },
@@ -568,6 +673,7 @@ export const productKpis: Example = {
       const price = input('List Price', row ? String(row.listPrice) : '', 'number'); price.min = '1'; price.max = '5000'; price.step = '1'; price.required = true;
       const landed = input('Landed Cost', String(Math.round((row?.landed ?? .4) * 100)), 'number'); landed.min = '1'; landed.max = '95'; landed.step = '1'; landed.required = true;
       const serve = input('Cost to Serve', String(Math.round((row?.serve ?? .15) * 100)), 'number'); serve.min = '0'; serve.max = '60'; serve.step = '1'; serve.required = true;
+      const onHand = input('Units on hand', String(row?.onHand ?? 0), 'number'); onHand.min = '0'; onHand.step = '1'; onHand.required = true;
       const note = createControl(document, 'textarea'); note.value = row?.note ?? ''; note.maxLength = 140; note.placeholder = 'Anything the team should know'; note.setAttribute('aria-label', 'Note');
       const body = make('div', '', 'scale-edit product-edit'); body.append(make('p', row?.label ?? 'A new product starts with no sales.', 'product-edit__subtitle'));
       const pair = (a: HTMLElement, b: HTMLElement) => { const line = make('div', '', 'scale-edit__pair'); line.append(a,b); return line; };
@@ -577,14 +683,15 @@ export const productKpis: Example = {
       const breakEven = make('small', '', 'product-edit__break-even'); const update = () => { const rate = Number(serve.value) / 100, cost = Number(landed.value) / 100; breakEven.textContent = `Break-even at ${Math.round(Math.max(0, 1 - cost / Math.max(.001, 1 - rate)) * 100)}% off list.`; }; landed.oninput = serve.oninput = update; update();
       const noteField = field('Note', note); noteField.append(make('small', 'Optional, up to 140 characters.')); const error = make('p', '', 'scale-profile__error'); error.setAttribute('role', 'alert'); error.hidden = true;
       const costs = make('div', '', 'product-edit__costs'); costs.append(priceField, landedField, serveField);
-      body.append(field('Name', name), pair(field('Department', region), field('Owner', owner)), costs, breakEven, noteField, error);
+      const inventoryField = field('Units on hand', onHand); inventoryField.append(make('small', 'Available inventory, in whole units.'));
+      body.append(field('Name', name), pair(field('Department', region), field('Owner', owner)), costs, breakEven, inventoryField, noteField, error);
       const back = row && fromView ? button('Back', () => showProduct(row)) : undefined;
       bench.form(row ? 'Edit Product' : 'New Product', [body], () => {
         const key = (value: string) => value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); if (!name.value.trim()) { error.hidden = false; error.textContent = 'Enter a product name.'; return false; }
         if (rows.some(item => item !== row && key(item.label) === key(name.value))) { error.hidden = false; error.textContent = 'Another product has this name.'; return false; }
-        const ownerId = Object.keys(owners).find(id => owners[id].name === owner.value) ?? 'own_ao'; const draft = { label: name.value.trim(), region: region.value, ownerId, listPrice: Number(price.value), landed: Number(landed.value) / 100, serve: Number(serve.value) / 100, note: note.value.trim() };
-        if (row) { const previous = structuredClone(row); Object.assign(row, draft); row.weeks = row.weeks.map(week => weeklyContribution(week, row.landed, row.serve)); row.promo = row.weeks.map(week => week[5] ? (week[3] < 0 ? -1 : 1) : 0); row.margin = undefined; const updates: string[] = []; if (row.landed !== previous.landed) updates.push(`Landed cost set to ${Math.round(row.landed * 100)}% of list`); if (row.serve !== previous.serve) updates.push(`Cost to serve set to ${Math.round(row.serve * 100)}% of net`); if (row.listPrice !== previous.listPrice) updates.push(`List price set to ${money(row.listPrice)}`); if (!updates.length) updates.push('Product updated'); row.activity.unshift(...updates.map(text => ({ text, by: 'You', when: 'Today' }))); refresh(); bench.report('Product saved.', () => { Object.assign(row, previous); refresh(); }); if (fromView) { showProduct(row); return false; } }
-        else { let sequence = 1; let sku = ''; do { sku = `${region.value.slice(0, 2).toUpperCase()}-NEW${sequence++}`; } while (rows.some(item => item.sku === sku)); const created: Product = { ...draft, id: `product-${sku}`, sku, onHand: 0, decision: null, cap: null, promotionRules: [], activity: [{ text: 'Product added', by: ownerId, when: 'Today' }], data: Array(52).fill(0), weeks: Array.from({ length: 52 }, (): ProductWeek => [0,0,0,0,0,null]), markdown: 0, promo: Array(52).fill(0) }; rows.push(created); bench.resetPage(); refresh(); bench.report('Product added.', () => { const index = rows.indexOf(created); if (index >= 0) rows.splice(index, 1); refresh(); }); showProduct(created); return false; }
+        const ownerId = Object.keys(owners).find(id => owners[id].name === owner.value) ?? 'own_ao'; const draft = { label: name.value.trim(), region: region.value, ownerId, listPrice: Number(price.value), landed: Number(landed.value) / 100, serve: Number(serve.value) / 100, onHand: Number(onHand.value), note: note.value.trim() };
+        if (row) { const previous = structuredClone(row); Object.assign(row, draft); row.weeks = row.weeks.map(week => weeklyContribution(week, row.landed, row.serve)); row.promo = row.weeks.map(week => week[5] ? (week[3] < 0 ? -1 : 1) : 0); row.margin = undefined; const updates: string[] = []; if (row.landed !== previous.landed) updates.push(`Landed cost set to ${Math.round(row.landed * 100)}% of list`); if (row.serve !== previous.serve) updates.push(`Cost to serve set to ${Math.round(row.serve * 100)}% of net`); if (row.listPrice !== previous.listPrice) updates.push(`List price set to ${money(row.listPrice)}`); if (row.onHand !== previous.onHand) updates.push(`Inventory set to ${number(row.onHand)} units`); if (!updates.length) updates.push('Product updated'); row.activity.unshift(...updates.map(text => ({ text, by: 'You', when: 'Today' }))); refresh(); bench.report('Product saved.', () => { Object.assign(row, previous); refresh(); }); if (fromView) { showProduct(row); return false; } }
+        else { let sequence = 1; let sku = ''; do { sku = `${region.value.slice(0, 2).toUpperCase()}-NEW${sequence++}`; } while (rows.some(item => item.sku === sku)); const created: Product = { ...draft, id: `product-${sku}`, sku, decision: null, cap: null, promotionRules: [], activity: [{ text: 'Product added', by: ownerId, when: 'Today' }], data: Array(52).fill(0), weeks: Array.from({ length: 52 }, (): ProductWeek => [0,0,0,0,0,null]), markdown: 0, promo: Array(52).fill(0) }; rows.push(created); bench.resetPage(); refresh(); bench.report('Product added.', () => { const index = rows.indexOf(created); if (index >= 0) rows.splice(index, 1); refresh(); }); showProduct(created); return false; }
         return true;
       }, back, row ? 'Save Changes' : 'Add Product', undefined, { close: { label: 'Close', className: 'scale-drawer-close' } });
     }

@@ -25,15 +25,15 @@ test('all twelve examples share navigation and forecast mounts and cleans up', a
     await nav.getByRole('link', { name: 'Service Reliability Dashboard' }).click();
     await page.getByRole('button', { name: 'Open Order journal durability' }).waitFor();
     await nav.getByRole('link', { name: 'Supplier Quality Dashboard' }).click();
-    await page.getByRole('button', { name: 'Open Cobalt Sole Studio' }).waitFor();
-    await nav.getByRole('link', { name: 'Crew & Job Schedule' }).click();
-    await page.getByRole('button', { name: 'Open Willow House Exterior' }).waitFor();
-    assert.equal(await nav.getByRole('link', { name: 'Crew & Job Schedule' }).getAttribute('aria-current'), 'page');
+    await page.getByRole('button', { name: 'Open Aster Circuit Works' }).waitFor();
+    await nav.getByRole('link', { name: 'Venue Changeover Schedule' }).click();
+    await page.getByRole('button', { name: 'Open Lantern Festival Setup' }).waitFor();
+    assert.equal(await nav.getByRole('link', { name: 'Venue Changeover Schedule' }).getAttribute('aria-current'), 'page');
     await nav.getByRole('link', { name: 'Retail Demand Forecast' }).click();
     await page.getByText('Trail Footwear', { exact: true }).waitFor();
     assert.equal(await nav.getByRole('link', { name: 'Retail Demand Forecast' }).getAttribute('aria-current'), 'page');
     await nav.getByRole('link', { name: 'Marketing Campaign Analytics' }).click();
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     assert.equal(await page.locator('.forecast').count(), 0);
     assert.equal(await page.locator('.workbench-grid').count(), 1);
     assert.equal(await page.locator('.forecast-grid').count(), 0);
@@ -95,16 +95,94 @@ test('all advanced demo views use shared dropdowns instead of native selects', a
   } finally { await page.close(); }
 });
 
+test('shared demo palette is available in every advanced view', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    for (const id of ['campaign-performance', 'product-kpis', 'service-visits', 'job-schedule', 'supplier-quality', 'reliability-index', 'category-forecast', 'scale-up-index', 'sales-to-target', 'brand-scorecard', 'project-budget', 'patient-cohorts']) {
+      await page.goto(`${url}#${id}`);
+      const view = page.locator('.workbench, .forecast').first();
+      await view.waitFor();
+      const palette = await view.evaluate(element => {
+        const style = getComputedStyle(element);
+        return [style.getPropertyValue('--demo-palette-hex-171717').trim(), style.getPropertyValue('--demo-color-teal').trim()];
+      });
+      assert.deepEqual(palette, ['#171717', '#00a58f'], id);
+      if (id === 'scale-up-index') {
+        const yes = page.locator('.screen-yes').first();
+        const no = page.locator('.screen-no').first();
+        await yes.waitFor();
+        assert.equal(await yes.evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(0, 165, 143)');
+        assert.equal(await no.evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(237, 61, 105)');
+      }
+      if (id === 'category-forecast' && process.env.PALETTE_SCREENSHOT_PATH) {
+        await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
+        await page.screenshot({ path: process.env.PALETTE_SCREENSHOT_PATH, animations: 'disabled' });
+      }
+      if (id === 'scale-up-index' && process.env.PALETTE_SCALE_SCREENSHOT_PATH) {
+        await page.getByText('North Holland', { exact: true }).first().waitFor();
+        await page.screenshot({ path: process.env.PALETTE_SCALE_SCREENSHOT_PATH, animations: 'disabled' });
+      }
+    }
+  } finally { await page.close(); }
+});
+
+test('forecast bullet markers stay circular and centered at different track heights', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(`${url}#category-forecast`);
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
+    const chart = page.locator('.forecast-grid .rv-bullet-chart').first();
+    const measure = () => chart.evaluate(element => {
+      const track = element.getBoundingClientRect();
+      const marker = element.querySelector('.rv-bullet-chart__point').getBoundingClientRect();
+      return { width: marker.width, height: marker.height, offset: marker.top + marker.height / 2 - (track.top + track.height / 2) };
+    });
+    for (const height of [10, 16]) {
+      await chart.evaluate((element, value) => element.style.setProperty('--rv-bullet-height', `${value}px`), height);
+      const marker = await measure();
+      assert.ok(Math.abs(marker.width - marker.height) < 0.1, JSON.stringify(marker));
+      assert.ok(Math.abs(marker.offset) < 0.1, JSON.stringify(marker));
+    }
+    await chart.evaluate(element => element.style.removeProperty('--rv-bullet-height'));
+    if (process.env.FORECAST_SCREENSHOT_PATH) await page.screenshot({ path: process.env.FORECAST_SCREENSHOT_PATH, animations: 'disabled' });
+  } finally { await page.close(); }
+});
+
+test('brand icons and section colors remain consistent across the scorecard', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(`${url}#brand-scorecard`);
+    await page.locator('.brand-heading .brand-symbol').first().waitFor();
+    const section = page.locator('.brand-section.sales');
+    await section.locator('.brand-leaders > span').first().waitFor();
+    const leader = section.locator('.brand-leaders > span').first();
+    const name = await leader.locator('span').last().innerText();
+    const header = page.locator('.brand-heading').filter({ has: page.getByRole('button', { name: `Open ${name}`, exact: true }) });
+    const headerPath = await header.locator('svg path').getAttribute('d');
+    assert.equal(await leader.locator('svg path').getAttribute('d'), headerPath);
+    assert.equal(await leader.locator('svg').getAttribute('viewBox'), await header.locator('svg').getAttribute('viewBox'));
+    const colors = await page.locator('.brand-section').evaluateAll(elements => elements.map(element => getComputedStyle(element).getPropertyValue('--brand-section-color').trim()));
+    assert.equal(new Set(colors).size, 4);
+    assert.equal(colors[0], '#a76106');
+    if (process.env.BRAND_SCREENSHOT_PATH) await page.screenshot({ path: process.env.BRAND_SCREENSHOT_PATH, animations: 'disabled' });
+    await header.getByRole('button', { name: `Open ${name}`, exact: true }).click();
+    const detail = page.locator('.brand-profile__mark');
+    await detail.waitFor();
+    assert.equal(await detail.locator('path').getAttribute('d'), headerPath);
+  } finally { await page.close(); }
+});
+
 test('demo headers open the shared column menu', async () => {
   const page = await browser.newPage({ viewport: { width: 1500, height: 900 } });
   try {
     page.setDefaultTimeout(10000);
     const examples = [
       ['campaign-performance', 'Spend'], ['product-kpis', 'Product'],
-      ['service-visits', 'Kitchen'], ['project-budget', 'Budget'],
+      ['service-visits', 'Site'], ['project-budget', 'Budget'],
       ['patient-cohorts', 'Intake Signal'], ['sales-to-target', 'Actual'],
       ['scale-up-index', 'Province'], ['brand-scorecard', 'Portfolio'],
       ['job-schedule', 'Job'], ['category-forecast', 'Line'],
+      ['supplier-quality', 'Supplier'], ['reliability-index', 'Owner'],
     ];
     for (const [id, label] of examples) {
       await page.goto(`${url}#${id}`);
@@ -113,7 +191,12 @@ test('demo headers open the shared column menu', async () => {
       const trigger = header.locator('[data-column-menu-trigger]');
       if (await trigger.count()) await trigger.click();
       else await header.click();
-      await page.locator('.rv-context-menu:visible').getByRole('menuitem', { name: 'Copy options' }).waitFor();
+      const menu = page.locator('.rv-context-menu:visible');
+      await menu.getByRole('menuitem', { name: 'Copy options' }).waitFor().catch(error => { throw new Error(`${id}: ${error.message}`); });
+      for (const name of ['Grouping', 'Pin', 'Move', 'Size']) {
+        assert.equal(await menu.getByRole('menuitem', { name, exact: true }).count(), 0, `${id}: ${name}`);
+      }
+      if (id === 'product-kpis' && process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH, animations: 'disabled' });
       await page.keyboard.press('Escape');
     }
   } finally { await page.close(); }
@@ -284,7 +367,7 @@ test('action notifications are cleared when navigating between demos', async () 
     await page.getByRole('button', { name: /Book all .*unbooked visits/ }).click();
     await page.locator('.rv-toast').getByText(/visits booked/).waitFor();
     await page.getByRole('navigation', { name: 'Advanced RevoGrid examples' }).getByRole('link', { name: 'Marketing Campaign Analytics' }).click();
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     assert.equal(await page.locator('.rv-toast').count(), 0);
   } finally { await page.close(); }
 });
@@ -355,7 +438,7 @@ test('search focus ring stays outside and supplier actions precede the dropdown'
     const order = await bar.locator('.rv-search-action-bar__actions').evaluate(node => [...node.children].map(item => item.getAttribute('aria-label') || item.querySelector('[role=combobox]')?.getAttribute('aria-label')));
     assert.deepEqual(order.slice(0, 3), ['Columns', 'Export XLSX', 'Division']);
     await search.fill('Cobalt');
-    await page.getByRole('button', { name: 'Open Cobalt Sole Studio' }).waitFor();
+    await page.getByRole('button', { name: 'Open Aster Circuit Works' }).waitFor();
   } finally { await page.close(); }
 });
 
@@ -650,7 +733,7 @@ test('all sales country labels and store counts fit within their cells', async (
   try {
     await page.goto(`${url}#sales-to-target`);
     const grid = page.locator('revo-grid.workbench-grid');
-    await page.getByRole('button', { name: 'Open Portland Riverfront' }).waitFor();
+    await page.getByRole('button', { name: 'Open Denver Union Station' }).waitFor();
     const countries = await grid.evaluate(async element => [...new Set((await element.getVisibleSource()).filter(row => row.countryHead).map(row => row.country))]);
     assert.ok(countries.length > 1);
     const search = page.getByRole('searchbox');

@@ -9,7 +9,21 @@ test('fictional styles produce the displayed profit and portfolio loss count', (
   assert.equal(all.filter(style => styleProfit(style) < 0).length, 4);
   const best = all.reduce((a, b) => styleProfit(a) > styleProfit(b) ? a : b);
   assert.equal(best.name, 'Solstice Thermal Layer');
-  assert.equal(Math.round(styleProfit(best)), 225313);
+  assert.equal(Math.round(styleProfit(best)), 223057);
   assert.equal(profitAxisMaximum(all), 300000);
   assert.equal(profitAxisMaximum([]), 1);
+});
+
+test('style categories describe the products shown in the brand breakdown', () => {
+  const expected = new Map([
+    ['Trail Jacket', 'Jackets'], ['Everyday Shell', 'Jackets'],
+    ['Trek Boot', 'Footwear'], ['Climbing Shoe', 'Footwear'],
+    ['Camp Fleece', 'Base Layers'], ['Thermal Layer', 'Base Layers'],
+    ['Travel Pack', 'Packs'], ['Camp Blanket', 'Camp'],
+  ]);
+  for (const style of Object.values(brandStyleFixtures).flatMap(brand => brand.styles)) {
+    const category = [...expected].find(([suffix]) => style.name.endsWith(suffix))?.[1];
+    assert.ok(category, `Unclassified style: ${style.name}`);
+    assert.equal(style.category, category, style.name);
+  }
 });

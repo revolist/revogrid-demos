@@ -15,12 +15,12 @@ export const layouts: Record<
 > = {
   'reliability-index': { row: 52, header: 32, search: 'Search SLOs' },
   'supplier-quality': { row: 56, header: 48, search: 'Search suppliers', merges: true },
-  'job-schedule': { row: 50, header: 41, search: 'Client, street or crew…', checks: true, page: true },
+  'job-schedule': { row: 50, header: 41, search: 'Event, venue or crew…', checks: true, page: true },
   'patient-cohorts': { row: 56, header: 32, search: 'Search signals' },
   'campaign-performance': {
     row: 51,
     header: 32,
-    search: 'Search campaign, ID, market…',
+    search: 'Search campaigns',
     checks: true,
     page: true,
   },
@@ -34,7 +34,7 @@ export const layouts: Record<
   'service-visits': {
     row: 51,
     header: 52,
-    search: 'Kitchen, manager or crew…',
+    search: 'Site, manager or technician…',
     checks: true,
     page: true,
   },
@@ -104,7 +104,6 @@ export function arrangeToolbar({
   const layout = layouts[id];
   const document = section.ownerDocument;
   const search = searchBar.element;
-  const cluster = search;
   const spacer = document.createElement('span');
   spacer.className = 'workbench-toolbar-spacer';
   glyph(
@@ -120,8 +119,9 @@ export function arrangeToolbar({
   if (id === 'supplier-quality') {
     glyph(columns, 'columns', true);
     glyph(download, 'download', true);
-    searchBar.setActions([columns, download, ...controls.slice(0, 1)]);
-    heading.append(cluster, ...controls.slice(1));
+    const [division, group, period, exceptions] = controls;
+    searchBar.setActions([division, exceptions, columns, download]);
+    heading.append(search, group, period);
     if (headerActions instanceof HTMLButtonElement) { headerActions.dataset.icon = 'plus'; heading.append(headerActions); }
     toolbar.hidden = true;
     return;
@@ -146,13 +146,16 @@ export function arrangeToolbar({
     const closeFilter = () => popover.close(false);
     columns.addEventListener('click', closeFilter);
     onDispose(() => { columns.removeEventListener('click', closeFilter); popover.destroy(); panel.remove(); });
+    const searchActions: Element[] = [];
     for (const control of controls) {
       if ((control as HTMLElement).dataset.toolbar === 'main')
         toolbar.append(control);
+      else if ((control as HTMLElement).dataset.toolbar === 'search')
+        searchActions.push(control);
       else panel.append(control);
     }
-    searchBar.setActions([trigger, columns, download]);
-    heading.insertBefore(cluster, heading.children[1] ?? null);
+    searchBar.setActions([trigger, ...searchActions, columns, download]);
+    heading.insertBefore(search, heading.children[1] ?? null);
     if (headerActions instanceof HTMLButtonElement)
       headerActions.dataset.icon = 'plus';
     toolbar.hidden = !toolbar.children.length;
@@ -162,32 +165,21 @@ export function arrangeToolbar({
     headerActions.dataset.icon = 'plus';
   if (id === 'patient-cohorts') {
     download.textContent = 'Export';
-    glyph(download, 'download', false);
-    heading.append(download);
-    toolbar.replaceChildren(
-      controls[0],
-      controls[1],
-      search,
-      spacer,
-      ...controls.slice(2),
-    );
+    glyph(download, 'download', true);
+    const [cohort, risk, stage, notes, expand] = controls;
+    searchBar.setActions([expand, download]);
+    toolbar.replaceChildren(cohort, risk, stage, search, spacer, notes);
   } else if (id === 'campaign-performance') {
     download.textContent = 'Export';
-    glyph(download, 'download', false);
-    heading.insertBefore(download, headerActions);
+    glyph(download, 'download', true);
     glyph(controls[0] as HTMLButtonElement, 'filter', true);
-    searchBar.setActions([controls[0]]);
-    toolbar.replaceChildren(search, spacer, ...controls.slice(1));
+    searchBar.setActions([controls[0], controls[1], download]);
+    toolbar.replaceChildren(...controls.slice(2), search, spacer);
   } else if (id === 'product-kpis') {
     glyph(controls[0] as HTMLButtonElement, 'filter', true);
-    searchBar.setActions([controls[0]]);
-    toolbar.replaceChildren(
-      search,
-      spacer,
-      controls[1],
-      columns,
-      ...controls.slice(2),
-    );
+    const [filter, targets, views, saveView, deleteView, ...guardrails] = controls;
+    searchBar.setActions([filter, targets, columns, saveView, deleteView, ...guardrails]);
+    toolbar.replaceChildren(views, search);
   } else if (id === 'job-schedule') {
     columns.classList.add('workbench-icon');
     columns.setAttribute('aria-label', 'Columns');
@@ -196,19 +188,15 @@ export function arrangeToolbar({
   } else if (id === 'service-visits') {
     if (headerActions instanceof HTMLButtonElement) headerActions.dataset.icon = 'calendar-add';
     glyph(download, 'download', true);
-    searchBar.setActions(controls.slice(0, 2));
-    toolbar.replaceChildren(
-      search,
-      spacer,
-      ...controls.slice(2),
-      columns,
-      download,
-    );
+    const [service, status, bookAll, selection] = controls;
+    searchBar.setActions([service, status, bookAll, columns, download]);
+    toolbar.replaceChildren(search, selection);
   } else if (id === 'project-budget') {
     glyph(columns, 'columns', true);
     glyph(download, 'download', true);
-    searchBar.setActions([...controls.slice(2, 4), columns, download]);
-    toolbar.replaceChildren(...controls.slice(0, 2), spacer, search, ...controls.slice(4));
+    const [filters, group, compact, comfortable, filter] = controls;
+    searchBar.setActions([filter, compact, comfortable, columns, download]);
+    toolbar.replaceChildren(filters, group, spacer, search);
   } else {
     glyph(download, 'download', true);
     searchBar.setActions([columns, download]);

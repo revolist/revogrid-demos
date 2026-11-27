@@ -16,7 +16,10 @@ import forecastIcon from '@fortawesome/fontawesome-free/svgs/solid/chart-line.sv
 import riskIcon from '@fortawesome/fontawesome-free/svgs/solid/triangle-exclamation.svg?raw';
 import compactRowsIcon from '@fortawesome/fontawesome-free/svgs/solid/bars.svg?raw';
 import comfortableRowsIcon from '@fortawesome/fontawesome-free/svgs/solid/table-list.svg?raw';
-import { createControl, createLegendElement, createNumberStepperElement, mountTabs } from '@revolist/ui/native';
+import { createElement } from 'react';
+import { createRoot } from 'react-dom/client';
+import { SegmentedSwitch } from '@revolist/ui/react';
+import { createControl, createLegendElement, createNumberStepperElement } from '@revolist/ui/native';
 import { createDetailPanel } from '../../../../composables/detail-panel';
 import { ROW_ACTION_COLUMN_WIDTH } from '../../../../composables/row-action';
 import { demoColors } from '../../../../composables/demo-colors';
@@ -31,7 +34,7 @@ import { calendarField } from '../../shared/ui-calendar-field';
 import { planAmount, partsAmount, primaryBasis, type BudgetParts, type BudgetPlan } from './budget-components';
 import { budgetActivityFixtures } from './budget-activity-fixtures';
 import { availableDecisions, previewDecision, type BudgetDecision } from './budget-decisions';
-import { budgetLineTotals } from './budget-math';
+import { budgetLineTotals, contingencyScale } from './budget-math';
 import { budgetBurn, weeklyBudget } from './budget-weekly';
 import { referenceSchedule } from './budget-reference-schedule';
 import { budgetHealth, monthForDay, monthNames, monthStarts, projectedFinish, scheduleGeometry } from './budget-schedule';
@@ -54,21 +57,21 @@ import {
 } from '../../shared/workbench-ui';
 
 const workstreams = [
-  'Discovery',
+  'Site planning',
   'Design',
   'Build',
-  'Integrations',
-  'Data Migration',
+  'Utilities',
+  'Fit-out',
   'Launch',
 ];
-// A fictional customer portal project, grouped by delivery workstream.
+// A fictional community studio buildout, grouped by delivery workstream.
 const fixtures: ReadonlyArray<readonly [string, string]> = [
-  ['Discovery', 'Stakeholder interviews'], ['Discovery', 'Service architecture review'], ['Discovery', 'Content inventory'],
-  ['Design', 'Journey prototypes'], ['Design', 'Interface foundations'], ['Design', 'Participant research'],
-  ['Build', 'Portal application'], ['Build', 'Account onboarding'], ['Build', 'Cloud hosting'], ['Build', 'Knowledge search'], ['Build', 'Inclusive design review'],
-  ['Integrations', 'CRM integration'], ['Integrations', 'Customer data sync'], ['Integrations', 'Identity integration'],
-  ['Data Migration', 'Knowledge base migration'], ['Data Migration', 'Content clean-up'], ['Data Migration', 'Case history import'], ['Data Migration', 'Legacy link mapping'],
-  ['Launch', 'Quality assurance'], ['Launch', 'Traffic testing'], ['Launch', 'Support training'], ['Launch', 'Launch support'],
+  ['Site planning', 'Community listening sessions'], ['Site planning', 'Building condition survey'], ['Site planning', 'Equipment inventory'],
+  ['Design', 'Studio layout studies'], ['Design', 'Construction drawings'], ['Design', 'Accessibility consultation'],
+  ['Build', 'Main studio construction'], ['Build', 'Workshop room fit-out'], ['Build', 'Equipment rental'], ['Build', 'Tool storage rental'], ['Build', 'Access inspection'],
+  ['Utilities', 'Electrical installation'], ['Utilities', 'Lighting installation'], ['Utilities', 'Access control installation'],
+  ['Fit-out', 'Acoustic treatment'], ['Fit-out', 'Salvage and preparation'], ['Fit-out', 'Furniture restoration'], ['Fit-out', 'Equipment installation'],
+  ['Launch', 'Safety inspection'], ['Launch', 'Sound testing'], ['Launch', 'Volunteer training'], ['Launch', 'Opening support'],
 ];
 const decisions = ['Open', 'Cover', 'Adjust', 'Hold'];
 const units = ['Hours', 'Licenses', 'Fixed fee'];
@@ -101,11 +104,14 @@ const vendors = [...new Set(Object.values(referenceSchedule).map((item) => item.
 export const projectBudget: Example = {
   id: 'project-budget',
   title: 'Project Budget Tracker',
-  description: 'Customer portal launch',
+  description: 'Community studio buildout',
   setup(bench) {
-    const releaseCards = () => bench.summary.querySelectorAll<HTMLElement>('.rv-metric-tile--visual').forEach(releaseMetricElement);
+    const compactMetrics = new URLSearchParams(window.location.search).get('compactMetrics') !== '0';
+    bench.summary.classList.toggle('budget-compact-metrics', compactMetrics);
+    let metricCards: HTMLElement[] = [];
+    const releaseCards = () => { metricCards.forEach(releaseMetricElement); metricCards = []; };
     bench.onDispose(releaseCards);
-    let reserve = 28610;
+    let reserve = 36000;
     let nextLine = 1;
     const rows: Line[] = fixtures.map(
       (
@@ -132,20 +138,21 @@ export const projectBudget: Example = {
     const expanded = new Set([
       'Design',
       'Build',
-      'Integrations',
-      'Data Migration',
+      'Utilities',
+      'Fit-out',
     ]);
+    const filteredCollapsed = new Set<string>();
     const filter = select(
       'Budget status',
-      ['All lines', 'Over budget', 'Within budget', 'Late', 'Decision open'],
+      ['All lines', 'Over budget', 'Over-budget groups', 'Within budget', 'Late', 'Decision open'],
       'All lines',
-      refresh,
+      () => { filteredCollapsed.clear(); refresh(); },
     );
     const groupBy = select(
       'Group lines by',
       ['Workstream', 'Vendor'],
       'Workstream',
-      refresh,
+      () => { filteredCollapsed.clear(); refresh(); },
     );
     let sorting: { key: BudgetSortKey; direction: 1 | -1 } | null = null;
     const compactRows = button('Compact rows', () => { bench.grid.rowSize = 41; compactRows.setAttribute('aria-pressed', 'true'); comfortableRows.setAttribute('aria-pressed', 'false'); });
@@ -154,21 +161,24 @@ export const projectBudget: Example = {
     compactRows.classList.add('budget-density'); comfortableRows.classList.add('budget-density');
     compactRows.setAttribute('aria-label', 'Compact rows'); comfortableRows.setAttribute('aria-label', 'Comfortable rows');
     compactRows.innerHTML = compactRowsIcon; comfortableRows.innerHTML = comfortableRowsIcon;
+    if (compactMetrics) bench.heading.append(bench.summary);
     bench.heading.append(button('Add Line', () => edit(), true));
     const filters = make('div', '', 'budget-filters');
     const statuses = [
       ['All', 'All lines'],
       ['Over Budget', 'Over budget'],
+      ['Over-budget groups', 'Over-budget groups'],
       ['Under Budget', 'Within budget'],
       ['Late', 'Late'],
     ].map(([label, value]) => {
       const control = button(label, () => {
         filter.value = value;
+        filteredCollapsed.clear();
         refresh();
       });
       control.dataset.budgetStatus = value;
       filters.append(control);
-      return { control, value };
+      return { control, value, label };
     });
     filter.classList.add('budget-filter-mobile');
     bench.toolbar.append(filters, groupBy, compactRows, comfortableRows, filter);
@@ -191,7 +201,7 @@ export const projectBudget: Example = {
         actions: [
           { id: 'done', label: 'Mark done', disabled: !selected.some(row => row.lineStatus !== 'done') },
           { id: 'export', label: 'Export', icon: bulkExportIcon },
-          { id: 'delete', label: 'Delete', icon: bulkDeleteIcon, variant: 'danger-outline' },
+          { id: 'delete', label: 'Delete', icon: bulkDeleteIcon, variant: 'danger' },
           { id: 'clear', label: 'Clear' },
         ],
         onAction: action => {
@@ -230,7 +240,7 @@ export const projectBudget: Example = {
         await bench.grid.updateColumnSorting(column, direction === 1 ? 'asc' : direction === -1 ? 'desc' : undefined, false);
       }
     };
-    bench.grid.dataGridContextMenu = { commandHandlers: {
+    bench.grid.dataGridContextMenu = { ...bench.grid.dataGridContextMenu || {}, commandHandlers: {
       'column.sortAscending': applySort(1), 'column.sortDescending': applySort(-1), 'column.clearSort': applySort(null),
     } };
     const header = (key: BudgetSortKey, label: string) =>
@@ -261,7 +271,7 @@ export const projectBudget: Example = {
     }) };
     const columns: ColumnData = groupedMetrics([
       {
-        prop: 'label', name: 'Line', size: 224, pin: 'colPinStart', cellTemplate: entityCellRenderer,
+        prop: 'label', name: 'Line', size: 280, pin: 'colPinStart', cellTemplate: entityCellRenderer,
         entityCell: {
           format: (value, model) => {
             const label = String(value ?? '');
@@ -273,7 +283,12 @@ export const projectBudget: Example = {
           },
           onActivate: model => {
             if (model.line) showLine(model.line);
-            else { if (expanded.has(model.label)) expanded.delete(model.label); else expanded.add(model.label); refresh(); }
+            else {
+              if (filter.value !== 'All lines' || bench.currentQuery()) {
+                if (model.expanded) filteredCollapsed.add(model.label); else filteredCollapsed.delete(model.label);
+              } else if (expanded.has(model.label)) expanded.delete(model.label); else expanded.add(model.label);
+              refresh();
+            }
           },
         },
       },
@@ -327,17 +342,35 @@ export const projectBudget: Example = {
     }
 
     function refresh() {
-      statuses.forEach(({ control, value }) =>
-        control.setAttribute('aria-pressed', String(filter.value === value)),
+      const matching = rows.filter(row =>
+        matches(bench.currentQuery(), row.label, row.stream, row.vendor),
       );
+      const groupKey = (row: Line) => groupBy.value === 'Vendor' ? row.vendor : row.stream;
+      const groupDeltas = new Map<string, number>();
+      for (const row of matching) {
+        const key = groupKey(row);
+        groupDeltas.set(key, (groupDeltas.get(key) ?? 0) + budgetLineTotals(row).delta);
+      }
+      const overBudgetGroups = new Set([...groupDeltas].filter(([, delta]) => delta < 0).map(([key]) => key));
+      const counts: Record<string, number> = {
+        'All lines': matching.length,
+        'Over budget': matching.filter(row => budgetLineTotals(row).delta < 0).length,
+        'Over-budget groups': overBudgetGroups.size,
+        'Within budget': matching.filter(row => budgetLineTotals(row).delta >= 0).length,
+        'Late': matching.filter(row => projectedFinish(row) > row.plannedEnd).length,
+      };
+      statuses.forEach(({ control, value, label }) => {
+        control.setAttribute('aria-pressed', String(filter.value === value));
+        control.textContent = `${label} ${counts[value]}`;
+        control.setAttribute('aria-label', `${label}, ${counts[value]} ${value === 'Over-budget groups' ? 'groups' : 'lines'}`);
+      });
 
-      const visible = rows.filter((row) => {
-        if (!matches(bench.currentQuery(), row.label, row.stream, row.vendor))
-          return false;
+      const visible = matching.filter((row) => {
         const { delta } = budgetLineTotals(row);
         return (
           filter.value === 'All lines' ||
           (filter.value === 'Over budget' && delta < 0) ||
+          (filter.value === 'Over-budget groups' && overBudgetGroups.has(groupKey(row))) ||
           (filter.value === 'Within budget' && delta >= 0) ||
           (filter.value === 'Late' &&
             projectedFinish(row) > row.plannedEnd) ||
@@ -385,7 +418,9 @@ export const projectBudget: Example = {
         groups.forEach(({ lines }) => lines.sort((a, b) => compareBudget(a, b, key, direction)));
       }
       const grouped = groups.flatMap(({ label, lines, figures }) => {
-        const open = expanded.has(label) || filter.value !== 'All lines' || !!bench.currentQuery();
+        const open = filter.value !== 'All lines' || !!bench.currentQuery()
+          ? !filteredCollapsed.has(label)
+          : expanded.has(label);
         return [{
           label, group: true, expanded: open, count: lines.length, ...figures,
           mark: label === 'Build' ? codeIcon : label === 'Design' ? designIcon : label === 'Integration' ? puzzleIcon : compassIcon,
@@ -402,13 +437,15 @@ export const projectBudget: Example = {
       const overCount = visible.filter(
         (row) => budgetLineTotals(row).delta < 0,
       ).length;
+      const contingency = contingencyScale(summary.budget, summary.forecast, reserve);
       const cards = [
         {
           name: 'At Risk',
           value: money(risk),
           detailLead: `${overCount} of ${visible.length}`, detailRest: ' lines over',
-          progress: reserve ? (risk / reserve) * 100 : 0,
-          captionLead: `${reserve ? Math.round((risk / reserve) * 100) : 0}%`, captionRest: ` of contingency, ${money(Math.max(0, reserve - risk))} spare`,
+          progress: contingency.progress,
+          captionLead: money(contingency.overrun),
+          captionRest: ` net overrun · ${money(Math.abs(contingency.remaining))} ${contingency.remaining < 0 ? 'beyond contingency' : 'remaining'}`,
         },
         {
           name: 'Total Budget',
@@ -420,7 +457,7 @@ export const projectBudget: Example = {
         {
           name: 'Actual Spend',
           value: money(summary.actual),
-          detailLead: '+8%', detailRest: ' vs. last week',
+          detailLead: money(Math.max(0, summary.forecast - summary.actual)), detailRest: ' still projected',
           progress: summary.forecast
             ? (summary.actual / summary.forecast) * 100
             : 0,
@@ -430,25 +467,26 @@ export const projectBudget: Example = {
           name: 'Forecast',
           value: money(summary.forecast),
           detailLead: `${summary.budget && summary.forecast > summary.budget ? '+' : ''}${summary.budget ? pct((summary.forecast / summary.budget - 1) * 100) : '–'}`, detailRest: ' vs. budget',
-          progress: 43,
-          captionLead: '43%', captionRest: ' of the time to launch gone, Mar 2',
+          progress: summary.budget ? (summary.forecast / summary.budget) * 100 : 0,
+          captionLead: summary.budget ? pct((summary.forecast / summary.budget) * 100) : '–', captionRest: ' of approved budget',
         },
       ];
       bench.summary.hidden = false;
       releaseCards();
       const accents = [demoColors.pink, demoColors.purple, demoColors.teal, demoColors.blue];
-      const trend = [4, 5, 6, 8, 10, 12, 18, 26, 30, 32];
       const icons = [riskIcon, walletIcon, spendIcon, forecastIcon];
-      bench.summary.replaceChildren(...cards.map((card, index) => createMetricTileElement(document, {
+      metricCards = cards.map((card, index) => createMetricTileElement(document, {
         label: card.name,
         value: card.value,
+        ...(compactMetrics ? { compact: { badge: `${Math.round(card.progress)}%` } } : {}),
         visual: {
-          accent: accents[index], iconSvg: icons[index], trend,
+          accent: accents[index], iconSvg: icons[index],
           detailLead: card.detailLead, detailRest: card.detailRest,
-          ...(card.name === 'Forecast' ? { detailTone: 'negative' as const } : {}),
-          progress: { value: card.progress, label: `${card.captionLead}${card.captionRest}`, captionLead: card.captionLead, captionRest: card.captionRest },
+          ...(card.name === 'Forecast' ? { detailTone: summary.forecast > summary.budget ? 'negative' as const : 'positive' as const } : {}),
+          progress: { value: card.progress, label: card.name === 'At Risk' ? `${card.captionLead}${card.captionRest}; ${money(reserve)} contingency` : `${card.captionLead}${card.captionRest}`, captionLead: card.captionLead, captionRest: card.captionRest },
         },
-      })));
+      }));
+      bench.summary.replaceChildren(...metricCards);
       const compact = window.matchMedia('(max-width: 650px)').matches;
       const activeColumns = compact
         ? [{ ...columns[0], size: 160 }, ...columns.slice(1)]
@@ -472,13 +510,22 @@ export const projectBudget: Example = {
       const lineIcon = make('span', '', 'budget-profile__icon'); lineIcon.setAttribute('aria-hidden', 'true'); lineIcon.innerHTML = row.unit === 'Hours' ? hoursIcon : row.unit === 'Licenses' ? licenseIcon : feeIcon;
       label.append(lineIcon, make('strong', row.label), make('span', status, 'budget-profile__status'));
       head.append(label, make('small', `${row.stream}, ${row.vendor}`));
-      const tabs = make('div');
+      const tabs = make('div', '', 'budget-profile__switch');
       const panel = make('div', '', 'scale-profile__content'); panel.setAttribute('role', 'tabpanel'); panel.id = `budget-panel-${row.id}`;
       const names: LineTab[] = ['Overview', 'Decision', 'Activity'];
-      const tabOptions = names.map(name => ({ value: name, label: name, id: `budget-${row.id}-${name}`, ariaControls: panel.id }));
-      const tabProps = (value: LineTab) => ({ value, options: tabOptions, onChange: renderTab, ariaLabel: 'Budget details', className: 'budget-profile__tabs rv-tabs--underline' });
-      const tabControl = mountTabs(tabs, tabProps(active));
-      const controls = [...tabs.querySelectorAll<HTMLButtonElement>('[role=tab]')];
+      const tabId = (name: LineTab) => `budget-${row.id}-${name}`;
+      const tabOptions = names.map(name => ({ value: name, label: name, id: tabId(name), ariaControls: panel.id }));
+      const tabControl = createRoot(tabs);
+      const renderSwitch = (value: LineTab) => tabControl.render(createElement(SegmentedSwitch, {
+        value,
+        options: tabOptions,
+        role: 'tablist',
+        ariaLabel: 'Budget details',
+        onChange: (next: string | number) => {
+          const tab = names.find(name => name === next);
+          if (tab) renderTab(tab);
+        },
+      }));
       body.append(head, tabs, panel);
       const availability = availableDecisions(row);
       let choice: BudgetDecision | null = availability.Adjust ? 'Adjust' : availability.Cover ? 'Cover' : null;
@@ -493,7 +540,7 @@ export const projectBudget: Example = {
       const error = make('p', '', 'scale-profile__error'); error.setAttribute('role', 'alert'); error.hidden = true;
       const section = (title: string, subtitle: string) => { const { card, body } = createDetailPanel(title, subtitle, { card: 'scale-profile__section', heading: 'scale-profile__section-heading', body: 'scale-profile__section-content' }); panel.append(card); return body; };
       let form: WorkbenchFormHandle | undefined;
-      const changeAuthor = (id: string) => ({ noah: 'Noah Brennan', amara: 'Amara Okafor', sana: 'Sana Qureshi', mei: 'Mei Chen', rosa: 'Rosa Delgado', ines: 'Nia Bennett' } as Record<string, string>)[id] ?? id;
+      const changeAuthor = (id: string) => ({ noah: 'Noah Brennan', amara: 'Maya Bennett', sana: 'Sana Qureshi', mei: 'Mei Chen', rosa: 'Rosa Delgado', ines: 'Nia Bennett' } as Record<string, string>)[id] ?? id;
       const setFooter = () => form?.setSubmit({
         label: active === 'Overview' ? 'Decide' : active === 'Decision' ? 'Save Decision' : 'Edit Line',
         icon: active === 'Overview' ? 'trend' : active === 'Decision' ? 'check' : 'edit',
@@ -508,10 +555,10 @@ export const projectBudget: Example = {
         const legend = createLegendElement(document, {
           label: 'Budget chart key', className: 'budget-profile__chart-legend',
           items: [
-            { id: 'planned', label: 'Planned', color: '#6647f0' },
-            ...(data.some(point => point.actual !== null) ? [{ id: 'actual', label: 'Actual', color: '#00a58f' }] : []),
-            ...(data.some(point => point.forecast !== null) ? [{ id: 'forecast', label: 'Forecast', color: '#ed3d69', marker: 'dashed' as const }] : []),
-            { id: 'limit', label: 'Budget limit', color: '#999', marker: 'dashed' as const },
+            { id: 'planned', label: 'Planned', color: demoColors.purple },
+            ...(data.some(point => point.actual !== null) ? [{ id: 'actual', label: 'Actual', color: demoColors.teal }] : []),
+            ...(data.some(point => point.forecast !== null) ? [{ id: 'forecast', label: 'Forecast', color: demoColors.pink, marker: 'dashed' as const }] : []),
+            { id: 'limit', label: 'Budget limit', color: 'var(--rv-ui-text-muted)', marker: 'dashed' as const },
           ],
         });
         if (model.points.length > 13) {
@@ -525,31 +572,37 @@ export const projectBudget: Example = {
         const tick = increments.find(value => value * 4 >= maximum) ?? Math.ceil(maximum / 80000) * 20000;
         const label = `${row.label}: planned, actual and forecast against a ${money(model.budget)} budget`;
         const chartData = data.map(point => ({ ...point, dateLabel: shortDate(dateFromOffset(point.day - 4)) }));
-        const references: NonNullable<Parameters<typeof createAreaLineChart>[0]['annotations']>['references'] = [
-          { id: 'budget', kind: 'line', axis: 'primary', value: model.budget, color: '#aaa', lineDash: 'dash' },
-          ...(data.some(point => point.day === model.current) ? [{ id: 'today', kind: 'line' as const, axis: 'category' as const, at: { scale: 'category' as const, path: [{ field: 'day', value: model.current }] }, color: '#bfa5ff', lineDash: 'dash' as const }] : []),
-        ];
         const chart = createChartHost(document, {
-          mount: (container, signal) => createAreaLineChart({
-            container, signal,
-            data: chartData,
-            mapping: { category: { field: 'day', label: 'dateLabel' }, series: [
-              { field: 'planned', label: 'Planned' }, { field: 'actual', label: 'Actual' }, { field: 'forecast', label: 'Forecast' },
-            ] },
-            presentation: { legendPosition: 'none' },
-            axes: { x: { lineColor: '#ffffff' }, y: { min: 0, max: tick * 4, tickValues: [0, tick, tick * 2, tick * 3, tick * 4], lineColor: '#ffffff' } },
-            annotations: { references },
-            seriesOverrides: {
-              planned: { type: 'area', color: demoColors.purple, fillOpacity: 0.12, lineWidth: 1.5, markerSize: 2 },
-              actual: { type: 'area', color: demoColors.teal, fillOpacity: 0.12, lineWidth: 1.5, markerSize: 2 },
-              forecast: { type: 'line', color: demoColors.pink, lineWidth: 1.5, lineDash: 'dash', markers: false },
-            },
-            rendererOptions: {
-              minimumSize: { width: 1, height: 1 },
-              theme: { grid: '#ececec', foreground: '#737373', muted: '#737373' },
-              labels: { formatter: ({ kind, axis, value, defaultText }) => kind === 'axisTick' && axis === 'y' && typeof value === 'number' ? (value >= 1000 ? `$${Math.round(value / 1000)}k` : money(value)) : defaultText },
-            },
-          }),
+          mount: (container, signal) => {
+            const styles = getComputedStyle(container);
+            const surface = styles.getPropertyValue('--rv-ui-surface').trim();
+            const border = styles.getPropertyValue('--rv-ui-border').trim();
+            const muted = styles.getPropertyValue('--rv-ui-text-muted').trim();
+            const references: NonNullable<Parameters<typeof createAreaLineChart>[0]['annotations']>['references'] = [
+              { id: 'budget', kind: 'line', axis: 'primary', value: model.budget, color: muted, lineDash: 'dash' },
+              ...(data.some(point => point.day === model.current) ? [{ id: 'today', kind: 'line' as const, axis: 'category' as const, at: { scale: 'category' as const, path: [{ field: 'day', value: model.current }] }, color: demoColors.purpleLight, lineDash: 'dash' as const }] : []),
+            ];
+            return createAreaLineChart({
+              container, signal,
+              data: chartData,
+              mapping: { category: { field: 'day', label: 'dateLabel' }, series: [
+                { field: 'planned', label: 'Planned' }, { field: 'actual', label: 'Actual' }, { field: 'forecast', label: 'Forecast' },
+              ] },
+              presentation: { legendPosition: 'none' },
+              axes: { x: { lineColor: surface }, y: { min: 0, max: tick * 4, tickValues: [0, tick, tick * 2, tick * 3, tick * 4], lineColor: surface } },
+              annotations: { references },
+              seriesOverrides: {
+                planned: { type: 'area', color: demoColors.purple, fillOpacity: 0.12, lineWidth: 1.5, markerSize: 2 },
+                actual: { type: 'area', color: demoColors.teal, fillOpacity: 0.12, lineWidth: 1.5, markerSize: 2 },
+                forecast: { type: 'line', color: demoColors.pink, lineWidth: 1.5, lineDash: 'dash', markers: false },
+              },
+              rendererOptions: {
+                minimumSize: { width: 1, height: 1 },
+                theme: { grid: border, foreground: muted, muted },
+                labels: { formatter: ({ kind, axis, value, defaultText }) => kind === 'axisTick' && axis === 'y' && typeof value === 'number' ? (value >= 1000 ? `$${Math.round(value / 1000)}k` : money(value)) : defaultText },
+              },
+            });
+          },
           onError: (_error, container) => { container.textContent = 'Chart unavailable'; },
         });
         chart.className = 'budget-profile__shared-chart';
@@ -583,26 +636,33 @@ export const projectBudget: Example = {
           const tick = candidates.find(value => value * 4 >= maximum) ?? Math.ceil(maximum / 4 / candidates[candidates.length - 1]) * candidates[candidates.length - 1];
           const points = data.map(point => ({ ...point, dateLabel: shortDate(dateFromOffset(point.day - 4)) }));
           const weekly = createChartHost(document, {
-            mount: (container, signal) => createColumnLineChart({
-              container, signal, data: points,
-              mapping: { category: { field: 'day', label: 'dateLabel' }, series: [
-                { field: 'billed', label: 'Actual' }, { field: 'ahead', label: 'Forecast' }, { field: 'line', label: row.label },
-              ] },
-              presentation: { legendPosition: 'none' },
-              axes: { x: { lineColor: '#ffffff' }, y: { min: 0, max: tick * 4, tickValues: [0, tick, tick * 2, tick * 3, tick * 4], lineColor: '#ffffff' } },
-              annotations: { references: data.some(point => point.day === 90) ? [{ id: 'today', kind: 'line', axis: 'category', at: { scale: 'category', path: [{ field: 'day', value: 90 }] }, color: '#aaa' }] : [] },
-              seriesOverrides: {
-                billed: { type: 'column', stackGroup: 'spend', color: demoColors.purple },
-                ahead: { type: 'column', stackGroup: 'spend', color: demoColors.purpleLight },
-                line: { type: 'line', color: '#171717', lineDash: 'dash', lineWidth: 1.4, markers: false },
-              },
-              rendererOptions: {
-                minimumSize: { width: 1, height: 1 },
-                theme: { grid: '#eee', foreground: '#737373', muted: '#737373' },
-                labels: { formatter: ({ kind, axis, value, defaultText }) => kind === 'axisTick' && axis === 'y' && typeof value === 'number' ? (key === 'spend' ? value >= 1000 ? `$${Math.round(value / 1000)}k` : money(value) : String(value)) : defaultText },
-                datumStyle: ({ series }) => series.id === 'billed' || series.id === 'ahead' ? { fill: { type: 'linearGradient', direction: 'vertical', stops: [{ offset: 0, color: demoColors.purple, opacity: series.id === 'billed' ? 0.24 : 0.1 }, { offset: 1, color: demoColors.purple, opacity: 0.02 }] } } : undefined,
-              },
-            }),
+            mount: (container, signal) => {
+              const styles = getComputedStyle(container);
+              const surface = styles.getPropertyValue('--rv-ui-surface').trim();
+              const border = styles.getPropertyValue('--rv-ui-border').trim();
+              const muted = styles.getPropertyValue('--rv-ui-text-muted').trim();
+              const text = styles.getPropertyValue('--rv-ui-text').trim();
+              return createColumnLineChart({
+                container, signal, data: points,
+                mapping: { category: { field: 'day', label: 'dateLabel' }, series: [
+                  { field: 'billed', label: 'Actual' }, { field: 'ahead', label: 'Forecast' }, { field: 'line', label: row.label },
+                ] },
+                presentation: { legendPosition: 'none' },
+                axes: { x: { lineColor: surface }, y: { min: 0, max: tick * 4, tickValues: [0, tick, tick * 2, tick * 3, tick * 4], lineColor: surface } },
+                annotations: { references: data.some(point => point.day === 90) ? [{ id: 'today', kind: 'line', axis: 'category', at: { scale: 'category', path: [{ field: 'day', value: 90 }] }, color: muted }] : [] },
+                seriesOverrides: {
+                  billed: { type: 'column', stackGroup: 'spend', color: demoColors.purple },
+                  ahead: { type: 'column', stackGroup: 'spend', color: demoColors.purpleLight },
+                  line: { type: 'line', color: text, lineDash: 'dash', lineWidth: 1.4, markers: false },
+                },
+                rendererOptions: {
+                  minimumSize: { width: 1, height: 1 },
+                  theme: { grid: border, foreground: muted, muted },
+                  labels: { formatter: ({ kind, axis, value, defaultText }) => kind === 'axisTick' && axis === 'y' && typeof value === 'number' ? (key === 'spend' ? value >= 1000 ? `$${Math.round(value / 1000)}k` : money(value) : String(value)) : defaultText },
+                  datumStyle: ({ series }) => series.id === 'billed' || series.id === 'ahead' ? { fill: { type: 'linearGradient', direction: 'vertical', stops: [{ offset: 0, color: demoColors.purple, opacity: series.id === 'billed' ? 0.24 : 0.1 }, { offset: 1, color: demoColors.purple, opacity: 0.02 }] } } : undefined,
+                },
+              });
+            },
             onError: (_error, container) => { container.textContent = 'Chart unavailable'; },
           });
           weekly.className = 'budget-profile__weekly-host';
@@ -610,33 +670,37 @@ export const projectBudget: Example = {
           weekly.setAttribute('aria-label', `${row.stream} ${key} by week, actual and forecast, ${row.label} dashed`);
           chart.append(weekly);
           const legend = createLegendElement(document, { label: 'Weekly chart key', className: 'budget-profile__weekly-legend', items: [
-            { id: 'actual', label: 'Actual', color: '#6647f0' },
-            { id: 'forecast', label: 'Forecast', color: '#cfb7ff' },
-            { id: 'line', label: 'This line', color: '#171717', marker: 'dashed' },
-            { id: 'today', label: 'Today', color: '#aaa', marker: 'line' },
+            { id: 'actual', label: 'Actual', color: demoColors.purple },
+            { id: 'forecast', label: 'Forecast', color: demoColors.purpleLight },
+            { id: 'line', label: 'This line', color: 'var(--rv-ui-text)', marker: 'dashed' },
+            { id: 'today', label: 'Today', color: 'var(--rv-ui-text-muted)', marker: 'line' },
           ] });
           chart.append(legend);
         };
         card.append(header, chart); render(measure); return card;
       }
       function renderTab(tab: LineTab) {
-        active = tab; tabControl.update(tabProps(tab)); panel.replaceChildren(); panel.setAttribute('aria-labelledby', controls[names.indexOf(tab)].id); controls.forEach((control, index) => { const selected = names[index] === tab; control.setAttribute('aria-selected', String(selected)); control.tabIndex = selected ? 0 : -1; }); setFooter();
+        active = tab;
+        renderSwitch(tab);
+        panel.replaceChildren();
+        panel.setAttribute('aria-labelledby', tabId(tab));
+        setFooter();
         if (tab === 'Overview') {
           const spend = make('section', '', 'budget-profile__spend'); spend.setAttribute('aria-label', 'Spend');
           const top = make('div', '', 'budget-profile__spend-top'); top.append(make('span', 'Spend'), make('small', daysLate ? `Finish ${shortDate(dateFromOffset(finish))}, ${daysLate} days late` : `Finish ${shortDate(dateFromOffset(finish))}`, daysLate ? 'late' : ''));
           const main = make('div', '', 'budget-profile__spend-value'); main.append(make('strong', money(totals.actual)), make('span', `${totals.budget ? `${totals.forecast > totals.budget ? '+' : ''}${Math.round((totals.forecast / totals.budget - 1) * 100)}%` : '–'} vs. budget`, totals.delta < 0 ? 'over' : ''));
           const max = Math.max(1, totals.budget, totals.forecast);
           const bar = createSegmentedBarElement(document, { label: `Spend ${money(totals.actual)}, forecast ${money(totals.forecast)}, budget ${money(totals.budget)}`, total: max, parts: [
-            { value: Math.max(0, Math.min(max, totals.actual)), color: '#9652ff' },
-            { value: Math.max(0, Math.min(totals.forecast, totals.budget) - totals.actual), color: '#d5c2fb' },
-            { value: Math.max(0, totals.forecast - totals.budget), color: '#f7a5ac' },
+            { value: Math.max(0, Math.min(max, totals.actual)), color: demoColors.purple },
+            { value: Math.max(0, Math.min(totals.forecast, totals.budget) - totals.actual), color: demoColors.purpleLight },
+            { value: Math.max(0, totals.forecast - totals.budget), color: demoColors.pink },
           ] }); bar.classList.add('budget-profile__spend-bar');
           const summary = make('p', '', 'budget-profile__spend-summary'); summary.append(document.createTextNode(`${Math.round(totals.spent ?? 0)}% of ${money(totals.budget)} spent, forecast `), make('span', money(totals.forecast), totals.delta < 0 ? 'over' : ''));
           const keys = createLegendElement(document, { label: 'Spend breakdown', className: 'budget-profile__spend-legend', items: [
-            { id: 'actual', label: 'Actual', color: '#9652ff', visible: totals.actual > 0 },
-            { id: 'forecast', label: 'Forecast', color: '#d5c2fb', visible: totals.forecast > totals.actual },
-            { id: 'over', label: 'Over', color: '#f7a5ac', visible: totals.delta < 0 },
-            { id: 'budget', label: 'Budget', color: '#f3f3f3', visible: totals.forecast !== totals.budget },
+            { id: 'actual', label: 'Actual', color: demoColors.purple, visible: totals.actual > 0 },
+            { id: 'forecast', label: 'Forecast', color: demoColors.purpleLight, visible: totals.forecast > totals.actual },
+            { id: 'over', label: 'Over', color: demoColors.pink, visible: totals.delta < 0 },
+            { id: 'budget', label: 'Budget', color: 'var(--rv-ui-surface-hover)', visible: totals.forecast !== totals.budget },
           ].filter(item => item.visible) });
           spend.append(top, main, summary, bar, keys); panel.append(spend);
           const chart = section('Budget vs Forecast', 'Planned, actual and forecast to date'); const graph = make('div'); renderChart(graph); chart.append(graph);
@@ -726,7 +790,7 @@ export const projectBudget: Example = {
         const kind = choice === 'Adjust' ? 'forecast' : choice === 'Hold' ? 'held' : result.difference < 0 ? 'release' : 'cover';
         row.changes.unshift({ id: `local-${Date.now()}`, day: '2026-10-28', by: 'noah', kind, note: note.value.trim() || `${choice} decision`, detail: `${money(oldForecast)} to ${money(result.totals.forecast)}` });
         refresh(); bench.report(`${row.label} decision saved.`, () => { Object.assign(row, previous); reserve = previousReserve; refresh(); }); return true;
-      }, undefined, active === 'Overview' ? 'Decide' : active === 'Decision' ? 'Save Decision' : 'Edit Line', () => tabControl.destroy(), {
+      }, undefined, active === 'Overview' ? 'Decide' : active === 'Decision' ? 'Save Decision' : 'Edit Line', () => tabControl.unmount(), {
         cancel: { label: 'Close' },
         close: { label: 'Close drawer', className: 'scale-drawer-close' },
       });
@@ -761,7 +825,7 @@ export const projectBudget: Example = {
 
     function edit(row?: Line, fromView = false) {
       const name = input('Line name', row?.label); name.required = true; name.maxLength = 40; name.placeholder = 'What the money buys';
-      const vendor = select('Vendor', vendors, row?.vendor ?? 'Lantern Studio');
+      const vendor = select('Vendor', vendors, row?.vendor ?? 'Harbor Works');
       const stream = select('Workstream', workstreams, row?.stream ?? 'Build');
       const statusValues = ['Not Started', 'In Progress', 'Done'];
       const status = select('Status', statusValues, row?.lineStatus === 'done' ? 'Done' : row?.lineStatus === 'inProgress' ? 'In Progress' : 'Not Started');

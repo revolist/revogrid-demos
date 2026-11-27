@@ -1,11 +1,13 @@
 import plusIcon from '@fortawesome/fontawesome-free/svgs/solid/plus.svg?raw';
+import '../../../composables/demo-palette.css';
+import { advancedColumnMenu } from '../../../pro-category-forecast/src/advanced-column-menu';
 import { TooltipController } from '@revolist/ui/core/popover-controller';
 import { createSearchActionBar } from '@revolist/ui/native';
 import '@revolist/ui/search-action-bar.scss';
 import { createToaster, mountToaster, type ToastController } from '@revolist/ui/toaster';
 import { personPortrait } from '../../../composables/demo-portraits';
 import '../campaign-rich-options.css';
-import { demoColors } from '../../../composables/demo-colors';
+import { applyDemoChartColors, demoColors } from '../../../composables/demo-colors';
 import { createDotHistogramElement, releaseSummaryChartElement, type DotHistogramOptions } from '@revolist/revogrid-pro';
 import '@revolist/revogrid-pro/styles.css';
 import { configureDemoAddButton, createDemoBody, createDemoHeading } from '../../../composables/demo-shell';
@@ -44,7 +46,6 @@ import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/brands.css';
 import '../workbench.css';
 import { arrangeToolbar, layouts } from './workbench-layout';
-import { campaignPage } from '../examples/campaigns/campaign-paging';
 import { productPage } from '../examples/products/product-paging';
 import { visitPage } from '../examples/visits/visit-paging';
 
@@ -80,6 +81,13 @@ export function button(text: string, click: () => void, primary = false) {
   const control = createButtonElement(document, { label: text, className: primary ? 'rv-btn rv-btn-primary primary' : 'rv-btn', onClick: click });
   // The visible text may change later; let it remain the accessible name.
   control.removeAttribute('aria-label');
+  return control;
+}
+
+export function deleteButton(text: string, click: () => void) {
+  const control = button(text, click);
+  control.classList.add('rv-btn-danger');
+  control.dataset.icon = 'trash';
   return control;
 }
 
@@ -189,7 +197,7 @@ export function groupedMetrics(columns: ColumnData): ColumnData {
 
 export interface WorkbenchFormOptions {
   cancel?: false | { label?: string };
-  submit?: false | { icon?: string };
+  submit?: false | { icon?: string; variant?: 'danger' };
   close?: { label: string; className?: string };
   content?: HTMLElement[];
 }
@@ -206,6 +214,7 @@ export interface Workbench {
   mergeCells: (ranges: MergeData[]) => void;
   onCompactChange: (listener: () => void) => void;
   setSubtitle: (text: string) => void;
+  setGridEmpty: (empty: boolean) => void;
   grid: HTMLRevoGridElement;
   currentQuery: () => string;
   getSearch: () => string;
@@ -245,6 +254,7 @@ export interface Example {
 export function mountScreen(host: HTMLElement, example: Example) {
   const layout = layouts[example.id];
   const section = make('section', '', `demo-shell workbench workbench--${example.id}`);
+  applyDemoChartColors(section);
   const { heading, subtitle } = createDemoHeading(host.ownerDocument, example.title, 'workbench-heading', example.description);
   const stats = make('div', '', 'workbench-stats');
   stats.hidden = true;
@@ -309,17 +319,18 @@ export function mountScreen(host: HTMLElement, example: Example) {
   grid.hideAttribution = true;
   if (['service-visits', 'campaign-performance', 'job-schedule', 'product-kpis'].includes(example.id)) grid.keyedRowSelection = { key: 'id' };
   if (example.id === 'project-budget') grid.keyedRowSelection = { key: row => row.group ? `group:${String(row.label)}` : row.id };
-  if (['job-schedule', 'service-visits', 'campaign-performance', 'product-kpis'].includes(example.id)) Reflect.set(grid, 'stretch', 1);
-  if (example.id === 'supplier-quality') Reflect.set(grid, 'stretch', 0);
+  if (['job-schedule', 'service-visits', 'campaign-performance', 'product-kpis', 'supplier-quality'].includes(example.id)) Reflect.set(grid, 'stretch', 1);
+  if (example.id === 'reliability-index') Reflect.set(grid, 'stretch', 0);
   if (example.id === 'scale-up-index') Reflect.set(grid, 'stretch', window.matchMedia('(max-width: 650px)').matches ? 0 : 1);
   grid.tooltip = { showDelayMs: 200, animation: true };
+  grid.dataGridContextMenu = advancedColumnMenu;
   grid.plugins = [
     ColumnDialogPlugin,
     ExportExcelPlugin,
     ColumnHeaderMenuPlugin,
     ...(['patient-cohorts', 'product-kpis', 'scale-up-index', 'brand-scorecard', 'supplier-quality', 'job-schedule'].includes(example.id) ? [TooltipPlugin] : []),
     ...(example.id === 'reliability-index' ? [RowChartHoverPlugin] : []),
-    ...(['job-schedule', 'service-visits', 'campaign-performance', 'product-kpis', 'supplier-quality', 'scale-up-index'].includes(example.id) ? [ColumnStretchPlugin] : []),
+    ...(['job-schedule', 'service-visits', 'campaign-performance', 'product-kpis', 'supplier-quality', 'scale-up-index', 'reliability-index'].includes(example.id) ? [ColumnStretchPlugin] : []),
     ...(['service-visits', 'job-schedule', 'product-kpis'].includes(example.id) ? [GridPopoverPlugin] : []),
     ...(['service-visits', 'job-schedule'].includes(example.id) ? [DateRangeColumnsPlugin] : []),
     ...(['campaign-performance', 'product-kpis'].includes(example.id) ? [AdvanceFilterPlugin] : []),
@@ -334,7 +345,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
   if (example.id === 'product-kpis') {
     const names: Record<string, string> = { label: 'Product', revenue: 'Revenue', profit: 'Profit', status: 'KPI Status' };
     grid.gridStatusLine = {
-      sortLabel: sort => { const entry = Object.entries(sort)[0]; return entry ? `Sorted by ${names[entry[0]] ?? entry[0]}${entry[1] === 'desc' ? ', descending' : ''}` : 'Catalog order'; },
+      sortLabel: sort => { const entry = Object.entries(sort)[0]; return entry ? `Sorted by ${names[entry[0]] ?? entry[0]}${entry[1] === 'desc' ? ', descending' : ''}` : ''; },
       legends: [
         { label: 'Promo Calendar legend', items: [{ id: 'promo', label: 'Promo week', color: demoColors.purpleLight }, { id: 'loss', label: 'Promo at a loss', color: demoColors.pink }, { id: 'met', label: 'At target, full price', color: demoColors.teal }] },
         { label: 'Revenue Trend legend', items: [{ id: 'current', label: 'This period', color: demoColors.purple, marker: 'line' }, { id: 'prior', label: 'Period before', color: demoColors.purpleLight, marker: 'line' }] },
@@ -343,14 +354,15 @@ export function mountScreen(host: HTMLElement, example: Example) {
   }
   if (layout.merges) options.cellMerge = [];
   let currentRows: DataType[] = [];
-  const remotePage = ['campaign-performance', 'product-kpis', 'service-visits'].includes(example.id);
+  const localPage = example.id === 'campaign-performance';
+  const remotePage = ['product-kpis', 'service-visits'].includes(example.id);
   let page = 0;
   let itemCount = 10;
   const productPageInfo = make('div', '', 'product-page-info');
   const updateProductPageInfo = () => {
     const start = currentRows.length ? page * itemCount + 1 : 0;
     const end = Math.min((page + 1) * itemCount, currentRows.length);
-    productPageInfo.textContent = `${start} - ${end} of ${currentRows.length} ${example.id === 'service-visits' ? 'kitchens' : 'products'}`;
+    productPageInfo.textContent = `${start} - ${end} of ${currentRows.length} ${example.id === 'service-visits' ? 'sites' : 'products'}`;
   };
   if (layout.page) {
     options.pagination = {
@@ -361,12 +373,13 @@ export function mountScreen(host: HTMLElement, example: Example) {
       pageSizes: false,
       info: true,
       totalInfo: true,
-      ...(example.id === 'service-visits' ? { locales: { items: 'kitchens' } } : example.id === 'job-schedule' ? { locales: { items: 'jobs' } } : {}),
-      // The local loader reads mutable demo state; don't serve stale query-cache entries.
-      query: false,
+      ...(example.id === 'service-visits' ? { locales: { items: 'sites' } } : example.id === 'job-schedule' ? { locales: { items: 'jobs' } } : {}),
+      ...(localPage ? { local: true } : {}),
       ...(remotePage ? {
+        // These loaders read mutable demo state.
+        query: false,
         loadData: async (skip, take, order) => ({
-          data: example.id === 'campaign-performance' ? campaignPage(currentRows, skip, take, order) : example.id === 'service-visits' ? visitPage(currentRows as (DataType & { label: string; coverage: { rank: number } })[], skip, take, order) : productPage(currentRows, skip, take, order),
+          data: example.id === 'service-visits' ? visitPage(currentRows as (DataType & { label: string; coverage: { rank: number } })[], skip, take, order) : productPage(currentRows, skip, take, order),
           count: currentRows.length,
         }),
       } : {}),
@@ -374,7 +387,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
     grid.addEventListener(PAGE_CHANGE_EVENT, ({ detail }) => {
       page = detail.skip;
       updateProductPageInfo();
-      if (!remotePage) grid.source = currentRows.slice(page * itemCount, (page + 1) * itemCount);
+      if (!remotePage && !localPage) grid.source = currentRows.slice(page * itemCount, (page + 1) * itemCount);
     });
   }
   const viewport = window.matchMedia('(max-width: 650px)');
@@ -446,6 +459,11 @@ export function mountScreen(host: HTMLElement, example: Example) {
   }
   host.replaceChildren(section);
 
+  const setGridEmpty = (isEmpty: boolean) => {
+    grid.hidden = isEmpty;
+    empty.hidden = !isEmpty;
+    exportControl.disabled = isEmpty;
+  };
   let suppliedColumns: ColumnData | undefined;
   if (hasAppearance) {
     void customElements.whenDefined('revo-grid').then(() => grid.componentOnReady()).then(() => {
@@ -465,6 +483,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
       subtitle.textContent = value;
     },
     grid,
+    setGridEmpty,
     currentQuery: () => search.value.trim().toLowerCase(),
     getSearch: () => search.value,
     setSearch: (value) => { search.value = value; },
@@ -473,7 +492,12 @@ export function mountScreen(host: HTMLElement, example: Example) {
       grid.canMoveColumns = enabled;
     },
     onSearch: (listener) => search.addEventListener('input', listener),
-    resetPage: () => { page = 0; },
+    resetPage: () => {
+      page = 0;
+      if (localPage && options.pagination) {
+        options.pagination = { ...options.pagination, initialPage: 0 };
+      }
+    },
     getPage: () => page,
     setPage: (value) => { page = value; },
     resetColumns: () => {
@@ -494,7 +518,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
                 filter: false,
                 size: 49,
                 rowSelect: ({ model }: { model: DataType }) => !model.total && !model.footer,
-                ...(['service-visits', 'job-schedule', 'product-kpis', 'project-budget'].includes(example.id) ? { rowSelectLabel: ({ model }: { model: DataType }) => `Select ${model.label}`, rowSelectAllLabel: `Select all ${example.id === 'job-schedule' ? 'jobs' : example.id === 'service-visits' ? 'kitchens' : example.id === 'product-kpis' ? 'products' : 'lines'}` } : {}),
+                ...(['service-visits', 'job-schedule', 'product-kpis', 'project-budget'].includes(example.id) ? { rowSelectLabel: ({ model }: { model: DataType }) => `Select ${model.label}`, rowSelectAllLabel: `Select all ${example.id === 'job-schedule' ? 'jobs' : example.id === 'service-visits' ? 'sites' : example.id === 'product-kpis' ? 'products' : 'lines'}` } : {}),
                 pin: 'colPinStart',
               },
               ...columns,
@@ -511,7 +535,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
         grid.pinnedTopSource = pinned;
         grid.pinnedBottomSource = pinnedBottom;
       }
-      if (layout.page && options.pagination) {
+      if (layout.page && options.pagination && !localPage) {
         currentRows = rows;
         page = Math.min(
           page,
@@ -528,9 +552,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
           (page + 1) * itemCount,
         );
       } else grid.source = rows;
-      grid.hidden = !rows.length && !pinned.length;
-      empty.hidden = !grid.hidden;
-      exportControl.disabled = grid.hidden;
+      setGridEmpty(!rows.length && !pinned.length);
     },
     stats(values) {
       stats.hidden = !values.length;
@@ -562,7 +584,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
         cancel: options.cancel === false ? false : { label: options.cancel?.label ?? 'Cancel', onClick: () => overlay.close() },
         save: submit,
       });
-      if (extra) footer.start.append(extra);
+      if (extra) (footer.start ?? form.querySelector<HTMLElement>('.rv-dialog__action-start'))?.append(extra);
       form.append(...(options.content ?? []));
       const close = options.close && createDialogCloseButton(document, options.close.label, () => overlay.close());
       if (close) {
@@ -661,5 +683,5 @@ export function removeRecord<T>(
       rows.splice(Math.min(index, rows.length), 0, row);
       refresh();
     });
-  });
+  }, undefined, 'Delete', undefined, { submit: { variant: 'danger', icon: 'trash' } });
 }

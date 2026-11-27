@@ -9,8 +9,8 @@ export function calendarField(label: string, value = '') {
     label,
     openLabel: `Choose ${label}`,
     value,
-    triggerClassName: 'ui-calendar-field__trigger workbench-icon',
+    triggerClassName: 'workbench-icon',
     triggerIcon: 'calendar-add',
-    popupClassName: 'ui-calendar-field__popup',
+    popupClassName: 'rv-popover ui-calendar-field__popup',
   });
 }

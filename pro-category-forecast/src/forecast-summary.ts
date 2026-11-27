@@ -25,7 +25,7 @@ export function renderSummary(host: HTMLElement, reading: Reading, closeMonth: n
     group.className = `summary-group summary-group--${kind}`;
     const seriesColor = kind === 'actual' ? demoColors.purple : demoColors.purpleLight;
     group.style.setProperty('--rv-dotted-accent', seriesColor);
-    group.style.setProperty('--rv-dotted-marker', '#737373');
+    group.style.setProperty('--rv-dotted-marker', demoColors.neutralText);
     group.style.width = `${span * 54}px`;
     group.append(createMetricTileElement(document, {
       label, value: money.format(total), detail: note,
@@ -49,9 +49,10 @@ export function renderSummary(host: HTMLElement, reading: Reading, closeMonth: n
   const actual = makeGroup(`Actual to ${months[closeMonth]}`, reading.actual, actualPrior ? `${signedPrecise.format(reading.actual / actualPrior - 1)} on FY25` : '–', closeMonth + 1, 0, 'actual');
   const outlook = document.createElement('div'); outlook.className = 'summary-group summary-group--outlook';
   const ratio = attainment(reading);
+  const gap = reading.plannedOutlook - reading.plan;
   outlook.append(createMetricTileElement(document, {
-    label: 'Outlook vs Plan', value: ratio === null ? 'No plan' : percent.format(ratio), detail: ratio === null ? '' : signedPrecise.format(ratio - 1),
-    summary: { markerColor: demoColors.blue, detailColor: '#005ea8' },
+    label: 'Outlook vs Plan', value: ratio === null ? 'No plan' : percent.format(ratio), detail: ratio === null ? '' : `${gap < 0 ? '−' : '+'}${money.format(Math.abs(gap))}`,
+    summary: { markerColor: demoColors.blue, detailColor: demoColors.blueText },
   }), createStackedDotPlotElement(document, {
     label: `${onPlan} of ${planned.length} planned lines on plan`, reference: 78,
     tooltip: { title: 'Outlook vs Plan', subtitle: 'Planned lines in view', rows: [

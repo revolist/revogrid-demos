@@ -8,13 +8,128 @@ import { preview } from 'vite';
 const { chromium } = createRequire(import.meta.url)('playwright');
 let server, browser, url;
 before(async () => {
-  server = await preview({ mode: 'ts', build: { outDir: process.env.DEMO_REUSE_TEST_OUT_DIR ?? 'dist/browser-test' }, preview: { host: '127.0.0.1', port: 0, strictPort: false } });
+  server = await preview({ configFile: process.env.DEMO_TEST_CONFIG, mode: 'ts', build: { outDir: process.env.DEMO_REUSE_TEST_OUT_DIR ?? 'dist/browser-test' }, preview: { host: '127.0.0.1', port: 0, strictPort: false } });
   url = `${server.resolvedUrls.local[0]}#campaign-performance`;
   browser = await chromium.launch({ headless: true });
 });
 after(async () => {
   await browser?.close();
   if (server) await new Promise((resolve, reject) => server.httpServer.close((error) => error ? reject(error) : resolve()));
+});
+
+test('sales regional navigation reports filtered attainment and expands the chosen region', async () => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#sales-to-target'));
+    const navigation = page.getByRole('combobox', { name: 'Jump to region' });
+    await navigation.waitFor();
+    await navigation.click();
+    await page.getByRole('option', { name: /EMEA · \d+% of target/ }).click();
+    assert.equal(await selectValue(navigation), 'EMEA');
+    const rows = await page.locator('revo-grid').evaluate(grid => grid.getVisibleSource());
+    assert.ok(rows.some(row => row.regionLabel === 'EMEA' && !row.group));
+    const firstStore = rows.find(row => row.regionLabel === 'EMEA' && row.store);
+    assert.ok(firstStore);
+    const store = page.getByRole('button', { name: `Open ${firstStore.label}` });
+    await store.waitFor({ state: 'visible', timeout: 5000 });
+    const withinGrid = await store.evaluate(element => {
+      const row = element.getBoundingClientRect();
+      const grid = element.closest('revo-grid').getBoundingClientRect();
+      return row.top >= grid.top && row.bottom <= grid.bottom;
+    });
+    assert.equal(withinGrid, true, 'Selected region should be visible in the grid viewport');
+    await page.getByRole('button', { name: /^Behind/ }).click();
+    await navigation.click();
+    await page.getByRole('option', { name: /APAC · \d+% of target/ }).click();
+    assert.equal(await selectValue(navigation), 'APAC');
+    const allRows = await page.locator('revo-grid').evaluate(grid => grid.getVisibleSource());
+    const apac = allRows.find(row => row.regionLabel === 'APAC' && row.store);
+    assert.ok(apac);
+    const target = page.getByRole('button', { name: `Open ${apac.label}` });
+    await target.waitFor({ state: 'visible', timeout: 5000 });
+    assert.equal(await target.evaluate(element => {
+      const row = element.getBoundingClientRect();
+      const grid = element.closest('revo-grid').getBoundingClientRect();
+      return row.top >= grid.top && row.bottom <= grid.bottom;
+    }), true, 'The selected region should be visible after scrolling');
+    await page.getByRole('button', { name: 'Toggle all regions' }).click();
+    await navigation.click();
+    await page.getByRole('option', { name: /APAC · \d+% of target/ }).click();
+    await target.waitFor({ state: 'visible', timeout: 5000 });
+    assert.equal(await target.evaluate(element => {
+      const row = element.getBoundingClientRect();
+      const grid = element.closest('revo-grid').getBoundingClientRect();
+      return row.top >= grid.top && row.bottom <= grid.bottom;
+    }), true, 'A collapsed region should expand and scroll into view');
+  } finally {
+    await page.close();
+  }
+});
+
+test('sales insight follows the status switch', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#sales-to-target'));
+    const tools = page.locator('.sales-status-tools');
+    const switcher = tools.locator('.rv-segmented-switch');
+    const insight = tools.locator(':scope > span');
+    await switcher.waitFor();
+    const box = await switcher.boundingBox();
+    assert.ok(box.x + box.width <= (await insight.boundingBox()).x);
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+  } finally { await page.close(); }
+});
+
+test('brand review queue combines trim and exit calls and follows search', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#brand-scorecard'));
+    const queue = page.getByRole('button', { name: /Review trim and exit calls/ });
+    assert.match(await queue.getAttribute('aria-label'), /2 brands/);
+    await queue.click();
+    assert.equal(await queue.getAttribute('aria-pressed'), 'true');
+    await page.getByText(/2 brands • 12 styles/).waitFor();
+    await page.getByRole('searchbox').fill('Sora');
+    await page.getByText(/1 brand •/).waitFor();
+    assert.match(await queue.getAttribute('aria-label'), /1 brand$/);
+  } finally { await page.close(); }
+});
+
+test('campaign subscription metrics use numeric columns and a consistent funnel', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
+    const result = await page.locator('revo-grid.workbench-grid').evaluate(async grid => ({
+      types: grid.columns.filter(column => ['trialStarts', 'paidRate'].includes(column.prop)).map(column => column.columnType),
+      row: (await grid.getVisibleSource())[0],
+    }));
+    assert.deepEqual(result.types, ['number', 'number']);
+    assert.ok(result.row.trialStarts >= result.row.conversions);
+    assert.equal(result.row.paidRate, result.row.conversions / result.row.trialStarts * 100);
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).click();
+    await page.getByRole('region', { name: 'Subscription funnel' }).getByText('Trial starts').waitFor();
+  } finally { await page.close(); }
+});
+
+test('sales comparison filter identifies stores without current sales or plans', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#sales-to-target'));
+    await page.getByRole('button', { name: /No comparison 2/ }).click();
+    await page.getByText('• Refit · No sales').waitFor();
+    await page.getByText('• Pre-opening · No sales').waitFor();
+    const stores = await page.locator('revo-grid.workbench-grid').evaluate(grid => grid.getVisibleSource());
+    assert.deepEqual(stores.filter(row => row.store).map(row => row.label).sort(), ['Adelaide Norwood', 'Nantes Bouffay']);
+    assert.ok(stores.filter(row => row.store).every(row => row.ratio0 === null));
+    const preOpening = stores.find(row => row.label === 'Adelaide Norwood');
+    assert.equal(preOpening.hasActual0, false);
+    assert.ok(preOpening.history.every(value => value === null));
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+  } finally {
+    await page.close();
+  }
 });
 
 async function revealCompany(page, name) {
@@ -28,12 +143,30 @@ async function revealCompany(page, name) {
   }, name);
 }
 
+test('budget-used filter composes with the below-target queue', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    const pacing = page.getByRole('combobox', { name: 'Budget used' });
+    await chooseSelect(pacing, '90% or more');
+    const grid = page.locator('revo-grid.workbench-grid');
+    await page.waitForFunction(async () => {
+      const rows = await document.querySelector('revo-grid.workbench-grid').getVisibleSource();
+      return rows.length > 0 && rows.every(row => row.campaign?.budget > 0 && row.campaign.spend / row.campaign.budget >= .9);
+    });
+    await page.getByRole('button', { name: /Below target/ }).click();
+    const rows = await grid.evaluate(grid => grid.getVisibleSource());
+    assert.ok(rows.length > 0);
+    assert.ok(rows.every(row => row.campaign.spend / row.campaign.budget >= .9 && row.campaign.spend > 0 && row.campaign.revenue / row.campaign.spend < row.campaign.target));
+  } finally { await page.close(); }
+});
+
 test('campaign sorting, paging and filtering use the current data', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     const names = () => page.locator('.cell-label .cell-action').allTextContents();
     const spend = page.locator('.rgHeaderCell').filter({ hasText: 'Spend' }).first();
     const status = page.locator('.rgHeaderCell').filter({ hasText: 'Status' }).first();
@@ -45,28 +178,28 @@ test('campaign sorting, paging and filtering use the current data', async () => 
     assert.equal(await spend.evaluate(el => el.classList.contains('desc')), true);
     await page.locator('.rv-context-menu:visible').getByRole('menuitem', { name: 'Sort ascending', exact: true }).click();
     await page.waitForFunction(() => document.querySelector('.rgHeaderCell.asc'));
-    assert.notEqual((await names())[0], 'Boreal Gloves Member Event');
+    assert.notEqual((await names())[0], 'Community Plan Member Event');
     await spend.click();
     await page.locator('.rv-context-menu:visible').getByRole('menuitem', { name: 'Sort descending', exact: true }).click();
     await page.waitForFunction(() => document.querySelector('.rgHeaderCell.desc'));
-    assert.equal((await names())[0], 'Boreal Gloves Member Event');
+    assert.equal((await names())[0], 'Community Plan Member Event');
     await page.getByRole('button', { name: 'Page 2', exact: true }).click();
-    await page.getByRole('button', { name: 'Open Tidewater Rain Shell Member Event' }).waitFor();
-    await page.getByPlaceholder('Search campaign, ID, market…').fill('Boreal Gloves Member Event');
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Family Plan Member Event' }).waitFor();
+    await page.getByPlaceholder('Search campaigns').fill('Community Plan Member Event');
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     assert.equal((await names()).length, 1);
-    await page.getByPlaceholder('Search campaign, ID, market…').clear();
+    await page.getByPlaceholder('Search campaigns').clear();
   } finally {
     await page.close();
   }
 });
 
-test('remote sort indicators follow the selected column through reloads', async () => {
+test('campaign sort indicators follow the selected column through source changes', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     const header = (name) => page.locator('.rgHeaderCell').filter({ hasText: name }).first();
     const spend = header('Spend');
     const status = header('Status');
@@ -75,8 +208,8 @@ test('remote sort indicators follow the selected column through reloads', async 
     await page.locator('.rv-context-menu:visible').getByRole('menuitem', { name: 'Sort ascending', exact: true }).click();
     await page.waitForFunction(() => [...document.querySelectorAll('.rgHeaderCell')].some(el => el.textContent.includes('Status') && el.classList.contains('asc')));
     assert.equal(await spend.evaluate(el => el.classList.contains('desc')), false);
-    await page.getByPlaceholder('Search campaign, ID, market…').fill('Boreal');
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByPlaceholder('Search campaigns').fill('Community');
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     assert.equal(await status.evaluate(el => el.classList.contains('asc')), true);
     await status.click();
     await page.locator('.rv-context-menu:visible').getByRole('menuitem', { name: 'Sort descending', exact: true }).click();
@@ -94,6 +227,66 @@ test('scale-up expand control updates its accessible name', async () => {
     await page.getByRole('button', { name: 'Collapse all', exact: true }).waitFor();
     await page.getByRole('button', { name: 'Collapse all', exact: true }).click();
     await page.getByRole('button', { name: 'Expand all', exact: true }).waitFor();
+  } finally { await page.close(); }
+});
+
+test('expanded provinces show a complete map when there is room', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
+    const map = page.locator('.province-cell.is-expanded .rv-group-cell__map').first();
+    await map.waitFor();
+    const company = page.getByRole('button', { name: 'Open Tilburg Fibre Works' });
+    await company.waitFor();
+    assert.ok(await company.evaluate(el => {
+      const detail = el.closest('.rv-identity-cell__copy').querySelector('small');
+      return Math.abs(el.getBoundingClientRect().left - detail.getBoundingClientRect().left) < 1;
+    }), 'company name and description share a left edge');
+    assert.equal(await map.evaluate(el => {
+      const map = el.getBoundingClientRect(), cell = el.closest('.rgCell').getBoundingClientRect();
+      return map.top >= cell.top && map.bottom <= cell.bottom;
+    }), true);
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+    await page.getByRole('button', { name: 'Expand Drenthe' }).click();
+    const smallMap = page.locator('.province-cell.is-expanded').filter({ has: page.getByRole('button', { name: 'Collapse Drenthe' }) }).locator('.rv-group-cell__map');
+    assert.equal(await smallMap.evaluate(el => {
+      const map = el.getBoundingClientRect(), cell = el.closest('.rgCell').getBoundingClientRect();
+      return map.top >= cell.top && map.bottom <= cell.bottom;
+    }), true);
+  } finally { await page.close(); }
+});
+
+test('focus follows a province cell when its merged height changes', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
+    const toggle = page.getByRole('button', { name: 'Expand Drenthe' });
+    await toggle.waitFor();
+    const cell = toggle.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " rgCell ")]').first();
+    await cell.click({ position: { x: 10, y: 15 } });
+    const focus = page.locator('revo-grid revogr-focus.focused-cell');
+    await focus.waitFor();
+    await toggle.click();
+    await page.getByRole('button', { name: 'Collapse Drenthe' }).waitFor();
+    await page.waitForFunction(() => {
+      const button = document.querySelector('[aria-label="Collapse Drenthe"]');
+      const cell = button?.closest('.rgCell');
+      const focus = document.querySelector('revo-grid revogr-focus.focused-cell');
+      return cell && focus && Math.abs(cell.getBoundingClientRect().height - focus.getBoundingClientRect().height) < 2;
+    }, null, { timeout: 5000 });
+    await page.waitForFunction(() => {
+      const focus = document.querySelector('revo-grid revogr-focus.focused-cell');
+      const range = document.querySelector('revo-grid .selection-border-range');
+      return focus && range && Math.abs(focus.getBoundingClientRect().height - range.getBoundingClientRect().height) < 2;
+    }, null, { timeout: 5000 });
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+    await page.getByRole('button', { name: 'Collapse Drenthe' }).click();
+    await page.getByRole('button', { name: 'Expand Drenthe' }).waitFor();
+    await page.waitForFunction(() => {
+      const focus = document.querySelector('revo-grid revogr-focus.focused-cell');
+      const range = document.querySelector('revo-grid .selection-border-range');
+      return focus && range && Math.abs(focus.getBoundingClientRect().height - range.getBoundingClientRect().height) < 2;
+    }, null, { timeout: 5000 });
   } finally { await page.close(); }
 });
 
@@ -138,36 +331,56 @@ test('cohort heat colors distinguish intermediate hold and low outcome rates', a
   }
 });
 
+test('product stock cover uses on-hand inventory and recent demand', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#product-kpis'));
+    const grid = page.locator('revo-grid.workbench-grid');
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).waitFor();
+    const result = await grid.evaluate(async element => ({
+      columns: await element.getColumns(),
+      rows: await element.getVisibleSource(),
+    }));
+    const column = result.columns.find(item => item.prop === 'stockCover');
+    assert.equal(column.columnType, 'number');
+    assert.equal(column.sortable, true);
+    const row = result.rows.find(item => item.label === 'Alder Summit Boot');
+    const demand = row.product.weeks.slice(-4).reduce((sum, week) => sum + week[1] / row.product.listPrice, 0) / 4;
+    assert.equal(row.stockCover, row.product.onHand / demand);
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+  } finally { await page.close(); }
+});
+
 test('product KPI periods use the sample weekly sales and health', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url.replace('#campaign-performance', '#product-kpis'));
-    await page.getByRole('button', { name: 'Open Granite Trail Boot' }).waitFor();
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).waitFor();
     const artwork = page.locator('.product-photo').first();
     assert.equal(await artwork.evaluate(node => getComputedStyle(node).backgroundSize), '300% 300%');
-    assert.ok((await page.request.get(new URL('product-photos/catalog.png', page.url()).href)).ok());
+    assert.ok((await page.request.get(new URL('product-photos/catalog-generated.png', page.url()).href)).ok());
     for (const selector of ['.rv-identity-cell', '.rv-metric-stack', '.rv-comparison-sparkline', '.rv-action-strip', '.rv-status-segments', '.rv-cell-action']) {
       assert.ok(await page.locator(selector).count() > 0, `Missing shared cell type: ${selector}`);
     }
     await page.getByRole('img', { name: 'Revenue: met' }).first().waitFor();
-    await page.getByRole('button', { name: 'Actions for Granite Trail Boot' }).focus();
+    await page.getByRole('button', { name: 'Actions for Alder Summit Boot' }).focus();
     await page.keyboard.press('Enter');
     await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
     const rows = () => page.locator('revo-grid').evaluate((grid) => grid.getVisibleSource());
     const product = async (name) => (await rows()).find((row) => row.label === name);
-    let ridge = await product('Granite Trail Boot');
-    assert.equal(Math.round(ridge.revenue), 314036);
+    let ridge = await product('Alder Summit Boot');
+    assert.equal(Math.round(ridge.revenue), 467954);
     assert.equal(ridge.status, 'On Track');
     assert.deepEqual(ridge.marks, ['met', 'met', 'met']);
-    assert.equal((await product('Harbor Trail Runner')).status, 'Off Track');
-    assert.equal((await product('Ridgeline Weather Jacket')).status, 'On Track');
-    await page.getByRole('button', { name: 'Open Granite Trail Boot' }).click();
+    assert.equal((await product('Harbor Loop Running Shoe')).status, 'Off Track');
+    assert.equal((await product('Copper Peak Rain Jacket')).status, 'On Track');
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
-    assert.equal(Math.round((await product('Granite Trail Boot')).revenue), 314036);
+    assert.equal(Math.round((await product('Alder Summit Boot')).revenue), 467954);
     assert.deepEqual(await page.locator('.rv-time-range-header small').allTextContents(), ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct']);
     assert.equal(await page.locator('revo-grid.workbench-grid').evaluate(grid => grid.columns.find(column => column.prop === 'promo')?.columnType), 'promotionCalendar');
-    const timeline = page.getByRole('group', { name: 'Promotion calendar for Granite Trail Boot' });
+    const timeline = page.getByRole('group', { name: 'Promotion calendar for Alder Summit Boot' });
     assert.equal(await timeline.getByRole('button').count(), 26);
     const firstWeek = timeline.getByRole('button').first();
     assert.match(await firstWeek.getAttribute('aria-label'), /Week ending Apr 19/);
@@ -176,23 +389,23 @@ test('product KPI periods use the sample weekly sales and health', async () => {
     await page.getByRole('dialog', { name: 'Week ending Apr 19' }).getByText('Profit', { exact: true }).waitFor();
     await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
     const { productFixtures } = await import('../src/examples/products/product-fixtures.ts');
-    const fixture = productFixtures.find(row => row.label === 'Granite Trail Boot');
+    const fixture = productFixtures.find(row => row.label === 'Alder Summit Boot');
     const salesFor = weeks => Math.round(fixture.weeks.slice(-weeks).reduce((total, week) => total + week[0], 0));
     await page.getByRole('button', { name: '4W, last 4 weeks' }).click();
     await page.waitForFunction(async expected => Math.round((await document.querySelector('revo-grid').getVisibleSource())[0]?.revenue) === expected, salesFor(4));
-    ridge = await product('Granite Trail Boot');
+    ridge = await product('Alder Summit Boot');
     assert.equal(Math.round(ridge.revenue), salesFor(4));
     assert.ok(['On Track', 'At Risk', 'Off Track'].includes(ridge.status));
     await page.getByRole('button', { name: '26W, last 26 weeks' }).click();
     await page.waitForFunction(async expected => Math.round((await document.querySelector('revo-grid').getVisibleSource())[0]?.revenue) === expected, salesFor(26));
-    ridge = await product('Granite Trail Boot');
+    ridge = await product('Alder Summit Boot');
     assert.equal(Math.round(ridge.revenue), salesFor(26));
     assert.equal(ridge.status, 'On Track');
-    assert.equal((await product('Cove Camp Slide')).status, 'On Track');
-    assert.ok((await product('Cove Camp Slide')).score >= 0);
+    assert.equal((await product('Tidal Camp Sandal')).status, 'On Track');
+    assert.ok((await product('Tidal Camp Sandal')).score >= 0);
     assert.equal(await page.getByRole('button', { name: 'Settings', exact: true }).count(), 0);
     await page.getByRole('button', { name: '13W, last 13 weeks' }).click();
-    await page.waitForFunction(async () => Math.round((await document.querySelector('revo-grid').getVisibleSource())[0]?.revenue) === 314036);
+    await page.waitForFunction(async () => Math.round((await document.querySelector('revo-grid').getVisibleSource())[0]?.revenue) === 467954);
     const revenue = page.locator('.rgHeaderCell').filter({ hasText: 'Revenue' }).first();
     await revenue.click();
     await page.locator('.rv-context-menu:visible').getByRole('menuitem', { name: 'Sort ascending', exact: true }).click();
@@ -204,10 +417,10 @@ test('product KPI periods use the sample weekly sales and health', async () => {
     await page.waitForFunction(async () => (await document.querySelector('revo-grid').getVisibleSource()).length > 0);
     await revenue.click();
     await page.locator('.rv-context-menu:visible').getByRole('menuitem', { name: 'Clear sort', exact: true }).click();
-    await page.waitForFunction(async () => (await document.querySelector('revo-grid').getVisibleSource())[1]?.label === 'Cloudline Mid Boot');
-    await page.getByRole('searchbox').fill('Granite Trail Boot');
+    await page.waitForFunction(async () => (await document.querySelector('revo-grid').getVisibleSource())[1]?.label === 'Fernbank Walking Boot');
+    await page.getByRole('searchbox').fill('Alder Summit Boot');
     await page.waitForFunction(async () => (await document.querySelector('revo-grid').getVisibleSource()).length === 1);
-    assert.equal((await rows())[0].label, 'Granite Trail Boot');
+    assert.equal((await rows())[0].label, 'Alder Summit Boot');
   } finally {
     await page.close();
   }
@@ -224,9 +437,9 @@ test('product paging and page size work on mobile', async () => {
     await chooseSelect(page.getByLabel('Rows per page'), '25');
     await page.locator('.product-page-info').getByText('1 - 25 of 29 products').waitFor();
     await page.waitForFunction(async () => (await document.querySelector('revo-grid').getVisibleSource()).length === 25);
-    await page.getByRole('searchbox').fill('Granite Trail Boot');
+    await page.getByRole('searchbox').fill('Alder Summit Boot');
     await page.locator('.product-page-info').getByText('1 - 1 of 1 products').waitFor();
-    await page.getByRole('button', { name: 'Open Granite Trail Boot' }).waitFor();
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).waitFor();
     await page.getByRole('searchbox').clear();
     await page.locator('.product-page-info').getByText('1 - 25 of 29 products').waitFor();
     assert.equal(await page.getByRole('searchbox').inputValue(), '');
@@ -240,10 +453,22 @@ test('product status line displays shared legends without reset', async () => {
   try {
     await page.goto(url.replace('#campaign-performance', '#product-kpis'));
     const footer = page.locator('.rv-grid-status-line');
-    assert.equal(await footer.locator('.rv-grid-status-line__sort').innerText(), 'Catalog order');
+    assert.equal(await footer.locator('.rv-grid-status-line__sort').innerText(), '');
     assert.equal(await footer.getByRole('button', { name: 'Reset View' }).count(), 0);
     assert.equal(await footer.getByRole('list', { name: 'Promo Calendar legend' }).locator('.rv-legend__item').count(), 3);
     assert.equal(await footer.getByRole('list', { name: 'Revenue Trend legend' }).locator('[data-marker="line"]').count(), 2);
+    const colors = await page.locator('.workbench--product-kpis').evaluate(root => {
+      const primary = root.style.getPropertyValue('--demo-chart-primary').trim();
+      const secondary = root.style.getPropertyValue('--demo-chart-secondary').trim();
+      const legend = root.querySelector('[aria-label="Revenue Trend legend"]');
+      const promoLegend = root.querySelector('[aria-label="Promo Calendar legend"]');
+      const lines = [...root.querySelectorAll('.rv-comparison-sparkline__line')].map(line => line.getAttribute('stroke'));
+      return { primary, secondary, lines, current: legend.children[0].style.getPropertyValue('--rv-legend-marker-color'), prior: legend.children[1].style.getPropertyValue('--rv-legend-marker-color'), promo: promoLegend.children[0].style.getPropertyValue('--rv-legend-marker-color') };
+    });
+    assert.equal(colors.current, colors.primary);
+    assert.equal(colors.prior, colors.secondary);
+    assert.equal(colors.promo, colors.secondary);
+    assert.ok(colors.lines.includes(colors.primary) && colors.lines.includes(colors.secondary));
     const footerBox = await footer.boundingBox();
     const paginationBox = await page.locator('.rv-pagination-panel').boundingBox();
     assert.ok(Math.abs(footerBox.y + footerBox.height - paginationBox.y) <= 1);
@@ -254,7 +479,7 @@ test('product columns remain resizable without appearance settings', async () =>
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url.replace('#campaign-performance', '#product-kpis'));
-    await page.getByRole('button', { name: 'Open Granite Trail Boot' }).waitFor();
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).waitFor();
     assert.equal(await page.getByRole('button', { name: 'Settings', exact: true }).count(), 0);
     const header = page.locator('.rgHeaderCell').filter({ hasText: /^Revenue Trend$/ }).first();
     const handle = await header.locator('.resizable-r').boundingBox();
@@ -271,8 +496,8 @@ test('scale-up index uses financial data and screening does not change scores', 
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
-    await revealCompany(page, 'Lumen Photonics');
-    await page.getByRole('button', { name: 'Open Lumen Photonics' }).waitFor();
+    await revealCompany(page, 'Lichtlijn Photonics');
+    await page.getByRole('button', { name: 'Open Lichtlijn Photonics' }).waitFor();
     for (const selector of ['.rv-ranking', '.rv-group-cell', '.rv-identity-cell', '.rv-choice-status', '.rv-metric-detail', '.rv-split-value', '.rv-cell-action']) {
       assert.ok(await page.locator(selector).count() > 0, `Missing shared cell type: ${selector}`);
     }
@@ -282,14 +507,14 @@ test('scale-up index uses financial data and screening does not change scores', 
     assert.match(await cards.nth(2).innerText(), /€1\.72B/);
     assert.match(await cards.nth(4).innerText(), /8,198/);
     const read = () => page.locator('revo-grid.workbench-grid').evaluate(grid => grid.getVisibleSource());
-    const first = (await read()).find(row => row.label === 'Lumen Photonics');
+    const first = (await read()).find(row => row.label === 'Lichtlijn Photonics');
     assert.equal(first.score, 42.6);
-    await page.getByRole('button', { name: 'Founder for Lumen Photonics: Yes' }).click();
+    await page.getByRole('button', { name: 'Founder for Lichtlijn Photonics: Yes' }).click();
     const dialog = page.getByRole('dialog');
     await chooseSelect(dialog.getByLabel('Founder'), 'No');
     await dialog.getByRole('button', { name: 'Save' }).click();
-    await page.getByRole('button', { name: 'Founder for Lumen Photonics: No' }).waitFor();
-    assert.equal((await read()).find(row => row.label === 'Lumen Photonics').score, first.score);
+    await page.getByRole('button', { name: 'Founder for Lichtlijn Photonics: No' }).waitFor();
+    assert.equal((await read()).find(row => row.label === 'Lichtlijn Photonics').score, first.score);
     await chooseSelect(page.getByLabel('Rank provinces by'), 'Growth');
     await page.waitForFunction(() => document.querySelector('[aria-label="Rank provinces by"]')?.getAttribute('data-value') === 'Growth');
     const north = (await read()).filter(row => row.company && row.company.province === 'North Brabant');
@@ -302,8 +527,8 @@ test('scale-up financial editing recomputes the index and first-year companies s
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
-    await revealCompany(page, 'Lumen Photonics');
-    await page.getByRole('button', { name: 'Open Lumen Photonics' }).click();
+    await revealCompany(page, 'Lichtlijn Photonics');
+    await page.getByRole('button', { name: 'Open Lichtlijn Photonics' }).click();
     let dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
     assert.equal(await dialog.getByLabel('Revenue FY24').inputValue(), '5.1');
@@ -314,7 +539,7 @@ test('scale-up financial editing recomputes the index and first-year companies s
     const expected = indexScore(percentChange(54, 5.1), 1 / 54 * 100, 54_000_000);
     assert.match(await dialog.innerText(), new RegExp(`Index score ${expected.toFixed(1)}`));
     await dialog.getByRole('button', { name: 'Save Changes' }).click();
-    await page.waitForFunction(async value => (await document.querySelector('revo-grid.workbench-grid').getVisibleSource()).find(row => row.label === 'Lumen Photonics')?.score === value, expected);
+    await page.waitForFunction(async value => (await document.querySelector('revo-grid.workbench-grid').getVisibleSource()).find(row => row.label === 'Lichtlijn Photonics')?.score === value, expected);
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
     await page.getByRole('button', { name: 'Add Company' }).click();
     dialog = page.getByRole('dialog');
@@ -341,13 +566,13 @@ test('scale-up company profile navigates data and enforces screening stages', as
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
-    await revealCompany(page, 'Lumen Photonics');
-    await page.getByRole('button', { name: 'Open Lumen Photonics' }).click();
+    await revealCompany(page, 'Lichtlijn Photonics');
+    await page.getByRole('button', { name: 'Open Lichtlijn Photonics' }).click();
     const dialog = page.getByRole('dialog');
     assert.match(await dialog.innerText(), /company-011/);
     assert.match(await dialog.getByRole('region', { name: 'Index Score' }).innerText(), /42\.6/);
     await dialog.getByRole('button', { name: 'Next company' }).click();
-    assert.doesNotMatch(await dialog.getByRole('heading').first().innerText(), /Lumen Photonics/);
+    assert.doesNotMatch(await dialog.getByRole('heading').first().innerText(), /Lichtlijn Photonics/);
     await dialog.getByRole('button', { name: 'Previous company' }).click();
     await dialog.getByRole('tab', { name: 'Financials' }).click();
     assert.match(await dialog.getByRole('region', { name: 'Revenue' }).innerText(), /5\.5M/);
@@ -359,7 +584,7 @@ test('scale-up company profile navigates data and enforces screening stages', as
     await chooseSelect(dialog.getByLabel('Stage'), 'In Talks');
     assert.match(await dialog.getByRole('alert').innerText(), /Clear every No/);
     await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
-    assert.equal(await dialog.getByLabel('Company name').inputValue(), 'Lumen Photonics');
+    assert.equal(await dialog.getByLabel('Company name').inputValue(), 'Lichtlijn Photonics');
     await dialog.getByRole('button', { name: 'Back', exact: true }).click();
     assert.equal(await dialog.getByRole('tab', { name: 'Overview' }).getAttribute('aria-selected'), 'true');
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
@@ -371,7 +596,8 @@ test('sales to target uses reference monthly store results across reporting peri
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url.replace('#campaign-performance', '#sales-to-target'));
-    await page.getByRole('button', { name: 'Open Portland Riverfront' }).waitFor();
+    await page.getByRole('button', { name: /^Behind/ }).click();
+    await page.getByRole('button', { name: 'Open Denver Union Station' }).waitFor();
     for (const selector of ['.rv-visual-cell__rail', '.rv-identity-cell', '.rv-visual-cell__heat', '.rv-diverging-bars', '.rv-cell-action']) {
       assert.ok(await page.locator(selector).count() > 0, `Missing shared cell type: ${selector}`);
     }
@@ -382,25 +608,25 @@ test('sales to target uses reference monthly store results across reporting peri
     const expand = page.getByRole('button', { name: 'Expand Americas' }).first();
     await expand.waitFor(); assert.equal(await expand.getAttribute('aria-expanded'), 'false');
     assert.equal(await expand.locator('.rv-expand-icon').count(), 1);
-    await expand.click(); await page.getByRole('button', { name: 'Open Portland Riverfront' }).waitFor();
+    await expand.click(); await page.getByRole('button', { name: 'Open Denver Union Station' }).waitFor();
     const history = page.getByRole('img', { name: 'Monthly variance across the fiscal year' }).first();
     await history.waitFor();
     assert.ok(await history.locator('.rv-diverging-bars__bar').count() > 0);
     assert.equal(await history.locator('.rv-diverging-bars__bar.is-highlighted').count(), 1);
     const read = () => page.locator('revo-grid.workbench-grid').evaluate(grid => grid.getVisibleSource());
-    let portland = (await read()).find(row => row.label === 'Portland Riverfront');
+    let portland = (await read()).find(row => row.label === 'Denver Union Station');
     assert.equal(portland.actual0, 371600);
     assert.equal(portland.variance0, -11600);
     assert.equal(portland.actual1, 1194900);
     assert.equal(portland.variance2, -121900);
     await chooseSelect(page.getByLabel('Reporting month'), 'Aug 2026');
-    await page.waitForFunction(async () => (await document.querySelector('revo-grid.workbench-grid').getVisibleSource()).find(row => row.label === 'Portland Riverfront')?.actual0 === 456400);
-    portland = (await read()).find(row => row.label === 'Portland Riverfront');
+    await page.waitForFunction(async () => (await document.querySelector('revo-grid.workbench-grid').getVisibleSource()).find(row => row.label === 'Denver Union Station')?.actual0 === 456400);
+    portland = (await read()).find(row => row.label === 'Denver Union Station');
     assert.equal(portland.variance0, 200);
     await chooseSelect(page.getByLabel('Reporting month'), 'Oct 2026');
-    await page.waitForFunction(async () => (await document.querySelector('revo-grid.workbench-grid').getVisibleSource()).find(row => row.label === 'Portland Riverfront')?.ratio0 === null);
-    await page.getByRole('searchbox').fill('Barcelona Poblenou');
-    const empty = (await read()).find(row => row.label === 'Barcelona Poblenou');
+    await page.waitForFunction(async () => (await document.querySelector('revo-grid.workbench-grid').getVisibleSource()).find(row => row.label === 'Denver Union Station')?.ratio0 === null);
+    await page.getByRole('searchbox').fill('Adelaide Norwood');
+    const empty = (await read()).find(row => row.label === 'Adelaide Norwood');
     assert.equal(empty.ratio0, null);
   } finally { await page.close(); }
 });
@@ -410,21 +636,22 @@ test('sales store profile exposes monthly data, navigation, export and editing',
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url.replace('#campaign-performance', '#sales-to-target'));
-    await page.getByRole('button', { name: 'Open Portland Riverfront' }).click();
+    await page.getByRole('button', { name: /^Behind/ }).click();
+    await page.getByRole('button', { name: 'Open Denver Union Station' }).click();
     const dialog = page.getByRole('dialog');
     assert.match(await dialog.innerText(), /store-001/);
-    assert.match(await dialog.getByRole('region', { name: 'Against Target' }).innerText(), /97%.*\$372k of \$383k/s);
+    assert.match(await dialog.getByRole('region', { name: 'Against Target' }).innerText(), /97%.*\$372k comparable sales \/ \$383k target/s);
     await dialog.getByRole('button', { name: 'Next store' }).click();
-    assert.match(await dialog.innerText(), /Seattle Fremont/);
+    assert.match(await dialog.innerText(), /Minneapolis North Loop/);
     await dialog.getByRole('button', { name: 'Previous store' }).click();
     await dialog.getByRole('tab', { name: 'Months' }).click();
-    const table = dialog.getByRole('table', { name: /Portland Riverfront/ });
+    const table = dialog.getByRole('table', { name: /Denver Union Station/ });
     assert.match(await table.innerText(), /Sep 2026.*\$372k.*\$383k/s);
     assert.match(await table.innerText(), /Oct 2026.*None/s);
     await dialog.getByRole('tab', { name: 'Details' }).click();
     assert.match(await dialog.innerText(), /May 17, 2014/);
     const [download] = await Promise.all([page.waitForEvent('download'), dialog.getByRole('button', { name: 'Export CSV' }).click()]);
-    assert.equal(download.suggestedFilename(), 'portland-riverfront-sales.csv');
+    assert.equal(download.suggestedFilename(), 'denver-union-station-sales.csv');
     await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
     assert.equal(await dialog.getByLabel('FY26 Sales Target').inputValue(), '4549900');
     await dialog.getByLabel('FY26 Sales Target').fill('12000000');
@@ -432,9 +659,50 @@ test('sales store profile exposes monthly data, navigation, export and editing',
     await dialog.getByRole('tab', { name: 'Details' }).click();
     assert.match(await dialog.innerText(), /\$12,000,000/);
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
-    const row = (await page.locator('revo-grid.workbench-grid').evaluate(grid => grid.getVisibleSource())).find(item => item.label === 'Portland Riverfront');
+    const row = (await page.locator('revo-grid.workbench-grid').evaluate(grid => grid.getVisibleSource())).find(item => item.label === 'Denver Union Station');
     assert.equal(row.actual0, 371600);
     assert.notEqual(row.variance0, -11600);
+  } finally { await page.close(); }
+});
+
+test('sales details show only comparable sales in a mixed period', async () => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#sales-to-target'));
+    await page.getByRole('button', { name: /^Behind/ }).click();
+    await page.getByRole('button', { name: 'Open Denver Union Station' }).waitFor();
+    await page.locator('revo-grid.workbench-grid').evaluate(async grid => {
+      const row = (await grid.getVisibleSource()).find(item => item.label === 'Denver Union Station');
+      row.store.monthlyTargets[9] = 0;
+    });
+    await page.getByRole('button', { name: 'Open Denver Union Station' }).click();
+    const details = page.getByRole('region', { name: 'Against Target' });
+    assert.match(await details.innerText(), /Last 3 Months[\s\S]*\$739k comparable sales \/ \$782k target/);
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+  } finally { await page.close(); }
+});
+
+test('co-operative member counts roll up with the visible stores', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#sales-to-target'));
+    await page.getByRole('button', { name: /^Behind/ }).click();
+    const grid = page.locator('revo-grid.workbench-grid');
+    const result = await grid.evaluate(async grid => ({ columns: grid.columns, rows: await grid.getVisibleSource() }));
+    assert.equal(result.columns.find(column => column.prop === 'members').columnType, 'number');
+    assert.equal(result.columns.find(column => column.prop === 'members').name, 'Memberships');
+    const americas = result.rows.filter(row => row.store && row.regionLabel === 'Americas');
+    assert.equal(result.rows.find(row => row.group && row.regionLabel === 'Americas').members, americas.reduce((sum, row) => sum + row.store.members, 0));
+    assert.equal(americas.find(row => row.label === 'Denver Union Station').members, 6840);
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+    await page.getByRole('button', { name: 'Open Denver Union Station' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
+    await dialog.getByText('Totals add memberships across stores; people may belong to more than one store.').waitFor();
+    await dialog.getByLabel('Active memberships').fill('7000');
+    await dialog.getByRole('button', { name: 'Save Changes' }).click();
+    await dialog.getByRole('tab', { name: 'Details' }).click();
+    assert.match(await dialog.innerText(), /Active memberships\s+7,000/);
   } finally { await page.close(); }
 });
 
@@ -443,7 +711,8 @@ test('sales store drawer supports keyboard tabs and creates a store without sale
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url.replace('#campaign-performance', '#sales-to-target'));
-    await page.getByRole('button', { name: 'Open Portland Riverfront' }).click();
+    await page.getByRole('button', { name: /^Behind/ }).click();
+    await page.getByRole('button', { name: 'Open Denver Union Station' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('tab', { name: 'Overview' }).focus();
     await page.keyboard.press('ArrowRight');
@@ -466,6 +735,23 @@ test('sales store drawer supports keyboard tabs and creates a store without sale
     await page.getByRole('button', { name: 'Open Lisbon Chiado' }).waitFor();
     const row = (await page.locator('revo-grid.workbench-grid').evaluate(grid => grid.getVisibleSource())).find(item => item.label === 'Lisbon Chiado');
     assert.equal(row.ratio0, null);
+  } finally { await page.close(); }
+});
+
+test('brand portfolio benchmark stays pinned while scrolling brands', async () => {
+  const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#brand-scorecard'));
+    const grid = page.locator('revo-grid.workbench-grid');
+    const header = page.locator('.brand-column-summary').filter({ hasText: 'Portfolio' });
+    await header.waitFor();
+    const columns = await grid.evaluate(element => element.columns);
+    assert.equal(columns.find(column => column.prop === 'portfolio').pin, 'colPinStart');
+    assert.equal(columns.findIndex(column => column.prop === 'portfolio'), columns.findIndex(column => column.prop === 'label') + 1);
+    const before = await header.boundingBox();
+    await grid.evaluate(element => element.scrollToColumnProp('spread'));
+    const after = await header.boundingBox();
+    assert.ok(Math.abs(before.x - after.x) < 1);
   } finally { await page.close(); }
 });
 
@@ -513,10 +799,13 @@ test('brand profile exposes style and monthly data, buy call, navigation and exp
     await dialog.getByRole('tab', { name: 'Styles' }).click();
     const table = dialog.getByRole('table', { name: 'Wildhaven styles' });
     assert.match(await table.innerText(), /Orbit Trail Jacket/s);
+    assert.match(await table.getByRole('row', { name: /Mistral Trek Boot/ }).innerText(), /Footwear/);
+    assert.match(await table.getByRole('row', { name: /Tide Travel Pack/ }).innerText(), /Packs/);
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
     await dialog.getByRole('tab', { name: 'Months' }).click();
     assert.match(await dialog.getByRole('table', { name: 'Wildhaven by month' }).innerText(), /Oct 2025.*\$/s);
     await dialog.getByRole('tab', { name: 'Details' }).click();
-    assert.match(await dialog.innerText(), /Lucas Moreau/);
+    assert.match(await dialog.innerText(), /Rafael Costa/);
     const [download] = await Promise.all([page.waitForEvent('download'), dialog.getByRole('button', { name: 'Export CSV' }).click()]);
     assert.equal(download.suggestedFilename(), 'wildhaven-scorecard.csv');
     await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
@@ -561,22 +850,25 @@ test('campaign drawer shows exact weekly results, audience metrics, pause and ed
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     page.setDefaultTimeout(10000); await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).click();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).click();
     const dialog = page.getByRole('dialog');
     assert.match(await dialog.innerText(), /campaign-008/);
-    assert.match(await dialog.getByRole('region', { name: 'Last 30 Days' }).innerText(), /2,049.*\$27\.05/s);
+    assert.match(await dialog.getByRole('region', { name: 'Last 30 Days' }).innerText(), /2,360.*\$20\.49/s);
     await dialog.getByRole('button', { name: 'Pause', exact: true }).click();
     await dialog.getByRole('button', { name: 'Resume', exact: true }).waitFor();
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
     await page.getByRole('button', { name: 'Undo', exact: true }).click();
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).click();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).click();
     await dialog.getByRole('button', { name: 'Pause', exact: true }).waitFor();
     await dialog.getByRole('tab', { name: 'Performance' }).click();
-    const table = dialog.getByRole('table', { name: 'Boreal Gloves Member Event weekly performance' });
-    assert.match(await table.innerText(), /Sep 6 to Sep 12.*\$9,454.*370.*\$25\.55/s);
-    assert.match(await table.innerText(), /30 days.*\$55,433.*2,049/s);
+    const table = dialog.getByRole('table', { name: 'Community Plan Member Event weekly performance' });
+    assert.match(await table.innerText(), /Sep 6 to Sep 12.*\$11,102.*446.*\$24\.89/s);
+    assert.match(await table.innerText(), /30 days.*\$48,360.*2,360/s);
+    const conversions = dialog.getByRole('group', { name: 'Community Plan Member Event daily conversions' });
+    const conversionLine = await conversions.locator('path').evaluateAll(paths => paths.map(path => path.getAttribute('d')).join(''));
     await dialog.getByRole('button', { name: 'Spend', exact: true }).click();
-    const chart = dialog.getByRole('group', { name: 'Boreal Gloves Member Event daily spend' });
+    const chart = dialog.getByRole('group', { name: 'Community Plan Member Event daily spend' });
+    assert.notEqual(await chart.locator('path').evaluateAll(paths => paths.map(path => path.getAttribute('d')).join('')), conversionLine);
     const point = chart.locator('[data-part="item"][tabindex="0"]');
     await point.waitFor();
     assert.match(await point.getAttribute('aria-label'), /^Day 1: \$/);
@@ -586,13 +878,18 @@ test('campaign drawer shows exact weekly results, audience metrics, pause and ed
     await page.keyboard.press('ArrowRight');
     await tooltip.getByText(/Day 2: \$/).waitFor();
     await dialog.getByRole('tab', { name: 'Audience' }).click();
-    assert.match(await dialog.getByRole('region', { name: 'Buyer Mix' }).innerText(), /1,805.*88%.*244.*12%/s);
+    assert.match(await dialog.getByRole('region', { name: 'Member Mix' }).innerText(), /1,605.*68%.*755.*32%/s);
     await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
-    assert.equal(await dialog.getByLabel('30-Day Budget').inputValue(), '65000');
+    assert.equal(await dialog.getByLabel('30-Day Budget').inputValue(), '63000');
+    await dialog.getByRole('button', { name: 'Back', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).click();
+    await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
     await dialog.getByLabel('30-Day Budget').fill('80000');
     await dialog.getByRole('button', { name: 'Save Changes' }).click();
     assert.match(await dialog.getByRole('region', { name: 'Budget' }).innerText(), /\$80,000/);
-    assert.match(await dialog.getByRole('region', { name: 'Budget' }).innerText(), /\$55,433/);
+    assert.match(await dialog.getByRole('region', { name: 'Budget' }).innerText(), /\$48,360/);
   } finally { await page.close(); }
 });
 
@@ -618,12 +915,12 @@ test('product profile shows promotions, records decisions and recomputes edited 
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     page.setDefaultTimeout(10000); await page.goto(url.replace('#campaign-performance', '#product-kpis'));
-    await page.getByRole('button', { name: 'Open Granite Trail Boot' }).click(); const dialog = page.getByRole('dialog');
-    assert.match(await dialog.getByRole('region', { name: 'Performance' }).innerText(), /\$314\.0K.*\$174\.9K.*6\.7%.*16\.2%/s);
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).click(); const dialog = page.getByRole('dialog');
+    assert.match(await dialog.getByRole('region', { name: 'Performance' }).innerText(), /\$468\.0K.*\$238\.6K.*5\.3%.*15\.5%/s);
     await dialog.getByRole('tab', { name: 'Promotions' }).click();
-    const promotions = dialog.getByRole('table', { name: 'Granite Trail Boot promotions' });
-    assert.match(await promotions.innerText(), /Community Weekend.*\$50\.8K.*\+\$728/s);
-    assert.match(await promotions.innerText(), /Lift margin \+\$4\.9K, subsidy −\$6\.1K/);
+    const promotions = dialog.getByRole('table', { name: 'Alder Summit Boot promotions' });
+    assert.match(await promotions.innerText(), /Community Weekend.*\$72\.8K.*−\$3\.4K/s);
+    assert.match(await promotions.innerText(), /Lift margin \+\$5\.1K, subsidy −\$8\.5K/);
     const decisionTrigger = dialog.getByText('Set Decision', { exact: true });
     await decisionTrigger.click();
     await dialog.getByRole('menuitem', { name: 'Stop Promos', exact: true }).focus();
@@ -637,7 +934,7 @@ test('product profile shows promotions, records decisions and recomputes edited 
     const decisionToast = dialog.locator('.rv-toast').filter({ hasText: 'Decision updated.' });
     await decisionToast.getByRole('button', { name: 'Undo', exact: true }).click();
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
-    await page.getByRole('button', { name: 'Open Granite Trail Boot' }).click();
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).click();
     assert.match(await dialog.getByRole('region', { name: 'Details' }).innerText(), /No Change/);
     await dialog.getByText('Set Decision', { exact: true }).click();
     const capTrigger = dialog.getByText('Cap Discount', { exact: true });
@@ -651,7 +948,7 @@ test('product profile shows promotions, records decisions and recomputes edited 
     assert.match(await dialog.getByRole('region', { name: 'Details' }).innerText(), /Cap at 25%/);
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
     await page.getByRole('button', { name: 'Undo', exact: true }).click();
-    await page.getByRole('button', { name: 'Open Granite Trail Boot' }).click();
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).click();
     await dialog.getByRole('button', { name: 'Edit Product' }).click();
     const landed = dialog.getByRole('spinbutton', { name: 'Landed Cost', exact: true });
     const initialLanded = Number(await landed.inputValue());
@@ -664,14 +961,14 @@ test('product profile shows promotions, records decisions and recomputes edited 
     assert.equal(await savedToast.locator('svg').count() >= 1, true);
     assert.equal(await savedToast.locator('..').locator('..').getAttribute('data-position'), 'top-center');
     assert.equal(await page.locator('.workbench-notice').count(), 0);
-    assert.match(await dialog.getByRole('region', { name: 'Performance' }).innerText(), /\$114\.3K/);
+    assert.match(await dialog.getByRole('region', { name: 'Performance' }).innerText(), /\$169\.5K/);
     await dialog.getByRole('tab', { name: 'Activity' }).click();
     assert.match(await dialog.innerText(), /Landed cost set to 50% of list/);
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
     await page.getByRole('button', { name: 'Undo', exact: true }).click();
-    const ridge = (await page.locator('revo-grid').evaluate(grid => grid.getVisibleSource())).find(item => item.label === 'Granite Trail Boot');
-    assert.equal(Math.round(ridge.profit), 174887);
-    await page.getByRole('button', { name: 'Open Harbor Trail Runner' }).click();
+    const ridge = (await page.locator('revo-grid').evaluate(grid => grid.getVisibleSource())).find(item => item.label === 'Alder Summit Boot');
+    assert.equal(Math.round(ridge.profit), 238626);
+    await page.getByRole('button', { name: 'Open Harbor Loop Running Shoe' }).click();
     await dialog.getByRole('tab', { name: 'Activity' }).click();
     assert.match(await dialog.innerText(), /Inventory plan reviewed.*Oct 4/s);
   } finally { await page.close(); }
@@ -695,8 +992,8 @@ test('scale-up screening controls fit and work on mobile', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   try {
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
-    await revealCompany(page, 'Lumen Photonics');
-    await page.getByRole('button', { name: 'Open Lumen Photonics' }).click();
+    await revealCompany(page, 'Lichtlijn Photonics');
+    await page.getByRole('button', { name: 'Open Lichtlijn Photonics' }).click();
     const dialog = page.getByRole('dialog');
     const group = dialog.getByRole('group', { name: 'Founder still leads it' });
     const bounds = await group.boundingBox();
@@ -747,6 +1044,24 @@ test('brand spread charts put better values to the right and omit missing compar
     await dot.hover();
     await dot.evaluate(el => el.getAnimations().forEach(animation => animation.finish()));
     assert.ok(await dot.evaluate(el => new DOMMatrix(getComputedStyle(el).transform).a > 1.4));
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+  } finally { await page.close(); }
+});
+
+test('brand section and overall cells fill their boundaries', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#brand-scorecard'));
+    const rail = page.locator('.brand-section').first();
+    await rail.waitFor();
+    assert.equal(await rail.evaluate(node => getComputedStyle(node.parentElement, '::after').borderRightWidth), '1px');
+    const overall = page.locator('.brand-overall-label');
+    await overall.waitFor();
+    assert.ok(await overall.evaluate(node => {
+      const content = node.getBoundingClientRect(), cell = node.parentElement.getBoundingClientRect();
+      return Math.abs(content.left - cell.left) < 1 && Math.abs(content.right - cell.right) < 1;
+    }));
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
   } finally { await page.close(); }
 });
 
@@ -805,14 +1120,14 @@ test('campaign metrics and buyer share use shared cell renderers', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     const metrics = page.locator('.rv-metric-stack');
     await metrics.first().waitFor();
     assert.ok(await metrics.count() >= 3);
     assert.match(await metrics.first().innerText(), /\$.*% of/s);
-    const share = page.getByRole('progressbar', { name: 'Share of new buyers' }).first();
+    const share = page.getByRole('progressbar', { name: 'Share of new members' }).first();
     await share.waitFor();
-    assert.equal(Math.round(Number(await share.getAttribute('aria-valuenow'))), 88);
+    assert.equal(Math.round(Number(await share.getAttribute('aria-valuenow'))), 68);
     assert.equal(await share.getAttribute('aria-valuemax'), '100');
     const geometry = await share.evaluate(el => {
       const track = el.getBoundingClientRect();
@@ -822,7 +1137,7 @@ test('campaign metrics and buyer share use shared cell renderers', async () => {
     });
     assert.ok(geometry.trackWidth >= 50, JSON.stringify(geometry));
     assert.ok(geometry.trackLeft >= geometry.cellLeft && geometry.trackRight <= geometry.labelLeft && geometry.labelLeft < geometry.cellRight, JSON.stringify(geometry));
-    assert.equal(await share.locator('.progress-line-bar').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(102, 71, 240)');
+    assert.notEqual(await share.locator('.progress-line-bar').evaluate(el => getComputedStyle(el).backgroundColor), 'rgba(0, 0, 0, 0)');
   } finally { await page.close(); }
 });
 
@@ -830,7 +1145,7 @@ test('campaign compact grid configurator controls column visibility', async () =
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     assert.equal(await page.getByRole('button', { name: 'Settings', exact: true }).count(), 0);
     assert.equal(await page.getByRole('button', { name: 'Columns', exact: true }).count(), 0);
     const panel = page.getByRole('region', { name: 'Grid configurator' });
@@ -897,7 +1212,7 @@ test('campaign trend chart cleans up when metrics and tabs change', async () => 
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url.replace('#campaign-performance', '#campaign-performance'));
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).click();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('tab', { name: 'Performance' }).click();
     const metricSwitch = dialog.getByRole('group', { name: 'Daily trend metric' });
@@ -912,7 +1227,7 @@ test('campaign trend chart cleans up when metrics and tabs change', async () => 
     await dialog.getByRole('button', { name: 'Spend', exact: true }).click();
     await dialog.getByRole('button', { name: 'Conversions', exact: true }).click();
     await dialog.getByRole('button', { name: 'Spend', exact: true }).click();
-    const chart = dialog.getByRole('group', { name: 'Boreal Gloves Member Event daily spend' });
+    const chart = dialog.getByRole('group', { name: 'Community Plan Member Event daily spend' });
     const target = chart.locator('[data-part="item"][tabindex="0"]');
     await target.focus();
     assert.match(await target.getAttribute('aria-label'), /^Day 1: \$/);
@@ -920,7 +1235,7 @@ test('campaign trend chart cleans up when metrics and tabs change', async () => 
     await chart.waitFor({ state: 'detached' });
     assert.equal(await dialog.locator('[data-chart-renderer-policy]').count(), 0);
     await dialog.getByRole('tab', { name: 'Performance' }).click();
-    await dialog.getByRole('group', { name: 'Boreal Gloves Member Event daily conversions' }).locator('[data-part="item"][tabindex="0"]').waitFor();
+    await dialog.getByRole('group', { name: 'Community Plan Member Event daily conversions' }).locator('[data-part="item"][tabindex="0"]').waitFor();
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
     await dialog.locator('[data-chart-renderer-policy]').waitFor({ state: 'detached' });
   } finally { await page.close(); }
@@ -941,11 +1256,11 @@ test('campaign AST filter applies to all campaign pages and clears', async () =>
     await dialog.waitFor({ state: 'hidden' });
     await page.getByRole('button', { name: 'Filter (active)' }).waitFor();
     await page.getByText('3 campaigns • 0 live in view • Sep 6 to Oct 5').waitFor();
-    assert.equal((await page.locator('.cell-label .cell-action').allTextContents()).length, 3);
+    await page.waitForFunction(() => document.querySelectorAll('.cell-label .cell-action').length === 3);
     await page.getByRole('button', { name: 'Filter (active)' }).click();
     await dialog.getByRole('button', { name: 'Reset', exact: true }).click();
     await dialog.getByRole('button', { name: 'Apply', exact: true }).click();
-    await page.getByText('30 campaigns • 17 live in view • Sep 6 to Oct 5').waitFor();
+    await page.getByText('30 campaigns • 16 live in view • Sep 6 to Oct 5').waitFor();
   } finally { await page.close(); }
 });
 
@@ -953,10 +1268,10 @@ test('campaign trend chart fits mobile and supports keyboard inspection', async 
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).click();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('tab', { name: 'Performance' }).click();
-    const chart = dialog.getByRole('group', { name: 'Boreal Gloves Member Event daily conversions' });
+    const chart = dialog.getByRole('group', { name: 'Community Plan Member Event daily conversions' });
     const target = chart.locator('[data-part="item"][tabindex="0"]');
     await target.focus();
     const box = await chart.boundingBox();
@@ -969,15 +1284,37 @@ test('campaign trend chart fits mobile and supports keyboard inspection', async 
 });
 
 
+test('campaign owner portrait loads locally and remains consistent when editing', async () => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  try {
+    await page.goto(url);
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).click();
+    const dialog = page.getByRole('dialog');
+    const image = dialog.locator('.campaign-profile__definitions img.campaign-owner-photo');
+    await image.waitFor();
+    const source = await image.getAttribute('src');
+    assert.match(source, /portrait-\d/);
+    await image.evaluate(element => element.decode());
+    assert.ok(await image.evaluate(element => element.naturalWidth > 0));
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+    await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
+    assert.equal(await dialog.getByRole('combobox', { name: 'Owner' }).locator('img').getAttribute('src'), source);
+  } finally { await page.close(); }
+});
+
 test('campaign bulk actions export selected rows, pause, and clear', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     await page.getByRole('checkbox', { name: 'Select row 1', exact: true }).check();
     await page.getByRole('checkbox', { name: 'Select row 2', exact: true }).check();
     const bar = page.getByRole('toolbar', { name: 'Selected campaigns' });
     await bar.getByText(/2 selected.*spend/).waitFor();
+    for (const action of ['Pause', 'Export', 'Delete']) {
+      assert.equal(await bar.getByRole('button', { name: action }).locator('svg').count(), 1);
+    }
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
     assert.equal(await bar.evaluate(el => getComputedStyle(el).borderTopWidth), '0px');
     assert.equal(await bar.evaluate(el => getComputedStyle(el).borderLeftWidth), '0px');
     const bulkHost = page.locator('.campaign-bulk-host');
@@ -985,14 +1322,16 @@ test('campaign bulk actions export selected rows, pause, and clear', async () =>
     assert.equal(await bulkHost.evaluate(el => getComputedStyle(el).borderBottomStyle), 'solid');
     const [download] = await Promise.all([page.waitForEvent('download'), bar.getByRole('button', { name: 'Export' }).click()]);
     const csv = await readFile(await download.path(), 'utf8');
-    assert.match(csv, /Boreal Gloves Member Event/);
-    assert.match(csv, /Hearth Stove Community Stories/);
-    assert.doesNotMatch(csv, /Cove Hammock All Season/);
+    assert.match(csv, /Community Plan Member Event/);
+    assert.match(csv, /Creator Plan Community Stories/);
+    assert.doesNotMatch(csv, /Enterprise Plan Always On/);
     await bar.getByRole('button', { name: 'Pause' }).click();
     await bar.waitFor({ state: 'hidden' });
     await page.locator('.rv-toast').getByText('2 campaigns paused.', { exact: true }).waitFor();
     assert.equal(await page.locator('.workbench-notice').isVisible(), false);
-    await page.getByRole('checkbox', { name: 'Select row 1', exact: true }).check();
+    const firstRow = page.getByRole('checkbox', { name: 'Select row 1', exact: true });
+    await page.waitForFunction(() => document.querySelector('revo-grid input[aria-label="Select row 1"]')?.checked === false);
+    await firstRow.check();
     await bar.getByRole('button', { name: 'Clear' }).click();
     await bar.waitFor({ state: 'hidden' });
     await page.waitForFunction(() => !document.querySelector('revo-grid .row-select-checkbox[aria-label=\"Select row 1\"]')?.checked);
@@ -1003,17 +1342,17 @@ test('campaign bulk delete keeps selection across pages', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     await page.getByRole('checkbox', { name: 'Select row 1', exact: true }).check();
     await page.getByRole('button', { name: 'Page 2', exact: true }).click();
-    await page.getByRole('button', { name: 'Open Tidewater Rain Shell Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Family Plan Member Event' }).waitFor();
     await page.getByRole('checkbox', { name: 'Select row 1', exact: true }).check();
     const bar = page.getByRole('toolbar', { name: 'Selected campaigns' });
     await bar.getByText(/2 selected/).waitFor();
     await bar.getByRole('button', { name: 'Delete' }).click();
     await page.getByText('2 campaigns removed.', { exact: true }).waitFor();
     await bar.waitFor({ state: 'hidden' });
-    await page.getByText('28 campaigns • 16 live in view • Sep 6 to Oct 5').waitFor();
+    await page.getByText('28 campaigns • 14 live in view • Sep 6 to Oct 5').waitFor();
   } finally { await page.close(); }
 });
 
@@ -1048,12 +1387,14 @@ test('campaign delete toasts stack and undo independently', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
-    for (const name of ['Boreal Gloves Member Event', 'Hearth Stove Community Stories']) {
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
+    for (const name of ['Community Plan Member Event', 'Creator Plan Community Stories']) {
       await page.getByRole('button', { name: `Open ${name}` }).click();
       await page.getByRole('button', { name: 'Delete campaign' }).click();
       const confirmation = page.getByRole('dialog', { name: 'Delete record?' });
-      await confirmation.getByRole('button', { name: 'Save' }).click();
+      const confirmDelete = confirmation.getByRole('button', { name: 'Delete', exact: true });
+      assert.equal(await confirmDelete.evaluate(node => node.classList.contains('rv-btn-danger') && !node.classList.contains('rv-btn-primary')), true);
+      await confirmDelete.click();
       await page.locator('.rv-toast').filter({ hasText: name }).waitFor();
     }
     const toasts = page.locator('.rv-toast');
@@ -1066,11 +1407,11 @@ test('campaign delete toasts stack and undo independently', async () => {
     await page.waitForTimeout(300);
     const expanded = await Promise.all([toasts.nth(0).boundingBox(), toasts.nth(1).boundingBox()]);
     assert.ok(expanded[1].y >= expanded[0].y + expanded[0].height - 1);
-    await page.locator('.rv-toast').filter({ hasText: 'Boreal Gloves Member Event' }).getByRole('button', { name: 'Undo' }).click();
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.locator('.rv-toast').filter({ hasText: 'Community Plan Member Event' }).getByRole('button', { name: 'Undo' }).click();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     assert.equal(await page.locator('.rv-toast').count(), 1);
-    await page.locator('.rv-toast').filter({ hasText: 'Hearth Stove Community Stories' }).getByRole('button', { name: 'Undo' }).click();
-    await page.getByRole('button', { name: 'Open Hearth Stove Community Stories' }).waitFor();
+    await page.locator('.rv-toast').filter({ hasText: 'Creator Plan Community Stories' }).getByRole('button', { name: 'Undo' }).click();
+    await page.getByRole('button', { name: 'Open Creator Plan Community Stories' }).waitFor();
   } finally { await page.close(); }
 });
 
@@ -1079,7 +1420,7 @@ test('campaign columns expose advanced filters and full-dataset slider bounds', 
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     const grid = page.locator('.campaign-grid-shell > revo-grid');
     const config = await grid.evaluate(grid => ({ predefined: grid.filter.predefinedFilters, types: Object.fromEntries(grid.columns.map(column => [column.prop, column.filter])) }));
     assert.equal(config.predefined, true);
@@ -1093,9 +1434,11 @@ test('campaign columns expose advanced filters and full-dataset slider bounds', 
     const gear = panel.getByRole('button', { name: 'Actions for Spend column' });
     await plus.hover();
     await page.getByRole('tooltip').filter({ hasText: 'Add Spend to' }).waitFor();
+    await page.waitForTimeout(250);
     const plusColor = await plus.evaluate(el => getComputedStyle(el).backgroundColor);
     await gear.hover();
     await page.getByRole('tooltip').filter({ hasText: 'Actions for Spend column' }).waitFor();
+    await page.waitForTimeout(250);
     assert.equal(await gear.evaluate(el => getComputedStyle(el).backgroundColor), plusColor);
     assert.equal(await gear.getAttribute('title'), null);
     await plus.click();
@@ -1114,7 +1457,7 @@ test('campaign AST selection search stays above its filter popup', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     await page.getByRole('button', { name: 'Filter', exact: true }).click();
     await page.getByRole('button', { name: 'Add condition' }).click();
     const condition = page.locator('.grouped-filter-sentence').first();
@@ -1150,7 +1493,7 @@ test('campaign AST numeric fields use their configured slider', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     await page.getByRole('button', { name: 'Filter', exact: true }).click();
     await page.getByRole('button', { name: 'Add condition' }).click();
     await page.getByRole('combobox', { name: 'Status filter field' }).click();
@@ -1189,7 +1532,7 @@ test('campaign AST long selected values stay inside the field', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     await page.getByRole('button', { name: 'Filter', exact: true }).click();
     await page.getByRole('button', { name: 'Add condition' }).click();
     await page.getByRole('combobox', { name: 'Status filter field' }).click();
@@ -1203,12 +1546,12 @@ test('campaign AST long selected values stay inside the field', async () => {
     const trigger = await search.boundingBox();
     assert.ok(menu.width > trigger.width);
     assert.ok(menu.height > 176 && menu.y + menu.height <= 900);
-    await search.fill('Cove Hammock All Season');
-    await page.getByRole('option', { name: 'Cove Hammock All Season', exact: true }).click();
+    await search.fill('Enterprise Plan Always On');
+    await page.getByRole('option', { name: 'Enterprise Plan Always On', exact: true }).click();
     const tag = await page.locator('.grouped-filter-tag').boundingBox();
     const control = await page.locator('.grouped-filter-tag-editor__control').boundingBox();
     assert.ok(tag.x >= control.x && tag.x + tag.width <= control.x + control.width);
-    await page.getByRole('button', { name: 'Remove Cove Hammock All Season' }).click();
+    await page.getByRole('button', { name: 'Remove Enterprise Plan Always On' }).click();
     assert.equal(await page.locator('.grouped-filter-tag').count(), 0);
   } finally { await page.close(); }
 });
@@ -1217,7 +1560,7 @@ test('scrolling inside a column filter does not scroll the page behind it', asyn
   const page = await browser.newPage({ viewport: { width: 1280, height: 700 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     await page.evaluate(() => { document.body.style.minHeight = '2400px'; });
     await page.locator('.rgHeaderCell').filter({ hasText: 'Spend' }).first().click();
     const menu = page.locator('.rv-context-menu:visible');
@@ -1238,7 +1581,7 @@ test('shared filter popover contains wheel scrolling and releases it on close', 
   const page = await browser.newPage({ viewport: { width: 1280, height: 700 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     await page.evaluate(() => { document.body.style.minHeight = '2400px'; });
     await page.getByRole('button', { name: 'Filter', exact: true }).click();
     const panel = page.getByRole('dialog', { name: 'Campaign filters' });
@@ -1279,7 +1622,7 @@ test('campaign column filter opens by its header', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     const header = page.locator('.rgHeaderCell').filter({ hasText: 'Spend' }).first();
     const rect = await header.boundingBox();
     await header.click();
@@ -1302,10 +1645,10 @@ test('campaign column filter opens by its header', async () => {
     await popup.getByLabel('Maximum value').press('Tab');
     await page.waitForFunction(async () => {
       const grid = document.querySelector('.campaign-grid-shell > revo-grid');
-      const source = await grid?.getSource();
+      const source = await grid?.getVisibleSource();
       return source?.length > 0 && source.every(row => row.spend <= 7230);
     });
-    const total = await page.locator('.campaign-grid-shell > revo-grid').evaluate(async grid => (await grid.getSource()).length);
+    const total = await page.locator('.campaign-grid-shell > revo-grid').evaluate(async grid => (await grid.getVisibleSource()).length);
     assert.ok(total > 0);
   } finally { await page.close(); }
 });
@@ -1314,7 +1657,7 @@ test('campaign header menu opens the anchored column chooser', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     const header = page.locator('.rgHeaderCell').filter({ hasText: 'Spend' }).first();
     await header.click();
     await page.locator('.rv-context-menu:visible').getByRole('menuitem', { name: 'Manage columns' }).click();
@@ -1326,6 +1669,23 @@ test('campaign header menu opens the anchored column chooser', async () => {
     await popup.getByPlaceholder('Search...').fill('Spend');
     await page.mouse.click(10, 10);
     await popup.waitFor({ state: 'hidden' });
+  } finally { await page.close(); }
+});
+
+test('sales column chooser points expanded groups up', async () => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#sales-to-target'));
+    await page.getByRole('button', { name: 'Columns', exact: true }).click();
+    const toggle = page.locator('.rv-column-dialog__grid .rgRow').filter({ hasText: 'Stores' }).locator('.tree-toggle').first();
+    await toggle.waitFor();
+    assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+    await page.waitForFunction(() => {
+      const element = document.querySelector('.rv-column-dialog__grid .tree-toggle[aria-expanded="true"]');
+      return element && getComputedStyle(element).transform === 'matrix(0, -1, 1, 0, 0, 0)';
+    });
+    await toggle.click();
+    await page.waitForFunction(() => [...document.querySelectorAll('.rv-column-dialog__grid .rgRow')].some(row => row.textContent.includes('Stores') && row.querySelector('.tree-toggle')?.getAttribute('aria-expanded') === 'false'));
   } finally { await page.close(); }
 });
 
@@ -1423,8 +1783,8 @@ test('scale-up summary uses reusable charts and updates with filtering', async (
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
-    await revealCompany(page, 'Lumen Photonics');
-    await page.getByRole('button', { name: 'Open Lumen Photonics' }).waitFor();
+    await revealCompany(page, 'Lichtlijn Photonics');
+    await page.getByRole('button', { name: 'Open Lichtlijn Photonics' }).waitFor();
     await page.locator('.rv-dot-histogram').first().waitFor();
     assert.equal(await page.locator('.rv-dot-histogram').count(), 4);
     assert.equal(await page.locator('.rv-segmented-summary .rv-segmented-bar__part').count(), 3);
@@ -1433,7 +1793,7 @@ test('scale-up summary uses reusable charts and updates with filtering', async (
     assert.ok(await chart.locator('.rv-dot-histogram__plot button').count() > 0);
     assert.equal(await chart.locator('.rv-dot-histogram__axis span').count(), 2);
     const original = await page.locator('.rv-segmented-summary [role="img"]').getAttribute('aria-label');
-    await page.getByRole('searchbox').fill('Lumen Photonics');
+    await page.getByRole('searchbox').fill('Lichtlijn Photonics');
     await page.waitForFunction(value => document.querySelector('.rv-segmented-summary [role="img"]')?.getAttribute('aria-label') !== value, original);
     assert.equal(await page.locator('.rv-dot-histogram').count(), 4);
   } finally { await page.close(); }
@@ -1464,12 +1824,12 @@ test('scale-up summary charts align with grid columns and reveal company tooltip
     assert.equal(await dot.evaluate(el => getComputedStyle(el).outlineStyle), 'none');
     const tooltip = page.getByRole('tooltip');
     await tooltip.waitFor();
-    assert.match(await tooltip.innerText(), /Lumen Photonics[\s\S]*Revenue[\s\S]*€5\.5M/);
+    assert.match(await tooltip.innerText(), /Lichtlijn Photonics[\s\S]*Revenue[\s\S]*€5\.5M/);
     await page.mouse.move(1, 1);
     await tooltip.waitFor({ state: 'hidden' });
     await dot.focus();
     await tooltip.waitFor({ state: 'visible' });
-    assert.match(await tooltip.innerText(), /Lumen Photonics/);
+    assert.match(await tooltip.innerText(), /Lichtlijn Photonics/);
     await page.locator('revo-grid').evaluate(grid => { grid.columns = grid.columns.map(column => 'children' in column ? column : column.prop === 'revenue' ? { ...column, size: 180 } : column); });
     await page.waitForFunction(() => [...document.querySelectorAll('.rgHeaderCell')].find(el => el.textContent?.trim() === 'Revenue')?.getBoundingClientRect().width === 180);
     await page.waitForFunction(() => document.querySelector('.workbench-stat:nth-child(3)')?.getBoundingClientRect().width === 180);
@@ -1486,18 +1846,18 @@ test('headcount squares show and highlight the selected quarter', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url.replace('#campaign-performance', '#scale-up-index'));
-    await revealCompany(page, 'Lumen Photonics');
-    const track = page.getByRole('group', { name: 'Lumen Photonics headcount by quarter' });
+    await revealCompany(page, 'Lichtlijn Photonics');
+    const track = page.getByRole('group', { name: 'Lichtlijn Photonics headcount by quarter' });
     await track.waitFor();
     assert.equal(await track.getByRole('button').count(), 8);
-    const q3 = track.getByRole('button', { name: /Lumen Photonics, headcount, Q3 2025/ });
+    const q3 = track.getByRole('button', { name: /Lichtlijn Photonics, headcount, Q3 2025/ });
     await q3.hover();
     const tooltip = page.getByRole('tooltip');
     await tooltip.waitFor();
-    assert.match(await tooltip.innerText(), /Lumen Photonics, headcount[\s\S]*Q4 2024 to Q3 2026/);
+    assert.match(await tooltip.innerText(), /Lichtlijn Photonics, headcount[\s\S]*Q4 2024 to Q3 2026/);
     assert.equal(await tooltip.locator('.rv-metric-history__row').count(), 8);
     assert.match(await tooltip.locator('.rv-metric-history__row.is-active').innerText(), /Q3 2025\s+213, shrank/);
-    await track.getByRole('button', { name: /Lumen Photonics, headcount, Q2 2026/ }).hover();
+    await track.getByRole('button', { name: /Lichtlijn Photonics, headcount, Q2 2026/ }).hover();
     await page.waitForFunction(() => document.querySelector('.rv-metric-history__row.is-active')?.textContent?.includes('Q2 2026'));
     await page.mouse.move(1, 1);
     await tooltip.waitFor({ state: 'hidden' });
@@ -1574,6 +1934,71 @@ test('campaign identity and action cells use shared Pro renderers', async () => 
     await dialog.getByRole('table', { name: `${campaignName} weekly performance` }).waitFor();
     await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
     assert.equal(await dialog.getByLabel('Name').inputValue(), campaignName);
+  } finally { await page.close(); }
+});
+
+test('category forecast displays independent line history and retains its drawer', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url.replace('#campaign-performance', '#category-forecast'));
+    await page.getByText('Coastal Walking Shoes', { exact: true }).first().waitFor();
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+    await page.getByRole('button', { name: 'Coastal Walking Shoes', exact: true }).click();
+    await page.getByRole('dialog').waitFor();
+    await page.getByRole('dialog').getByRole('tab', { name: 'By Quarter' }).click();
+    assert.equal(await page.getByRole('dialog').getByRole('table').locator('tbody tr').count(), 4);
+  } finally { await page.close(); }
+});
+
+test('category forecast profile compares fiscal quarters', async () => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  try {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto(url.replace('#campaign-performance', '#category-forecast'));
+    await page.getByRole('button', { name: 'Trail Footwear', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    const deleteAction = dialog.getByRole('button', { name: 'Delete', exact: true });
+    const deleteStyle = await deleteAction.evaluate(node => {
+      const sample = document.createElement('span');
+      sample.style.background = 'var(--rv-ui-danger-surface)';
+      node.append(sample);
+      const background = getComputedStyle(node).backgroundColor;
+      const expected = getComputedStyle(sample).backgroundColor;
+      sample.remove();
+      return { classes: node.className, background, expected, border: getComputedStyle(node).borderTopColor };
+    });
+    assert.ok(deleteStyle.classes.includes('rv-btn-danger') && !deleteStyle.classes.includes('rv-btn-danger-outline') && deleteStyle.background === deleteStyle.expected && deleteStyle.border === 'rgba(0, 0, 0, 0)', JSON.stringify(deleteStyle));
+    for (const name of ['Previous line', 'Next line']) {
+      const arrow = dialog.getByRole('button', { name });
+      assert.equal(await arrow.locator('svg').evaluate(svg => {
+        const icon = svg.getBoundingClientRect();
+        const button = svg.closest('button').getBoundingClientRect();
+        return icon.width >= 8 && icon.height >= 8 && icon.left >= button.left && icon.right <= button.right && icon.top >= button.top && icon.bottom <= button.bottom;
+      }), true, `${name} icon fits inside its button`);
+    }
+    await dialog.getByRole('tab', { name: 'By Quarter' }).click();
+    const table = dialog.getByRole('table', { name: 'Trail Footwear sales by fiscal quarter, FY26 against FY25' });
+    assert.equal(await table.locator('tbody tr').count(), 4);
+    assert.match(await table.innerText(), /Q1 · Nov–Jan\s+Actual/);
+    assert.match(await table.innerText(), /Q3 · May–Jul\s+Actual \/ forecast/);
+    assert.match(await table.innerText(), /Q4 · Aug–Oct\s+Forecast/);
+    assert.equal(await dialog.getByRole('tab', { name: 'By Quarter' }).getAttribute('aria-selected'), 'true');
+    assert.equal(await dialog.getByRole('tab', { name: 'Overview' }).getAttribute('aria-selected'), 'false');
+    if (process.env.DEMO_DESKTOP_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_DESKTOP_SCREENSHOT_PATH });
+    await dialog.getByRole('tab', { name: 'By Month' }).click();
+    assert.equal(await dialog.getByRole('table').locator('tbody tr').count(), 12);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(() => document.documentElement.classList.add('dark'));
+    await dialog.getByRole('tab', { name: 'By Quarter' }).click();
+    assert.equal(await table.evaluate(node => {
+      const bounds = node.getBoundingClientRect();
+      const parent = node.parentElement.getBoundingClientRect();
+      return bounds.right <= parent.right + 1 && [...node.querySelectorAll('th, td')].every(cell => cell.scrollWidth <= cell.clientWidth + 1);
+    }), true);
+    assert.notEqual(await dialog.evaluate(node => getComputedStyle(node).backgroundColor), 'rgb(255, 255, 255)');
+    assert.equal(await dialog.getByRole('tab', { name: 'By Quarter' }).getAttribute('aria-selected'), 'true');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
   } finally { await page.close(); }
 });
 
@@ -1663,7 +2088,7 @@ test('campaign search prompt fits on desktop and mobile', async () => {
     for (const width of [1280, 390]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(url);
-      const input = page.getByPlaceholder('Search campaign, ID, market…');
+      const input = page.getByPlaceholder('Search campaigns');
       await input.waitFor();
       const measurement = await input.evaluate(el => {
         const style = getComputedStyle(el);
@@ -1673,8 +2098,8 @@ test('campaign search prompt fits on desktop and mobile', async () => {
         return { available: el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight), needed: context.measureText(el.placeholder).width };
       });
       assert.ok(measurement.available >= measurement.needed, `${width}px: ${JSON.stringify(measurement)}`);
-      await input.fill('Boreal');
-      await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+      await input.fill('Community');
+      await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     }
   } finally { await page.close(); }
 });
@@ -1684,7 +2109,7 @@ test('campaign column fills spare width and keeps its mobile minimum', async () 
   const page = await browser.newPage({ viewport: { width: 1800, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
+    await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     await page.waitForFunction(async () => [...document.querySelectorAll('revo-grid .rgHeaderCell')].find(cell => cell.textContent.trim().startsWith('Campaign'))?.getBoundingClientRect().width > 285);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForFunction(async () => [...document.querySelectorAll('revo-grid .rgHeaderCell')].find(cell => cell.textContent.trim().startsWith('Campaign'))?.getBoundingClientRect().width === 160);
@@ -1765,7 +2190,7 @@ test('product action menu uses the shared menu and supports delete undo', async 
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url.replace('#campaign-performance', '#product-kpis'));
-    await page.getByRole('button', { name: 'Open Granite Trail Boot' }).click();
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.locator('summary[aria-label="Product actions"]').click();
     const menu = dialog.getByRole('menu', { name: 'Product actions' });
@@ -1774,8 +2199,8 @@ test('product action menu uses the shared menu and supports delete undo', async 
     assert.equal(await dialog.locator('summary[aria-label="Product actions"]').evaluate(node => node.parentElement.open), false);
     await dialog.locator('summary[aria-label="Product actions"]').click();
     await menu.getByRole('menuitem', { name: 'Delete product' }).click();
-    await page.getByRole('dialog', { name: 'Delete record?' }).getByRole('button', { name: 'Save' }).click();
+    await page.getByRole('dialog', { name: 'Delete record?' }).getByRole('button', { name: 'Delete', exact: true }).click();
     await page.getByRole('button', { name: 'Undo', exact: true }).click();
-    await page.getByRole('button', { name: 'Open Granite Trail Boot' }).waitFor();
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).waitFor();
   } finally { await page.close(); }
 });

@@ -1,4 +1,6 @@
 import { createControl, createRecordNavigation } from '@revolist/ui/native';
+import '../../composables/demo-palette.css';
+import { advancedColumnMenu } from './advanced-column-menu';
 import plusIcon from '@fortawesome/fontawesome-free/svgs/solid/plus.svg?raw';
 import { TooltipController } from '@revolist/ui/core/popover-controller';
 import { ROW_ACTION_COLUMN_WIDTH } from '../../composables/row-action';
@@ -8,6 +10,7 @@ import { createToaster, mountToaster } from '@revolist/ui/toaster';
 import { mountTabs } from '@revolist/ui/native';
 import { CONFIGURATOR_AREA_ICONS } from '@revolist/ui/configurator-actions';
 import { createDetailPanel } from '../../composables/detail-panel';
+import { applyDemoChartColors } from '../../composables/demo-colors';
 import { personPortrait } from '../../composables/demo-portraits';
 import '../../pro-advanced-grids/src/campaign-rich-options.css';
 import '@revolist/ui/styles/base.scss';
@@ -38,6 +41,7 @@ import {
   initialLines,
   months,
   newLine,
+  quarterlyReadings,
   readLine,
   rollup,
   sum,
@@ -110,6 +114,7 @@ export function mountForecast(
     return wrapper;
   };
   const section = create('section', 'demo-shell forecast');
+  applyDemoChartColors(section);
   section.setAttribute('aria-label', text.title);
   const grid = create(
     'revo-grid',
@@ -154,6 +159,9 @@ export function mountForecast(
   const addTooltip = new TooltipController();
   addTooltip.bind(add, text.add, { delay: 200 });
   const summary = create('div', 'forecast-summary');
+  const scenario = create('div', 'forecast-scenario');
+  scenario.setAttribute('role', 'group');
+  scenario.setAttribute('aria-label', text.scenarioImpact);
   const legend = create('div', 'forecast-legend');
   const summaryScroll = create('div', 'forecast-summary-scroll');
   const summaryTrack = create('div', 'forecast-summary-track');
@@ -257,9 +265,10 @@ export function mountForecast(
   overlay.addEventListener('close', () => {
     if (!overlay.open) { profileTabs?.destroy(); profileTabs = undefined; disposeDropdowns(overlay); overlay.classList.remove('is-profile'); overlay.replaceChildren(); }
   });
-  section.append(heading, createDemoBody(document, summary, toastHost, grid, empty, overlay));
+  section.append(heading, createDemoBody(document, scenario, summary, toastHost, grid, empty, overlay));
   host.append(section);
 
+  grid.dataGridContextMenu = advancedColumnMenu;
   grid.readonly = true;
   grid.columnTypes = { ...grid.columnTypes, number: ColumnNumber, currency: ColumnCurrency, percentage: ColumnPercentage };
   grid.rowSize = 36;
@@ -379,6 +388,30 @@ export function mountForecast(
       reading: readLine(line, closeMonth, growth.get(line.department) ?? 0),
     }));
     totals = rollup(readings.map(({ reading }) => reading));
+    const baseline = matching.map(line =>
+      readLine(line, closeMonth, savedGrowth.get(line.department) ?? 0),
+    );
+    const savedOutlook = sum(baseline.map(reading => reading.outlook));
+    const affected = readings.filter(({ reading }, index) =>
+      reading.outlook !== baseline[index].outlook,
+    ).length;
+    const scenarioMoney = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0,
+    });
+    const delta = totals.outlook - savedOutlook;
+    const scenarioItem = (label: string, value: string) => {
+      const item = create('span', 'forecast-scenario__item');
+      item.append(create('span', '', label), create('strong', '', value));
+      return item;
+    };
+    scenario.replaceChildren(
+      scenarioItem(text.scenarioBaseline, scenarioMoney.format(savedOutlook)),
+      scenarioItem(text.scenarioRevised, scenarioMoney.format(totals.outlook)),
+      scenarioItem(text.scenarioChange, `${delta < 0 ? '−' : '+'}${scenarioMoney.format(Math.abs(delta))}`),
+      create('span', 'forecast-scenario__count', text.scenarioLines(affected)),
+    );
     bands.set(
       'all',
       Math.max(1, ...readings.flatMap(({ reading }) => reading.months)),
@@ -472,13 +505,15 @@ export function mountForecast(
     save: () => void | false,
     extra?: HTMLElement,
     profileLine?: Line,
+    destructive = false,
   ) {
     const form = create('form');
     const label = create('h2', '', title);
     label.id = 'forecast-dialog-title';
     const actions = create('div', 'forecast-form-actions');
-    const submit = createControl(document, 'button', { class: 'forecast-button primary rv-btn rv-btn-primary' });
-    submit.textContent = text.save;
+    const submit = createControl(document, 'button', { class: destructive ? 'forecast-button rv-btn rv-btn-danger' : 'forecast-button primary rv-btn rv-btn-primary' });
+    submit.textContent = destructive ? 'Delete' : text.save;
+    if (destructive) submit.dataset.icon = 'trash';
     submit.type = 'submit';
     if (extra) actions.append(extra);
     actions.append(
@@ -557,6 +592,23 @@ export function mountForecast(
       selectedTab = name;
       profileTabs?.update(tabProps(name));
       content.replaceChildren();
+      if (name === 'By Quarter') {
+        const card = cardSection('By Quarter', 'Fiscal quarters, November to October');
+        const table = create('table', 'forecast-profile-table forecast-profile-table--quarter');
+        table.setAttribute('aria-label', `${line.name} sales by fiscal quarter, FY26 against FY25`);
+        const head = document.createElement('thead'); const headRow = document.createElement('tr');
+        for (const label of ['Quarter', 'FY25', 'FY26', 'Change']) headRow.append(create('th', '', label));
+        head.append(headRow); table.append(head);
+        const body = document.createElement('tbody');
+        for (const quarter of quarterlyReadings(reading, closeMonth)) {
+          const row = document.createElement('tr');
+          const label = create('td', '', `${quarter.label} · ${quarter.period}`);
+          label.append(create('small', '', ` ${quarter.phase}`));
+          row.append(label, create('td', '', compactCurrency.format(quarter.prior)), create('td', '', compactCurrency.format(quarter.current)), create('td', '', quarter.change === null ? '—' : `${quarter.change >= 0 ? '+' : ''}${(quarter.change * 100).toFixed(1)}%`));
+          body.append(row);
+        }
+        table.append(body); card.body.append(table); content.append(card.card); return;
+      }
       if (name === 'By Month') {
         const card = cardSection('By Month', 'FY26 against FY25, forecast after the close');
         const table = create('table', 'forecast-profile-table');
@@ -611,7 +663,7 @@ export function mountForecast(
       return list;
     }
     profileTabs?.destroy();
-    const tabProps = (value: string) => ({ value, options: ['Overview', 'By Month'].map(label => ({ value: label, label })), onChange: renderTab, ariaLabel: 'Forecast details', className: 'forecast-profile-tabs rv-tabs--underline' });
+    const tabProps = (value: string) => ({ value, options: ['Overview', 'By Quarter', 'By Month'].map(label => ({ value: label, label })), onChange: renderTab, ariaLabel: 'Forecast details', className: 'forecast-profile-tabs rv-tabs--underline' });
     profileTabs = mountTabs(tabs, tabProps(selectedTab));
     renderTab(selectedTab);
     const footer = create('footer', 'forecast-profile-footer');
@@ -623,9 +675,9 @@ export function mountForecast(
         lines.splice(originalIndex, 1);
         toaster.show({ title: text.deleted(line.name), tone: 'success', action: { label: text.undo, onClick: () => { lines.splice(Math.min(originalIndex, lines.length), 0, line); update(); } } });
         update();
-      });
+      }, undefined, undefined, true);
     });
-    remove.classList.add('forecast-profile-delete'); remove.dataset.icon = 'trash';
+    remove.classList.add('rv-btn', 'rv-btn-danger', 'forecast-profile-delete'); remove.dataset.icon = 'trash';
     const exportButton = button('Export CSV', () => {
       const rows = [['Month', 'FY25', 'FY26'], ...months.map((month, i) => [`${month} ${i < 2 ? 2025 : 2026}`, String(line.prior[i]), String(reading.months[i])])];
       const url = URL.createObjectURL(new Blob([rows.map((row) => row.join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' }));
@@ -675,7 +727,7 @@ export function mountForecast(
     const defaultDepartment = line?.department ?? group ?? departments[0].name;
     const groupInput = select(departmentOptions, defaultDepartment, text.department);
     const planner = select(
-      [...departments.map((item) => [item.planner, item.planner] as const), ['Hana Mori', 'Hana Mori']],
+      [...departments.map((item) => [item.planner, item.planner] as const), ['Keira Voss', 'Keira Voss']],
       line?.planner ??
         departments.find((item) => item.name === defaultDepartment)!.planner,
       text.planner,
@@ -708,8 +760,9 @@ export function mountForecast(
             update();
           } } });
           update();
-        });
+        }, undefined, undefined, true);
       });
+    if (remove) { remove.classList.add('rv-btn', 'rv-btn-danger'); remove.dataset.icon = 'trash'; }
     name.addEventListener('change', () => {
       if (!name.value.trim()) name.setCustomValidity(text.name);
     });

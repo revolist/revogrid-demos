@@ -7,16 +7,16 @@ test('campaign sample summarizes distinct generated campaign data', () => {
   const rows = createCampaigns().sort((a, b) => b.spend - a.spend);
   const summary = summarizeCampaigns(rows);
   assert.equal(rows.length, 30);
-  assert.equal(rows[0].label, 'Boreal Gloves Member Event');
-  assert.equal(rows[0].spend, 55433);
-  assert.equal(summary.live, 17);
-  assert.equal(summary.spend, 602677);
-  assert.equal(summary.impressions, 41235519);
-  assert.equal(summary.conversions, 25689);
-  assert.equal(summary.budget, 787500);
-  assert.equal(summary.below, 21);
-  assert.equal(summary.target.toFixed(1), '4.4');
-  assert.equal((summary.revenue / summary.spend).toFixed(1), '5.1');
+  assert.equal(rows[0].label, 'Community Plan Member Event');
+  assert.equal(rows[0].spend, 48360);
+  assert.equal(summary.live, 16);
+  assert.equal(summary.spend, 555750);
+  assert.equal(summary.impressions, 43193000);
+  assert.equal(summary.conversions, 26575);
+  assert.equal(summary.budget, 779900);
+  assert.equal(summary.below, 18);
+  assert.equal(summary.target.toFixed(1), '3.8');
+  assert.equal((summary.revenue / summary.spend).toFixed(1), '3.8');
 });
 test('filtered totals and prior comparisons omit campaigns without a prior period', () => {
   const rows = createCampaigns();
@@ -30,11 +30,15 @@ test('filtered totals and prior comparisons omit campaigns without a prior perio
 
 
 test('all generated daily spend series match campaign totals', () => {
-  for (const campaign of createCampaigns()) {
+  const campaigns = createCampaigns();
+  assert.equal(new Set(campaigns.map(campaign => campaign.id)).size, campaigns.length);
+  assert.deepEqual(new Set(campaigns.map(campaign => campaign.status)), new Set(['Live', 'Limited', 'Learning', 'Paused', 'Ended']));
+  for (const campaign of campaigns) {
     assert.equal(campaign.dailySpend.length, 30);
     assert.equal(campaign.dailySpend.reduce((sum, value) => sum + value, 0), campaign.spend);
     assert.equal(campaign.trend.reduce((sum, value) => sum + value, 0), campaign.conversions);
     assert.ok(campaign.dailySpend.every((amount, day) => (day >= campaign.activeFrom && day <= campaign.activeTo) || amount === 0));
+    assert.ok(campaign.conversions <= campaign.trialStarts && campaign.trialStarts <= campaign.clicks && campaign.clicks <= campaign.impressions);
   }
 });
 

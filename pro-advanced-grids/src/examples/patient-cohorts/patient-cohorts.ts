@@ -9,6 +9,7 @@ import '@revolist/ui/benchmark-card.scss';
 import type { ColumnData, ColumnRegular, DataType } from '@revolist/revogrid';
 import { compareCohorts, type CohortSortKey, type CohortSortable } from './cohort-sort';
 import { cohortHeatTier } from './cohort-heat';
+import { cohortTransition } from './cohort-transition';
 import {
   button,
   make,
@@ -33,188 +34,23 @@ interface Signal {
   hold: number;
 }
 const signals: Signal[] = [
-  {
-    id: 'Q1',
-    label: 'Appointment needed this week',
-    note: 'Acute pain and mobility limits',
-    area: 'Clinical Fit',
-    answers: 711,
-    verified: 611,
-    booked: 438,
-    arrived: 367,
-    started: 321,
-    hold: 45,
-  },
-  {
-    id: 'Q2',
-    label: 'Imaging results available',
-    note: 'X-ray or MRI attached',
-    area: 'Clinical Fit',
-    answers: 694,
-    verified: 563,
-    booked: 402,
-    arrived: 333,
-    started: 287,
-    hold: 62,
-  },
-  {
-    id: 'Q4',
-    label: 'Coverage is in network',
-    note: 'Payer accepted at main campus',
-    area: 'Coverage Fit',
-    answers: 683,
-    verified: 521,
-    booked: 381,
-    arrived: 305,
-    started: 264,
-    hold: 74,
-  },
-  {
-    id: 'Q3',
-    label: 'Authorization confirmed',
-    note: 'Authorization known at intake',
-    area: 'Coverage Fit',
-    answers: 676,
-    verified: 506,
-    booked: 351,
-    arrived: 268,
-    started: 229,
-    hold: 98,
-  },
-  {
-    id: 'Q6',
-    label: 'Morning availability',
-    note: 'Preferred window before noon',
-    area: 'Visit Fit',
-    answers: 659,
-    verified: 482,
-    booked: 364,
-    arrived: 297,
-    started: 251,
-    hold: 57,
-  },
-  {
-    id: 'Q5',
-    label: 'Travel within 40 miles',
-    note: 'Patient can reach first slot',
-    area: 'Visit Fit',
-    answers: 648,
-    verified: 447,
-    booked: 307,
-    arrived: 253,
-    started: 217,
-    hold: 81,
-  },
-  {
-    id: 'Q7',
-    label: 'Care partner available',
-    note: 'Ride and recovery support confirmed',
-    area: 'Visit Fit',
-    answers: 626,
-    verified: 419,
-    booked: 296,
-    arrived: 242,
-    started: 205,
-    hold: 87,
-  },
-  {
-    id: 'Q8',
-    label: 'Interpreter need recorded',
-    note: 'Interpreter requirement captured',
-    area: 'Visit Fit',
-    answers: 612,
-    verified: 457,
-    booked: 322,
-    arrived: 269,
-    started: 229,
-    hold: 48,
-  },
+  { id: 'Q1', label: 'Referral priority recorded', note: 'Referral urgency confirmed by the clinic', area: 'Clinical Fit', answers: 812, verified: 720, booked: 520, arrived: 450, started: 385, hold: 61 },
+  { id: 'Q2', label: 'Rehabilitation goals documented', note: 'Care goals shared before triage', area: 'Clinical Fit', answers: 638, verified: 525, booked: 385, arrived: 315, started: 264, hold: 82 },
+  { id: 'Q3', label: 'Primary care referral received', note: 'Referral information available for review', area: 'Coverage Fit', answers: 745, verified: 604, booked: 442, arrived: 359, started: 310, hold: 66 },
+  { id: 'Q4', label: 'Benefits estimate reviewed', note: 'Coverage and expected costs discussed', area: 'Coverage Fit', answers: 590, verified: 452, booked: 317, arrived: 249, started: 205, hold: 92 },
+  { id: 'Q5', label: 'Evening appointment requested', note: 'Availability after the working day', area: 'Visit Fit', answers: 702, verified: 548, booked: 420, arrived: 357, started: 296, hold: 58 },
+  { id: 'Q6', label: 'Accessible transport arranged', note: 'A suitable journey to the clinic is available', area: 'Visit Fit', answers: 561, verified: 423, booked: 290, arrived: 232, started: 196, hold: 78 },
+  { id: 'Q7', label: 'Remote consultation considered', note: 'Patient preference for an initial video visit', area: 'Visit Fit', answers: 487, verified: 390, booked: 312, arrived: 261, started: 231, hold: 37 },
+  { id: 'Q8', label: 'Communication preferences recorded', note: 'Preferred contact and language documented', area: 'Visit Fit', answers: 679, verified: 529, booked: 391, arrived: 322, started: 278, hold: 51 },
 ];
 const cardiology: Signal[] = [
-  {
-    id: 'Q1',
-    label: 'Symptoms under review',
-    note: 'Chest pain or rhythm concern',
-    area: 'Clinical Fit',
-    answers: 581,
-    verified: 503,
-    booked: 373,
-    arrived: 315,
-    started: 269,
-    hold: 36,
-  },
-  {
-    id: 'Q2',
-    label: 'Referral order exists',
-    note: 'Provider order received',
-    area: 'Clinical Fit',
-    answers: 568,
-    verified: 476,
-    booked: 347,
-    arrived: 291,
-    started: 247,
-    hold: 52,
-  },
-  {
-    id: 'Q3',
-    label: 'Benefits verified',
-    note: 'Eligibility matched before booking',
-    area: 'Coverage Fit',
-    answers: 557,
-    verified: 458,
-    booked: 329,
-    arrived: 275,
-    started: 234,
-    hold: 68,
-  },
-  {
-    id: 'Q4',
-    label: 'Cost share accepted',
-    note: 'Copay estimate acknowledged',
-    area: 'Coverage Fit',
-    answers: 546,
-    verified: 405,
-    booked: 278,
-    arrived: 222,
-    started: 187,
-    hold: 88,
-  },
-  {
-    id: 'Q5',
-    label: 'Device data ready',
-    note: 'Wearable or monitor export shared',
-    area: 'Visit Fit',
-    answers: 534,
-    verified: 412,
-    booked: 298,
-    arrived: 247,
-    started: 207,
-    hold: 64,
-  },
-  {
-    id: 'Q6',
-    label: '48-hour slot fit',
-    note: 'Fast-track appointment accepted',
-    area: 'Visit Fit',
-    answers: 523,
-    verified: 379,
-    booked: 309,
-    arrived: 258,
-    started: 216,
-    hold: 49,
-  },
-  {
-    id: 'Q7',
-    label: 'Transport confirmed',
-    note: 'Ride option recorded',
-    area: 'Visit Fit',
-    answers: 508,
-    verified: 337,
-    booked: 229,
-    arrived: 188,
-    started: 151,
-    hold: 79,
-  },
+  { id: 'Q1', label: 'Screening results received', note: 'Recent screening results added to the referral', area: 'Clinical Fit', answers: 674, verified: 581, booked: 431, arrived: 363, started: 314, hold: 42 },
+  { id: 'Q2', label: 'Medication list reconciled', note: 'Current medicines available to the care team', area: 'Clinical Fit', answers: 594, verified: 480, booked: 351, arrived: 291, started: 248, hold: 65 },
+  { id: 'Q3', label: 'Coverage confirmation requested', note: 'Eligibility check started before scheduling', area: 'Coverage Fit', answers: 713, verified: 555, booked: 401, arrived: 320, started: 274, hold: 84 },
+  { id: 'Q4', label: 'Financial assistance discussed', note: 'Support options reviewed with the patient', area: 'Coverage Fit', answers: 478, verified: 350, booked: 245, arrived: 187, started: 154, hold: 76 },
+  { id: 'Q5', label: 'Preferred clinic selected', note: 'Location preference recorded', area: 'Visit Fit', answers: 629, verified: 502, booked: 381, arrived: 326, started: 281, hold: 53 },
+  { id: 'Q6', label: 'Telephone follow-up accepted', note: 'A phone appointment is suitable', area: 'Visit Fit', answers: 532, verified: 411, booked: 319, arrived: 265, started: 222, hold: 47 },
+  { id: 'Q7', label: 'Caregiver contact identified', note: 'Support person included in coordination', area: 'Visit Fit', answers: 456, verified: 330, booked: 222, arrived: 177, started: 145, hold: 72 },
 ];
 const outcomeDescriptions: Record<Outcome, string> = {
   verified: 'Coverage cleared',
@@ -242,6 +78,16 @@ const notes: Record<string, string> = {
 };
 const rate = (value: number, count: number) =>
   count ? Math.round((value / count) * 100) : 0;
+const stageNames = ['Verification', 'Booking', 'Arrival', 'Care start'] as const;
+function stageDrops(row: Pick<Signal, 'answers' | 'verified' | 'booked' | 'arrived' | 'started'>) {
+  return [row.answers - row.verified, row.verified - row.booked, row.booked - row.arrived, row.arrived - row.started];
+}
+function matchesStage(row: Signal, stage: string) {
+  if (stage === 'All stages') return true;
+  const drops = stageDrops(row);
+  const selected = drops[stageNames.indexOf(stage as typeof stageNames[number])];
+  return selected > 0 && selected === Math.max(...drops);
+}
 function risk(row: Signal) {
   const value = rate(row.hold, row.answers);
   return value >= 14
@@ -289,24 +135,30 @@ export const patientCohorts: Example = {
     bench.onDispose(() => tabControl.destroy());
     bench.summary.hidden = false;
     bench.summary.classList.add('cohort-tab-bar');
+    const summary = make('div', '', 'cohort-stage-summary');
     bench.summary.append(tabs);
-    const summary = make('div', '', 'cohort-heading-summary');
-    bench.heading.append(summary);
+    bench.toolbar.before(summary);
     const cohort = select(
       'Cohort',
-      ['Mobility Referral', 'Heart Health Access'],
-      'Mobility Referral',
+      ['Community Rehabilitation', 'Preventive Care Access'],
+      'Community Rehabilitation',
       () => {
         expanded = new Set();
         refresh();
       },
     );
     const cohortSignals = () =>
-      cohort.value === 'Heart Health Access' ? cardiology : signals;
+      cohort.value === 'Preventive Care Access' ? cardiology : signals;
     const riskFilter = select(
       'Filter by hold risk',
       ['All hold risk', 'High hold risk', 'Watch list', 'Low hold risk'],
       'All hold risk',
+      refresh,
+    );
+    const stageFilter = select(
+      'Filter by largest stage drop',
+      ['All stages', ...stageNames],
+      'All stages',
       refresh,
     );
     const notesLabel = make('div', '', 'cohort-notes');
@@ -323,7 +175,7 @@ export const patientCohorts: Example = {
       expanded = new Set(all ? [] : names);
       refresh();
     });
-    bench.toolbar.append(cohort, riskFilter, notesLabel, expand);
+    bench.toolbar.append(cohort, riskFilter, stageFilter, notesLabel, expand);
     bench.onSearch(refresh);
     bench.onCompactChange(refresh);
     function group(row: Signal) {
@@ -352,7 +204,7 @@ export const patientCohorts: Example = {
         await bench.grid.updateColumnSorting(column, direction === 1 ? 'asc' : direction === -1 ? 'desc' : undefined, false);
       }
     };
-    bench.grid.dataGridContextMenu = { commandHandlers: {
+    bench.grid.dataGridContextMenu = { ...bench.grid.dataGridContextMenu || {}, commandHandlers: {
       'column.sortAscending': applySort(1), 'column.sortDescending': applySort(-1), 'column.clearSort': applySort(null),
     } };
     const sortableHeader = (key: CohortSortKey, label: string) =>
@@ -435,14 +287,37 @@ export const patientCohorts: Example = {
               },
             };
           },
-          // The benchmark tooltip contains the full cell detail.
-          onActivate: () => {},
+          onActivate: (model: DataType) => {
+            const answers = Number(model.answers);
+            const count = Number(model[key]);
+            const percent = rate(count, answers);
+            const average = rate(total(cohortSignals(), row => row[key]), total(cohortSignals(), row => row.answers));
+            const delta = percent - average;
+            const favorable = key === 'hold' ? delta < 0 : delta > 0;
+            const content = createBenchmarkCardContent(document, {
+              title: String(model.label), badge: key[0].toUpperCase() + key.slice(1), description: outcomeDescriptions[key],
+              value: answers ? `${percent}%` : '—', detail: `${number(count)} of ${number(answers)} answers`,
+              ...(answers ? { change: `${delta > 0 ? '+' : ''}${delta} pts`, changeTone: delta === 0 ? 'neutral' as const : favorable ? 'positive' as const : 'negative' as const, progress: { value: percent, label: `${percent}%` } } : {}),
+              benchmark: `Cohort average ${average}%`,
+            });
+            content.classList.add('cohort-checkpoint');
+            const transition = cohortTransition(key, model);
+            if (transition && key !== 'verified') {
+              const detail = make('div', '', 'cohort-transition');
+              detail.append(
+                make('strong', transition.percent == null ? '—' : `${transition.percent}%`),
+                make('span', `${number(transition.count)} of ${number(transition.denominator)} ${transition.label} progressed to ${key}`),
+              );
+              content.append(detail);
+            }
+            bench.details('Checkpoint details', [content]);
+          },
         },
       })),
     ];
     function refresh() {
       bench.setSubtitle(
-        cohort.value === 'Heart Health Access'
+        cohort.value === 'Preventive Care Access'
           ? 'Referral triage for high-intent heart care'
           : 'Care navigation signals for referral and appointment planning',
       );
@@ -450,6 +325,7 @@ export const patientCohorts: Example = {
         (row) =>
           (riskFilter.value === 'All hold risk' ||
             risk(row) === riskFilter.value) &&
+          matchesStage(row, stageFilter.value) &&
           matches(bench.currentQuery(), row.label, row.note, row.area, row.id),
       );
       tabControl.update(tabProps(mode));
@@ -479,10 +355,24 @@ export const patientCohorts: Example = {
       summary.replaceChildren();
       const answers = make('span', 'Answers');
       answers.append(make('b', number(totalAnswers)));
-      const hold = make('span', 'Hold Risk');
+      const hold = make('span', 'Hold Risk', 'cohort-stage-summary__hold');
       hold.append(make('b', number(Number(stats.hold))));
-      const date = make('span', 'Exported  24 Jun 2026');
-      summary.append(answers, hold, date);
+      const stages = [
+        ['Verification', totalAnswers, Number(stats.verified)],
+        ['Booking', Number(stats.verified), Number(stats.booked)],
+        ['Arrival', Number(stats.booked), Number(stats.arrived)],
+        ['Care start', Number(stats.arrived), Number(stats.started)],
+      ] as const;
+      const biggestDrop = stages.reduce((largest, stage) => stage[1] - stage[2] > largest[1] - largest[2] ? stage : largest);
+      const [stage, before, after] = biggestDrop;
+      const started = make('span', 'Started care');
+      started.append(make('b', `${number(Number(stats.started))} / ${number(totalAnswers)}`));
+      summary.append(answers, started, hold);
+      if (before > after) {
+        const drop = make('span', 'Largest drop');
+        drop.append(make('b', `${stage} −${number(before - after)}`));
+        summary.append(drop);
+      }
       const all = groupNames().filter((name) =>
         filtered.some((row) => group(row) === name),
       );

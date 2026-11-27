@@ -14,11 +14,11 @@ test('campaign editor and detail show matching channel, flag and owner images', 
  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
  try {
   await page.goto(url);
-  await page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).waitFor();
-  const row = page.locator('.rgRow').filter({ has: page.getByRole('button', { name: 'Open Boreal Gloves Member Event' }) }).first();
+  await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
+  const row = page.locator('.rgRow').filter({ has: page.getByRole('button', { name: 'Open Community Plan Member Event' }) }).first();
   assert.equal(await row.locator('.fa-linkedin').count(), 1);
   const gridBadge = await page.locator('.campaign-grid-shell .pill.good').first().evaluate(element => { const style = getComputedStyle(element); return [style.color, style.backgroundColor, style.fontWeight, style.borderRadius]; });
-  await row.getByRole('button', { name: 'Open Boreal Gloves Member Event' }).click();
+  await row.getByRole('button', { name: 'Open Community Plan Member Event' }).click();
   const dialog = page.getByRole('dialog');
   const popupBadge = await dialog.locator('.campaign-profile__title .pill').evaluate(element => { const style = getComputedStyle(element); return [style.color, style.backgroundColor, style.fontWeight, style.borderRadius]; });
   assert.deepEqual(popupBadge, gridBadge);

@@ -10,7 +10,7 @@ const reading = company => {
   return { current, previous };
 };
 test('reference scores use growth, margin and revenue scale rather than screening answers', () => {
-  const company = scaleUpRawCompanies.find(row => row.name === 'Lumen Photonics');
+  const company = scaleUpRawCompanies.find(row => row.name === 'Lichtlijn Photonics');
   assert.deepEqual(reading(company), { current: 42.6, previous: 67.3 });
   assert.deepEqual(reading({ ...company, checks: { founder: 'no', exports: 'no', raising: 'no', audited: 'no' } }), reading(company));
   assert.equal(indexScore(null, 10, million), null);

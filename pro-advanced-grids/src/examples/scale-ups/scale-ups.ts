@@ -1,4 +1,4 @@
-import { createRecordNavigation } from '@revolist/ui/native';
+import { createRecordNavigation, renderControl } from '@revolist/ui/native';
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Legend, RadioGroup, SegmentedSwitch } from '@revolist/ui/react';
@@ -58,13 +58,25 @@ export const scaleUpIndex: Example = {
       'All provinces',
       refresh,
     );
+    const stageFilter = select(
+      'Company view',
+      ['All companies', 'Shortlisted or in talks'],
+      'All companies',
+      (value) => {
+        if (value !== 'All companies') {
+          companies.filter(company => company.stage === 'Shortlisted' || company.stage === 'In Talks')
+            .forEach(company => expanded.add(company.province));
+        }
+        refresh();
+      },
+    );
     const fold = button('Expand all', () => {
       if (expanded.size === provinces.length) expanded.clear();
       else provinces.forEach((province) => expanded.add(province));
       refresh();
     });
     bench.heading.append(button('Add Company', () => edit(), true));
-    bench.toolbar.append(provinceFilter, fold);
+    bench.toolbar.append(provinceFilter, stageFilter, fold);
     bench.onSearch(refresh);
     bench.onCompactChange(() => { Reflect.set(bench.grid, 'stretch', window.matchMedia('(max-width: 650px)').matches ? 0 : 1); refresh(); });
     let summaryFrame = 0;
@@ -174,9 +186,9 @@ export const scaleUpIndex: Example = {
                         'text-anchor': 'middle',
                         'font-size': 13,
                         'font-weight': 500,
-                        fill: '#fff',
+                        fill: demoColors.white,
                       },
-                      'K',
+                      company.label.charAt(0).toUpperCase(),
                     )
                   : null,
                 mark === 1
@@ -203,7 +215,7 @@ export const scaleUpIndex: Example = {
                       d: 'M5 19A14 14 0 0 1 19 5M10 19a9 9 0 0 1 9-9M15 19a4 4 0 0 1 4-4',
                       transform: 'translate(5.4 5.4) scale(.55)',
                       fill: 'none',
-                      stroke: '#fff',
+                      stroke: demoColors.white,
                       'stroke-width': 2.6,
                       'stroke-linecap': 'round',
                     })
@@ -212,7 +224,7 @@ export const scaleUpIndex: Example = {
                   ? h('path', {
                       d: 'M4 17h16v3H4Zm3-6h13v3H7Zm3-6h10v3H10Z',
                       transform: 'translate(5.4 5.4) scale(.55)',
-                      fill: '#fff',
+                      fill: demoColors.white,
                     })
                   : null,
               ],
@@ -221,11 +233,17 @@ export const scaleUpIndex: Example = {
     };
     const flagIcon = (model: DataType) => (h: Parameters<NonNullable<ColumnRegular['cellTemplate']>>[0]) =>
       h('span', { class: `province-flag ${String(model.province).toLowerCase().replaceAll(' ', '-')}`, 'aria-hidden': 'true' });
+    const provinceDetails = (model: DataType) => (h: Parameters<NonNullable<ColumnRegular['cellTemplate']>>[0]) =>
+      renderControl(h, 'button', {
+        type: 'button', class: 'rv-btn province-details-trigger', 'aria-label': `View ${model.province} details`, title: `View ${model.province} details`,
+        onMouseDown: (event: MouseEvent) => event.stopPropagation(),
+        onClick: (event: MouseEvent) => { event.stopPropagation(); showProvince(model); },
+      }, 'i');
     const rankTone = (rank: number) => rank === 1 ? 'gold' as const : rank === 2 ? 'silver' as const : rank === 3 ? 'bronze' as const : 'neutral' as const;
     const companyPresentation = (model: DataType, compact: boolean): EntityCellPresentation => {
       if (compact && model.total) return { kind: 'group', variant: 'inline', label: 'Netherlands', detail: model.label, interactive: false, leading: h => h('span', { 'aria-hidden': 'true' }, '🇳🇱') };
-      if (compact && model.provinceHead) return { kind: 'group', variant: 'inline', label: model.province, expanded: !!model.expanded, actionLabel: `${model.expanded ? 'Collapse' : 'Expand'} ${model.province}`, leading: flagIcon(model), rank: { label: `#${model.rank}`, tone: rankTone(model.rank) } };
-      if (!model.company) return { kind: 'group', variant: 'inline', className: 'scale-company--summary', label: model.label, interactive: false, leading: h => renderIconStack(h, { items: [{ content: '◒', color: '#171717' }, { content: '✦', color: '#7960db' }, { content: '●', color: '#ed9a00' }] }) };
+      if (compact && model.provinceHead) return { kind: 'group', variant: 'inline', label: model.province, expanded: !!model.expanded, actionLabel: `${model.expanded ? 'Collapse' : 'Expand'} ${model.province}`, leading: flagIcon(model), trailing: provinceDetails(model), rank: { label: `#${model.rank}`, tone: rankTone(model.rank) } };
+      if (!model.company) return { kind: 'group', variant: 'inline', className: 'scale-company--summary', label: model.label, interactive: false, leading: h => renderIconStack(h, { items: ((model.companies ?? []) as Company[]).slice(0, 3).map(company => ({ content: company.label.charAt(0).toUpperCase(), color: [demoColors.teal, demoColors.blue, demoColors.purple, demoColors.pink][Number(company.id.replace(/\D/g, '')) % 4] })) }) };
       const company = model.company as Company;
       return { kind: 'identity', label: model.label, detail: model.subtitle, actionLabel: `Open ${model.label}`, leading: h => companyLogo(h, model), ...(company.stage && company.stage !== 'Tracked' ? { badge: { text: company.stage, tone: company.stage === 'In Talks' ? 'positive' : 'neutral' } } : {}) };
     };
@@ -251,9 +269,11 @@ export const scaleUpIndex: Example = {
         entityCell: {
           format: (_value, model) => !model.provinceHead ? undefined : ({
             kind: 'group', label: model.province, expanded: !!model.expanded, className: `province-cell ${model.expanded ? 'is-expanded' : ''}`,
-            actionLabel: `${model.expanded ? 'Collapse' : 'Expand'} ${model.province}`, leading: flagIcon(model),
-            summary: { label: 'Index score', value: model.provinceScore == null ? 'Not scored' : Number(model.provinceScore).toFixed(1), change: model.provinceScoreChange == null ? 'New' : `${model.provinceScoreChange >= 0 ? '↗ +' : '↘ '}${Number(model.provinceScoreChange).toFixed(1)}`, map: { paths: provincePaths, activeIndex: provincePathIndex[model.province] } },
-            fields: [ { label: 'Capital', value: capital[model.province] ?? '—' }, { label: 'Companies', value: String(model.provinceCount) }, { label: 'Revenue', value: euros(Number(model.provinceRevenue)) }, { label: 'Staff', value: number(model.provinceStaff) } ],
+            actionLabel: `${model.expanded ? 'Collapse' : 'Expand'} ${model.province}`, leading: flagIcon(model), trailing: provinceDetails(model),
+            ...(model.expanded && model.provinceCount >= 2 ? {
+              summary: { label: 'Index score', value: model.provinceScore == null ? 'Not scored' : Number(model.provinceScore).toFixed(1), change: model.provinceScoreChange == null ? 'New' : `${model.provinceScoreChange >= 0 ? '↗ +' : '↘ '}${Number(model.provinceScoreChange).toFixed(1)}`, map: { paths: provincePaths, activeIndex: provincePathIndex[model.province] } },
+              ...(model.provinceCount >= 5 ? { fields: [ { label: 'Capital', value: capital[model.province] ?? '—' }, { label: 'Companies', value: String(model.provinceCount) }, { label: 'Revenue', value: euros(Number(model.provinceRevenue)) }, { label: 'Staff', value: number(model.provinceStaff) } ] } : {}),
+            } : {}),
           }),
           onActivate: model => toggle(model.province),
         },
@@ -338,6 +358,7 @@ export const scaleUpIndex: Example = {
         (row) =>
           (provinceFilter.value === 'All provinces' ||
             row.province === provinceFilter.value) &&
+          (stageFilter.value === 'All companies' || row.stage === 'Shortlisted' || row.stage === 'In Talks') &&
           matches(bench.currentQuery(), row.label, row.province, row.sector, row.sectorName),
       );
       const rankings = provinces.flatMap((label) => {
@@ -424,6 +445,7 @@ export const scaleUpIndex: Example = {
               {
                 ...group,
                 ...province,
+                companies: items,
                 label: `${items.length} companies`,
                 mark: '◉',
               },
@@ -506,7 +528,7 @@ export const scaleUpIndex: Example = {
         [
           '2026 Index, FY25 vs FY24',
           `🇳🇱  ${visible.length} companies`,
-          `in ${rankings.length} provinces`,
+          `in ${rankings.length} provinces · ${visible.filter(row => row.stage === "Shortlisted" || row.stage === "In Talks").length} shortlisted or in talks`,
         ],
         [
           'Screen',
@@ -549,7 +571,7 @@ export const scaleUpIndex: Example = {
           label: `Screening: Yes ${yes}, No ${no}, N/A ${missing}`,
           parts: [
             { label: 'Yes', value: yes, color: demoColors.teal },
-            { label: 'N/A', value: missing, color: '#d5d1d7' },
+            { label: 'N/A', value: missing, color: 'var(--rv-ui-border)' },
             { label: 'No', value: no, color: demoColors.pink },
           ],
           legendOrder: [0, 2, 1],
@@ -609,11 +631,34 @@ export const scaleUpIndex: Example = {
       });
     }
 
+    function showProvince(model: DataType) {
+      const name = String(model.province);
+      const content = make('div', '', 'province-details');
+      const summary = make('div', '', 'province-details__summary');
+      const map = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      map.setAttribute('viewBox', '0 0 84 100');
+      map.setAttribute('aria-hidden', 'true');
+      for (const [index, path] of provincePaths.entries()) {
+        const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        shape.setAttribute('d', path);
+        if (index === provincePathIndex[name]) shape.classList.add('is-active');
+        map.append(shape);
+      }
+      const scoreBlock = make('div');
+      scoreBlock.append(make('span', 'Index score'), make('strong', model.provinceScore == null ? 'Not scored' : Number(model.provinceScore).toFixed(1)));
+      if (model.provinceScoreChange != null) scoreBlock.append(make('small', `${model.provinceScoreChange >= 0 ? '+' : ''}${Number(model.provinceScoreChange).toFixed(1)} vs prior year`));
+      summary.append(map, scoreBlock);
+      const fields = make('dl', '', 'province-details__fields');
+      for (const [label, value] of [['Capital', capital[name] ?? '—'], ['Companies', number(model.provinceCount)], ['Revenue', euros(Number(model.provinceRevenue))], ['Staff', number(model.provinceStaff)]]) fields.append(make('dt', label), make('dd', value));
+      content.append(summary, fields);
+      bench.details(`${name} · province overview`, [content]);
+    }
+
     function showCompany(company: Company, active: 'Overview' | 'Financials' | 'Hiring' = 'Overview') {
       const body = make('div', '', 'scale-profile');
       const companyHeading = make('div', '', 'scale-profile__heading');
       const meta = make('div', '', 'scale-profile__meta'); meta.append(make('span', company.id, 'scale-profile__id'));
-      const peers = companies.filter(item => item.province === company.province && (provinceFilter.value === 'All provinces' || item.province === provinceFilter.value) && matches(bench.currentQuery(), item.label, item.province, item.sector));
+      const peers = companies.filter(item => item.province === company.province && (provinceFilter.value === 'All provinces' || item.province === provinceFilter.value) && (stageFilter.value === 'All companies' || item.stage === 'Shortlisted' || item.stage === 'In Talks') && matches(bench.currentQuery(), item.label, item.province, item.sector, item.sectorName));
       const measure = (item: Company) => rankBy.value === 'Revenue' ? item.revenue : rankBy.value === 'Growth' ? item.growth : score(item);
       peers.sort((a,b) => (measure(b) ?? -Infinity) - (measure(a) ?? -Infinity) || a.label.localeCompare(b.label));
       const position = Math.max(0, peers.indexOf(company));
@@ -715,9 +760,9 @@ export const scaleUpIndex: Example = {
           legendRoot.render(createElement(Legend, {
             label: 'Headcount changes',
             items: [
-              { id: 'up', label: 'Hired', color: '#5eead4' },
-              { id: 'flat', label: 'Held', color: '#d7d2da' },
-              { id: 'down', label: 'Shrank', color: '#fda4af' },
+              { id: 'up', label: 'Hired', color: 'var(--rv-ui-success-surface)' },
+              { id: 'flat', label: 'Held', color: 'var(--rv-ui-surface-hover)' },
+              { id: 'down', label: 'Shrank', color: 'var(--rv-ui-danger-surface)' },
             ],
           }));
           hiring.append(track, legend);
@@ -734,7 +779,7 @@ export const scaleUpIndex: Example = {
 
       showTab(active);
       const extra = make('div', '', 'scale-profile__footer-extra');
-      const remove = button('Delete', () => removeRecord(bench, companies, company, company.label, refresh)); remove.className = 'scale-profile__delete'; remove.dataset.icon = 'trash';
+      const remove = button('Delete', () => removeRecord(bench, companies, company, company.label, refresh)); remove.classList.add('rv-btn-danger', 'scale-profile__delete'); remove.dataset.icon = 'trash';
       const exportButton = button('Export CSV', () => {
         const quote = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
         const rows = [['Company', 'Province', 'City', 'Sector', 'Revenue FY23', 'Revenue FY24', 'Revenue FY25', 'EBITDA FY24', 'EBITDA FY25', 'Staff', 'Score'], [company.label, company.province, company.city, company.sectorName, company.priorRevenue, company.previousRevenue, company.revenue, company.previousEbitda, company.margin == null ? null : company.margin * company.revenue / 100, company.staff, score(company)]];

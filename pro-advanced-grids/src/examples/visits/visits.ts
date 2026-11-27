@@ -10,6 +10,7 @@ import '@revolist/ui/styles/calendar.scss';
 import type { ColumnData, ColumnRegular } from '@revolist/revogrid';
 import {
   button,
+  deleteButton,
   field,
   fixedDate,
   input,
@@ -23,10 +24,10 @@ import {
 
 import { GridPopoverPlugin, createTimeRangeSlotHeaderFormatter, statusActionRenderer, progressDetailRenderer, identityCellRenderer, cellActionRenderer, visualCellRenderer } from '@revolist/revogrid-pro';
 import { KeyedRowSelectionPlugin } from '@revolist/revogrid-pro';
-import { initialKitchens, initialVisits, technicians, areaManagers } from './visit-fixtures';
-import { services, serviceStates, kitchenPlan, coverage, dueVisits, effectiveStatus, suggestCrew, bookingError, planDueBookings, kitchenError, visitWindows, type VisitWindow, type Kitchen, type Visit, type Service, type Status } from './visit-model';
+import { facilitySites as initialKitchens, facilityVisits as initialVisits, facilityTechnicians as technicians, facilityManagers as areaManagers } from './facility-fixtures';
+import { services, serviceStates, kitchenPlan, coverage, dueVisits, effectiveStatus, suggestCrew, technicianConflict, bookingError, planDueBookings, kitchenError, visitWindows, type VisitWindow, type Kitchen, type Visit, type Service, type Status } from './visit-model';
 
-const serviceKeys: Service[] = ['clean', 'pest', 'grease', 'hood', 'fridge', 'fire'];
+const serviceKeys: Service[] = ['air', 'water', 'electrical', 'lift', 'climate', 'fire'];
 const serviceLabels = serviceKeys.map(key => services[key].label);
 const statuses: Status[] = ['Due', 'Booked', 'Awaiting', 'Completed', 'Missed'];
 const start = fixedDate(0).valueOf();
@@ -46,7 +47,7 @@ export const visitPlanner: Example = {
   id: 'service-visits',
   title: 'Field Service Visit Planner',
   description:
-    'Contractor coverage across a rolling three-week kitchen schedule',
+    'Contractor coverage across a rolling three-week facilities schedule',
   setup(bench) {
     let firstDay = 0;
     let nextId = initialKitchens.length;
@@ -80,10 +81,12 @@ export const visitPlanner: Example = {
     const statusRoot = createRoot(statusMenu);
     const statusOptions = [
       { value: 'Missed', label: 'Missed' },
+      { value: 'Due', label: 'Ready to book' },
       { value: 'Awaiting', label: 'Awaiting' },
       { value: 'Booked', label: 'Confirmed' },
       { value: 'Completed', label: 'Done' },
     ] as const;
+    bench.summary.hidden = true;
     const renderStatus = (allRows: ReturnType<typeof kitchenRows>) => {
       const source = statusOptions.map(option => ({
         ...option,
@@ -114,7 +117,7 @@ export const visitPlanner: Example = {
       onChange: (value: ISODateString) => shift(diffInCalendarDays(iso(0), value)),
     }));
     bench.onDispose(() => navigatorRoot.unmount());
-    const addKitchen = button('Add Kitchen', () => editKitchen());
+    const addKitchen = button('Add Site', () => editKitchen());
     addKitchen.dataset.icon = 'store';
     bench.heading.append(
       navigator,
@@ -139,7 +142,7 @@ export const visitPlanner: Example = {
     };
     const bookAll = button('Book due visits', () => bookDue(kitchenRows().flatMap(row => row.visits.filter(visit => visit.status === 'Due'))));
     const selectionPanel = make('div', '', 'visit-selection');
-    selectionPanel.setAttribute('role', 'region'); selectionPanel.setAttribute('aria-label', 'Selected kitchens'); selectionPanel.hidden = true;
+    selectionPanel.setAttribute('role', 'region'); selectionPanel.setAttribute('aria-label', 'Selected sites'); selectionPanel.hidden = true;
     const selectionSummary = make('div', '', 'visit-selection__summary');
     const confirmSelected = button('Confirm All', () => {
       const selected = kitchenRows().filter(row => selectedKitchenIds.includes(row.id));
@@ -152,22 +155,22 @@ export const visitPlanner: Example = {
     confirmSelected.dataset.icon = 'calendar-add';
     const bookSelected = button('Book All', () => bookDue(kitchenRows().filter(row => selectedKitchenIds.includes(row.id)).flatMap(row => row.visits.filter(visit => visit.status === 'Due'))));
     bookSelected.dataset.icon = 'calendar-add';
-    const removeSelected = button('Remove', () => {
+    const removeSelected = deleteButton('Remove', () => {
       const ids = new Set(selectedKitchenIds);
       const removedKitchens = kitchens.flatMap((kitchen, index) => ids.has(kitchen.id) ? [{ kitchen, index }] : []);
       const removedVisits = visits.flatMap((visit, index) => ids.has(visit.kitchen) ? [{ visit, index }] : []);
-      bench.form('Remove kitchens?', [make('p', `${removedKitchens.length} ${removedKitchens.length === 1 ? 'kitchen' : 'kitchens'} and ${removedVisits.length} visits will leave the plan.`)], () => {
+      bench.form('Remove sites?', [make('p', `${removedKitchens.length} ${removedKitchens.length === 1 ? 'site' : 'sites'} and ${removedVisits.length} visits will leave the plan.`)], () => {
         for (const item of removedKitchens.slice().reverse()) kitchens.splice(item.index, 1);
         for (const item of removedVisits.slice().reverse()) visits.splice(item.index, 1);
         clearSelected(); refresh();
-        bench.report(`${removedKitchens.length} ${removedKitchens.length === 1 ? 'kitchen' : 'kitchens'} removed.`, () => {
+        bench.report(`${removedKitchens.length} ${removedKitchens.length === 1 ? 'site' : 'sites'} removed.`, () => {
           for (const item of removedKitchens) kitchens.splice(Math.min(item.index, kitchens.length), 0, item.kitchen);
           for (const item of removedVisits) visits.splice(Math.min(item.index, visits.length), 0, item.visit);
           refresh();
         });
-      }, undefined, 'Remove Kitchens');
+      }, undefined, 'Remove Sites', undefined, { submit: { variant: 'danger', icon: 'trash' } });
     });
-    removeSelected.classList.add('visit-selection__remove'); removeSelected.dataset.icon = 'trash';
+    removeSelected.classList.add('visit-selection__remove');
     const clearSelection = button('Clear', clearSelected);
     const selectionActions = make('div', '', 'visit-selection__actions'); selectionActions.append(confirmSelected, bookSelected, removeSelected, clearSelection);
     selectionPanel.append(selectionSummary, selectionActions);
@@ -184,7 +187,7 @@ export const visitPlanner: Example = {
       const windowVisits = rows.flatMap(row => row.visits);
       const awaiting = windowVisits.filter(visit => visit.status === 'Awaiting').length;
       const due = windowVisits.filter(visit => visit.status === 'Due').length;
-      selectionSummary.replaceChildren(make('strong', `${selectedKitchenIds.length} ${selectedKitchenIds.length === 1 ? 'kitchen' : 'kitchens'} selected`), make('span', `  •  ${awaiting} awaiting  •  ${due} unbooked`));
+      selectionSummary.replaceChildren(make('strong', `${selectedKitchenIds.length} ${selectedKitchenIds.length === 1 ? 'site' : 'sites'} selected`), make('span', `  •  ${awaiting} awaiting  •  ${due} unbooked`));
       confirmSelected.disabled = awaiting === 0; bookSelected.disabled = due === 0;
     }
     bookAll.dataset.icon = 'calendar-add';
@@ -239,13 +242,7 @@ export const visitPlanner: Example = {
       bookAll.disabled = !due;
       bookAll.textContent = 'Book All';
       bookAll.setAttribute('aria-label', due ? `Book all ${due} unbooked visits` : 'Book all due visits');
-      bench.setSubtitle(`${dateLabel.format(fixedDate(firstDay))} to ${dateLabel.format(fixedDate(firstDay + 20))} • ${rows.length} kitchens`);
-      bench.stats([
-        ['Schedule window', `${dateLabel.format(fixedDate(firstDay))}–${dateLabel.format(fixedDate(firstDay + 20))}`],
-        ['Kitchens', String(rows.length)],
-        ['Booked', String(visible.filter(visit => visit.status === 'Booked').length)],
-        ['Needs attention', String(due + visible.filter(visit => visit.status === 'Missed').length)],
-      ]);
+      bench.setSubtitle(`${dateLabel.format(fixedDate(firstDay))} to ${dateLabel.format(fixedDate(firstDay + 20))} • ${rows.length} sites`);
       bench.render(columns, rows);
       renderSelection();
     }
@@ -260,11 +257,11 @@ export const visitPlanner: Example = {
         Missed: ['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18', 'M12 8v5M12 16h.01'],
       };
       const itemsFor = (model: any, day: number) => (model.visits as Visit[]).filter(visit => visit.day === day);
-      const days: ColumnRegular = {
+      const days = (offset: number): ColumnRegular => ({
         prop: 'day', size: window.matchMedia('(max-width: 650px)').matches ? 33 : 39,
         dateRangeColumns: {
-          start: iso(firstDay), end: iso(firstDay + 20), unit: 'day', locale: 'en',
-          prop: slot => `day-${firstDay + slot.index}`,
+          start: iso(firstDay + offset), end: iso(firstDay + offset + 6), unit: 'day', locale: 'en',
+          prop: slot => `day-${firstDay + offset + slot.index}`,
         },
         columnTemplate: (h, column) => {
           const slot = column.dateSlot!, parts = formatDateHeader(slot);
@@ -273,24 +270,27 @@ export const visitPlanner: Example = {
         cellTemplate: statusActionRenderer,
         statusAction: {
           format: (_value, model, column) => {
-            const slot = column.dateSlot!, day = firstDay + slot.index, items = itemsFor(model, day);
+            const slot = column.dateSlot!, day = firstDay + offset + slot.index, items = itemsFor(model, day);
             if (!items.length) return day >= 4 ? { label: `Book a visit at ${model.label} on ${slot.label}`, text: '+', className: 'visit-cell visit-cell--empty', actionClassName: 'cell-action' } : undefined;
             const first = items[0];
             const titles = items.map(item => `${services[item.service].label} · ${item.status}`).join(', ');
             return { label: `${model.label} · ${slot.label} · ${titles}`, className: `visit-cell visit-cell--${first.status.toLowerCase()}`, actionClassName: 'cell-action', hasPopup: 'dialog', ...(items.length > 1 ? { text: String(items.length) } : { iconPaths: paths[first.status] }) };
           },
           onActivate: (model, event, column) => {
-            const day = firstDay + column.dateSlot!.index, items = itemsFor(model, day), first = items[0];
+            const day = firstDay + offset + column.dateSlot!.index, items = itemsFor(model, day), first = items[0];
             const anchor = event.currentTarget as HTMLElement;
             if (!first) bookVisit({ kitchen: model.kitchen as Kitchen, day });
             else if (items.length === 1) first.status === 'Due' ? bookVisit({ kitchen: model.kitchen as Kitchen, day, service: first.service }) : showVisit((first as Visit & { original?: Visit }).original ?? first, anchor);
             else bench.form('Visits on this day', items.map(item => button(`${services[item.service].label} · ${item.status}`, () => showVisit((item as Visit & { original?: Visit }).original ?? item, anchor))), () => {});
           },
         },
-      };
+      });
       return [
-        { prop: 'label', name: 'Kitchen', pin: 'colPinStart', size: window.matchMedia('(max-width: 650px)').matches ? 152 : 165, sortable: true, cellTemplate: identityCellRenderer, identityCell: { format: (_value, model) => ({ label: String(model.label), detail: String(model.subtitle), className: 'cell-label', actionClassName: 'cell-action', actionLabel: `Open ${model.label}` }), onActivate: model => showKitchen(model.kitchen as Kitchen) } },
-        days,
+        { prop: 'label', name: 'Site', pin: 'colPinStart', size: window.matchMedia('(max-width: 650px)').matches ? 152 : 165, sortable: true, cellTemplate: identityCellRenderer, identityCell: { format: (_value, model) => ({ label: String(model.label), detail: String(model.subtitle), className: 'cell-label', actionClassName: 'cell-action', actionLabel: `Open ${model.label}` }), onActivate: model => showKitchen(model.kitchen as Kitchen) } },
+        ...[0, 7, 14].map(offset => ({
+          name: `${dateLabel.format(fixedDate(firstDay + offset))} – ${dateLabel.format(fixedDate(firstDay + offset + 6))}`,
+          children: [days(offset)],
+        })),
         {
           prop: 'coverage',
           name: 'Coverage',
@@ -313,13 +313,13 @@ export const visitPlanner: Example = {
       kitchen = kitchens.find(item => item.id === kitchen.id) ?? kitchen;
       const body = make('div', '', 'visit-book-editor visit-kitchen-view');
       const description = make('div', '', 'visit-kitchen-view__description');
-      description.append(make('span', kitchen.address ?? ''), make('span', `${kitchen.manager}  •  ${kitchen.volume === 'high' ? 'High volume' : 'Moderate volume'}`));
+      description.append(make('span', kitchen.address ?? ''), make('span', `${kitchen.manager}  •  ${kitchen.volume === 'high' ? 'High activity' : 'Moderate activity'}`));
       const tabs = make('div');
       const panel = make('div', '', 'visit-kitchen-content'); panel.setAttribute('role', 'tabpanel');
       panel.id = `kitchen-tab-panel-${kitchen.id}`;
       const history = () => visits.filter(visit => visit.kitchen === kitchen.id && visit.status === 'Completed').sort((a,b) => b.day - a.day);
       const options = () => [{ value: 'plan' as const, label: 'Plan', id: `kitchen-plan-tab-${kitchen.id}`, ariaControls: panel.id, count: kitchenPlan(kitchen, visits).length }, { value: 'history' as const, label: 'History', id: `kitchen-history-tab-${kitchen.id}`, ariaControls: panel.id, count: history().length + activities.filter(item => item.kitchen === kitchen.id).length }];
-      const tabProps = (value: 'plan' | 'history') => ({ value, options: options(), onChange: showTab, ariaLabel: 'Kitchen details', className: 'visit-kitchen-tabs rv-tabs--underline', countClassName: 'visit-kitchen-tabs__count' });
+      const tabProps = (value: 'plan' | 'history') => ({ value, options: options(), onChange: showTab, ariaLabel: 'Site details', className: 'visit-kitchen-tabs rv-tabs--underline', countClassName: 'visit-kitchen-tabs__count' });
       const tabControl = mountTabs(tabs, tabProps('plan'));
       body.append(description, tabs, panel);
       function showTab(tab: 'plan' | 'history') {
@@ -396,9 +396,9 @@ export const visitPlanner: Example = {
       const menuHost = make('div', '', 'visit-popover__menu-items'); const menuRoot = createRoot(menuHost);
       const menu = make('details', '', 'visit-kitchen-view__menu'); const trigger = createControl(document, 'summary'); trigger.textContent = '⋯'; trigger.setAttribute('aria-label', 'More actions'); trigger.setAttribute('role', 'button');
       trigger.setAttribute('aria-haspopup', 'menu');
-      menuRoot.render(createElement(Menu, { label: 'Kitchen actions', onClose: () => { menu.open = false; trigger.focus(); } },
-        createElement(MenuItem, { onClick: () => { menu.open = false; editKitchen(kitchen, true); } }, 'Edit Kitchen'),
-        createElement(MenuItem, { onClick: () => { menu.open = false; removeKitchen(kitchen); } }, 'Remove Kitchen')));
+      menuRoot.render(createElement(Menu, { label: 'Site actions', onClose: () => { menu.open = false; trigger.focus(); } },
+        createElement(MenuItem, { onClick: () => { menu.open = false; editKitchen(kitchen, true); } }, 'Edit Site'),
+        createElement(MenuItem, { onClick: () => { menu.open = false; removeKitchen(kitchen); } }, 'Remove Site')));
       menu.append(trigger, menuHost);
       bench.form(kitchen.label, [body], () => { bookVisit({ kitchen }, undefined, kitchen); return false; }, edit, 'Book Visit', () => { tabControl.destroy(); menuRoot.unmount(); }, {
         cancel: false,
@@ -410,7 +410,7 @@ export const visitPlanner: Example = {
 
     function editKitchen(kitchen?: Kitchen, fromView = false) {
       if (kitchen) kitchen = kitchens.find(item => item.id === kitchen!.id) ?? kitchen;
-      const name = input('Kitchen name', kitchen?.label); name.placeholder = 'Neighborhood and concept'; name.maxLength = 50; name.required = true;
+      const name = input('Site name', kitchen?.label); name.placeholder = 'Facility name'; name.maxLength = 50; name.required = true;
       const address = input('Address', kitchen?.address); address.placeholder = 'Street and city'; address.maxLength = 80; address.required = true;
       const manager = personSelect('Area Manager', ['', ...areaManagers], kitchen?.manager ?? '');
       manager.setOptionLabel(0, 'Pick a manager'); manager.required = true;
@@ -418,12 +418,12 @@ export const visitPlanner: Example = {
       const volume = make('div');
       const volumeRoot = createRoot(volume);
       const renderVolume = () => volumeRoot.render(createElement(RadioGroup, {
-        label: 'Cooking Volume', name: 'kitchen-volume', className: 'visit-book-status visit-kitchen-volume',
-        value: selectedVolume, options: [{ value: 'high', label: 'High volume' }, { value: 'moderate', label: 'Moderate volume' }],
+        label: 'Site activity', name: 'kitchen-volume', className: 'visit-book-status visit-kitchen-volume',
+        value: selectedVolume, options: [{ value: 'high', label: 'High activity' }, { value: 'moderate', label: 'Moderate activity' }],
         onChange: (value: string | number) => { if (value === 'high' || value === 'moderate') { selectedVolume = value; renderVolume(); syncCycles(); } },
       }));
       renderVolume();
-      const volumeHelp = make('small', 'Sets the hood cycle: every 90 days at high volume, 180 at moderate', 'visit-book-help');
+      const volumeHelp = make('small', 'Sets the lift inspection cycle: every 90 days at high volume, 180 at moderate', 'visit-book-help');
       const section = make('fieldset', '', 'visit-kitchen-services'); section.append(make('legend', 'Services'));
       section.append(make('small', kitchen ? 'Unchecking a service cancels its open visits' : 'Set when each was last done; without a date it is due today', 'visit-book-help'));
       const selections = new Map<Service, { checkbox: HTMLInputElement; date: ReturnType<typeof calendarField>; cycle: HTMLElement }>();
@@ -447,8 +447,8 @@ export const visitPlanner: Example = {
       const error = make('p', '', 'visit-book-error'); error.setAttribute('role', 'alert'); error.hidden = true;
       const body = make('div', '', 'visit-book-editor visit-kitchen-editor');
       body.append(make('p', kitchen ? kitchen.label : 'Joins the plan on the last-done dates you set.', 'visit-book-description'), field('Name', name), field('Address', address), field('Area Manager', manager), volume, volumeHelp, section, error);
-      const remove = kitchen && button('Delete kitchen', () => removeKitchen(kitchen));
-      bench.form(kitchen ? 'Edit Kitchen' : 'Add Kitchen', [body], () => {
+      const remove = kitchen && deleteButton('Delete site', () => removeKitchen(kitchen));
+      bench.form(kitchen ? 'Edit Site' : 'Add Site', [body], () => {
         const selected = serviceKeys.filter(key => selections.get(key)!.checkbox.checked);
         const priorDone = kitchen ? { ...kitchen.priorDone } : Object.fromEntries(selected.flatMap(key => {
           const value = selections.get(key)!.date.valueAsNumber;
@@ -461,35 +461,35 @@ export const visitPlanner: Example = {
           const previous = structuredClone(kitchen);
           const cancelled = visits.flatMap((visit, index) => visit.kitchen === kitchen.id && visit.status !== 'Completed' && !selected.includes(visit.service) ? [{ visit, index }] : []);
           for (const item of cancelled.slice().reverse()) visits.splice(item.index, 1);
-          Object.assign(kitchen, draft); const undoActivity = logActivities([{ kitchen: kitchen.id, title: 'Kitchen details edited', detail: '' }]); refresh();
-          bench.report(`Kitchen updated. ${cancelled.length ? `${cancelled.length} open ${cancelled.length === 1 ? 'visit' : 'visits'} cancelled.` : kitchen.label}`, () => {
+          Object.assign(kitchen, draft); const undoActivity = logActivities([{ kitchen: kitchen.id, title: 'Site details edited', detail: '' }]); refresh();
+          bench.report(`Site updated. ${cancelled.length ? `${cancelled.length} open ${cancelled.length === 1 ? 'visit' : 'visits'} cancelled.` : kitchen.label}`, () => {
             Object.assign(kitchen, previous); for (const item of cancelled) visits.splice(Math.min(item.index, visits.length), 0, item.visit); undoActivity(); refresh();
           });
           if (fromView) { showKitchen(kitchen); return false; }
         } else {
-          nextId++; kitchens.push(draft); const undoActivity = logActivities([{ kitchen: draft.id, title: 'Kitchen added', detail: '' }]); bench.resetPage(); refresh();
-          bench.report(`Kitchen added. ${draft.label}`, () => { const index = kitchens.indexOf(draft); if (index >= 0) kitchens.splice(index, 1); undoActivity(); refresh(); });
+          nextId++; kitchens.push(draft); const undoActivity = logActivities([{ kitchen: draft.id, title: 'Site added', detail: '' }]); bench.resetPage(); refresh();
+          bench.report(`Site added. ${draft.label}`, () => { const index = kitchens.indexOf(draft); if (index >= 0) kitchens.splice(index, 1); undoActivity(); refresh(); });
           showKitchen(draft); return false;
         }
         return true;
-      }, remove, kitchen ? 'Save Changes' : 'Add Kitchen', () => volumeRoot.unmount(), { close: { label: 'Close', className: 'visit-book-close' } });
+      }, remove, kitchen ? 'Save Changes' : 'Add Site', () => volumeRoot.unmount(), { close: { label: 'Close', className: 'visit-book-close' } });
     }
 
     function removeKitchen(kitchen: Kitchen) {
       const removed = visits.flatMap((visit, index) => visit.kitchen === kitchen.id ? [{ visit, index }] : []);
-      bench.form('Remove kitchen?', [make('p', `${kitchen.label} and its ${removed.length} visits will leave the plan.`)], () => {
+      bench.form('Remove site?', [make('p', `${kitchen.label} and its ${removed.length} visits will leave the plan.`)], () => {
         const index = kitchens.indexOf(kitchen); if (index < 0) return;
         kitchens.splice(index, 1); for (const item of removed.slice().reverse()) visits.splice(item.index, 1); refresh();
-        bench.report(`Kitchen removed. ${kitchen.label} left the plan with ${removed.length} visits.`, () => {
+        bench.report(`Site removed. ${kitchen.label} left the plan with ${removed.length} visits.`, () => {
           kitchens.splice(Math.min(index, kitchens.length), 0, kitchen); for (const item of removed) visits.splice(Math.min(item.index, visits.length), 0, item.visit); refresh();
         });
-      }, undefined, 'Remove Kitchen');
+      }, undefined, 'Remove Site', undefined, { submit: { variant: 'danger', icon: 'trash' } });
     }
 
     function bookVisit(preset?: { kitchen: Kitchen; day?: number; service?: Service }, editing?: Visit, origin?: Kitchen) {
-      const kitchen = selectOptions('Kitchen', [{ value: '', label: 'Pick a kitchen' }, ...kitchens.map(item => ({ value: String(item.id), label: item.label }))], editing ? String(editing.kitchen) : preset ? String(preset.kitchen.id) : '');
+      const kitchen = selectOptions('Site', [{ value: '', label: 'Pick a site' }, ...kitchens.map(item => ({ value: String(item.id), label: item.label }))], editing ? String(editing.kitchen) : preset ? String(preset.kitchen.id) : '');
       kitchen.disabled = !!editing; kitchen.required = true;
-      const type = selectOptions('Service', [{ value: '', label: 'Pick a kitchen first' }], ''); type.required = true;
+      const type = selectOptions('Service', [{ value: '', label: 'Pick a site first' }], ''); type.required = true;
       const date = input('Visit date', editing ? iso(editing.day) : preset?.day != null ? iso(preset.day) : '', 'date'); date.hidden = true; date.removeAttribute('aria-label');
       const dateTrigger = button('', () => openBookingCalendar()); dateTrigger.className = 'visit-book-date-trigger'; dateTrigger.dataset.icon = 'calendar-add'; dateTrigger.setAttribute('aria-label', 'Visit date'); dateTrigger.setAttribute('aria-haspopup', 'dialog');
       const dateDescription = make('span', '', 'visit-date-description'); dateDescription.id = 'visit-date-description'; dateTrigger.setAttribute('aria-describedby', dateDescription.id);
@@ -498,6 +498,9 @@ export const visitPlanner: Example = {
       const time = selectOptions('Time', Object.entries(visitWindows).map(([value, label]) => ({ value, label })), '');
       const crew = personSelect('Technician', [''], ''); crew.setOptions([{ value: '', label: 'Pick a service first' }]); crew.required = true;
       const crewHelp = make('small', '', 'visit-book-help');
+      const availability = make('p', '', 'visit-book-availability');
+      availability.setAttribute('role', 'status');
+      availability.setAttribute('aria-live', 'polite');
       const dateHelp = make('small', '', 'visit-book-help');
       let selectedStatus: Status = editing?.status === 'Booked' ? 'Booked' : 'Awaiting';
       const statusGroup = make('div');
@@ -511,16 +514,31 @@ export const visitPlanner: Example = {
       const statusHelp = make('small', 'Confirmed once the vendor has said yes to the day', 'visit-book-help');
       const notes = createControl(document, 'textarea'); notes.setAttribute('aria-label', 'Notes for the Crew'); notes.placeholder = 'Access, parking, who to ask for'; notes.maxLength = 160; notes.value = editing?.notes ?? '';
       const error = make('p', '', 'visit-book-error'); error.setAttribute('role', 'alert'); error.hidden = true;
-      const description = make('p', 'One visit a day per kitchen.', 'visit-book-description');
+      const description = make('p', 'One visit a day per site.', 'visit-book-description');
       const body = make('div', '', 'visit-book-editor visit-book-editor--visit');
-      const firstRow = make('div', '', 'visit-book-row'); firstRow.append(field('Kitchen', kitchen), field('Service', type));
+      const firstRow = make('div', '', 'visit-book-row'); firstRow.append(field('Site', kitchen), field('Service', type));
       const dateField = make('div', '', 'workbench-field'); dateField.append(make('span', 'Date'), dateTrigger, dateDescription, date, dateHelp);
       const secondRow = make('div', '', 'visit-book-row'); secondRow.append(dateField, field('Time', time));
       const crewField = field('Technician', crew); crewField.append(crewHelp);
-      body.append(description, firstRow, secondRow, crewField, statusGroup, statusHelp, field('Notes for the Crew', notes), error);
+      body.append(description, firstRow, secondRow, crewField, availability, statusGroup, statusHelp, field('Notes for the Crew', notes), error);
+      function updateAvailability() {
+        if (!crew.value || !date.value || !time.value) {
+          availability.textContent = 'Select a date, time and technician to check availability.';
+          availability.dataset.state = 'pending';
+          return;
+        }
+        const day = Math.round((date.valueAsNumber - start) / dayMs);
+        const clash = technicianConflict(crew.value, day, time.value as VisitWindow, visits, editing);
+        const place = clash && kitchens.find(item => item.id === clash.kitchen)?.label;
+        const windowPhrase = time.value === 'afternoon' ? 'in the afternoon' : visitWindows[time.value as VisitWindow].toLowerCase();
+        availability.textContent = clash
+          ? `${crew.value} is already booked at ${place ?? 'another site'} ${windowPhrase}.`
+          : `${crew.value} is available ${windowPhrase} on ${dateLabel.format(fixedDate(day))}.`;
+        availability.dataset.state = clash ? 'conflict' : 'available';
+      }
       function rebuildServices(selected?: Service) {
         const unit = kitchen.value ? kitchens.find(item => item.id === Number(kitchen.value)) : undefined;
-        type.setOptions([{ value: '', label: unit ? 'Pick a service' : 'Pick a kitchen first' }, ...(unit?.services ?? []).map(key => ({ value: key, label: services[key].label }))]);
+        type.setOptions([{ value: '', label: unit ? 'Pick a service' : 'Pick a site first' }, ...(unit?.services ?? []).map(key => ({ value: key, label: services[key].label }))]);
         type.disabled = !unit; type.value = selected && unit?.services.includes(selected) ? selected : '';
         rebuildCrew();
       }
@@ -534,18 +552,20 @@ export const visitPlanner: Example = {
           crewHelp.textContent = `Only crews certified for ${services[key].label.toLowerCase()}`;
         } else { crewHelp.textContent = ''; }
         const unit = kitchen.value ? kitchens.find(item => item.id === Number(kitchen.value)) : undefined;
-        description.textContent = unit ? key ? `${services[key].label} at ${unit.label}` : unit.label : 'One visit a day per kitchen.';
+        description.textContent = unit ? key ? `${services[key].label} at ${unit.label}` : unit.label : 'One visit a day per site.';
         const state = unit && key ? serviceStates(unit, visits).find(item => item.service === key) : undefined;
         dateHelp.textContent = state ? `Due ${weekday.format(fixedDate(state.due))}, ${dateLabel.format(fixedDate(state.due))}` : '';
         error.hidden = true;
+        updateAvailability();
       }
       kitchen.onchange = () => rebuildServices(type.value as Service);
       type.onchange = rebuildCrew;
       date.onchange = () => { updateDateLabel(); rebuildCrew(); };
-      time.onchange = () => { error.hidden = true; };
-      crew.onchange = () => { error.hidden = true; };
+      time.onchange = () => { error.hidden = true; updateAvailability(); };
+      crew.onchange = () => { error.hidden = true; updateAvailability(); };
       rebuildServices(editing?.service ?? preset?.service);
       if (editing) { crew.value = editing.crew; time.value = editing.window ?? 'opening'; }
+      updateAvailability();
       function openBookingCalendar() {
         void bench.grid.getPlugins().then(plugins => {
           const popover = plugins.find(plugin => plugin instanceof GridPopoverPlugin);
@@ -572,7 +592,7 @@ export const visitPlanner: Example = {
         });
       }
       bench.form(editing ? 'Edit Visit' : 'Book Visit', [body], () => {
-        if (!kitchen.value) { error.textContent = 'Pick the kitchen to visit.'; error.hidden = false; return false; }
+        if (!kitchen.value) { error.textContent = 'Pick the site to visit.'; error.hidden = false; return false; }
         const draft: Visit = { kitchen: Number(kitchen.value), service: type.value as Service, day: Math.round((date.valueAsNumber - start) / dayMs), window: time.value as VisitWindow, crew: crew.value, status: selectedStatus, notes: notes.value.trim(), report: '' };
         const problem = bookingError(draft, kitchens, visits, technicians, editing);
         if (problem) { error.textContent = problem; error.hidden = false; return false; }
@@ -618,7 +638,7 @@ export const visitPlanner: Example = {
           popover.open(anchor, { label: services[visit.service].label, content: body, positionAnchor: anchor.closest<HTMLElement>('.rgCell') ?? anchor, className: 'visit-popover', cleanup: () => { menuRoot?.unmount(); menuRoot = undefined; } });
           menuRoot = createRoot(menuItems);
           menuRoot.render(createElement(Menu, { label: 'Visit actions', onClose: () => { menu.open = false; menuTrigger.focus(); } },
-            createElement(MenuItem, { onClick: () => { popover.close(); showKitchen(kitchen); } }, 'View Kitchen'),
+            createElement(MenuItem, { onClick: () => { popover.close(); showKitchen(kitchen); } }, 'View Site'),
             effective !== 'Completed' ? createElement(MenuItem, { onClick: () => { popover.close(); bookVisit(undefined, visit); } }, 'Edit Visit') : null,
             createElement(MenuItem, { onClick: removeVisit }, effective === 'Completed' ? 'Delete Record' : 'Cancel Visit')));
         };
@@ -628,7 +648,7 @@ export const visitPlanner: Example = {
         const fullDate = (day: number) => `${weekday.format(fixedDate(day))}, ${dateLabel.format(fixedDate(day))}`;
         addRow('Date', fullDate(visit.day));
         addRow('Time', visitWindows[visit.window ?? 'opening']);
-        const vendor: Record<Service, [string, string, string]> = { clean: ['Nightshift Cleaning', '(312) 555-0110', 'nightshift.dispatch@example.com'], pest: ['Brightline Pest', '(312) 555-0124', 'brightline.dispatch@example.com'], grease: ['Lakeshore Grease', '(312) 555-0137', 'lakeshore.dispatch@example.com'], hood: ['Clearflue Hoods', '(312) 555-0141', 'clearflue.dispatch@example.com'], fire: ['Redwater Fire', '(312) 555-0158', 'redwater.dispatch@example.com'], fridge: ['Coldcourt Mechanical', '(312) 555-0163', 'coldcourt.dispatch@example.com'] };
+        const vendor: Record<Service, [string, string, string]> = { air: ['North Air Services', '(312) 555-0110', 'northair.dispatch@example.com'], water: ['Clearwater Testing', '(312) 555-0124', 'clearwater.dispatch@example.com'], electrical: ['Lakeshore Electrical', '(312) 555-0137', 'lakeshore.dispatch@example.com'], lift: ['Summit Lift Services', '(312) 555-0141', 'summitlift.dispatch@example.com'], fire: ['Redwater Fire', '(312) 555-0158', 'redwater.dispatch@example.com'], climate: ['Coldcourt Mechanical', '(312) 555-0163', 'coldcourt.dispatch@example.com'] };
         rows.append(make('dt', 'Crew'));
         const crewValue = make('dd', '', 'visit-popover__crew');
         const avatar = make('span', visit.crew ? visit.crew.split(' ').map(part => part[0]).join('').slice(0, 2) : '?', 'visit-popover__avatar'); avatar.setAttribute('aria-hidden', 'true');

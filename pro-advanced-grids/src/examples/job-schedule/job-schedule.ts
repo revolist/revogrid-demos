@@ -10,7 +10,7 @@ import { createRoot } from "react-dom/client";
 import { Menu, MenuItem, MenuSeparator, NumberStepper, StatusBadge } from "@revolist/ui/react";
 import { mountActionBar } from "@revolist/ui/action-bar";
 import { ROW_ACTION_COLUMN_WIDTH } from '../../../../composables/row-action';
-import { demoPortrait } from '../../../../composables/demo-portraits';
+import { personPortrait } from '../../../../composables/demo-portraits';
 import { calendarField } from "../../shared/ui-calendar-field";
 import type { ColumnData, ColumnRegular } from "@revolist/revogrid";
 import {
@@ -27,6 +27,7 @@ import { diffInCalendarDays, addDays, parseIsoDate } from "@revolist/ui/dates";
 import { renderDateSlotHeader } from "@revolist/revogrid-pro";
 import {
   button,
+  deleteButton,
   field,
   fixedDate,
   input,
@@ -37,7 +38,7 @@ import {
   type Example,
 } from "../../shared/workbench-ui";
 
-import { initialJobs, type Job, type JobType, type JobStatus, type Entry } from './job-schedule-data';
+import { crewMembers, initialJobs, type Job, type JobType, type JobStatus, type Entry } from './job-schedule-data';
 
 const dateLabel = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -53,14 +54,14 @@ const weekday = new Intl.DateTimeFormat("en-US", {
 
 export const jobSchedule: Example = {
   id: "job-schedule",
-  title: "Crew & Job Schedule",
-  description: "A four-week job and crew schedule",
+  title: "Venue Changeover Schedule",
+  description: "Crew assignments for community venue events",
   setup(bench) {
     const jobs = structuredClone(initialJobs);
     let firstDay = 7;
     const type = select(
       "Job type",
-      ["All Types", "Kitchen", "Bath", "Exterior", "Basement"],
+      ["All Types", "Lighting", "Audio", "Setup", "Welcome"],
       "All Types",
       () => {
         bench.resetPage();
@@ -121,7 +122,7 @@ export const jobSchedule: Example = {
         positioning: { mode: "inline" },
         actions: [
           { id: "slide", label: "Slide", icon: icon('<path d="M4 7h14m-4-4 4 4-4 4M20 17H6m4-4-4 4 4 4"/>'), disabled: !selected.some(job => Object.entries(job.days).some(([day, entry]) => canSlide(Number(day), entry))) },
-          { id: "delete", label: "Delete", icon: icon('<path d="M4 7h16M10 4h4M6 7l1 13h10l1-13M10 11v5m4-5v5"/>'), variant: "danger-outline" },
+          { id: "delete", label: "Delete", icon: icon('<path d="M4 7h16M10 4h4M6 7l1 13h10l1-13M10 11v5m4-5v5"/>'), variant: "danger" },
           { id: "clear", label: "Clear" },
         ],
         onAction: (action) => {
@@ -165,29 +166,31 @@ export const jobSchedule: Example = {
     }
     function refresh() {
       const rows = visible();
+      const leadCount = crewMembers.length;
       today.disabled = firstDay === 7;
       bench.setSubtitle(
-        `${dayText(firstDay)} to ${dayText(firstDay + 25)}  •  ${rows.length} jobs  •  10 crew members`,
+        `${dayText(firstDay)} to ${dayText(firstDay + 25)}  •  ${rows.length} jobs  •  ${leadCount} crew members`,
       );
       const totals: Record<string, unknown> = {
         id: "crew-load",
         label: "Crew Load",
         footer: true,
+        leadCount,
       };
       for (let d = 0; d < 26; d++) {
         const day = firstDay + d;
-        const count = jobs.filter((j) => j.days[day]?.hours).length;
+        const count = new Set(jobs.filter(j => j.days[day]?.hours).map(j => j.lead).filter(Boolean)).size;
         totals[`day-${day}`] = {
           count,
           hours: jobs.reduce((sum, j) => sum + (j.days[day]?.hours ?? 0), 0),
         };
       }
-      bench.render(columns, rows, [], [totals]);
+      bench.render(columns, rows, [totals]);
     }
     function openSlide(selected: Job[]) {
       const from = calendarField("From", iso(15));
       let amount = 1;
-      const reason = select("Reason", ["Schedule adjustment", "Crew availability", "Customer request", "Weather"], "Schedule adjustment");
+      const reason = select("Reason", ["Schedule adjustment", "Crew availability", "Event request", "Venue availability"], "Schedule adjustment");
       const preview = make("div", "", "job-slide__preview");
       const warning = make("p", "", "job-slide__warning");
       const move = (day: number, workdays: number) => {
@@ -218,6 +221,37 @@ export const jobSchedule: Example = {
         preview.replaceChildren();
         if (!result) { warning.textContent = "Choose a start date and a non-zero workday adjustment."; return; }
         for (const item of result) preview.append(make("p", `${item.job.label} · Finish ${item.job.finish} to ${item.finish}`));
+        const before = new Map<number, number>();
+        const after = new Map<number, number>();
+        const selectedJobs = new Map(result.map(item => [item.job.id, item.next]));
+        for (const job of jobs) {
+          const current = Object.entries(job.days).map(([day, entry]) => [Number(day), entry] as const);
+          for (const [day, entry] of current) {
+            if (entry.hours) before.set(day, (before.get(day) ?? 0) + entry.hours);
+          }
+          for (const [day, entry] of selectedJobs.get(job.id) ?? current) {
+            if (entry.hours) after.set(day, (after.get(day) ?? 0) + entry.hours);
+          }
+        }
+        const affected = [...new Set([...before.keys(), ...after.keys()])]
+          .filter(day => (before.get(day) ?? 0) !== (after.get(day) ?? 0))
+          .sort((a, b) => a - b);
+        if (affected.length) {
+          const table = make("table", "", "job-slide__capacity");
+          const caption = make("caption", "Crew hours across all jobs");
+          const head = make("thead");
+          const headers = make("tr");
+          for (const label of ["Day", "Current", "Proposed"]) headers.append(make("th", label));
+          head.append(headers);
+          const body = make("tbody");
+          for (const day of affected) {
+            const row = make("tr");
+            row.append(make("th", dayText(day)), make("td", `${before.get(day) ?? 0}h`), make("td", `${after.get(day) ?? 0}h`));
+            body.append(row);
+          }
+          table.append(caption, head, body);
+          preview.append(table);
+        }
         const ids = new Set(selected.map(job => job.id));
         const doubleBooked = result.some(item => item.next.some(([day, entry]) => entry.kind === "planned" && jobs.some(other => !ids.has(other.id) && other.lead === item.job.lead && other.days[day]?.kind === "planned")));
         warning.textContent = result.some(item => item.collision) ? "A moved entry overlaps an existing entry on the same job." : doubleBooked ? "Crew booked twice: check the affected days after the slide." : "";
@@ -297,7 +331,7 @@ export const jobSchedule: Example = {
           }),
           ...(entry
             ? [
-                button("Remove", () => {
+                deleteButton("Remove", () => {
                   delete job.days[day];
                   popover.close();
                   refresh();
@@ -340,20 +374,20 @@ export const jobSchedule: Example = {
     }
     function editJob(job?: Job) {
       const client = input(
-        "Client",
-        job?.label.replace(/ (Kitchen|Bath|Exterior|Basement)$/, "") ?? "",
+        "Event",
+        job?.label.replace(/ (Lighting|Audio|Setup|Welcome)$/, "") ?? "",
       );
       const phone = input("Phone", job?.phone ?? "");
-      const street = input("Street", job?.street ?? "");
-      const town = input("Town", job?.town ?? "");
+      const street = input("Venue", job?.street ?? "");
+      const town = input("City", job?.town ?? "");
       const kind = select(
         "Job Type",
-        ["Kitchen", "Bath", "Exterior", "Basement"],
-        job?.type ?? "Kitchen",
+        ["Lighting", "Audio", "Setup", "Welcome"],
+        job?.type ?? "Lighting",
       );
       const lead = personSelect(
         "Lead",
-        ["Maeve Chen", "Idris Bennett", "Nora Silva"],
+        crewMembers,
         job?.lead ?? "Maeve Chen",
       );
       const start = calendarField("Start", "2026-10-27");
@@ -365,10 +399,10 @@ export const jobSchedule: Example = {
         job ? "Edit Job" : "Add Job",
         [
           make("p", "Crew days are planned from the job type."),
-          field("Client", client),
+          field("Event", client),
           field("Phone", phone),
-          field("Street", street),
-          field("Town", town),
+          field("Venue", street),
+          field("City", town),
           field("Job Type", kind),
           field("Lead", lead),
           ...(!job ? [field("Start", start)] : []),
@@ -384,7 +418,7 @@ export const jobSchedule: Example = {
           const target: Job = job ?? {
             id: Math.max(-1, ...jobs.map((j) => j.id)) + 1,
             label: "",
-            type: "Kitchen" as JobType,
+            type: "Lighting" as JobType,
             status: "Not Started" as JobStatus,
             lead: "",
             street: "",
@@ -409,7 +443,7 @@ export const jobSchedule: Example = {
             const plannedStart = start.value || "2026-10-27";
             let date = plannedStart;
             let assigned = 0;
-            const plannedDays: Record<JobType, number> = { Kitchen: 5, Bath: 4, Exterior: 3, Basement: 5 };
+            const plannedDays: Record<JobType, number> = { Lighting: 5, Audio: 4, Setup: 3, Welcome: 5 };
             const duration = plannedDays[target.type];
             while (assigned < duration) {
               const weekday = parseIsoDate(date).getUTCDay();
@@ -465,8 +499,9 @@ export const jobSchedule: Example = {
               const slot = column.dateSlot!;
               const day = firstDay + week * 7 + slot.index;
               const load = model[`day-${day}`] as { count: number; hours: number };
-              const detail = `${load.count} of 10 crew booked, ${load.hours}h`;
-              return { value: load.count, capacity: 10, muted: day < 15, text: `${load.hours}h`, label: `${slot.label}: ${detail}`, tooltip: detail };
+              const capacity = Number(model.leadCount);
+              const detail = `${load.count} of ${capacity} crew members assigned, ${load.hours}h across jobs`;
+              return { value: load.count, capacity, text: `${load.hours}h`, label: `${slot.label}: ${detail}`, tooltip: detail };
             },
           },
           statusAction: {
@@ -515,11 +550,11 @@ export const jobSchedule: Example = {
             format: (_value, model) => ({
               label: String(model.label),
               detail: model.footer
-                ? "10 crew across all jobs"
+                ? `${model.leadCount} crew members across all jobs`
                 : String(model.status),
               image: model.footer
                 ? undefined
-                : demoPortrait(Number(model.id)),
+                : personPortrait(String(model.lead)),
               className: `job-schedule__identity ${model.footer ? "is-footer" : `is-${String(model.status).toLowerCase().replaceAll(" ", "-")}`}`,
               actionLabel: `Open ${model.label}`,
             }),
