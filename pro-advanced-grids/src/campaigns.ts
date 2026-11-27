@@ -12,9 +12,10 @@ import { campaignWeeks, changePercent, safeRatio } from './campaign-detail-model
 import { campaignTrendChart } from './campaign-trend-chart';
 import { createCampaigns, type Campaign } from './campaign-fixtures';
 import { summarizeCampaigns } from './campaign-summary';
+import { compareCampaignCells } from './campaign-sorting';
 import { PopoverController } from '@revolist/ui/core/popover-controller';
 import type { ColumnData, ColumnRegular, DataType } from '@revolist/revogrid';
-import { bulletChartRenderer, comparisonSparklineRenderer, metricStackRenderer, progressLineRenderer, identityCellRenderer, cellActionRenderer, visualCellRenderer, KeyedRowSelectionPlugin, FIlTER_SELECTION, FIlTER_SLIDER, AdvanceFilterPlugin, compileFilterAst, type FilterAst, type FilterAstEditorHandle } from '@revolist/revogrid-pro';
+import { bulletChartRenderer, comparisonSparklineRenderer, metricStackRenderer, progressLineRenderer, identityCellRenderer, cellActionRenderer, visualCellRenderer, renderGroupCell, KeyedRowSelectionPlugin, FIlTER_SELECTION, FIlTER_SLIDER, AdvanceFilterPlugin, compileFilterAst, type FilterAst, type FilterAstEditorHandle } from '@revolist/revogrid-pro';
 import '@fortawesome/fontawesome-free/css/brands.css';
 import {
   button,
@@ -86,6 +87,24 @@ export const campaigns: Example = {
       },
     };
 
+    bench.grid.grouping = {
+      ...bench.grid.grouping,
+      groupCellTemplate: (h, { prop, group }) => {
+        // The first pinned column contains selection checkboxes.
+        const labelColumn = bench.grid.hideColumns?.includes('label') ? group.isLabelColumn : prop === 'label';
+        if (!labelColumn) return null;
+        return h('div', { style: { paddingInlineStart: `${group.depth * 12}px` } }, [
+          renderGroupCell(h, {
+            label: group.name,
+            actionLabel: `${group.expanded ? 'Collapse' : 'Expand'} ${group.name}`,
+            expanded: group.expanded,
+            onActivate: group.canExpand ? group.onExpand : undefined,
+            variant: 'tree',
+          }),
+        ]);
+      },
+    };
+
     const toaster = bench.toaster;
 
     let nextId = 1;
@@ -124,7 +143,7 @@ export const campaigns: Example = {
             actionLabel: `Open ${model.label}`, detail: `${model.subtitleFlag || ''} ${model.subtitle || ''}`.trim(),
             leading: (h) => h('span', { class: 'cell-mark cell-mark--platform', 'aria-hidden': 'true' }, [h('i', { class: `fa-brands ${model.brandIcon}` })]),
           }),
-          onActivate: model => showCampaign(model.campaign),
+          onActivate: model => { if (model.campaign) showCampaign(model.campaign); },
         },
       },
       {
@@ -217,8 +236,11 @@ export const campaigns: Example = {
         formatValue: (value) => `${Math.round(value)}%`,
         progressLineAriaLabel: 'Share of new buyers',
       },
-      { prop: 'actions', columnChooser: false, name: '', filter: false, size: ROW_ACTION_COLUMN_WIDTH, cellTemplate: cellActionRenderer, cellAction: { label: row => `Actions for ${row.label}`, visible: row => !row.total && !row.group, onActivate: row => showCampaign(row.campaign) } },
+      { prop: 'actions', columnChooser: false, name: '', filter: false, size: ROW_ACTION_COLUMN_WIDTH, cellTemplate: cellActionRenderer, cellAction: { label: row => `Actions for ${row.label}`, visible: row => !!row.campaign, onActivate: row => { if (row.campaign) showCampaign(row.campaign); } } },
     ];
+    for (const column of columns) {
+      if ('prop' in column && column.sortable) column.cellCompare = compareCampaignCells;
+    }
     bench.grid.resize = true;
     bench.toolbar.append(filter);
     const actionHost = make('div', '', 'campaign-bulk-host');
@@ -300,12 +322,12 @@ export const campaigns: Example = {
       };
     }
 
-    function refresh() {
+    function refresh(updateSource = true) {
       const compiled = activeFilter && filterPlugin
         ? compileFilterAst(activeFilter, { columns: columns as ColumnRegular[], operators: filterPlugin.filterFunctionsIndexedByType })
         : undefined;
-      const filtered = rows.filter((row) => matches(bench.currentQuery(), row.label, row.channel, row.market, row.id, row.owner, row.audience) &&
-        (!compiled || compiled.matches(toGridRow(row))));
+      const candidates = rows.filter((row) => matches(bench.currentQuery(), row.label, row.channel, row.market, row.id, row.owner, row.audience));
+      const filtered = candidates.filter((row) => !compiled || compiled.matches(toGridRow(row)));
       const summary = summarizeCampaigns(filtered);
       const { spend, budget, impressions, clicks, conversions, revenue } = summary;
       filter.textContent = activeFilter ? 'Filter (active)' : 'Filter';
@@ -327,13 +349,16 @@ export const campaigns: Example = {
       };
       tone(2, summary.conversionChange);
       tone(3, summary.cpaChange, true);
-      bench.render(
-        window.matchMedia('(max-width: 650px)').matches ? [{ ...columns[0], size: 160 }, ...columns.slice(1)] : columns,
-        filtered.map(toGridRow),
-      );
+      if (updateSource) {
+        bench.render(
+          window.matchMedia('(max-width: 650px)').matches ? [{ ...columns[0], size: 160 }, ...columns.slice(1)] : columns,
+          candidates.map(toGridRow),
+        );
+      }
+      bench.setGridEmpty(!filtered.length);
     }
 
-    bench.onCompactChange(refresh);
+    bench.onCompactChange(() => refresh());
 
     async function openFilters() {
       if (filterPopover.isOpen) { filterPopover.close(); return; }
@@ -350,15 +375,14 @@ export const campaigns: Example = {
     bench.grid.addEventListener('filterastchange', (event) => {
       activeFilter = event.detail.filterAst;
       if (event.detail.origin === 'ui') queueMicrotask(() => filterPopover.close());
-      bench.resetPage();
       const version = ++filterRefreshVersion;
       if (filterPlugin) {
-        refresh();
+        refresh(false);
       } else {
         void bench.grid.getPlugins().then(plugins => {
           if (version !== filterRefreshVersion) return;
           filterPlugin = plugins.find(plugin => plugin instanceof AdvanceFilterPlugin);
-          refresh();
+          refresh(false);
         });
       }
     });
