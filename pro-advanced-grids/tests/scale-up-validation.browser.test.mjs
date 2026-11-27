@@ -10,6 +10,77 @@ before(async () => {
   browser = await chromium.launch({ headless: true });
 });
 after(async () => { await browser?.close(); if (server) await new Promise((resolve, reject) => server.httpServer.close(error => error ? reject(error) : resolve())); });
+test('province ranking highlights the corresponding summary and changes order', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    const selected = page.locator('.workbench-stat.is-ranking');
+    await selected.waitFor();
+    assert.match(await selected.innerText(), /Index.*Ranking/);
+    const ranking = () => page.locator('revo-grid.workbench-grid').evaluate(grid => grid.source.filter(row => row.provinceHead).map(row => row.province));
+    const initial = await ranking();
+    const selector = page.getByRole('combobox', { name: 'Rank provinces by' });
+    await selector.click();
+    await page.getByRole('option', { name: 'Revenue', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('.workbench-stat.is-ranking')?.textContent?.includes('Revenue FY25'));
+    assert.notDeepEqual(await ranking(), initial);
+    await selector.click();
+    await page.getByRole('option', { name: 'Growth', exact: true }).click();
+    assert.match(await selected.innerText(), /Revenue FY25.*Growth ranking/);
+    if (process.env.SCALE_SCREENSHOT_PATH) await page.screenshot({ path: process.env.SCALE_SCREENSHOT_PATH, animations: 'disabled' });
+  } finally { await page.close(); }
+});
+test('staff history uses green for growth while preserving other states', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    const tile = page.locator('.rv-metric-detail__tiles .is-positive').first();
+    await tile.waitFor();
+    const colors = await tile.evaluate(element => ({ border: getComputedStyle(element).borderColor, fill: getComputedStyle(element).backgroundColor }));
+    assert.equal(colors.border, 'rgb(22, 163, 74)');
+    assert.notEqual(colors.fill, 'rgba(0, 0, 0, 0)');
+    const negative = page.locator('.rv-metric-detail__tiles .is-negative').first();
+    await negative.waitFor();
+    assert.notEqual(await negative.evaluate(element => getComputedStyle(element).backgroundColor), colors.fill);
+    if (process.env.SCALE_SCREENSHOT_PATH) await page.screenshot({ path: process.env.SCALE_SCREENSHOT_PATH, animations: 'disabled' });
+  } finally { await page.close(); }
+});
+test('score change sits next to the score badge', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    const score = page.locator('.rv-split-value').first();
+    await score.waitFor();
+    const layout = await score.evaluate(element => {
+      const change = element.querySelector('small').getBoundingClientRect();
+      const badge = element.querySelector('.rv-split-value__badge').getBoundingClientRect();
+      const cell = element.getBoundingClientRect();
+      return { gap: badge.left - change.right, right: cell.right - badge.right };
+    });
+    assert.ok(layout.gap >= 4 && layout.gap <= 8, JSON.stringify(layout));
+    assert.ok(Math.abs(layout.right) < 1, JSON.stringify(layout));
+    if (process.env.SCALE_SCREENSHOT_PATH) await page.screenshot({ path: process.env.SCALE_SCREENSHOT_PATH, animations: 'disabled' });
+  } finally { await page.close(); }
+});
+test('screening column titles fit at desktop and narrower widths', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    for (const width of [1600, 1100]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const name of ['Founder', 'Exports', 'Raising']) {
+        const header = page.locator('.rgHeaderCell').filter({ hasText: new RegExp(`^${name}$`) }).first();
+        await header.waitFor();
+        const fits = await header.evaluate(element => {
+          const content = element.querySelector('.header-content');
+          return { width: content.clientWidth, scrollWidth: content.scrollWidth };
+        });
+        assert.ok(fits.scrollWidth <= fits.width, `${name} at ${width}px: ${JSON.stringify(fits)}`);
+      }
+      if (width === 1600 && process.env.SCALE_SCREENSHOT_PATH) await page.screenshot({ path: process.env.SCALE_SCREENSHOT_PATH, animations: 'disabled' });
+    }
+  } finally { await page.close(); }
+});
 test('company search shows revised business details in different provinces', async () => {
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
   try {

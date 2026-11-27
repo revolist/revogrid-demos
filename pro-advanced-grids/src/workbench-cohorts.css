@@ -98,6 +98,10 @@
 }
 .workbench .cohort-sort-header.numeric { justify-content: flex-end; }
 .cohort-sort-header svg { width: 12px; height: 12px; flex: none; }
+.workbench--patient-cohorts .rgCell:has(.cohort-group),
+.workbench--patient-cohorts .rgCell:has(.cohort-answers.is-group) {
+  background: var(--rv-ui-surface-sunken, var(--demo-palette-hex-f8f8f8));
+}
 .cohort-group {
   display: flex;
   align-items: center;

@@ -318,6 +318,8 @@
 
 .workbench--scale-up-index .workbench-stats { overflow: hidden; }
 .workbench--scale-up-index .workbench-stat { position: relative; background: var(--demo-palette-hex-ffffff); }
+.workbench--scale-up-index .workbench-stat.is-ranking { box-shadow: inset 0 2px var(--demo-color-purple); }
+.workbench--scale-up-index .scale-ranking-indicator { display: inline-block; margin-left: 5px; color: var(--demo-color-purple); font-size: 10px; }
 .workbench--reliability-index .reliability-sort { width:100%; height:100%; padding:0!important; border:0!important; background:transparent!important; text-align:left; white-space:nowrap; font-size:12px; color:var(--rv-ui-text-muted, var(--demo-palette-hex-525252)); }
 .workbench--reliability-index .reliability-sort--name { justify-content: flex-start; }
 

@@ -253,7 +253,7 @@ export const patientCohorts: Example = {
         columnTemplate: sortableHeader('answers', 'Answers'),
         size: 127,
         cellTemplate: visualCellRenderer,
-        visualCell: { format: (_value, model) => ({ kind: 'text', className: 'cohort-answers', text: number(model.answers) }) },
+        visualCell: { format: (_value, model) => ({ kind: 'text', className: `cohort-answers${model.group ? ' is-group' : ''}`, text: number(model.answers) }) },
       },
       ...outcomes.map((key) => ({
         prop: key,

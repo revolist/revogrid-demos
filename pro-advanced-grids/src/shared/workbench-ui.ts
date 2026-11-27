@@ -46,6 +46,7 @@ import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/brands.css';
 import '../workbench.css';
 import { arrangeToolbar, layouts } from './workbench-layout';
+import { campaignPage } from '../examples/campaigns/campaign-paging';
 import { productPage } from '../examples/products/product-paging';
 import { visitPage } from '../examples/visits/visit-paging';
 
@@ -354,8 +355,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
   }
   if (layout.merges) options.cellMerge = [];
   let currentRows: DataType[] = [];
-  const localPage = example.id === 'campaign-performance';
-  const remotePage = ['product-kpis', 'service-visits'].includes(example.id);
+  const remotePage = ['campaign-performance', 'product-kpis', 'service-visits'].includes(example.id);
   let page = 0;
   let itemCount = 10;
   const productPageInfo = make('div', '', 'product-page-info');
@@ -374,12 +374,11 @@ export function mountScreen(host: HTMLElement, example: Example) {
       info: true,
       totalInfo: true,
       ...(example.id === 'service-visits' ? { locales: { items: 'sites' } } : example.id === 'job-schedule' ? { locales: { items: 'jobs' } } : {}),
-      ...(localPage ? { local: true } : {}),
       ...(remotePage ? {
         // These loaders read mutable demo state.
         query: false,
         loadData: async (skip, take, order) => ({
-          data: example.id === 'service-visits' ? visitPage(currentRows as (DataType & { label: string; coverage: { rank: number } })[], skip, take, order) : productPage(currentRows, skip, take, order),
+          data: example.id === 'campaign-performance' ? campaignPage(currentRows, skip, take, order) : example.id === 'service-visits' ? visitPage(currentRows as (DataType & { label: string; coverage: { rank: number } })[], skip, take, order) : productPage(currentRows, skip, take, order),
           count: currentRows.length,
         }),
       } : {}),
@@ -387,7 +386,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
     grid.addEventListener(PAGE_CHANGE_EVENT, ({ detail }) => {
       page = detail.skip;
       updateProductPageInfo();
-      if (!remotePage && !localPage) grid.source = currentRows.slice(page * itemCount, (page + 1) * itemCount);
+      if (!remotePage) grid.source = currentRows.slice(page * itemCount, (page + 1) * itemCount);
     });
   }
   const viewport = window.matchMedia('(max-width: 650px)');
@@ -434,7 +433,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
   } else if (example.id === 'campaign-performance') {
     const shell = make('div', '', 'campaign-grid-shell');
     const configurator = make('aside', '', 'campaign-configurator-host');
-    grid.gridConfigurator = { mountTo: configurator, miniMode: true };
+    grid.gridConfigurator = { mountTo: configurator, miniMode: true, areas: ['filters'] };
     shell.append(grid, configurator);
     section.append(heading, createDemoBody(host.ownerDocument, stats, toolbar, toastHost, shell, empty, overlay));
   } else {
@@ -492,12 +491,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
       grid.canMoveColumns = enabled;
     },
     onSearch: (listener) => search.addEventListener('input', listener),
-    resetPage: () => {
-      page = 0;
-      if (localPage && options.pagination) {
-        options.pagination = { ...options.pagination, initialPage: 0 };
-      }
-    },
+    resetPage: () => { page = 0; },
     getPage: () => page,
     setPage: (value) => { page = value; },
     resetColumns: () => {
@@ -535,7 +529,7 @@ export function mountScreen(host: HTMLElement, example: Example) {
         grid.pinnedTopSource = pinned;
         grid.pinnedBottomSource = pinnedBottom;
       }
-      if (layout.page && options.pagination && !localPage) {
+      if (layout.page && options.pagination) {
         currentRows = rows;
         page = Math.min(
           page,

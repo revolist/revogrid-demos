@@ -16,6 +16,28 @@ after(async () => {
   if (server) await new Promise((resolve, reject) => server.httpServer.close(error => error ? reject(error) : resolve()));
 });
 
+test('cohort group cells use the roadmap grouping surface', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    const group = page.locator('.cohort-group').first();
+    await group.waitFor();
+    const groupCell = group.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " rgCell ")][1]');
+    const answer = page.locator('.cohort-answers.is-group').first().locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " rgCell ")][1]');
+    const colors = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.background = 'var(--rv-ui-surface-sunken, #f8f8f8)';
+      document.querySelector('.workbench').append(probe);
+      const expected = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return expected;
+    });
+    assert.equal(await groupCell.evaluate(el => getComputedStyle(el).backgroundColor), colors);
+    assert.equal(await answer.evaluate(el => getComputedStyle(el).backgroundColor), colors);
+    if (process.env.COHORT_SCREENSHOT_PATH) await page.screenshot({ path: process.env.COHORT_SCREENSHOT_PATH, animations: 'disabled' });
+  } finally { await page.close(); }
+});
+
 test('cohort tabs stay grouped on the left and remain interactive', async () => {
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
   try {

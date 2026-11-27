@@ -167,6 +167,10 @@ test('campaign sorting, paging and filtering use the current data', async () => 
     page.setDefaultTimeout(10000);
     await page.goto(url);
     await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
+    await page.locator('.rv-pagination-panel').getByText('1-10 of 30 items').waitFor();
+    const configurator = page.getByRole('region', { name: 'Grid configurator' });
+    assert.equal(await configurator.getByRole('button', { name: /^Row Groups/ }).count(), 0);
+    assert.equal(await configurator.getByRole('button', { name: /^Values/ }).count(), 0);
     const names = () => page.locator('.cell-label .cell-action').allTextContents();
     const spend = page.locator('.rgHeaderCell').filter({ hasText: 'Spend' }).first();
     const status = page.locator('.rgHeaderCell').filter({ hasText: 'Status' }).first();
@@ -184,6 +188,7 @@ test('campaign sorting, paging and filtering use the current data', async () => 
     await page.waitForFunction(() => document.querySelector('.rgHeaderCell.desc'));
     assert.equal((await names())[0], 'Community Plan Member Event');
     await page.getByRole('button', { name: 'Page 2', exact: true }).click();
+    await page.locator('.rv-pagination-panel').getByText('11-20 of 30 items').waitFor();
     await page.getByRole('button', { name: 'Open Family Plan Member Event' }).waitFor();
     await page.getByPlaceholder('Search campaigns').fill('Community Plan Member Event');
     await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();

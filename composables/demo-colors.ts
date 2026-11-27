@@ -8,6 +8,8 @@ export const demoColors = {
   fuchsia: '#b52ac5',
   indigo: '#3955a8',
   blue: '#0091ff',
+  green: commonColors.green600,
+  greenFill: `color-mix(in srgb, ${commonColors.green600} 22%, white)`,
   teal: '#00a58f',
   tealText: '#007f70',
   tealMuted: '#30af9d',

@@ -256,7 +256,8 @@
 .workbench--scale-up-index .province-ranking small.negative { color: var(--demo-color-pink-text); }
 .workbench--scale-up-index .staff-track { height: 10px; }
 .workbench--scale-up-index .staff-track i { border-color: var(--demo-palette-hex-aaa4af); background: var(--demo-palette-hex-d7d2da); }
-.workbench--scale-up-index .staff-track i.up { border-color: var(--demo-color-teal); background: var(--demo-color-teal-fill); }
+.workbench--scale-up-index .staff-track i.up { border-color: var(--demo-color-green); background: var(--demo-color-green-fill); }
+.workbench--scale-up-index .rv-metric-detail__tiles { --rv-tile-positive-border: var(--demo-color-green); --rv-tile-positive: var(--demo-color-green-fill); }
 .workbench--scale-up-index .staff-track i.down { border-color: var(--demo-color-pink); background: var(--demo-palette-hex-fda4af); }
 
 :is(.workbench--scale-up-index, .workbench--sales-to-target, .workbench--brand-scorecard, .workbench--project-budget, .workbench--campaign-performance, .workbench--product-kpis) .workbench-dialog:has(:is(.scale-profile, .scale-edit)) {
@@ -328,6 +329,7 @@
 :is(.workbench--scale-up-index, .workbench--sales-to-target, .workbench--brand-scorecard, .workbench--project-budget, .workbench--campaign-performance, .workbench--product-kpis) .scale-profile__quarters { display: flex; gap: 4px; }
 :is(.workbench--scale-up-index, .workbench--sales-to-target, .workbench--brand-scorecard, .workbench--project-budget, .workbench--campaign-performance, .workbench--product-kpis) .scale-profile__quarters span { width: 16px; height: 16px; border: 1px solid var(--rv-ui-border); border-radius: 3px; background: var(--rv-ui-surface-hover); }
 :is(.workbench--scale-up-index, .workbench--sales-to-target, .workbench--brand-scorecard, .workbench--project-budget, .workbench--campaign-performance, .workbench--product-kpis) .scale-profile__quarters .up { border-color: var(--rv-ui-success); background: var(--rv-ui-success-surface); }
+.workbench--scale-up-index .scale-profile__quarters .up { border-color: var(--demo-color-green); background: var(--demo-color-green-fill); }
 :is(.workbench--scale-up-index, .workbench--sales-to-target, .workbench--brand-scorecard, .workbench--project-budget, .workbench--campaign-performance, .workbench--product-kpis) .scale-profile__quarters .down { border-color: var(--rv-ui-danger); background: var(--rv-ui-danger-surface); }
 :is(.workbench--scale-up-index, .workbench--sales-to-target, .workbench--brand-scorecard, .workbench--project-budget, .workbench--campaign-performance, .workbench--product-kpis) .scale-profile__quarters .unknown { border-style: dashed; background: transparent; }
 :is(.workbench--scale-up-index, .workbench--sales-to-target, .workbench--brand-scorecard, .workbench--project-budget, .workbench--campaign-performance, .workbench--product-kpis) .scale-profile__legend { color: var(--demo-palette-hex-737373); font-size: 12px; }
@@ -684,7 +686,7 @@
 .workbench--scale-up-index .scale-profile .negative { color: var(--demo-color-pink-text); }
 .workbench--scale-up-index .scale-profile__legend { display: flex; gap: 16px; color: var(--rv-ui-text, var(--demo-palette-hex-171717)); }
 .workbench--scale-up-index .scale-profile__legend span::before { display: inline-block; width: 8px; height: 8px; margin-right: 5px; border: 1px solid var(--demo-palette-hex-aaa4af); border-radius: 2px; background: var(--demo-palette-hex-d7d2da); content: ''; }
-.workbench--scale-up-index .scale-profile__legend .up::before { border-color: var(--demo-color-teal); background: var(--demo-color-teal-fill); }
+.workbench--scale-up-index .scale-profile__legend .up::before { border-color: var(--demo-color-green); background: var(--demo-color-green-fill); }
 .workbench--scale-up-index .scale-profile__legend .down::before { border-color: var(--demo-color-pink); background: var(--demo-palette-hex-fda4af); }
 .workbench--scale-up-index .scale-profile__section[aria-label='Revenue'] .scale-profile__section-content, .workbench--scale-up-index .scale-profile__section[aria-label='By Quarter'] .scale-profile__section-content { gap: 13px; }
 @media (max-width: 650px) {

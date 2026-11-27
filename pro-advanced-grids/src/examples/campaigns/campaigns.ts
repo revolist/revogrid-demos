@@ -15,7 +15,7 @@ import { summarizeCampaigns } from './campaign-summary';
 import { compareCampaignCells } from './campaign-sorting';
 import { PopoverController } from '@revolist/ui/core/popover-controller';
 import type { ColumnData, ColumnRegular, DataType } from '@revolist/revogrid';
-import { bulletChartRenderer, comparisonSparklineRenderer, metricStackRenderer, progressLineRenderer, identityCellRenderer, cellActionRenderer, visualCellRenderer, renderGroupCell, KeyedRowSelectionPlugin, FIlTER_SELECTION, FIlTER_SLIDER, AdvanceFilterPlugin, compileFilterAst, type FilterAst, type FilterAstEditorHandle } from '@revolist/revogrid-pro';
+import { bulletChartRenderer, comparisonSparklineRenderer, metricStackRenderer, progressLineRenderer, identityCellRenderer, cellActionRenderer, visualCellRenderer, KeyedRowSelectionPlugin, FIlTER_SELECTION, FIlTER_SLIDER, AdvanceFilterPlugin, compileFilterAst, type FilterAst, type FilterAstEditorHandle } from '@revolist/revogrid-pro';
 import '@fortawesome/fontawesome-free/css/brands.css';
 import pauseIcon from '@fortawesome/fontawesome-free/svgs/solid/pause.svg?raw';
 import downloadIcon from '@fortawesome/fontawesome-free/svgs/solid/download.svg?raw';
@@ -89,24 +89,6 @@ export const campaigns: Example = {
           label: () => [...new Set(rows.map(row => row.label))].map(value => ({ value, label: value })),
           status: () => [...new Set(rows.map(row => row.status))].map(value => ({ value, label: value })),
         },
-      },
-    };
-
-    bench.grid.grouping = {
-      ...bench.grid.grouping,
-      groupCellTemplate: (h, { prop, group }) => {
-        // The first pinned column contains selection checkboxes.
-        const labelColumn = bench.grid.hideColumns?.includes('label') ? group.isLabelColumn : prop === 'label';
-        if (!labelColumn) return null;
-        return h('div', { style: { paddingInlineStart: `${group.depth * 12}px` } }, [
-          renderGroupCell(h, {
-            label: group.name,
-            actionLabel: `${group.expanded ? 'Collapse' : 'Expand'} ${group.name}`,
-            expanded: group.expanded,
-            onActivate: group.canExpand ? group.onExpand : undefined,
-            variant: 'tree',
-          }),
-        ]);
       },
     };
 
@@ -355,7 +337,7 @@ export const campaigns: Example = {
       };
     }
 
-    function refresh(updateSource = true) {
+    function refresh() {
       const compiled = activeFilter && filterPlugin
         ? compileFilterAst(activeFilter, { columns: columns as ColumnRegular[], operators: filterPlugin.filterFunctionsIndexedByType })
         : undefined;
@@ -389,12 +371,10 @@ export const campaigns: Example = {
       };
       tone(3, summary.conversionChange);
       tone(4, summary.cpaChange, true);
-      if (updateSource) {
-        bench.render(
-          window.matchMedia('(max-width: 650px)').matches ? [{ ...columns[0], size: 160 }, ...columns.slice(1)] : columns,
-          (belowTargetOnly ? candidates.filter(isBelowTarget) : candidates).map(toGridRow),
-        );
-      }
+      bench.render(
+        window.matchMedia('(max-width: 650px)').matches ? [{ ...columns[0], size: 160 }, ...columns.slice(1)] : columns,
+        filtered.map(toGridRow),
+      );
       bench.setGridEmpty(!filtered.length);
     }
 
@@ -415,14 +395,15 @@ export const campaigns: Example = {
     bench.grid.addEventListener('filterastchange', (event) => {
       activeFilter = event.detail.filterAst;
       if (event.detail.origin === 'ui') queueMicrotask(() => filterPopover.close());
+      bench.resetPage();
       const version = ++filterRefreshVersion;
       if (filterPlugin) {
-        refresh(false);
+        refresh();
       } else {
         void bench.grid.getPlugins().then(plugins => {
           if (version !== filterRefreshVersion) return;
           filterPlugin = plugins.find(plugin => plugin instanceof AdvanceFilterPlugin);
-          refresh(false);
+          refresh();
         });
       }
     });

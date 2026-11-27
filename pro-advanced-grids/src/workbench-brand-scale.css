@@ -22,6 +22,8 @@
 
 /* The expanded province can span as few as two company rows. */
 .workbench--scale-up-index .province-cell .rv-group-cell__details { padding: 4px 6px 0; }
+.workbench--scale-up-index .rv-split-value { justify-content: flex-end; gap: 6px; }
+.workbench--scale-up-index .rv-split-value__badge { margin-inline-start: 0; }
 .workbench--scale-up-index .province-cell .rv-group-cell__summary { height: 44px; }
 .workbench--scale-up-index .province-cell .rv-group-cell__map { width: 37px; height: 44px; }
 

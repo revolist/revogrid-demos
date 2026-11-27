@@ -118,7 +118,7 @@ export const scaleUpIndex: Example = {
     });
     bench.onDispose(() => { disposed = true; cancelAnimationFrame(summaryFrame); summaryObserver.disconnect(); bench.grid.removeEventListener('viewportscroll', onScroll); bench.grid.removeEventListener('aftercolumnresize', alignSummary); bench.grid.removeEventListener('aftercolumnsset', alignSummary); bench.grid.removeEventListener('hiddencolumnsupdated', onVisibility); });
     const screeningColumns: ColumnRegular[] = flags.map((flag) => ({
-      prop: flag, name: flag, size: 68, cellTemplate: choiceStatusRenderer,
+      prop: flag, name: flag, size: 96, minSize: 96, cellTemplate: choiceStatusRenderer,
       choiceStatus: {
         format: (value, model) => {
           const answer = String(value);
@@ -562,6 +562,12 @@ export const scaleUpIndex: Example = {
           scoredCompanies.map(row => score(row)!), number, pointTooltip(scoredCompanies, 'Index', value => value.toFixed(1)),
         ],
       ]);
+      const rankingCard = bench.summary.children[rankBy.value === 'Index Score' ? 5 : 2] as HTMLElement | undefined;
+      if (rankingCard) {
+        rankingCard.classList.add('is-ranking');
+        const label = rankingCard.querySelector(':scope > span');
+        label?.append(make('span', rankBy.value === 'Growth' ? 'Growth ranking' : 'Ranking', 'scale-ranking-indicator'));
+      }
       const screenCard = bench.summary.children[1] as HTMLElement | undefined;
       if (screenCard) {
         const yes = screening.filter(value => value === 'Yes').length;
@@ -760,7 +766,7 @@ export const scaleUpIndex: Example = {
           legendRoot.render(createElement(Legend, {
             label: 'Headcount changes',
             items: [
-              { id: 'up', label: 'Hired', color: 'var(--rv-ui-success-surface)' },
+              { id: 'up', label: 'Hired', color: demoColors.greenFill },
               { id: 'flat', label: 'Held', color: 'var(--rv-ui-surface-hover)' },
               { id: 'down', label: 'Shrank', color: 'var(--rv-ui-danger-surface)' },
             ],
