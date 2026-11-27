@@ -1,4 +1,5 @@
 import { forecastFixtures } from './forecast-fixtures.ts';
+import { demoDepartmentColors } from '../../composables/demo-colors.ts';
 
 export const months = [
   'Nov',
@@ -18,34 +19,26 @@ export const departments = [
   {
     name: 'Footwear',
     growth: 5,
-    planner: 'Amara Okafor',
-    color: '#6647f0',
-    tint: '#eeeaff',
-    surface: '#f9f7ff',
+    planner: 'Maya Bennett',
+    ...demoDepartmentColors.footwear,
   },
   {
     name: 'Apparel',
     growth: 3,
-    planner: 'Lucas Moreau',
-    color: '#b52ac5',
-    tint: '#fbe9fb',
-    surface: '#fef8ff',
+    planner: 'Rafael Costa',
+    ...demoDepartmentColors.apparel,
   },
   {
     name: 'Camp',
     growth: -2,
-    planner: 'Ingrid Solberg',
-    color: '#0077ca',
-    tint: '#e4f3ff',
-    surface: '#f6fbff',
+    planner: 'Freya Lindholm',
+    ...demoDepartmentColors.camp,
   },
   {
     name: 'Packs',
     growth: 6,
-    planner: 'Diego Alvarez',
-    color: '#c25b14',
-    tint: '#fff0e3',
-    surface: '#fffaf5',
+    planner: 'Mateo Rivas',
+    ...demoDepartmentColors.packs,
   },
 ] as const;
 export type Department = (typeof departments)[number]['name'];
@@ -79,6 +72,24 @@ export interface Reading {
 
 export const sum = (values: readonly number[]) =>
   values.reduce((total, value) => total + value, 0);
+
+/** Fiscal quarters follow the November–October planning year. */
+export function quarterlyReadings(reading: Reading, closeMonth: number) {
+  return Array.from({ length: 4 }, (_, index) => {
+    const start = index * 3;
+    const end = start + 2;
+    const prior = sum(reading.prior.slice(start, end + 1));
+    const current = sum(reading.months.slice(start, end + 1));
+    return {
+      label: `Q${index + 1}`,
+      period: `${months[start]}–${months[end]}`,
+      phase: end <= closeMonth ? 'Actual' : start > closeMonth ? 'Forecast' : 'Actual / forecast',
+      prior,
+      current,
+      change: prior > 0 ? current / prior - 1 : null,
+    };
+  });
+}
 
 export const initialLines: Line[] = forecastFixtures.map((line) => ({
   ...line,

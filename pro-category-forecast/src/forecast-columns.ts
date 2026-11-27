@@ -1,4 +1,5 @@
 import { ROW_ACTION_COLUMN_WIDTH } from '../../composables/row-action';
+import { demoColors } from '../../composables/demo-colors';
 import { personPortrait } from '../../composables/demo-portraits';
 import { renderExpandIcon } from '@revolist/revogrid-pro';
 import type { ColumnData, ColumnRegular } from '@revolist/revogrid';
@@ -35,6 +36,8 @@ export const forecastText = {
   projections: 'Projected sales',
   outlook: 'FY26 outlook',
   actualPeriod: 'Actuals through',
+  monthActual: 'Actual',
+  monthForecast: 'Forecast',
   heat: 'Heat scale',
   globalHeat: 'All Lines',
   departmentHeat: 'Within Department',
@@ -48,12 +51,18 @@ export const forecastText = {
   add: 'Add Line',
   edit: 'Edit line',
   growth: 'Growth assumption',
+  growthShort: 'Growth',
   expand: 'Expand department',
   collapse: 'Collapse department',
   expandAll: 'Expand all',
   collapseAll: 'Collapse all',
   editAction: 'Edit',
   planDelta: 'vs plan',
+  scenarioImpact: 'Scenario impact',
+  scenarioBaseline: 'Saved outlook',
+  scenarioRevised: 'Current outlook',
+  scenarioChange: 'Change',
+  scenarioLines: (count: number) => `${count} affected ${count === 1 ? 'line' : 'lines'}`,
   planBar: 'Plan attainment',
   line: 'Line',
   actions: 'Actions',
@@ -148,7 +157,7 @@ export function createColumns(options: ColumnOptions): ColumnData {
   const departmentColumn: ColumnRegular = {
     prop: 'department',
     name: text.department,
-    size: 160,
+    size: 200,
     pin: 'colPinStart',
     columnTemplate: h => renderColumnHeader(h, {
       className: 'forecast-department-header', label: text.department,
@@ -177,15 +186,18 @@ export function createColumns(options: ColumnOptions): ColumnData {
           actionLabel: `${row.collapsed ? text.expand : text.collapse} ${department.name}`,
           expanded: !row.collapsed,
           showDetailsWhenCollapsed: true,
-          className: `forecast-department-card${row.collapsed ? ' is-collapsed' : ''}${options.hasGrowthDraft(row.department) ? ' has-growth-draft' : ''}`,
-          style: { '--tone': department.color, '--tint': department.tint, '--surface': department.surface },
+          className: `forecast-department-card${row.collapsed ? ' is-collapsed' : ''}`,
+          style: { '--tone': department.color, '--tint': department.tint },
           parts: { rail: 'forecast-rail', railContent: 'forecast-rail-content', icon: 'forecast-rail-icon', label: 'forecast-rail-label', details: 'forecast-department-details' },
           details: (h) => row.collapsed
-              ? [h('strong', {}, department.name), h('span', {}, growth)]
+              ? h('strong', { class: 'forecast-growth-number' }, growth)
               : [
-                  h('span', {}, 'Growth on FY25'),
+                  h('span', { class: 'forecast-planner' }, [
+                    h('img', { src: face, alt: '' }),
+                    h('span', {}, department.planner),
+                  ]),
                   h('div', { class: 'forecast-growth' }, [
-                    h('strong', {}, growth),
+                    h('span', { class: 'forecast-growth-label' }, text.growthShort),
                     renderScalarSlider(h, {
                       min: -20, max: 20, step: 1, value: Number(row.growth ?? 0),
                       label: `${department.name} ${text.growth}`, hideValue: true,
@@ -194,9 +206,10 @@ export function createColumns(options: ColumnOptions): ColumnData {
                       onChange: (value: number) => options.setGrowth(department.name, value),
                       onMouseDown: (event: MouseEvent) => event.stopPropagation(),
                     }),
+                    h('strong', { class: 'forecast-growth-number' }, growth),
                   ]),
                   h('dl', {}, [
-                    h('dt', {}, 'Forecast'),
+                    h('dt', {}, text.monthForecast),
                     h(
                       'dd',
                       {},
@@ -207,27 +220,17 @@ export function createColumns(options: ColumnOptions): ColumnData {
                         maximumSignificantDigits: 3,
                       }).format(row.reading.forecast),
                     ),
-                    h('dt', {}, 'Outlook'),
-                    h('dd', {}, money.format(row.reading.outlook)),
-                    h('dt', {}, 'Plan'),
-                    h('dd', {}, money.format(row.reading.plan)),
-                    h('dt', {}, text.planDelta),
-                    h(
-                      'dd',
-                      {
-                        class:
-                          ratio !== null && ratio >= 1
-                            ? 'forecast-positive'
-                            : 'forecast-negative',
-                      },
-                      ratio === null
-                        ? text.noPlan
-                        : signedPrecise.format(ratio - 1),
-                    ),
-                  ]),
-                  h('span', { class: 'forecast-planner' }, [
-                    h('img', { src: face, alt: '' }),
-                    h('span', {}, department.planner),
+                    h('dt', {}, text.pointOutlook),
+                    h('dd', { class: 'forecast-ledger-outlook' }, [
+                      h('span', {}, money.format(row.reading.outlook)),
+                      ratio === null ? null : h('span', {
+                        class: ratio >= 1 ? 'forecast-positive' : 'forecast-negative',
+                        title: text.planDelta,
+                        'aria-label': `${signedPrecise.format(ratio - 1)} ${text.planDelta}`,
+                      }, signedPrecise.format(ratio - 1)),
+                    ]),
+                    h('dt', {}, text.pointPlan),
+                    h('dd', {}, ratio === null ? text.noPlan : money.format(row.reading.plan)),
                   ]),
                   ...(options.hasGrowthDraft(department.name) ? [h('div', { class: 'forecast-growth-actions' }, [
                     renderControl(h, 'button', { ...keyboardSafe, type: 'button', class: 'rv-btn-solid', 'aria-label': `${text.save} ${department.name} ${text.growth}`, onClick: () => options.saveGrowth(department.name) }, text.save),
@@ -292,18 +295,25 @@ export function createColumns(options: ColumnOptions): ColumnData {
   };
 
   const monthColumns: ColumnRegular = {
-    prop: 'forecast-months', size: 54,
+    prop: 'forecast-months', size: 54, columnType: 'currency',
     dateRangeColumns: {
       start: '2025-11-01', end: '2026-10-01', unit: 'month',
       prop: slot => months[slot.index],
       column: slot => ({ name: months[slot.index] }),
     },
     heatmap: {
-      color: '#6647f0', opacity: 0.9,
+      color: demoColors.purple, opacity: 0.9,
       max: ({ model }) => bands.get((heatByDepartment && (model as ForecastRow).department) || 'all') ?? 1,
       enabled: ({ model, value }) => (model as ForecastRow).kind === 'line' && Number(value) > 0,
     },
-    columnTemplate: (h, column) => h('span', { class: 'forecast-month-header' }, months[column.dateSlot!.index]),
+    columnTemplate: (h, column) => {
+      const index = column.dateSlot!.index;
+      const period = index <= closeMonth ? text.monthActual : text.monthForecast;
+      return h('span', { class: 'forecast-month-header', 'aria-label': `${months[index]}: ${period}` }, [
+        h('span', {}, months[index]),
+        h('small', {}, period),
+      ]);
+    },
     cellTemplate: visualCellRenderer,
     visualCell: { format: (_value, model, column) => {
       const index = column.dateSlot!.index;
@@ -358,6 +368,7 @@ export function createColumns(options: ColumnOptions): ColumnData {
       prop: 'delta',
       name: text.planDelta,
       size: 72,
+      columnType: 'percentage',
       cellTemplate: (h, { model }) => {
         const value = (model as ForecastRow).attainment;
         return h(

@@ -9,22 +9,27 @@
 }
 .workbench--patient-cohorts .workbench-heading h1 { font-weight: 500; }
 .workbench--patient-cohorts .workbench-heading p { margin-top: 2px; }
+.workbench--patient-cohorts .workbench-dialog:has(.cohort-checkpoint) { position: fixed; inset: 0 0 0 auto; margin: 0; width: min(420px, 100vw); max-height: 100dvh; height: 100dvh; border-radius: 0; padding: 24px; background: var(--rv-ui-surface); color: var(--rv-ui-text); }
+.workbench--patient-cohorts .cohort-checkpoint { margin-top: 24px; }
+.workbench--patient-cohorts .cohort-transition { display: grid; gap: 4px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--rv-ui-border); }
+.workbench--patient-cohorts .cohort-transition span { color: var(--rv-ui-text-muted); }
+.workbench--patient-cohorts .workbench-dialog:has(.cohort-checkpoint) .workbench-actions { margin-top: 24px; }
 .workbench--patient-cohorts .workbench-heading button,
 .workbench--patient-cohorts .workbench-toolbar :is(button, input, select),
 .workbench .cohort-tabs button { font-size: 14px; }
 .workbench--patient-cohorts .cohort-tab-bar,
 .workbench--patient-cohorts .workbench-toolbar { width: calc(100% - 8px); margin-inline: 4px; }
-.workbench--patient-cohorts .cohort-heading-summary {
+.workbench--patient-cohorts .cohort-stage-summary {
   display: flex;
-  flex: 0 1 auto;
+  padding: 8px 16px;
   align-items: center;
-  gap: 20px;
-  color: #737373;
+  gap: 8px 12px;
+  flex-wrap: wrap;
+  border-block-end: 1px solid var(--rv-ui-border);
+  background: var(--rv-ui-surface);
+  color: var(--rv-ui-text-muted);
   font-size: 12px;
   white-space: nowrap;
-}
-.workbench--patient-cohorts .cohort-heading-summary span:nth-child(2) {
-  color: #d00025;
 }
 .workbench--patient-cohorts .cohort-tab-bar {
   display: block;
@@ -37,19 +42,6 @@
   height: 40px;
   gap: 22px;
   overflow: auto;
-}
-.workbench .cohort-tabs button {
-  min-height: 40px;
-  border: 0;
-  border-radius: 0;
-  padding: 0;
-  white-space: nowrap;
-  color: #737373;
-  background: transparent;
-}
-.workbench .cohort-tabs button[aria-selected='true'] {
-  color: #171717;
-  border-bottom: 2px solid #171717;
 }
 .workbench--patient-cohorts .workbench-toolbar {
   min-height: 49px;
@@ -77,6 +69,10 @@
   margin: 0 4px 4px;
   border-radius: 0 0 10px 10px;
   font-size: 14px;
+  background: var(--rv-ui-surface);
+}
+.workbench--patient-cohorts .workbench-grid revogr-data[type='rowPinStart'] .rgCell {
+  background: var(--rv-ui-surface);
 }
 .workbench--patient-cohorts .rgCell {
   padding-inline: 12px !important;
@@ -87,15 +83,25 @@
   gap: 5px;
   width: 100%;
   min-height: 24px;
+  height: 100%;
   padding: 0;
   border: 0;
   background: transparent;
   font-size: 14px;
   font-weight: 400;
-  color: #525252;
+  color: var(--demo-palette-hex-525252);
+}
+.workbench--patient-cohorts .workbench-grid .rgHeaderCell .header-content {
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 .workbench .cohort-sort-header.numeric { justify-content: flex-end; }
 .cohort-sort-header svg { width: 12px; height: 12px; flex: none; }
+.workbench--patient-cohorts .rgCell:has(.cohort-group),
+.workbench--patient-cohorts .rgCell:has(.cohort-answers.is-group) {
+  background: var(--rv-ui-surface-sunken, var(--demo-palette-hex-f8f8f8));
+}
 .cohort-group {
   display: flex;
   align-items: center;
@@ -111,30 +117,22 @@
   height: 22px;
   min-width: 22px;
   min-height: 22px;
-  background: #f4f4f4;
+  background: var(--rv-ui-surface-hover, var(--demo-palette-hex-f5f5f5));
+  color: var(--rv-ui-text, inherit);
   border-radius: 6px;
   font-size: 15px;
 }
 .cohort-group small {
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #737373;
+  color: var(--demo-palette-hex-737373);
   font-size: 12px;
 }
 .cohort-wave {
-  color: #737373;
+  color: var(--demo-palette-hex-737373);
   width: 16px;
   height: 16px;
   flex: none;
-}
-.cohort-count,
-.cohort-id,
-.cohort-footer-label > span:last-child {
-  border: 1px solid #e4e4e4;
-  border-radius: 5px;
-  padding: 2px 4px;
-  font-size: 11px;
-  font-weight: 400;
 }
 .cohort-count {
   margin-left: auto;
@@ -151,14 +149,21 @@
   gap: 2px;
   min-width: 0;
 }
-.cohort-id { width: 28px; text-align: center; flex: none; }
+.cohort-id {
+  width: 28px;
+  flex: none;
+  text-align: center;
+  background: var(--rv-ui-surface);
+  border: 1px solid var(--rv-ui-border);
+  color: var(--rv-ui-text-muted);
+}
 .cohort-signal strong,
 .cohort-signal small {
   font-size: 14px;
   line-height: 20px;
 }
 .cohort-signal small {
-  color: #737373;
+  color: var(--demo-palette-hex-737373);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -167,10 +172,9 @@
 .cohort-total {
   display: block;
   width: 100%;
-  text-align: right;
 }
 .cohort-total.risk {
-  color: #e00028;
+  color: var(--demo-palette-hex-e00028);
 }
 .workbench .cohort-heat {
   display: flex;
@@ -182,37 +186,37 @@
   padding: 0 10px;
   border: 0;
   border-radius: 0;
-  box-shadow: inset -1px -1px #e5e5e5;
-  color: #006b50;
+  box-shadow: inset -1px -1px var(--rv-ui-border, var(--demo-palette-hex-e4e4e4));
+  color: var(--demo-palette-hex-006b50);
   font-size: 12px;
 }
 .workbench .cohort-heat.high {
-  background: #5ee9b5;
+  background: var(--demo-palette-hex-5ee9b5);
 }
 .workbench .cohort-heat.medium {
-  background: #a4f4cf;
+  background: var(--demo-palette-hex-a4f4cf);
 }
 .workbench .cohort-heat.low {
-  background: #d0fae5;
+  background: var(--demo-palette-hex-d0fae5);
 }
 .workbench .cohort-heat.very-low {
-  background: #ecfdf5;
+  background: var(--demo-palette-hex-ecfdf5);
 }
 .workbench .cohort-heat.risk-low {
-  background: #fffbeb;
-  color: #aa4d00;
+  background: var(--demo-palette-hex-fffbeb);
+  color: var(--demo-palette-hex-aa4d00);
 }
 .workbench .cohort-heat.risk-caution {
-  background: #fef3c6;
-  color: #aa4d00;
+  background: var(--demo-palette-hex-fef3c6);
+  color: var(--demo-palette-hex-aa4d00);
 }
 .workbench .cohort-heat.risk-watch {
-  background: #ffe2e2;
-  color: #c90024;
+  background: var(--demo-palette-hex-ffe2e2);
+  color: var(--demo-palette-hex-c90024);
 }
 .workbench .cohort-heat.risk-high {
-  background: #ffc9c9;
-  color: #c90024;
+  background: var(--demo-palette-hex-ffc9c9);
+  color: var(--demo-palette-hex-c90024);
 }
 @media (max-width: 650px) {
   .workbench--patient-cohorts {
@@ -227,14 +231,6 @@
   }
   .workbench--patient-cohorts .workbench-heading > div:first-child {
     flex: 1 1 100%;
-  }
-  .workbench--patient-cohorts .cohort-heading-summary {
-    flex: 1 1 100%;
-    gap: 16px;
-    margin-top: 6px;
-  }
-  .workbench--patient-cohorts .cohort-heading-summary span:last-child {
-    display: none;
   }
   .workbench--patient-cohorts .cohort-tab-bar {
     padding: 0 20px;
@@ -264,26 +260,23 @@
 @media (min-width: 651px) {
   .cohort-group { padding-left: 5px; }
 }
-.workbench--patient-cohorts .cohort-heading-summary span:nth-child(2) {
-  color: #737373;
-}
-.cohort-heading-summary b {
-  margin-left: 8px;
+.cohort-stage-summary b {
+  display: inline-block;
+  margin-inline-start: 8px;
   padding: 3px 6px;
-  color: #171717;
-  background: #f4f4f5;
+  color: var(--rv-ui-text);
+  background: var(--rv-ui-surface-hover);
   border-radius: 5px;
   font-weight: 500;
 }
-.cohort-heading-summary span:nth-child(2) b {
-  background: #ffe4e6;
-  border: 1px solid #fecdd3;
-  color: #c90024;
+.cohort-stage-summary .cohort-stage-summary__hold b {
+  background: var(--rv-ui-danger-surface);
+  color: var(--rv-ui-danger);
 }
 .cohort-signal strong { font-weight: 500; }
 .cohort-group strong { font-weight: 500; }
 .cohort-heat {
-  box-shadow: inset -1px 0 rgba(255, 255, 255, 0.55);
+  box-shadow: inset -1px 0 var(--demo-palette-rgb-rgba-255-255-255-0-55);
 }
 @media (max-width: 650px) {
   .workbench--patient-cohorts .workbench-heading p {

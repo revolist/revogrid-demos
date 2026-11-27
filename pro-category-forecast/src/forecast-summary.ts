@@ -5,7 +5,7 @@ import '@revolist/ui/metric-panel.scss';
 import '@revolist/revogrid-pro/styles.css';
 import { attainment, months, sum, type Line, type Reading } from './forecast-data';
 import { money, percent, signedPrecise, type ForecastText } from './forecast-columns';
-import { distributionPoints } from './forecast-distribution';
+import { distributionPoints, plannedDistribution } from './forecast-distribution';
 
 /** Release UI-owned chart and metric mounts before replacing the summary. */
 export function releaseSummary(host: HTMLElement) {
@@ -14,7 +14,9 @@ export function releaseSummary(host: HTMLElement) {
 }
 
 export function renderSummary(host: HTMLElement, reading: Reading, closeMonth: number, lines: readonly { line: Line; reading: Reading }[], text: ForecastText) {
-  const ratios = lines.map(({ reading }) => reading.outlook / reading.plan);
+  const planned = plannedDistribution(lines);
+  const ratios = planned.map(({ ratio }) => ratio);
+  const onPlan = ratios.filter(value => value >= 1).length;
   const document = host.ownerDocument;
   const maximum = Math.max(1, ...reading.months, ...reading.prior);
   const fullMoney = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -23,7 +25,7 @@ export function renderSummary(host: HTMLElement, reading: Reading, closeMonth: n
     group.className = `summary-group summary-group--${kind}`;
     const seriesColor = kind === 'actual' ? demoColors.purple : demoColors.purpleLight;
     group.style.setProperty('--rv-dotted-accent', seriesColor);
-    group.style.setProperty('--rv-dotted-marker', '#737373');
+    group.style.setProperty('--rv-dotted-marker', demoColors.neutralText);
     group.style.width = `${span * 54}px`;
     group.append(createMetricTileElement(document, {
       label, value: money.format(total), detail: note,
@@ -47,22 +49,23 @@ export function renderSummary(host: HTMLElement, reading: Reading, closeMonth: n
   const actual = makeGroup(`Actual to ${months[closeMonth]}`, reading.actual, actualPrior ? `${signedPrecise.format(reading.actual / actualPrior - 1)} on FY25` : '–', closeMonth + 1, 0, 'actual');
   const outlook = document.createElement('div'); outlook.className = 'summary-group summary-group--outlook';
   const ratio = attainment(reading);
+  const gap = reading.plannedOutlook - reading.plan;
   outlook.append(createMetricTileElement(document, {
-    label: 'Outlook vs Plan', value: ratio === null ? 'No plan' : percent.format(ratio), detail: ratio === null ? '' : signedPrecise.format(ratio - 1),
-    summary: { markerColor: demoColors.blue, detailColor: '#005ea8' },
+    label: 'Outlook vs Plan', value: ratio === null ? 'No plan' : percent.format(ratio), detail: ratio === null ? '' : `${gap < 0 ? '−' : '+'}${money.format(Math.abs(gap))}`,
+    summary: { markerColor: demoColors.blue, detailColor: demoColors.blueText },
   }), createStackedDotPlotElement(document, {
-    label: `${ratios.filter(value => value >= 1).length} of ${ratios.length} lines on plan`, reference: 78,
-    tooltip: { title: 'Outlook vs Plan', subtitle: 'Every line in view', rows: [
+    label: `${onPlan} of ${planned.length} planned lines on plan`, reference: 78,
+    tooltip: { title: 'Outlook vs Plan', subtitle: 'Planned lines in view', rows: [
       { label: 'Planned outlook', value: fullMoney.format(reading.plannedOutlook) },
       { label: 'Plan', value: fullMoney.format(reading.plan) },
-      { label: 'On plan', value: `${ratios.filter(value => value >= 1).length} of ${ratios.length}` },
+      { label: 'On plan', value: `${onPlan} of ${planned.length}` },
     ] },
     pointTooltip: (_point, index) => ({
-      title: lines[index].line.name,
-      subtitle: lines[index].line.department,
+      title: planned[index].item.line.name,
+      subtitle: planned[index].item.line.department,
       rows: [
-        { label: text.pointOutlook, value: fullMoney.format(lines[index].reading.outlook) },
-        { label: text.pointPlan, value: fullMoney.format(lines[index].reading.plan) },
+        { label: text.pointOutlook, value: fullMoney.format(planned[index].item.reading.outlook) },
+        { label: text.pointPlan, value: fullMoney.format(planned[index].item.reading.plan) },
         { label: text.pointAttainment, value: percent.format(ratios[index]) },
       ],
     }),

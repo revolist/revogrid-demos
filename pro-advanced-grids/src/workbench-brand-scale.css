@@ -13,12 +13,19 @@
   line-height: 27px;
 }
 .workbench--brand-scorecard revogr-data[type='rowPinStart'] .rgCell {
-  background: #fff;
+  background: var(--demo-palette-hex-ffffff);
   font-weight: 400;
 }
 .workbench--brand-scorecard .brand-portfolio > strong {
   font-weight: 500;
 }
+
+/* The expanded province can span as few as two company rows. */
+.workbench--scale-up-index .province-cell .rv-group-cell__details { padding: 4px 6px 0; }
+.workbench--scale-up-index .rv-split-value { justify-content: flex-end; gap: 6px; }
+.workbench--scale-up-index .rv-split-value__badge { margin-inline-start: 0; }
+.workbench--scale-up-index .province-cell .rv-group-cell__summary { height: 44px; }
+.workbench--scale-up-index .province-cell .rv-group-cell__map { width: 37px; height: 44px; }
 
 .workbench--product-kpis .product-trends .sparkline-container {
   width: 100%;
@@ -29,7 +36,7 @@
   max-width: none;
 }
 .workbench--product-kpis .product-trends .sparkline-segment {
-  stroke: #6647f0;
+  stroke: var(--demo-chart-primary);
   stroke-width: 1.5;
 }
 .workbench--product-kpis .product-trends .prior-trend {
@@ -37,11 +44,11 @@
   filter: none;
 }
 .workbench--product-kpis .product-trends .prior-trend .sparkline-segment {
-  stroke: #a99af9;
+  stroke: var(--demo-chart-secondary);
   stroke-width: 1.3;
 }
 .workbench--campaign-performance .sparkline-segment {
-  stroke: #4c7ded;
+  stroke: var(--demo-palette-hex-4c7ded);
   stroke-width: 1.4;
 }
 .workbench--product-kpis .product-trends {
@@ -56,11 +63,11 @@
   width: calc(100% - 24px);
   height: 100%;
 }
-.workbench--product-kpis .kpi-marks .good { background: #00a58f; }
-.workbench--product-kpis .kpi-marks .bad { background: #ed3d69; }
-.workbench--product-kpis .kpi-marks .near { background: #f08a36; }
-.workbench--product-kpis .workbench-grid:not(.product-column-lines) revogr-data .rgCell { box-shadow: inset 0 -1px #e4e4e4; }
-.workbench--product-kpis .workbench-grid.product-row-stripes revogr-data .rgRow:nth-child(even) .rgCell { background: #f8f8f8; }
+.workbench--product-kpis .kpi-marks .good { background: var(--demo-color-teal); }
+.workbench--product-kpis .kpi-marks .bad { background: var(--demo-color-pink); }
+.workbench--product-kpis .kpi-marks .near { background: var(--demo-color-orange); }
+.workbench--product-kpis .workbench-grid:not(.product-column-lines) revogr-data .rgCell { box-shadow: inset 0 -1px var(--rv-ui-border, var(--demo-palette-hex-e4e4e4)); }
+.workbench--product-kpis .workbench-grid.product-row-stripes revogr-data .rgRow:nth-child(even) .rgCell { background: var(--rv-ui-surface-hover, var(--demo-palette-hex-f8f8f8)); }
 .workbench-grid .promo-strip span {
   position: relative;
   height: 7px;
@@ -77,7 +84,7 @@
   border-radius: 2px;
 }
 .workbench-grid .promo-strip .cell-action:focus-visible {
-  outline: 2px solid #171717;
+  outline: 2px solid var(--demo-palette-hex-171717);
 }
 .workbench-dialog:has(.product-week-details) {
   display: block;
@@ -87,7 +94,7 @@
 }
 .product-week-name {
   margin-top: 6px !important;
-  color: #737373;
+  color: var(--demo-palette-hex-737373);
 }
 .product-week-details {
   display: grid;
@@ -97,7 +104,7 @@
   font-size: 13px;
 }
 .product-week-details dt {
-  color: #737373;
+  color: var(--demo-palette-hex-737373);
 }
 .product-week-details dd {
   margin: 0;
@@ -118,26 +125,26 @@
   height: 20px;
   flex: none;
   border-radius: 6px;
-  background: #171717;
+  background: var(--demo-palette-hex-171717);
   color: white;
   font-weight: 500;
   font-size: 11px;
 }
 .workbench-grid .scale-company__mark.green {
-  background: #009c70;
+  background: var(--demo-palette-hex-009c70);
 }
 .workbench-grid .scale-company__mark.orange {
-  color: #ed784d;
-  background: #ffebe3;
+  color: var(--demo-palette-hex-ed784d);
+  background: var(--demo-palette-hex-ffebe3);
   border-radius: 50%;
 }
 .workbench-grid .scale-company__mark.blue {
-  color: #008fd2;
-  background: #eaf6fb;
+  color: var(--demo-palette-hex-008fd2);
+  background: var(--demo-palette-hex-eaf6fb);
   border-radius: 50%;
 }
 .workbench-grid .scale-company__mark.violet {
-  background: #5138f4;
+  background: var(--demo-palette-hex-5138f4);
   border-radius: 50%;
 }
 .workbench-grid .scale-company__content {
@@ -162,7 +169,7 @@
   padding: 0;
 }
 .workbench-grid .scale-company__content small {
-  color: #737373;
+  color: var(--demo-palette-hex-737373);
   font-size: 11px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -172,41 +179,17 @@
   margin-left: auto;
   padding: 1px 4px;
   border-radius: 5px;
-  background: #ededed;
-  color: #444;
+  background: var(--demo-palette-hex-eeeeee);
+  color: var(--demo-palette-hex-444444);
   white-space: nowrap;
   font-size: 9px;
 }
 .scale-company__stage.active {
-  color: #23765f;
-  background: #e2f4ec;
-}
-.scale-company__stack {
-  display: flex;
-  align-items: center;
-  padding-left: 3px;
-}
-.scale-company__stack i {
-  display: grid;
-  place-items: center;
-  width: 17px;
-  height: 17px;
-  margin-left: -3px;
-  border: 2px solid white;
-  border-radius: 50%;
-  font-size: 8px;
-  font-style: normal;
-  color: white;
-  background: #171717;
-}
-.scale-company__stack i:nth-child(2) {
-  background: #7960db;
-}
-.scale-company__stack i:nth-child(3) {
-  background: #ed9a00;
+  color: var(--demo-palette-hex-23765f);
+  background: var(--demo-palette-hex-e2f4ec);
 }
 .workbench-grid .scale-company--summary .cell-action {
-  color: #737373;
+  color: var(--demo-palette-hex-737373);
   font-size: 11px;
 }
 .province-cell__heading {
@@ -223,23 +206,33 @@
 }
 .province-cell__fold {
   margin-left: auto;
-  color: #999;
+  color: var(--demo-palette-hex-999999);
   font-size: 14px;
 }
+.workbench .province-details-trigger { flex: none; margin-inline-start: auto; min-width: 14px; min-height: 14px; width: 14px; height: 14px; padding: 0; border-radius: 50%; font-size: 9px; }
+.province-details__summary { display: flex; align-items: center; gap: 20px; padding: 16px; border: 1px solid var(--rv-ui-border); border-radius: 8px; background: var(--rv-ui-surface-sunken); }
+.province-details__summary svg { width: 72px; height: 86px; flex: none; }
+.province-details__summary path { fill: var(--rv-ui-surface); stroke: var(--rv-ui-border); stroke-width: .6; }
+.province-details__summary path.is-active { fill: var(--rv-ui-accent); }
+.province-details__summary div { display: grid; gap: 4px; }
+.province-details__summary span, .province-details__summary small, .province-details__fields dt { color: var(--rv-ui-text-muted); }
+.province-details__summary strong { font-size: 24px; }
+.province-details__fields { display: grid; grid-template-columns: 1fr auto; gap: 10px 24px; margin: 18px 0 0; }
+.province-details__fields dd { margin: 0; text-align: right; }
 .province-flag {
   width: 20px;
   height: 14px;
   flex: none;
-  border: 1px solid #ddd;
+  border: 1px solid var(--demo-palette-hex-dedede);
   border-radius: 2px;
-  background: linear-gradient(#cf2438 33%, white 33% 67%, #d8bc35 67%);
+  background: linear-gradient(var(--demo-palette-hex-cf2438) 33%, white 33% 67%, var(--demo-palette-hex-d8bc35) 67%);
 }
 .province-flag.brabant {
   background-color: white;
   background-image: conic-gradient(
-    #d8202a 25%,
+    var(--demo-palette-hex-d8202a) 25%,
     white 0 50%,
-    #d8202a 0 75%,
+    var(--demo-palette-hex-d8202a) 0 75%,
     white 0
   );
   background-size: 7px 7px;
@@ -249,20 +242,20 @@
 .province-flag.north-brabant {
   background-color: white;
   background-image: conic-gradient(
-    #d8202a 25%,
+    var(--demo-palette-hex-d8202a) 25%,
     white 0 50%,
-    #d8202a 0 75%,
+    var(--demo-palette-hex-d8202a) 0 75%,
     white 0
   );
   background-size: 7px 7px;
 }
 .province-flag.south-holland {
-  background: #ffda00;
-  border-color: #d9b900;
+  background: var(--demo-palette-hex-ffda00);
+  border-color: var(--demo-palette-hex-d9b900);
 }
 .province-flag.south-holland::after {
   content: '♞';
-  color: #d7232b;
+  color: var(--demo-palette-hex-d7232b);
   display: block;
   text-align: center;
   font-size: 10px;
@@ -271,9 +264,9 @@
 .province-flag.drenthe {
   background: linear-gradient(
     white 0 23%,
-    #d61c2b 23% 32%,
+    var(--demo-palette-hex-d61c2b) 23% 32%,
     white 32% 68%,
-    #d61c2b 68% 77%,
+    var(--demo-palette-hex-d61c2b) 68% 77%,
     white 77%
   );
 }
@@ -283,39 +276,42 @@
       90deg,
       transparent 34%,
       white 34% 42%,
-      #1459a4 42% 52%,
+      var(--demo-palette-hex-1459a4) 42% 52%,
       white 52% 60%,
       transparent 60%
     ),
     linear-gradient(
       transparent 35%,
       white 35% 42%,
-      #1459a4 42% 58%,
+      var(--demo-palette-hex-1459a4) 42% 58%,
       white 58% 65%,
       transparent 65%
     ),
-    linear-gradient(90deg, #d51c31 50%, #029c65 50%);
+    linear-gradient(90deg, var(--demo-palette-hex-d51c31) 50%, var(--demo-palette-hex-029c65) 50%);
 }
 .province-flag.utrecht {
-  background: linear-gradient(white 0 50%, #d51c31 50%);
+  background: linear-gradient(white 0 50%, var(--demo-palette-hex-d51c31) 50%);
 }
 .province-flag.overijssel {
-  background: repeating-linear-gradient(#e8c900 0 3px, #d82429 3px 6px);
+  background: repeating-linear-gradient(var(--demo-palette-hex-e8c900) 0 3px, var(--demo-palette-hex-d82429) 3px 6px);
+}
+.workbench--scale-up-index {
+  --rv-choice-positive-background: color-mix(in srgb, var(--rv-ui-success) 20%, var(--rv-ui-surface));
 }
 .workbench-grid .screening.good {
-  background: #c9f8ec;
-  color: #00695e;
+  background: var(--demo-palette-hex-c9f8ec);
+  color: var(--demo-palette-hex-00695e);
 }
 .workbench-grid .screening.bad {
-  background: #ffe1e5;
-  color: #bf0039;
+  background: var(--demo-palette-hex-ffe1e5);
+  color: var(--demo-palette-hex-bf0039);
 }
 .workbench-grid .screening:not(.good):not(.bad) {
-  background: #f3f1f3;
-  color: #3f3c42;
+  background: var(--demo-palette-hex-f3f1f3);
+  color: var(--demo-palette-hex-3f3c42);
 }
 .scale-metric small.negative {
-  color: #e30046;
+  color: var(--demo-palette-hex-e30046);
 }
 .screen-summary__track {
   display: flex;
@@ -330,13 +326,13 @@
   border-radius: 2px;
 }
 .screen-summary__track i {
-  background: #00bd9e;
+  background: var(--demo-color-teal);
 }
 .screen-summary__track b {
-  background: #ff0052;
+  background: var(--demo-color-pink);
 }
 .scale-metric progress {
-  accent-color: #222;
+  accent-color: var(--demo-palette-hex-222222);
 }
 .workbench--scale-up-index .workbench-stat:first-child > small {
   display: inline;
@@ -377,7 +373,7 @@
     display: none;
   }
   .workbench--product-kpis .rv-pagination-panel > span:last-child {
-    color: #737373;
+    color: var(--demo-palette-hex-737373);
   }
   .workbench--product-kpis .product-page-size {
     display: flex;
@@ -386,7 +382,7 @@
     gap: 8px;
     padding: 0 0 14px;
     background: white;
-    color: #737373;
+    color: var(--demo-palette-hex-737373);
     border-radius: 0 0 16px 16px;
   }
   .workbench--product-kpis .product-page-size select {
@@ -431,7 +427,7 @@
     display: block;
     text-align: center;
     background: white;
-    color: #737373;
+    color: var(--demo-palette-hex-737373);
     padding: 0 0 12px;
     font-size: 14px;
   }
@@ -448,5 +444,5 @@
     display: none;
   }
 }
-.workbench--campaign-performance .workbench-stat .campaign-change-good { color: #00a66f; }
-.workbench--campaign-performance .workbench-stat .campaign-change-bad { color: #e30027; }
+.workbench--campaign-performance .workbench-stat .campaign-change-good { color: var(--rv-ui-success); }
+.workbench--campaign-performance .workbench-stat .campaign-change-bad { color: var(--rv-ui-danger); }

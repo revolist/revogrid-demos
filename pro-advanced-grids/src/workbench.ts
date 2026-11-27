@@ -1,10 +1,12 @@
 import { defineCustomElements } from '@revolist/revogrid/loader';
 import { examples } from './screens';
-import { make } from './workbench-ui';
+import { make } from './shared/workbench-ui';
 import '../../composables/clickup-theme.css';
 
 export function mountWorkbench(host: HTMLElement) {
   void defineCustomElements();
+  const hadGalleryClass = host.classList.contains('advanced-grid-gallery');
+  host.classList.add('advanced-grid-gallery');
   const window = host.ownerDocument.defaultView!;
   const nav = make('nav', '', 'workbench-nav');
   nav.setAttribute('aria-label', 'Advanced RevoGrid examples');
@@ -37,6 +39,7 @@ export function mountWorkbench(host: HTMLElement) {
     cleanup?.();
     nav.remove();
     contents.remove();
+    if (!hadGalleryClass) host.classList.remove('advanced-grid-gallery');
   };
 }
 

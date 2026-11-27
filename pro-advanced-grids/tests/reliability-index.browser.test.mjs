@@ -7,6 +7,7 @@ const { chromium } = createRequire(import.meta.url)("playwright");
 let server, browser, url;
 before(async () => {
   server = await preview({
+    configFile: process.env.DEMO_TEST_CONFIG,
     mode: "ts",
     build: {
       outDir: process.env.RELIABILITY_TEST_OUT_DIR ?? "dist/browser-test",
@@ -23,6 +24,51 @@ after(async () => {
       server.httpServer.close((error) => (error ? reject(error) : resolve())),
     );
 });
+test('service owner portraits load from local demo assets', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    const image = page.locator('revo-grid img[src*="portrait-"]').first();
+    await image.waitFor();
+    await image.evaluate(element => element.decode());
+    assert.ok(await image.evaluate(element => element.naturalWidth > 0));
+  } finally { await page.close(); }
+});
+
+test('selected service history and comparison are both available', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    await page.getByRole('group', { name: 'Budget left for 18 SLOs' }).locator('[data-pivot-chart-lollipop]').first().waitFor();
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+    await page.getByRole('group', { name: 'Chart view' }).getByRole('button', { name: 'History' }).click();
+    await page.getByRole('group', { name: 'Order journal durability sample budget history over 30 days' }).locator('svg').waitFor({ state: 'attached' });
+    await page.getByRole('button', { name: 'Open Mobile alert delivery' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
+    await page.getByRole('group', { name: 'Mobile alert delivery sample budget history over 30 days' }).waitFor();
+    await page.getByRole('group', { name: 'Chart view' }).getByRole('button', { name: 'Compare' }).click();
+    await page.getByRole('group', { name: 'Budget left for 18 SLOs' }).locator('[data-pivot-chart-lollipop]').first().waitFor();
+  } finally { await page.close(); }
+});
+test("triage starts with paging services and keeps manual sorting available", async () => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  try {
+    await page.goto(url);
+    await page.locator(".reliability-name").first().waitFor();
+    const grid = page.locator("revo-grid").first();
+    const initial = await grid.evaluate(element => element.getVisibleSource());
+    assert.equal(initial[0].alert, "Paging");
+    assert.match(await page.locator(".reliability-chart__head").innerText(), new RegExp(initial[0].name));
+    await page.getByRole("button", { name: "Sort SLO" }).click();
+    await page.waitForFunction(async () => {
+      const rows = await document.querySelector("revo-grid").getVisibleSource();
+      const names = rows.map(row => row.name);
+      return names.every((name, index) => index === 0 || names[index - 1].localeCompare(name) <= 0);
+    });
+  } finally {
+    await page.close();
+  }
+});
 test("row and chart hover follow stable SLO identities in both directions", async () => {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 900 },
@@ -30,6 +76,7 @@ test("row and chart hover follow stable SLO identities in both directions", asyn
   try {
     page.setDefaultTimeout(8000);
     await page.goto(url);
+    await page.getByRole("group", { name: "Chart view" }).getByRole("button", { name: "Compare" }).click();
     await page
       .getByRole("button", { name: "Open Order journal durability" })
       .waitFor();
@@ -53,7 +100,10 @@ test("row and chart hover follow stable SLO identities in both directions", asyn
     const peerLine = chart.locator("[data-chart-peer-hover] line").first();
     assert.equal(await peerLine.evaluate((line) => getComputedStyle(line).strokeWidth), "20px");
     await page.screenshot({ path: "/private/tmp/reliability-index-row-hover.png" });
-    await chart.locator("[data-pivot-chart-lollipop]").nth(3).hover();
+    const rows = await page.locator("revo-grid").first().evaluate(grid => grid.getVisibleSource());
+    const settlementIndex = rows.findIndex(item => item.name === "Settlement batch timeliness");
+    assert.notEqual(settlementIndex, -1);
+    await chart.locator("[data-pivot-chart-lollipop]").nth(settlementIndex).hover();
     await page.waitForFunction(() =>
       [
         ...document.querySelectorAll('.rgRow[data-row-chart-active="true"]'),
@@ -61,7 +111,7 @@ test("row and chart hover follow stable SLO identities in both directions", asyn
     );
     const tooltip = page.locator(".reliability-chart-tooltip[data-visible]");
     await tooltip.waitFor();
-    assert.match(await tooltip.textContent(), /-14\.2%.*Settlement batch timeliness/);
+    assert.match(await tooltip.textContent(), /-12\.7%.*Settlement batch timeliness/);
     await page.screenshot({ path: "/private/tmp/reliability-index-chart-hover.png" });
     await page.mouse.move(10, 10);
     await page.waitForFunction(
@@ -78,6 +128,7 @@ test("filters, windows, search and details operate on the same SLO set", async (
   try {
     page.setDefaultTimeout(8000);
     await page.goto(url);
+    await page.getByRole("group", { name: "Chart view" }).getByRole("button", { name: "Compare" }).click();
     await page
       .getByRole("button", { name: "Open Order journal durability" })
       .waitFor();
@@ -91,11 +142,11 @@ test("filters, windows, search and details operate on the same SLO set", async (
       .click();
     const dialog = page.getByRole("dialog");
     await dialog.getByRole("group", { name: "Event delivery success budget left over 30 days" }).locator("svg").waitFor({ state: "attached" });
-    await dialog.getByRole("tab", { name: "Burn Rate" }).click();
+    await dialog.getByRole("group", { name: "Reliability details" }).getByRole("button", { name: "Burn Rate" }).click();
     await dialog.getByRole("heading", { name: "Burn Rate" }).waitFor();
     await dialog.getByRole("group", { name: "Event delivery success burn rate over 30 days" }).locator("svg").waitFor({ state: "attached" });
     assert.equal(await dialog.getByRole("group", { name: "Event delivery success budget left over 30 days" }).count(), 0);
-    await dialog.getByRole("tab", { name: "Settings" }).click();
+    await dialog.getByRole("group", { name: "Reliability details" }).getByRole("button", { name: "Settings" }).click();
     await dialog.getByRole("button", { name: "Edit SLO" }).waitFor();
   } finally {
     await page.close();
@@ -140,6 +191,7 @@ test("chart keyboard inspection and filtering keep the matching row active", asy
   try {
     page.setDefaultTimeout(8000);
     await page.goto(url);
+    await page.getByRole("group", { name: "Chart view" }).getByRole("button", { name: "Compare" }).click();
     await page
       .getByRole("button", { name: "Open Order journal durability" })
       .waitFor();
@@ -169,10 +221,14 @@ test('sorting keeps chart points linked to their source rows', async () => {
   try {
     page.setDefaultTimeout(8000);
     await page.goto(url);
+    await page.getByRole("group", { name: "Chart view" }).getByRole("button", { name: "Compare" }).click();
     await page.getByRole('button', { name: 'Open Order journal durability' }).waitFor();
+    const grid = page.locator('revo-grid.workbench-grid');
+    const before = await grid.evaluate(el => el.getVisibleSource().then(rows => rows.map(row => row.id)));
     await page.getByRole('button', {name: 'Sort Budget Left'}).click();
-    await page.getByRole('button', { name: 'Open Risk model availability' }).waitFor();
-    const row = page.locator('.rgRow').filter({ has: page.getByRole('button', { name: 'Open Risk model availability' }) });
+    const after = await grid.evaluate(el => el.getVisibleSource().then(rows => rows.map(row => row.id)));
+    assert.notDeepEqual(after, before);
+    const row = page.locator('.rgRow').filter({ has: page.getByRole('button', { name: /^Open / }) }).first();
     await row.hover();
     await page.getByRole('group', { name: 'Budget left for 18 SLOs' }).locator('[data-chart-peer-hover-marker]').waitFor({ state: 'attached' });
     assert.equal(await row.getAttribute('data-row-chart-active'), 'true');
@@ -192,6 +248,7 @@ test('chart guide moves between points and respects reduced motion', async () =>
         };
       });
       await page.goto(url);
+    await page.getByRole("group", { name: "Chart view" }).getByRole("button", { name: "Compare" }).click();
       const marks = page.getByRole('group', { name: 'Budget left for 18 SLOs' }).locator('[data-pivot-chart-lollipop]');
       await marks.first().waitFor();
       await marks.nth(1).hover();
@@ -224,6 +281,7 @@ test('strict objective keeps exhausted SLO markers inside the chart', async () =
   try {
     page.setDefaultTimeout(8000);
     await page.goto(url);
+    await page.getByRole("group", { name: "Chart view" }).getByRole("button", { name: "Compare" }).click();
     await page.getByRole('button', { name: 'Open Order journal durability' }).waitFor();
     await chooseSelect(page.getByRole('combobox', { name: 'Measure at objective' }), '99.99%');
     const chart = page.getByRole('group', { name: 'Budget left for 18 SLOs' });
@@ -237,12 +295,21 @@ test('strict objective keeps exhausted SLO markers inside the chart', async () =
   } finally { await page.close(); }
 });
 
-test('status tabs keep the shared underline visible without an extra divider', async () => {
+test('status tabs use shared underline and badge styles without clipping', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
+    await page.getByRole("group", { name: "Chart view" }).getByRole("button", { name: "Compare" }).click();
     const tabs = page.getByRole('tablist', { name: 'Reliability status' });
     await tabs.waitFor();
+    assert.equal(await tabs.getByRole('tab', { selected: true }).evaluate(node => {
+      const probe = document.createElement('span');
+      probe.style.borderBottomColor = 'var(--rv-ui-accent)';
+      node.parentElement.append(probe);
+      const matches = getComputedStyle(node).borderBottomColor === getComputedStyle(probe).borderBottomColor;
+      probe.remove();
+      return matches;
+    }), true, 'selected underline uses the UI accent');
     const geometry = await tabs.evaluate(element => ({
       height: element.clientHeight,
       scrollHeight: element.scrollHeight,
@@ -250,11 +317,22 @@ test('status tabs keep the shared underline visible without an extra divider', a
       childBottom: element.querySelector('[aria-selected="true"]').getBoundingClientRect().bottom - element.getBoundingClientRect().bottom,
     }));
     assert.ok(geometry.scrollHeight <= geometry.height, `tabs should not scroll vertically: ${JSON.stringify(geometry)}`);
-    assert.equal(geometry.borderBottom, '0px');
+    assert.equal(geometry.borderBottom, '1px');
     assert.ok(geometry.childBottom <= 1, 'selected underline should fit in the tab strip');
-    assert.deepEqual(await tabs.locator('.rv-segmented-switch-count.rv-badge--neutral.rv-badge--pill').allTextContents(), ['18', '5', '3', '10']);
-    await tabs.getByRole('tab', { name: 'Exhausted 5' }).click();
-    await page.getByRole('group', { name: 'Budget left for 5 SLOs' }).waitFor();
+    assert.equal(await tabs.evaluate(element => {
+      const items = [...element.querySelectorAll('[role="tab"]')];
+      const first = items[0].getBoundingClientRect(), last = items.at(-1).getBoundingClientRect();
+      return last.right - first.left < element.clientWidth / 2;
+    }), true, 'tabs stay grouped at the start of the strip');
+    assert.equal(await tabs.locator('.rv-segmented-switch-count.rv-badge--neutral.rv-badge--pill').count(), 4);
+    const exhausted = tabs.getByRole('tab', { name: /^Exhausted/ });
+    await exhausted.click();
+    await page.getByRole('group', { name: /^Budget left for \d+ SLOs$/ }).waitFor();
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(await exhausted.getAttribute('aria-selected'), 'true');
+    assert.equal(await tabs.evaluate(element => element.scrollHeight <= element.clientHeight), true);
+    assert.equal(await tabs.getByRole('tab').evaluateAll(items => items.every(item => item.scrollWidth <= item.clientWidth)), true);
   } finally { await page.close(); }
 });
 

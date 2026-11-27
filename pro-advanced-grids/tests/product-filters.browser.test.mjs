@@ -6,13 +6,160 @@ import { preview } from 'vite';
 const { chromium } = createRequire(import.meta.url)('playwright');
 let server, browser, url;
 before(async () => {
-  server = await preview({ mode: 'ts', build: { outDir: process.env.DEMO_REUSE_TEST_OUT_DIR ?? 'dist/browser-test' }, preview: { host: '127.0.0.1', port: 0 } });
+  server = await preview({ configFile: process.env.DEMO_TEST_CONFIG, mode: 'ts', build: { outDir: process.env.DEMO_REUSE_TEST_OUT_DIR ?? 'dist/browser-test' }, preview: { host: '127.0.0.1', port: 0 } });
   url = `${server.resolvedUrls.local[0]}#product-kpis`;
   browser = await chromium.launch({ headless: true });
 });
 after(async () => {
   await browser?.close();
   if (server) await new Promise((resolve, reject) => server.httpServer.close(error => error ? reject(error) : resolve()));
+});
+
+test('guardrail buttons use compact labels and retain descriptive accessible names', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    for (const [name, label] of [['Sales below target', 'Low sales'], ['Margin below floor', 'Low margin'], ['Discount above cap', 'High discount'], ['Cover < 4 wk', 'Low cover']]) {
+      const control = page.getByRole('button', { name: new RegExp(`^${name}:`) });
+      await control.waitFor();
+      assert.ok((await control.innerText()).includes(label));
+      assert.ok(await control.evaluate(el => el.scrollHeight <= el.clientHeight));
+    }
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+  } finally { await page.close(); }
+});
+
+test('generated product photos load in the grid and product details', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    const photo = page.locator('.product-photo').first();
+    await photo.waitFor();
+    const background = await photo.evaluate(el => getComputedStyle(el).backgroundImage);
+    assert.match(background, /catalog-generated\.png/);
+    const response = await page.request.get(new URL('product-photos/catalog-generated.png', page.url()).href);
+    assert.equal(response.status(), 200);
+    assert.match(response.headers()['content-type'], /image\/png/);
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).click();
+    const detailPhoto = page.getByRole('dialog').locator('.product-profile__photo.product-photo');
+    await detailPhoto.waitFor();
+    assert.match(await detailPhoto.evaluate(el => getComputedStyle(el).backgroundImage), /catalog-generated\.png/);
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+  } finally { await page.close(); }
+});
+
+test('decision views restore a guardrail after reload and can be deleted', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    for (const label of ['Save view', 'Delete view']) {
+      const control = page.getByRole('button', { name: label });
+      await control.locator('svg[aria-hidden="true"]').waitFor({ state: 'attached' });
+    }
+    assert.equal(await page.locator('.workbench-quick-filter .rv-badge').count(), 4);
+    await page.getByRole('button', { name: 'Performance targets' }).focus();
+    await page.getByRole('tooltip').getByText('Performance targets').waitFor();
+    await page.getByRole('button', { name: /Margin below floor/ }).click();
+    await page.getByRole('button', { name: 'Save view' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel('View name').fill('Margin review');
+    await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+    await page.reload();
+    await page.getByRole('searchbox').fill('Cove');
+    await page.getByRole('combobox', { name: 'Decision view' }).click();
+    await page.getByRole('option', { name: 'Margin review', exact: true }).click();
+    assert.equal(await page.getByRole('searchbox').inputValue(), 'Cove');
+    assert.equal(await page.getByRole('button', { name: /Margin below floor/ }).getAttribute('aria-pressed'), 'true');
+    await page.getByRole('button', { name: 'Delete view' }).click();
+    await page.reload();
+    await page.getByRole('combobox', { name: 'Decision view' }).click();
+    assert.equal(await page.getByRole('option', { name: 'Margin review', exact: true }).count(), 0);
+  } finally { await page.close(); }
+});
+
+test('low-cover queue excludes missing demand and survives saved views', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    const queue = page.getByRole('button', { name: /^Cover < 4 wk:/ });
+    await queue.click();
+    assert.equal(await queue.getAttribute('aria-pressed'), 'true');
+    const rows = await page.locator('revo-grid').first().evaluate(grid => grid.getVisibleSource());
+    assert.ok(rows.length > 0);
+    assert.ok(rows.every(row => row.stockCover != null && row.stockCover < 4));
+    await page.getByRole('button', { name: 'Save view' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel('View name').fill('Replenish');
+    await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+    await page.reload();
+    await page.getByRole('combobox', { name: 'Decision view' }).click();
+    await page.getByRole('option', { name: 'Replenish', exact: true }).click();
+    assert.equal(await queue.getAttribute('aria-pressed'), 'true');
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+  } finally { await page.close(); }
+});
+
+test('updating inventory recalculates the low-cover queue and can be undone', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    await page.getByRole('button', { name: /^Cover < 4 wk:/ }).click();
+    await page.getByRole('button', { name: 'Actions for Alder Summit Boot' }).click();
+    const dialog = page.getByRole('dialog');
+    const inventory = dialog.getByRole('spinbutton', { name: 'Units on hand' });
+    const previous = await inventory.inputValue();
+    await inventory.fill('100000');
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+    await dialog.getByRole('button', { name: 'Save Changes' }).click();
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).waitFor({ state: 'detached' });
+    await page.getByRole('button', { name: 'Undo', exact: true }).last().click();
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).waitFor();
+    await page.getByRole('button', { name: 'Actions for Alder Summit Boot' }).click();
+    assert.equal(await inventory.inputValue(), previous);
+  } finally { await page.close(); }
+});
+
+test('replenishment suggestion records a review without changing inventory', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    await page.getByRole('button', { name: /^Cover < 4 wk:/ }).click();
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).click();
+    const dialog = page.getByRole('dialog');
+    const details = dialog.getByRole('region', { name: 'Details' });
+    assert.match(await details.innerText(), /Units to 8 weeks\s+[\d,]+ suggested/);
+    assert.match(await details.innerText(), /Estimated demand\s+[\d,]+ units \/ week · [+-]\d+\.\d% vs prior 4 weeks/);
+    const grid = page.locator('revo-grid').first();
+    const before = await grid.evaluate(async grid => (await grid.getVisibleSource()).find(row => row.label === 'Alder Summit Boot').product.onHand);
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+    await dialog.getByText('Set Decision', { exact: true }).click();
+    await dialog.getByRole('menuitem', { name: 'Review Replenishment' }).click();
+    assert.match(await details.innerText(), /Review Replenishment/);
+    assert.equal(await grid.evaluate(async grid => (await grid.getVisibleSource()).find(row => row.label === 'Alder Summit Boot').product.onHand), before);
+    await dialog.getByRole('tab', { name: 'Activity' }).click();
+    assert.match(await dialog.innerText(), /Decision set to Review Replenishment/);
+  } finally { await page.close(); }
+});
+
+test('bulk stock review changes only low-cover products and supports undo', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    const grid = page.locator('revo-grid').first();
+    const read = () => grid.evaluate(async grid => (await grid.getVisibleSource()).filter(row => ['Alder Summit Boot', 'Fernbank Walking Boot'].includes(row.label)).map(row => ({ label: row.label, decision: row.product.decision, onHand: row.product.onHand })));
+    const before = await read();
+    await page.getByRole('checkbox', { name: 'Select Alder Summit Boot' }).click();
+    await page.getByRole('checkbox', { name: 'Select Fernbank Walking Boot' }).click();
+    const bar = page.getByRole('toolbar', { name: 'Selected products' });
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+    await bar.getByRole('button', { name: 'Review low stock' }).click();
+    await page.getByText('1 product updated.').first().waitFor();
+    const updated = await read();
+    assert.equal(updated.find(row => row.label === 'Alder Summit Boot').decision, 'replenish');
+    assert.deepEqual(updated.find(row => row.label === 'Fernbank Walking Boot'), before.find(row => row.label === 'Fernbank Walking Boot'));
+    await page.getByRole('button', { name: 'Undo', exact: true }).last().click();
+    assert.deepEqual(await read(), before);
+  } finally { await page.close(); }
 });
 
 test('product filters apply across pages and expose typed column filters', async () => {
@@ -44,6 +191,28 @@ test('product filters apply across pages and expose typed column filters', async
     await menu.getByRole('menuitem', { name: 'Filter', exact: true }).hover();
     await menu.getByRole('menuitem', { name: 'Open filter' }).click();
     await page.locator('.filter-panel-dialog:visible').waitFor();
+  } finally {
+    await page.close();
+  }
+});
+
+test('guardrail shortcuts filter the selected period and keep focus', async () => {
+  const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  try {
+    await page.goto(url);
+    const margin = page.getByRole('button', { name: /^Margin below floor:/ });
+    await margin.waitFor();
+    await margin.focus();
+    await margin.press('Enter');
+    assert.equal(await margin.getAttribute('aria-pressed'), 'true');
+    assert.equal(await margin.evaluate(button => button === document.activeElement), true);
+    await page.waitForFunction(async () => {
+      const rows = await document.querySelector('revo-grid').getVisibleSource();
+      return rows.length > 0 && rows.every(row => row.guardrailsPassed[1] === false);
+    });
+    await margin.press('Enter');
+    assert.equal(await margin.getAttribute('aria-pressed'), 'false');
+    await page.waitForFunction(async () => (await document.querySelector('revo-grid').getVisibleSource()).length === 10);
   } finally {
     await page.close();
   }
@@ -149,15 +318,15 @@ test('product visuals and applied targets remain correct across pages', async ()
   try {
     await page.goto(url);
     const grid = page.locator('revo-grid').first();
-    await page.getByRole('button', { name: 'Open Granite Trail Boot' }).waitFor();
-    for (const [number, name] of [[2, 'Thermal Base Layer'], [3, 'Cove Hammock']]) {
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).waitFor();
+    for (const [number, name] of [[2, 'Frostfield Thermal Top'], [3, 'Birchline Hammock']]) {
       await page.locator('.rv-pagination-panel').getByRole('button', { name: `Page ${number}`, exact: true }).click();
       await page.getByRole('button', { name: `Open ${name}` }).waitFor();
       assert.ok(await page.locator('.rv-identity-cell__image.product-photo, .rv-identity-cell__image.product-fallback').count() >= 9);
       assert.ok(await page.locator('.product-fallback svg').count() > 0 || number === 2);
     }
     await page.locator('.rv-pagination-panel').getByRole('button', { name: 'Page 2', exact: true }).click();
-    await page.getByRole('button', { name: 'Open Thermal Base Layer' }).waitFor();
+    await page.getByRole('button', { name: 'Open Frostfield Thermal Top' }).waitFor();
     const before = await grid.evaluate(async element => (await element.getVisibleSource()).map(row => ({ id: row.id, status: row.status, marks: row.marks })));
     await page.getByRole('button', { name: 'Performance targets' }).click();
     const popup = page.getByRole('dialog', { name: 'Performance targets' });
@@ -175,8 +344,8 @@ test('product visuals and applied targets remain correct across pages', async ()
     assert.match(await statusCell.innerText(), new RegExp(first.status));
     assert.equal(await statusCell.locator('.rv-status-segments__marks i').count(), 3);
     await page.locator('.rv-pagination-panel').getByRole('button', { name: 'Page 1', exact: true }).click();
-    await page.getByRole('button', { name: 'Open Granite Trail Boot' }).waitFor();
-    assert.equal((await grid.evaluate(element => element.getVisibleSource()))[0].marks[0], 'miss');
+    await page.getByRole('button', { name: 'Open Alder Summit Boot' }).waitFor();
+    assert.equal((await grid.evaluate(element => element.getVisibleSource()))[0].guardrailsPassed[0], false);
   } finally { await page.close(); }
 });
 
@@ -277,12 +446,12 @@ test('product bulk actions preserve selection across pages and clear it', async 
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByRole('checkbox', { name: 'Select Granite Trail Boot' }).click();
+    await page.getByRole('checkbox', { name: 'Select Alder Summit Boot' }).click();
     const bar = page.getByRole('toolbar', { name: 'Selected products' });
     await bar.waitFor();
     assert.match(await bar.innerText(), /1 product selected/);
     await page.locator('.rv-pagination-panel').getByRole('button', { name: 'Page 2', exact: true }).click();
-    await page.getByRole('checkbox', { name: 'Select Thermal Base Layer' }).click();
+    await page.getByRole('checkbox', { name: 'Select Frostfield Thermal Top' }).click();
     assert.match(await bar.innerText(), /2 products selected/);
     await bar.getByRole('button', { name: 'Stop promos' }).click();
     await page.locator('.rv-toast').getByText('2 products updated.', { exact: true }).waitFor();

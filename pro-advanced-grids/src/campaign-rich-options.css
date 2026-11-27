@@ -3,13 +3,13 @@
 .campaign-owner-photo { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; vertical-align: middle; margin-inline-end: 6px; }
 .campaign-rich-option .campaign-owner-photo { margin: 0; flex: none; }
 .campaign-rich-option .fa-brands { width: 18px; text-align: center; font-size: 16px; }
-.campaign-choice-status { width: 8px; height: 8px; border-radius: 50%; background: #9b95aa; flex: none; }
-.campaign-choice-status.is-live { background: #00a58f; }
-.campaign-choice-status.is-learning { background: #6647f0; }
-.campaign-choice-status.is-limited { background: #f08a36; }
-.campaign-choice-status.is-paused { background: #ed3d69; }
-.campaign-rich-option .fa-linkedin, .cell-mark--platform .fa-linkedin, .campaign-profile__icon.fa-linkedin { color: #0a66c2; }
-.campaign-rich-option .fa-microsoft, .cell-mark--platform .fa-microsoft, .campaign-profile__icon.fa-microsoft { color: #0078d4; }
-.campaign-rich-option .fa-twitch, .cell-mark--platform .fa-twitch, .campaign-profile__icon.fa-twitch { color: #9146ff; }
-.campaign-rich-option .fa-pinterest, .cell-mark--platform .fa-pinterest, .campaign-profile__icon.fa-pinterest { color: #bd081c; }
-.campaign-rich-option .fa-meta, .cell-mark--platform .fa-meta, .campaign-profile__icon.fa-meta { color: #0866ff; }
+.campaign-choice-status { width: 8px; height: 8px; border-radius: 50%; background: var(--demo-palette-hex-9b95aa); flex: none; }
+.campaign-choice-status.is-live { background: var(--demo-color-teal); }
+.campaign-choice-status.is-learning { background: var(--rv-ui-accent); }
+.campaign-choice-status.is-limited { background: var(--demo-color-orange); }
+.campaign-choice-status.is-paused { background: var(--demo-color-pink); }
+.campaign-rich-option .fa-linkedin, .cell-mark--platform .fa-linkedin, .campaign-profile__icon.fa-linkedin { color: var(--demo-palette-hex-0a66c2); }
+.campaign-rich-option .fa-microsoft, .cell-mark--platform .fa-microsoft, .campaign-profile__icon.fa-microsoft { color: var(--demo-palette-hex-0078d4); }
+.campaign-rich-option .fa-twitch, .cell-mark--platform .fa-twitch, .campaign-profile__icon.fa-twitch { color: var(--demo-palette-hex-9146ff); }
+.campaign-rich-option .fa-pinterest, .cell-mark--platform .fa-pinterest, .campaign-profile__icon.fa-pinterest { color: var(--demo-palette-hex-bd081c); }
+.campaign-rich-option .fa-meta, .cell-mark--platform .fa-meta, .campaign-profile__icon.fa-meta { color: var(--demo-palette-hex-0866ff); }

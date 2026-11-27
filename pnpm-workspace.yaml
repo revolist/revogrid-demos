@@ -19,17 +19,17 @@ packages:
   - "pro-row-master"
   - "pro-audit-history"
 minimumReleaseAgeExclude:
-  - '@revolist/charts-trial@4.2.2'
-  - '@revolist/ui@4.2.2'
+  - '@revolist/charts-trial@4.3.2'
+  - '@revolist/ui@4.3.2'
   - '@revolist/angular-datagrid@4.31.5'
-  - '@revolist/gantt-trial@4.2.2'
-  - '@revolist/kanban-trial@4.2.2'
-  - '@revolist/pivot-trial@4.2.2'
+  - '@revolist/gantt-trial@4.3.2'
+  - '@revolist/kanban-trial@4.3.2'
+  - '@revolist/pivot-trial@4.3.2'
   - '@revolist/react-datagrid@4.31.5'
   - '@revolist/revogrid-column-date@2.0.27'
   - '@revolist/revogrid@4.31.5'
-  - '@revolist/rv-pro-trial@4.2.2'
-  - '@revolist/scheduler-trial@4.2.2'
+  - '@revolist/rv-pro-trial@4.3.2'
+  - '@revolist/scheduler-trial@4.3.2'
   - '@revolist/svelte-datagrid@4.31.5'
   - '@revolist/vue3-datagrid@4.31.5'
 

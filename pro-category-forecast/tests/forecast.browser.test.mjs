@@ -6,13 +6,36 @@ import { preview } from 'vite';
 const { chromium } = createRequire(import.meta.url)('playwright');
 let server, browser, url;
 before(async () => {
-  server = await preview({ mode: 'ts', build: { outDir: process.env.FORECAST_TEST_OUT_DIR ?? 'dist/browser-test' }, preview: { host: '127.0.0.1', port: 0, strictPort: false } });
+  server = await preview({ configFile: process.env.FORECAST_TEST_CONFIG, mode: 'ts', build: { outDir: process.env.FORECAST_TEST_OUT_DIR ?? 'dist/browser-test' }, preview: { host: '127.0.0.1', port: 0, strictPort: false } });
   url = server.resolvedUrls.local[0];
   browser = await chromium.launch({ headless: true });
 });
 after(async () => {
   await browser?.close();
   if (server) await new Promise((resolve, reject) => server.httpServer.close((error) => error ? reject(error) : resolve()));
+});
+
+test('department planner portraits load from local demo assets', async () => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  try {
+    await page.goto(url);
+    const portrait = page.locator('img[src*="portrait-"]').first();
+    await portrait.waitFor();
+    await portrait.evaluate(image => image.decode());
+    assert.ok(await portrait.evaluate(image => image.naturalWidth > 0));
+  } finally { await page.close(); }
+});
+
+test('line details show the assigned planner', async () => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  try {
+    await page.goto(url);
+    await page.getByRole('button', { name: 'Workshop Safety Shoes', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('heading', { name: /Workshop Safety Shoes/ }).waitFor();
+    assert.match(await dialog.innerText(), /Keira Voss/);
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
+  } finally { await page.close(); }
 });
 
 test('shared search shortcut focuses forecast search', async () => {
@@ -22,8 +45,8 @@ test('shared search shortcut focuses forecast search', async () => {
     await page.locator('.rv-search-action-bar').waitFor();
     await page.keyboard.press('/');
     assert.equal(await page.getByRole('searchbox').evaluate(node => node === document.activeElement), true);
-    await page.keyboard.type('Camp Chairs');
-    await page.getByRole('button', { name: 'Edit line · Camp Chairs' }).waitFor();
+    await page.keyboard.type('Folding Stools');
+    await page.getByRole('button', { name: 'Edit line · Folding Stools' }).waitFor();
   } finally { await page.close(); }
 });
 
@@ -31,7 +54,7 @@ test('department rails fill their cells when expanded and collapsed', async () =
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
     const assertRailFits = async () => {
       const edges = await page.locator('.forecast-department-card').first().evaluate(rail => {
         const cell = rail.closest('.rgCell').getBoundingClientRect();
@@ -42,8 +65,24 @@ test('department rails fill their cells when expanded and collapsed', async () =
     };
     await assertRailFits();
     await page.getByRole('button', { name: 'Collapse department Footwear' }).click();
-    await page.getByText('Trail Footwear', { exact: true }).waitFor({ state: 'hidden' });
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor({ state: 'hidden' });
     await assertRailFits();
+  } finally { await page.close(); }
+});
+
+test('department and group cells retain their boundary lines', async () => {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  try {
+    await page.goto(url);
+    for (const selector of ['.forecast-department-card', '.forecast-name--group']) {
+      const cell = page.locator(selector).first().locator('..');
+      await cell.waitFor();
+      assert.deepEqual(await cell.evaluate(element => {
+        const style = getComputedStyle(element, '::after');
+        return [style.borderRightWidth, style.borderBottomWidth, style.pointerEvents];
+      }), ['1px', '1px', 'none']);
+    }
+    if (process.env.DEMO_SCREENSHOT_PATH) await page.screenshot({ path: process.env.DEMO_SCREENSHOT_PATH });
   } finally { await page.close(); }
 });
 
@@ -52,34 +91,42 @@ test('forecast figures, growth controls, rail and missing plan follow the sample
   try {
     page.setDefaultTimeout(10000);
     await page.goto(url);
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
-    assert.match(await page.locator('.summary-group--actual').innerText(), /\$56\.9M\s*\+23\.7% on FY25/);
-    assert.match(await page.locator('.summary-group--projected').innerText(), /\$26\.1M\s*\+13\.4% on FY25/);
-    assert.match(await page.locator('.summary-group--outlook').innerText(), /105\.7%\s*\+5\.7%/);
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
+    assert.match(await page.locator('.summary-group--actual').innerText(), /\$31\.6M\s*\+11\.7% on FY25/);
+    assert.match(await page.locator('.summary-group--projected').innerText(), /\$14\.5M\s*\+10\.5% on FY25/);
+    assert.match(await page.locator('.summary-group--outlook').innerText(), /97\.8%\s*−\$1\.0M/);
     assert.equal(await page.locator('.rv-metric-tile--summary').count(), 3);
     assert.equal(await page.locator('.rv-dotted-comparison__column').count(), 12);
     assert.equal(await page.locator('.rv-dotted-comparison__marker').count(), 12);
     assert.ok(await page.locator('.rv-stacked-dot-plot__point').count() > 0);
-    const labelBox = await page.locator('.forecast-rail-label').first().boundingBox();
-    const railBox = await page.locator('.forecast-rail').first().boundingBox();
-    assert.ok(labelBox.y - railBox.y >= 28 && labelBox.y - railBox.y <= 35, `rail label offset: ${labelBox.y - railBox.y}`);
+    const card = page.locator('.forecast-department-card').first();
+    const label = card.locator('.forecast-rail-label');
+    assert.equal(await label.evaluate(node => getComputedStyle(node).writingMode), 'horizontal-tb');
+    assert.deepEqual(await card.locator('dt').allTextContents(), ['Forecast', 'Outlook', 'Plan']);
+    assert.match(await card.locator('.forecast-ledger-outlook').innerText(), /\$11.9M\s*[-−]1.5%/);
+    assert.ok(await card.locator('.forecast-planner').evaluate(node =>
+      node.getBoundingClientRect().bottom <= node.parentElement.querySelector('.forecast-growth').getBoundingClientRect().top));
     assert.equal(await page.locator('.rv-bullet-chart__empty').first().innerText(), 'No plan');
     assert.match(await page.locator('.rv-bullet-chart__empty').first().locator('..').evaluate((cell) => getComputedStyle(cell).backgroundImage), /repeating-linear-gradient/);
     const slider = page.getByRole('slider', { name: 'Footwear Growth assumption' });
+    const scenario = page.getByRole('group', { name: 'Scenario impact' });
+    assert.match(await scenario.innerText(), /0 affected lines/);
     assert.equal(await slider.getAttribute('min'), '-20');
     assert.equal(await slider.getAttribute('max'), '20');
     await slider.fill('20');
-    await page.waitForFunction(() => document.querySelector('.summary-group--projected strong')?.textContent !== '$26.1M');
+    await page.waitForFunction(() => document.querySelector('.summary-group--projected strong')?.textContent !== '$14.5M');
+    await page.waitForFunction(() => !document.querySelector('.forecast-scenario')?.textContent?.includes('0 affected lines'));
     await page.getByRole('button', { name: 'Save Footwear Growth assumption' }).click();
-    assert.notEqual((await page.locator('.summary-group--projected strong').innerText()), '$26.1M');
+    await page.getByText('0 affected lines', { exact: true }).waitFor();
+    assert.notEqual((await page.locator('.summary-group--projected strong').innerText()), '$14.5M');
     assert.equal(await page.getByRole('button', { name: 'Collapse department Footwear' }).locator('.rv-expand-icon.is-collapse').count(), 1);
     await page.getByRole('button', { name: 'Collapse department Footwear' }).click();
-    await page.getByText('Trail Footwear', { exact: true }).waitFor({ state: 'hidden' });
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor({ state: 'hidden' });
     assert.equal(await page.getByRole('button', { name: 'Expand department Footwear' }).locator('.rv-expand-icon.is-expand').count(), 1);
     await page.getByRole('button', { name: 'Expand department Footwear' }).click();
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
-    await page.getByRole('searchbox').fill('Camp Chairs');
-    const action = page.getByRole('button', { name: 'Edit line · Camp Chairs' });
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
+    await page.getByRole('searchbox').fill('Folding Stools');
+    const action = page.getByRole('button', { name: 'Edit line · Folding Stools' });
     assert.equal(await action.locator('svg path').count(), 1);
     assert.equal(await action.locator('svg').evaluate(node => node.closest('[aria-hidden]')?.getAttribute('aria-hidden')), 'true');
     await action.click();
@@ -88,8 +135,8 @@ test('forecast figures, growth controls, rail and missing plan follow the sample
     await dialog.getByRole('combobox', { name: 'Last Month' }).click();
     await page.locator('[role=option][data-value="8"]:visible').click();
     await dialog.getByRole('button', { name: 'Save' }).click();
-    const chair = await page.locator('revo-grid').evaluate((grid) => grid.source.find((row) => row.label === 'Camp Chairs'));
-    assert.equal(chair.Jul, 260600);
+    const chair = await page.locator('revo-grid').evaluate((grid) => grid.source.find((row) => row.label === 'Folding Stools'));
+    assert.equal(chair.Jul, 92000);
     assert.equal(chair.Aug, 0);
   } finally {
     await page.close();
@@ -100,10 +147,10 @@ test('line profile follows forecast state, supports navigation, month detail and
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   try {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Trail Footwear', exact: true }).click();
+    await page.getByRole('button', { name: 'Coastal Walking Shoes', exact: true }).click();
     const dialog = page.getByRole('dialog');
-    await dialog.getByRole('heading', { name: /Trail Footwear/ }).waitFor();
-    assert.match(await dialog.innerText(), /105\.7%[\s\S]*\$1,901,700[\s\S]*\$101,700/);
+    await dialog.getByRole('heading', { name: /Coastal Walking Shoes/ }).waitFor();
+    assert.match(await dialog.innerText(), /99\.5%[\s\S]*\$2,017,200[\s\S]*\$9,800/);
     const navigation = dialog.getByRole('group', { name: '1 of 22' });
     assert.equal(await navigation.getByRole('button').count(), 2);
     const geometry = await navigation.evaluate(root => {
@@ -138,10 +185,10 @@ test('line details describe new, unplanned and exiting forecasts accurately', as
   try {
     await page.goto(url);
     const dialog = page.getByRole('dialog');
-    await page.getByRole('button', { name: 'Kids Hikers', exact: true }).click();
-    assert.match(await dialog.innerText(), /RDF-0005[\s\S]*Short of plan[\s\S]*FY25\s+None[\s\S]*Short by\s+\$75,100[\s\S]*Average month to date[\s\S]*None, no FY25 base/);
+    await page.getByRole('button', { name: 'Junior Rain Boots', exact: true }).click();
+    assert.match(await dialog.innerText(), /RDF-0005[\s\S]*Short of plan[\s\S]*FY25\s+None[\s\S]*Short by\s+\$103,900[\s\S]*Average month to date[\s\S]*None, no FY25 base/);
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
-    await page.getByRole('button', { name: 'Sun Hoodies', exact: true }).click();
+    await page.getByRole('button', { name: 'Cycling Jerseys', exact: true }).click();
     assert.match(await dialog.innerText(), /No FY26 plan set yet\./);
     await dialog.getByRole('button', { name: 'Set Plan' }).click();
     assert.equal(await dialog.getByLabel('FY26 sales plan').inputValue(), '0');
@@ -149,7 +196,7 @@ test('line details describe new, unplanned and exiting forecasts accurately', as
     assert.equal(await dialog.getByLabel('Line name').evaluate(node => node.classList.contains('rv-control')), true);
     await dialog.getByRole('button', { name: 'Back', exact: true }).click();
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
-    await page.getByRole('button', { name: 'Camp Chairs', exact: true }).click();
+    await page.getByRole('button', { name: 'Folding Stools', exact: true }).click();
     assert.match(await dialog.innerText(), /RDF-0016[\s\S]*Last month\s+Aug 2026/);
   } finally {
     await page.close();
@@ -160,9 +207,9 @@ test('forecast controls use shared dropdowns and release menus when closed', asy
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   try {
     await page.goto(url);
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
     assert.equal(await page.locator('.forecast select').count(), 0);
-    await page.getByRole('button', { name: 'Trail Footwear', exact: true }).click();
+    await page.getByRole('button', { name: 'Coastal Walking Shoes', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
     assert.equal(await dialog.locator('select').count(), 0);
@@ -178,19 +225,23 @@ test('forecast controls use shared dropdowns and release menus when closed', asy
 });
 
 test('fiscal months are generated in order and survive period changes', async () => {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
     const expected = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
     const generated = async () => (await page.locator('revo-grid').evaluate(grid => grid.getColumns())).filter(column => expected.includes(column.prop)).map(column => column.prop);
     assert.deepEqual(await generated(), expected);
     const columns = await page.locator('revo-grid').evaluate(grid => grid.getColumns());
     assert.equal(columns.find(column => column.prop === 'Nov').dateSlot.date, '2025-11-01');
     assert.equal(columns.find(column => column.prop === 'Oct').dateSlot.date, '2026-10-01');
+    await page.locator('.forecast-month-header[aria-label="Jun: Actual"]').waitFor({ state: 'attached' });
+    await page.locator('.forecast-month-header[aria-label="Jul: Forecast"]').waitFor({ state: 'attached' });
     await page.getByRole('combobox', { name: 'Actuals through' }).click();
     await page.getByRole('option', { name: 'May 2026', exact: true }).click();
     await page.getByText(/actuals to May/i).first().waitFor();
+    await page.locator('.forecast-month-header[aria-label="May: Actual"]').waitFor({ state: 'attached' });
+    await page.locator('.forecast-month-header[aria-label="Jun: Forecast"]').waitFor({ state: 'attached' });
     assert.deepEqual(await generated(), expected);
   } finally { await page.close(); }
 });
@@ -199,7 +250,7 @@ test('merged department content scrolls continuously through virtual row boundar
   const page = await browser.newPage({ viewport: { width: 760, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
     const grid = page.locator('.forecast-grid');
     const box = await grid.boundingBox();
     await page.mouse.move(box.x + 300, box.y + 300);
@@ -230,16 +281,16 @@ test('heatmap highlights generated month cells and updates the domain', async ()
     await page.goto(url);
     const heat = page.locator('.forecast-heat').first();
     await heat.waitFor();
-    const color = () => heat.evaluate(node => node.closest('.rgCell').style.backgroundColor);
-    await page.waitForFunction(() => !!document.querySelector('.forecast-heat')?.closest('.rgCell')?.style.backgroundColor);
-    const allColor = await color();
-    assert.match(allColor, /color-mix|oklab|rgba|rgb/);
+    const colors = () => page.locator('.forecast-heat').evaluateAll(nodes => nodes.map(node => node.closest('.rgCell').style.backgroundColor));
+    await page.waitForFunction(() => !!document.querySelector('.forecast-heat')?.closest('.rgCell')?.style.backgroundColor, null, { timeout: 5000 });
+    const allColors = await colors();
+    assert.ok(allColors.every(color => /color-mix|oklab|rgba|rgb/.test(color)));
     assert.equal(await page.locator('.forecast-share').first().evaluate(node => node.closest('.rgCell').style.backgroundColor), '');
     assert.equal(await page.locator('.forecast-missing').first().evaluate(node => node.closest('.rgCell').style.backgroundColor), '');
     await page.getByRole('combobox', { name: 'Heat scale' }).click();
     await page.getByRole('option', { name: 'Within Department', exact: true }).click();
-    await page.waitForFunction(previous => document.querySelector('.forecast-heat')?.closest('.rgCell')?.style.backgroundColor !== previous, allColor);
-    assert.notEqual(await color(), allColor);
+    await page.waitForFunction(previous => [...document.querySelectorAll('.forecast-heat')].some((node, index) => node.closest('.rgCell').style.backgroundColor !== previous[index]), allColors);
+    assert.notDeepEqual(await colors(), allColors);
   } finally { await page.close(); }
 });
 
@@ -247,7 +298,7 @@ test('collapsed departments keep names and growth fully visible', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
     await page.getByRole('button', { name: 'Collapse all', exact: true }).click();
     const cards = page.locator('.forecast-department-card.is-collapsed');
     await page.waitForFunction(() => document.querySelectorAll('.forecast-department-card.is-collapsed').length === 4);
@@ -255,8 +306,8 @@ test('collapsed departments keep names and growth fully visible', async () => {
     for (const card of await cards.all()) {
       const geometry = await card.evaluate(node => {
         const box = node.getBoundingClientRect();
-        const label = node.querySelector('.forecast-department-details strong').getBoundingClientRect();
-        const growth = node.querySelector('.forecast-department-details span').getBoundingClientRect();
+        const label = node.querySelector('.forecast-rail-label').getBoundingClientRect();
+        const growth = node.querySelector('.forecast-growth-number').getBoundingClientRect();
         return { box: { top: box.top, bottom: box.bottom }, label: { top: label.top, bottom: label.bottom }, growth: { top: growth.top, bottom: growth.bottom } };
       });
       assert.ok(geometry.label.top >= geometry.box.top && geometry.label.bottom <= geometry.box.bottom, 'department name fits inside its row');
@@ -264,7 +315,7 @@ test('collapsed departments keep names and growth fully visible', async () => {
       assert.ok(Math.abs((geometry.label.top + geometry.label.bottom) - (geometry.growth.top + geometry.growth.bottom)) < 2, 'name and growth share a vertical center');
     }
     await page.getByRole('button', { name: 'Expand department Footwear' }).click();
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
   } finally { await page.close(); }
 });
 
@@ -273,7 +324,7 @@ test('live growth slider supports dragging, keyboard, save and revert', async ()
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
     const slider = page.getByRole('slider', { name: 'Footwear Growth assumption' });
     const before = await page.locator('.summary-group--projected strong').innerText();
     const box = await slider.boundingBox(), y = box.y + box.height / 2;
@@ -305,11 +356,12 @@ test('live growth slider supports dragging, keyboard, save and revert', async ()
 test('add actions insert and focus editable rows in the right department', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
-    await page.goto(url); await page.getByText('Trail Footwear', { exact: true }).waitFor();
+    await page.goto(url); await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
     const grid = page.locator('revo-grid').first();
     await page.getByRole('button', { name: 'Collapse department Camp' }).click();
     const add = page.locator('.forecast-name--group').getByRole('button', { name: 'Add Line · Camp' });
     await add.hover();
+    await add.evaluate(element => element.getAnimations().forEach(animation => animation.finish()));
     assert.notEqual(await add.evaluate(element => getComputedStyle(element).backgroundColor), 'rgba(0, 0, 0, 0)');
     await add.click();
     const input = page.getByRole('textbox', { name: 'Line name' });
@@ -331,7 +383,7 @@ test('add actions insert and focus editable rows in the right department', async
     await page.waitForFunction(() => !document.querySelector('.forecast-line-input'));
     assert.equal(await grid.evaluate(node => node.source.some(row => row.label === 'New Line')), false);
     const search = page.getByRole('searchbox');
-    await search.fill('Camp Chairs');
+    await search.fill('Folding Stools');
     await page.locator('.forecast-name--group').getByRole('button', { name: 'Add Line · Camp' }).click();
     const filteredDraft = page.getByRole('textbox', { name: 'Line name' });
     await filteredDraft.waitFor();
@@ -343,18 +395,18 @@ test('add actions insert and focus editable rows in the right department', async
 test('compact growth slider previews changes and cancel restores them', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   try {
-    await page.goto(url); await page.getByText('Trail Footwear', { exact: true }).waitFor();
+    await page.goto(url); await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
     const grid = page.locator('revo-grid').first();
-    const value = () => grid.evaluate(node => node.source.find(row => row.label === 'Trail Footwear').reading.forecast);
+    const value = () => grid.evaluate(node => node.source.find(row => row.label === 'Coastal Walking Shoes').reading.forecast);
     const initial = await value();
     await page.getByRole('button', { name: 'Footwear Growth assumption' }).click();
     const dialog = page.getByRole('dialog');
     const growthSlider = dialog.getByRole('slider', { name: 'Growth assumption' });
     assert.equal(await growthSlider.evaluate(node => node.classList.contains('rv-native-slider')), true);
     await growthSlider.fill('20');
-    await page.waitForFunction(original => document.querySelector('revo-grid')?.source.find(row => row.label === 'Trail Footwear')?.reading.forecast !== original, initial);
+    await page.waitForFunction(original => document.querySelector('revo-grid')?.source.find(row => row.label === 'Coastal Walking Shoes')?.reading.forecast !== original, initial);
     await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
-    await page.waitForFunction(original => document.querySelector('revo-grid')?.source.find(row => row.label === 'Trail Footwear')?.reading.forecast === original, initial);
+    await page.waitForFunction(original => document.querySelector('revo-grid')?.source.find(row => row.label === 'Coastal Walking Shoes')?.reading.forecast === original, initial);
     assert.equal(await value(), initial);
     await page.getByRole('button', { name: 'Add Line', exact: true }).click();
     const input = page.getByRole('textbox', { name: 'Line name' });
@@ -393,7 +445,7 @@ test('summary charts show current overall and prior-year values on hover and foc
     await december.hover();
     const tooltip = page.getByRole('tooltip');
     await tooltip.waitFor();
-    assert.match(await tooltip.innerText(), /Dec 2025, every line in view[\s\S]*Actual[\s\S]*FY26\s+\$7,956,200[\s\S]*FY25\s+\$6,627,100[\s\S]*vs last year\s+\+20\.1%/);
+    assert.match(await tooltip.innerText(), /Dec 2025, every line in view[\s\S]*Actual[\s\S]*FY26\s+\$4,353,200[\s\S]*FY25\s+\$3,764,700[\s\S]*vs last year\s+\+15\.6%/);
     await page.mouse.move(1, 1);
     await tooltip.waitFor({ state: 'hidden' });
     await december.focus();
@@ -411,11 +463,11 @@ test('summary charts show current overall and prior-year values on hover and foc
     await tooltip.waitFor({ state: 'visible' });
     assert.match(await tooltip.innerText(), /Outlook vs Plan[\s\S]*Planned outlook[\s\S]*Plan[\s\S]*On plan/);
     await page.keyboard.press('Escape');
-    await page.getByRole('searchbox').fill('Camp Chairs');
-    await page.getByRole('button', { name: 'Edit line · Camp Chairs' }).waitFor();
+    await page.getByRole('searchbox').fill('Folding Stools');
+    await page.getByRole('button', { name: 'Edit line · Folding Stools' }).waitFor();
     await december.hover();
     await tooltip.waitFor({ state: 'visible' });
-    assert.doesNotMatch(await tooltip.innerText(), /\$7,956,200/);
+    assert.doesNotMatch(await tooltip.innerText(), /\$4,353,200/);
   } finally { await page.close(); }
 });
 
@@ -424,25 +476,25 @@ test('forecast outlook dots show individual line details on hover and focus', as
   try {
     await page.goto(url);
     const plot = page.locator('.rv-stacked-dot-plot');
-    const dot = plot.getByRole('button', { name: /^Trail Footwear, Footwear,/ });
+    const dot = plot.getByRole('button', { name: /^Coastal Walking Shoes, Footwear,/ });
     await dot.scrollIntoViewIfNeeded();
     await dot.hover();
     const tip = page.getByRole('tooltip');
-    await tip.getByText('Trail Footwear', { exact: true }).waitFor();
-    assert.equal(await tip.getByText('Trail Footwear', { exact: true }).evaluate(el => getComputedStyle(el).fontWeight), '500');
-    assert.match(await tip.innerText(), /Footwear[\s\S]*Outlook\s*\$1,901,700[\s\S]*Plan\s*\$1,800,000[\s\S]*Attainment\s*105\.7%/);
+    await tip.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
+    assert.equal(await tip.getByText('Coastal Walking Shoes', { exact: true }).evaluate(el => getComputedStyle(el).fontWeight), '500');
+    assert.match(await tip.innerText(), /Footwear[\s\S]*Outlook\s*\$2,017,200[\s\S]*Plan\s*\$2,027,000[\s\S]*Attainment\s*99\.5%/);
     await dot.evaluate(el => el.getAnimations().forEach(animation => animation.finish()));
     assert.match(await dot.evaluate(el => getComputedStyle(el).transform), /^matrix\(2,/);
     assert.equal(await dot.evaluate(el => getComputedStyle(el).boxShadow), 'none');
     await page.mouse.move(0, 0);
     await tip.waitFor({ state: 'hidden' });
     await dot.focus();
-    await tip.getByText('Trail Footwear', { exact: true }).waitFor();
+    await tip.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
     await page.keyboard.press('Escape');
-    await page.getByRole('searchbox').fill('Camp Chairs');
-    const filtered = plot.getByRole('button', { name: /^Camp Chairs, Camp,/ });
+    await page.getByRole('searchbox').fill('Folding Stools');
+    const filtered = plot.getByRole('button', { name: /^Folding Stools, Camp,/ });
     await filtered.focus();
-    await tip.getByText('Camp Chairs', { exact: true }).waitFor();
+    await tip.getByText('Folding Stools', { exact: true }).waitFor();
     assert.equal(await plot.locator('button[data-point-index]').count(), 1);
   } finally { await page.close(); }
 });
@@ -451,17 +503,17 @@ test('grid outlook tooltip shows current row figures on hover and focus', async 
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
   try {
     await page.goto(url);
-    const chart = page.locator('[data-tooltip*="Trail Footwear, FY26 outlook"]').first();
+    const chart = page.locator('[data-tooltip*="Coastal Walking Shoes, FY26 outlook"]').first();
     await chart.hover();
     const tooltip = page.getByRole('tooltip');
     await tooltip.waitFor();
     const content = await tooltip.innerText();
-    assert.match(content, /Trail Footwear, FY26 outlook/);
+    assert.match(content, /Coastal Walking Shoes, FY26 outlook/);
     assert.match(content, /Actual to Jun, then the forecast/);
-    assert.match(content, /Plan\s*\$1,800,000/);
-    assert.match(content, /Actual\s*\$1\.31M, 73%/);
-    assert.match(content, /Outlook\s*\$1\.9M, 105\.7%/);
-    assert.match(content, /FY25\s*\$1\.74M, 96%/);
+    assert.match(content, /Plan\s*\$2,027,000/);
+    assert.match(content, /Actual\s*\$1\.38M, 68%/);
+    assert.match(content, /Outlook\s*\$2M, 99\.5%/);
+    assert.match(content, /FY25\s*\$1\.89M, 93%/);
     await page.mouse.move(0, 0);
     await chart.focus();
     await tooltip.waitFor();
@@ -494,11 +546,11 @@ test('line column uses spare width and stays aligned with the forecast summary',
   const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
     await page.waitForFunction(async () => [...document.querySelectorAll('revo-grid .rgHeaderCell')].find(cell => cell.textContent.trim() === 'Line')?.getBoundingClientRect().width > 156);
     const measure = async () => page.evaluate(() => {
       const legend = document.querySelector('.forecast-legend').getBoundingClientRect();
-      const month = [...document.querySelectorAll('.rgHeaderCell')].find(node => node.textContent.trim() === 'Nov').getBoundingClientRect();
+      const month = document.querySelector('.rgHeaderCell .forecast-month-header[aria-label^="Nov:"]').closest('.rgHeaderCell').getBoundingClientRect();
       return Math.abs(legend.right - month.left);
     });
     assert.ok(await measure() < 2, 'summary starts at the first month');
@@ -512,7 +564,7 @@ test('stretched forecast leaves room for the vertical scrollbar', async () => {
   const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
   try {
     await page.goto(url);
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
+    await page.getByText('Coastal Walking Shoes', { exact: true }).waitFor();
     await page.waitForFunction(async () => {
       const grid = document.querySelector('revo-grid');
       const bar = grid.querySelector('revogr-scroll-virtual.horizontal');

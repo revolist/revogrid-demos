@@ -5,8 +5,13 @@
     "experimentalDecorators": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "baseUrl": ".",
-    "paths": { "@revolist/ui/native": ["./node_modules/@revolist/ui/native.d.ts"], "@revolist/revogrid": ["./node_modules/@revolist/revogrid"] },
+    "paths": {
+      // The workspace package exports Preact source; use its built consumer
+      // declarations when checking this React/Angular app from the monorepo.
+      "@revolist/ui/native": ["./node_modules/@revolist/ui/native.d.ts", "../../../packages/ui/dist/native.d.ts"],
+      "@revolist/ui/*": ["./node_modules/@revolist/ui/*", "../../../packages/ui/dist/*"],
+      "@revolist/revogrid": ["./node_modules/@revolist/revogrid"]
+    },
     "allowImportingTsExtensions": true,
     "lib": [
       "ES2022",

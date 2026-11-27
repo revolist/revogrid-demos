@@ -1,0 +1,2 @@
+/* Keep the shared calendar's seven columns legible inside the anchored popup. */
+.ui-calendar-field__popup { width: min(250px, calc(100vw - 24px)); }
