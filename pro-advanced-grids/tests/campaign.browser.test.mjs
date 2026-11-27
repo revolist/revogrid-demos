@@ -61,7 +61,7 @@ test('campaign sorting, paging and filtering use the current data', async () => 
   }
 });
 
-test('remote sort indicators follow the selected column through reloads', async () => {
+test('campaign sort indicators follow the selected column through source changes', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     page.setDefaultTimeout(10000);
@@ -941,7 +941,7 @@ test('campaign AST filter applies to all campaign pages and clears', async () =>
     await dialog.waitFor({ state: 'hidden' });
     await page.getByRole('button', { name: 'Filter (active)' }).waitFor();
     await page.getByText('3 campaigns • 0 live in view • Sep 6 to Oct 5').waitFor();
-    assert.equal((await page.locator('.cell-label .cell-action').allTextContents()).length, 3);
+    await page.waitForFunction(() => document.querySelectorAll('.cell-label .cell-action').length === 3);
     await page.getByRole('button', { name: 'Filter (active)' }).click();
     await dialog.getByRole('button', { name: 'Reset', exact: true }).click();
     await dialog.getByRole('button', { name: 'Apply', exact: true }).click();
@@ -992,7 +992,9 @@ test('campaign bulk actions export selected rows, pause, and clear', async () =>
     await bar.waitFor({ state: 'hidden' });
     await page.locator('.rv-toast').getByText('2 campaigns paused.', { exact: true }).waitFor();
     assert.equal(await page.locator('.workbench-notice').isVisible(), false);
-    await page.getByRole('checkbox', { name: 'Select row 1', exact: true }).check();
+    const firstRow = page.getByRole('checkbox', { name: 'Select row 1', exact: true });
+    await page.waitForFunction(() => document.querySelector('revo-grid input[aria-label="Select row 1"]')?.checked === false);
+    await firstRow.check();
     await bar.getByRole('button', { name: 'Clear' }).click();
     await bar.waitFor({ state: 'hidden' });
     await page.waitForFunction(() => !document.querySelector('revo-grid .row-select-checkbox[aria-label=\"Select row 1\"]')?.checked);
@@ -1302,10 +1304,10 @@ test('campaign column filter opens by its header', async () => {
     await popup.getByLabel('Maximum value').press('Tab');
     await page.waitForFunction(async () => {
       const grid = document.querySelector('.campaign-grid-shell > revo-grid');
-      const source = await grid?.getSource();
+      const source = await grid?.getVisibleSource();
       return source?.length > 0 && source.every(row => row.spend <= 7230);
     });
-    const total = await page.locator('.campaign-grid-shell > revo-grid').evaluate(async grid => (await grid.getSource()).length);
+    const total = await page.locator('.campaign-grid-shell > revo-grid').evaluate(async grid => (await grid.getVisibleSource()).length);
     assert.ok(total > 0);
   } finally { await page.close(); }
 });
