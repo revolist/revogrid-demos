@@ -91,6 +91,26 @@ test('standalone campaign and forecast demos fill the viewport', async ({ page }
       expect(bounds).not.toBeNull();
       expect(bounds!.x).toBeCloseTo(0, 0);
       expect(bounds!.width).toBeCloseTo(width, 0);
+      expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(844);
+      expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(844);
+    }
+  }
+});
+
+test('catalog demo hosts fill the viewport without page overflow', async ({ page }) => {
+  test.setTimeout(120_000);
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const slug of [...featureSlugs, ...retainedSlugs]) {
+      await page.goto(`/${slug}/demo/`);
+      const grid = page.locator('revo-grid').first();
+      await expect(grid, slug).toBeVisible();
+      const container = page.locator('#app > :is(section, div)').first();
+      const bounds = await container.boundingBox();
+      expect(bounds, slug).not.toBeNull();
+      expect(bounds!.x, slug).toBeCloseTo(0, 0);
+      expect(bounds!.width, slug).toBeCloseTo(width, 0);
+      expect(await page.evaluate(() => document.documentElement.scrollHeight), slug).toBeLessThanOrEqual(844);
     }
   }
 });

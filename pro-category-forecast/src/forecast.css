@@ -26,11 +26,38 @@ body {
   width: calc(100% - 64px);
   color: var(--ink);
 }
-/* Standalone demos share the full-width gallery layout; embedded forecasts keep their own sizing. */
+/* Keep standalone demos within the viewport without changing embedded forecasts. */
+body.forecast-standalone {
+  height: 100dvh;
+  overflow: hidden;
+}
+.forecast-standalone :is(#app, .forecast-host, category-forecast-demo) {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
 .forecast-standalone .forecast {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
   width: 100%;
   max-width: none;
   margin: 16px 0 0;
+}
+.forecast-standalone .forecast > .demo-shell__body {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+}
+.forecast-standalone .forecast-grid {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
 }
 .forecast h1,
 .forecast h2,
