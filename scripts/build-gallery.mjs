@@ -158,16 +158,16 @@ export const home = page({
     <div class="hero-frameworks" aria-label="Supported frameworks">${['TypeScript', 'React', 'Vue', 'Angular'].map((name) => `<img src="/assets/frameworks/${name.toLowerCase()}.svg" alt="${name}" title="${name}" width="25" height="25" />`).join('')}</div>
   </section>
   <section class="catalog-section shell" id="showcases">
-    <div class="catalog-intro"><div><span class="eyebrow">THE SHOWCASE COLLECTION</span><h2>Explore what's possible.</h2><p>Discover practical examples, from your first grid to advanced workflows.</p></div><span class="catalog-count">${galleryCatalog.length} showcases <span aria-hidden="true">↗</span></span></div>
+    <div class="catalog-intro"><div><span class="eyebrow">THE SHOWCASE COLLECTION</span><h2>Explore what's possible.</h2><p>Discover practical examples, from your first grid to advanced workflows.</p></div></div>
     <div class="catalog-controls" hidden>
       <div class="catalog-search"><label class="visually-hidden" for="showcase-search">Search examples</label><div class="catalog-search-control"></div></div>
       <div class="category-filters"></div>
-      <p class="filter-results" role="status" aria-live="polite"></p>
+      <p class="filter-results visually-hidden" role="status" aria-live="polite"></p>
     </div>
     <div class="filter-empty" hidden><p>No examples match your search.</p><button type="button" class="filter-reset">Clear filters</button></div>
     ${showcaseGroups.map((group, index) => {
       const items = group.slugs.map(slug => showcasesBySlug.get(slug)).filter(Boolean);
-      return items.length ? `<section class="showcase-group" data-category="${index}" aria-label="${escapeHtml(group.title)}"><div class="showcase-group-heading"><div><h3>${escapeHtml(group.title)}</h3><p>${escapeHtml(group.description)}</p></div><span>${items.length} examples</span></div><div class="showcase-grid">${items.map(card).join('')}</div></section>` : '';
+      return items.length ? `<section class="showcase-group" data-category="${index}" aria-label="${escapeHtml(group.title)}"><div class="showcase-group-heading"><div><h3>${escapeHtml(group.title)}</h3><p>${escapeHtml(group.description)}</p></div></div><div class="showcase-grid">${items.map(card).join('')}</div></section>` : '';
     }).join('')}
   </section>`,
 });

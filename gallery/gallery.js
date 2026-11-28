@@ -77,7 +77,6 @@ if (controls) {
           if (matches) count++;
         }
         group.hidden = count === 0;
-        group.querySelector('.showcase-group-heading > span').textContent = `${count} ${count === 1 ? 'example' : 'examples'}`;
         total += count;
       }
       results.textContent = `${total} ${total === 1 ? 'example' : 'examples'}`;
