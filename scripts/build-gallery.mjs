@@ -1,9 +1,11 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import { featureSlugs, loadCatalog, root } from './catalog.mjs';
 
 const output = join(root, 'dist');
+const uiBrowserBundle = createRequire(import.meta.url).resolve('@revolist/ui/browser');
 const catalog = await loadCatalog();
 const themeIcon = (await readFile(join(root, 'gallery/icons/circle-half-stroke.svg'), 'utf8'))
   .replace('<svg ', '<svg class="theme-icon" aria-hidden="true" focusable="false" ');
@@ -158,8 +160,8 @@ export const home = page({
   <section class="catalog-section shell" id="showcases">
     <div class="catalog-intro"><div><span class="eyebrow">THE SHOWCASE COLLECTION</span><h2>Explore what's possible.</h2><p>Discover practical examples, from your first grid to advanced workflows.</p></div><span class="catalog-count">${galleryCatalog.length} showcases <span aria-hidden="true">↗</span></span></div>
     <div class="catalog-controls" hidden>
-      <div class="catalog-search"><label class="visually-hidden" for="showcase-search">Search examples</label><svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="showcase-search" type="search" placeholder="Search examples..." autocomplete="off" /></div>
-      <div class="category-filters" role="group" aria-label="Filter by category"><button type="button" data-category-filter="all" aria-pressed="true">All examples</button>${showcaseGroups.map((group, index) => `<button type="button" data-category-filter="${index}" aria-pressed="false">${escapeHtml(group.title)}</button>`).join('')}</div>
+      <div class="catalog-search"><label class="visually-hidden" for="showcase-search">Search examples</label><div class="catalog-search-control"></div></div>
+      <div class="category-filters"></div>
       <p class="filter-results" role="status" aria-live="polite"></p>
     </div>
     <div class="filter-empty" hidden><p>No examples match your search.</p><button type="button" class="filter-reset">Clear filters</button></div>
@@ -181,6 +183,7 @@ export async function buildGallery() {
   await mkdir(join(output, 'assets'), { recursive: true });
   await cp(join(root, 'gallery/gallery.css'), join(output, 'assets/gallery.css'));
   await cp(join(root, 'gallery/gallery.js'), join(output, 'assets/gallery.js'));
+  await cp(uiBrowserBundle, join(output, 'assets/revo-ui.js'));
   await cp(join(root, 'gallery/frameworks'), join(output, 'assets/frameworks'), { recursive: true });
   await cp(join(root, 'gallery/previews'), join(output, 'assets/previews'), { recursive: true });
 

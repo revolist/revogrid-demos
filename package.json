@@ -113,5 +113,8 @@
     "overrides": {
       "@revolist/revogrid": "4.32.0"
     }
+  },
+  "dependencies": {
+    "@revolist/ui": "4.3.2"
   }
 }

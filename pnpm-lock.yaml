@@ -10,6 +10,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      '@revolist/ui':
+        specifier: 4.3.2
+        version: 4.3.2(@angular/core@22.1.6(@angular/compiler@22.1.6)(rxjs@7.8.2)(zone.js@0.15.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vue@3.5.42(typescript@6.0.3))
     devDependencies:
       '@analogjs/vite-plugin-angular':
         specifier: ^2.6.3

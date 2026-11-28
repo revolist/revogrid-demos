@@ -82,7 +82,13 @@ test('search and category filters work together and can be cleared', async ({ pa
   const search = page.getByRole('searchbox', { name: 'Search examples' });
   const groups = page.getByRole('group', { name: 'Filter by category' });
   const results = page.getByRole('status');
+  await expect(page.locator('.catalog-search .rv-search-input')).toHaveCount(1);
+  await expect(groups).toHaveClass(/rv-segmented-switch/);
   await expect(results).toHaveText('33 examples');
+  await groups.getByRole('button', { name: 'All examples' }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(groups.getByRole('button', { name: 'Analytics & business' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(results).toHaveText('13 examples');
   await groups.getByRole('button', { name: 'Planning & workflows' }).click();
   await expect(groups.getByRole('button', { name: 'Planning & workflows' })).toHaveAttribute('aria-pressed', 'true');
   await expect(results).toHaveText('10 examples');

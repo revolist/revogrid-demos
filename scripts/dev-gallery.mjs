@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { createRequire } from 'node:module';
 import { watch } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, resolve, sep } from 'node:path';
@@ -7,6 +8,7 @@ import { featureDirectory, featureSlugs, loadCatalog, root } from './catalog.mjs
 const host = '127.0.0.1';
 const port = Number(process.env.PORT ?? 4173);
 const clients = new Set();
+const uiBrowserBundle = createRequire(import.meta.url).resolve('@revolist/ui/browser');
 const mime = { '.css': 'text/css; charset=utf-8', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif', '.mp4': 'video/mp4', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf' };
 const reloadScript = `<script>new EventSource('/__gallery_events').addEventListener('reload', () => location.reload());</script>`;
 
@@ -48,6 +50,11 @@ createServer(async (request, response) => {
       clients.add(response);
       request.on('close', () => clients.delete(response));
       return;
+    }
+    if (pathname === '/assets/revo-ui.js') {
+      const bundle = await readFile(uiBrowserBundle);
+      response.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
+      return response.end(bundle);
     }
     if (pathname.startsWith('/assets/')) return await serveFile(response, join(root, 'gallery'), pathname.slice('/assets/'.length));
     const [, slug, section, ...rest] = pathname.split('/');
