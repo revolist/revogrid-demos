@@ -1,5 +1,6 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { basename, join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { featureSlugs, loadCatalog, root } from './catalog.mjs';
 
 const output = join(root, 'dist');
@@ -43,11 +44,11 @@ function page({ title, description, content }) {
   </head>
   <body>
     <div class="announcement"><a href="https://rv-grid.com/">Built with RevoGrid <span>· Explore the grid for ambitious applications</span> <b aria-hidden="true">↗</b></a></div>
-    <header class="site-header shell">
+    <header class="header-bar"><div class="site-header shell">
       <a class="brand" href="/"><img class="brand-mark" src="https://rv-grid.com/logo.svg?skipsvgo" alt="" width="26" height="26" /><span>RevoGrid <span class="brand-muted">Examples</span></span></a>
       <nav class="site-nav" aria-label="Main navigation"><a href="/#showcases">Showcases</a><a href="/advanced-grids/">Advanced grids</a><a href="https://rv-grid.com/guide/">Documentation ↗</a></nav>
       <div class="header-actions"><button class="theme-toggle" type="button" aria-label="Toggle color theme" title="Toggle color theme">${themeIcon}</button><a class="top-link" href="https://github.com/revolist/revogrid-demos">GitHub <span aria-hidden="true">↗</span></a></div>
-    </header>
+    </div></header>
     <main>${content}</main>
     <footer class="site-footer"><div class="shell">Production-style examples for RevoGrid Core, Pro, and Pro Advanced.</div></footer>
   </body>
@@ -65,13 +66,11 @@ function posterName(showcase) {
 function card(showcase) {
   return `<article class="showcase-card">
     <a href="/${showcase.slug}/">
-      <div class="card-media"><img src="/${showcase.slug}/media/${escapeHtml(posterName(showcase))}" alt="${escapeHtml(showcase.title)} showcase" loading="lazy" /></div>
       <div class="card-body">
-        <div class="card-meta"><span class="edition">${escapeHtml(showcase.edition)}</span><span class="card-arrow" aria-hidden="true">↗</span></div>
-        <h3>${escapeHtml(showcase.title)}</h3>
+        <div class="card-meta"><h3>${escapeHtml(showcase.title)}</h3><span class="edition">${escapeHtml(showcase.edition)}</span></div>
         <p>${escapeHtml(showcase.summary)}</p>
-        <span class="card-link">Explore showcase <span aria-hidden="true">→</span></span>
       </div>
+      <div class="card-media"><div class="preview-frame"><img src="/${showcase.slug}/media/${escapeHtml(posterName(showcase))}" alt="" loading="lazy" /></div></div>
     </a>
   </article>`;
 }
@@ -117,22 +116,7 @@ function detail(showcase) {
   });
 }
 
-await rm(output, { recursive: true, force: true });
-await mkdir(join(output, 'assets'), { recursive: true });
-await cp(join(root, 'gallery/gallery.css'), join(output, 'assets/gallery.css'));
-await cp(join(root, 'gallery/gallery.js'), join(output, 'assets/gallery.js'));
-await cp(join(root, 'gallery/frameworks'), join(output, 'assets/frameworks'), { recursive: true });
-
-for (const showcase of catalog) {
-  const source = join(root, showcase.sourceDir);
-  const route = join(output, showcase.slug);
-  await mkdir(route, { recursive: true });
-  await cp(join(source, showcase.demoOutput ?? 'dist'), join(route, 'demo'), { recursive: true });
-  await cp(join(source, 'assets'), join(route, 'media'), { recursive: true });
-  await writeFile(join(route, 'index.html'), detail(showcase));
-}
-
-const home = page({
+export const home = page({
   title: `RevoGrid Examples · ${catalog.length} production-style showcases`,
   description: 'Explore RevoGrid Core prompt, portfolio, and large-data workflows, plus Pro filtering, infinity scroll, context menus, Pivot, Gantt, Kanban, Scheduler, and planning examples in TypeScript, React, Vue, and Angular.',
   content: `<section class="hero shell">
@@ -144,7 +128,7 @@ const home = page({
   </section>
   <section class="advanced-section shell" aria-labelledby="advanced-heading">
     <div class="advanced-heading"><div><span class="eyebrow">ADVANCED GRID EXAMPLES</span><h2 id="advanced-heading">A closer look at what's possible.</h2><p>Jump straight into a real-world grid.</p></div><a href="/advanced-grids/">About the workbench <span aria-hidden="true">→</span></a></div>
-    <div class="advanced-grid">${advancedGridExamples.map(([id, title]) => `<a href="/advanced-grids/demo/#${escapeHtml(id)}"><span>${escapeHtml(title)}</span><span aria-hidden="true">↗</span></a>`).join('')}</div>
+    <div class="advanced-grid">${advancedGridExamples.map(([id, title]) => `<a href="/advanced-grids/demo/#${escapeHtml(id)}"><div class="advanced-card-heading"><h3>${escapeHtml(title)}</h3><span aria-hidden="true">↗</span></div><p>Interactive example</p><div class="advanced-card-preview"><div class="preview-frame"><img src="/assets/previews/${escapeHtml(id)}.jpg" alt="" loading="lazy" /></div></div></a>`).join('')}</div>
   </section>
   <section class="catalog-section shell" id="showcases">
     <div class="catalog-intro"><div><span class="eyebrow">THE SHOWCASE COLLECTION</span><h2>Explore what's possible.</h2><p>Discover practical examples, from your first grid to advanced workflows.</p></div><span class="catalog-count">${catalog.length} showcases <span aria-hidden="true">↗</span></span></div>
@@ -152,9 +136,32 @@ const home = page({
   </section>`,
 });
 
-await writeFile(join(output, 'index.html'), home);
-await writeFile(join(output, 'manifest.json'), `${JSON.stringify({ generatedAt: new Date().toISOString(), showcases: catalog.map(({ slug, title, edition }) => ({ slug, title, edition, route: `/${slug}/`, demoRoute: `/${slug}/demo/` })) }, null, 2)}\n`);
-await writeFile(join(output, 'CNAME'), 'example.rv-grid.com\n');
-await writeFile(join(output, '.nojekyll'), '');
+export { catalog, detail };
 
-console.log(`Gallery assembled with ${catalog.length} showcases in ${output}`);
+export async function buildGallery() {
+  await rm(output, { recursive: true, force: true });
+  await mkdir(join(output, 'assets'), { recursive: true });
+  await cp(join(root, 'gallery/gallery.css'), join(output, 'assets/gallery.css'));
+  await cp(join(root, 'gallery/gallery.js'), join(output, 'assets/gallery.js'));
+  await cp(join(root, 'gallery/frameworks'), join(output, 'assets/frameworks'), { recursive: true });
+  await cp(join(root, 'gallery/previews'), join(output, 'assets/previews'), { recursive: true });
+
+  for (const showcase of catalog) {
+    const source = join(root, showcase.sourceDir);
+    const route = join(output, showcase.slug);
+    await mkdir(route, { recursive: true });
+    await cp(join(source, showcase.demoOutput ?? 'dist'), join(route, 'demo'), { recursive: true });
+    await cp(join(source, 'assets'), join(route, 'media'), { recursive: true });
+    await writeFile(join(route, 'index.html'), detail(showcase));
+  }
+
+
+  await writeFile(join(output, 'index.html'), home);
+  await writeFile(join(output, 'manifest.json'), `${JSON.stringify({ generatedAt: new Date().toISOString(), showcases: catalog.map(({ slug, title, edition }) => ({ slug, title, edition, route: `/${slug}/`, demoRoute: `/${slug}/demo/` })) }, null, 2)}\n`);
+  await writeFile(join(output, 'CNAME'), 'example.rv-grid.com\n');
+  await writeFile(join(output, '.nojekyll'), '');
+
+  console.log(`Gallery assembled with ${catalog.length} showcases in ${output}`);
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await buildGallery();

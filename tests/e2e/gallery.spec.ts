@@ -30,6 +30,10 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('See what you can build');
   await expect(page.locator('.showcase-card')).toHaveCount(22);
+  const preview = page.locator('.advanced-grid img').first();
+  await expect(page.locator('.advanced-grid img')).toHaveCount(12);
+  await expect(preview).toHaveCSS('filter', 'grayscale(1)');
+  await expect.poll(() => preview.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
   const scenarioLinks = await page.locator('.advanced-grid a').evaluateAll(links => links.map(link => new URL((link as HTMLAnchorElement).href).hash));
   await page.goto('/advanced-grids/demo/');
   const navigationLinks = page.getByRole('navigation', { name: 'Advanced RevoGrid examples' }).getByRole('link');
@@ -37,6 +41,9 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
   const workbenchLinks = await navigationLinks.evaluateAll(links => links.map(link => new URL((link as HTMLAnchorElement).href).hash));
   expect(scenarioLinks).toEqual(workbenchLinks);
   await page.goto('/');
+  await page.evaluate(() => window.scrollTo(0, 700));
+  await expect(page.locator('.header-bar')).toBeInViewport();
+  await expect(page.locator('.header-bar')).toHaveCSS('position', 'sticky');
   await page.keyboard.press('Tab');
   await expect(page.locator(':focus')).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
