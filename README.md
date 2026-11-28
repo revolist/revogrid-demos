@@ -69,10 +69,10 @@ initializes them and advances every checkout to the latest remote `main`.
 | Pro Advanced | Construction + Fabrication Operations | [`pro-construction-operations`](./pro-construction-operations/) | [`/construction-operations/`](https://example.rv-grid.com/construction-operations/) |
 | Pro Advanced | Construction Gantt: Simple Portfolio | [`pro-construction-gantt-simple`](./pro-construction-gantt-simple/) | [`/construction-gantt-simple/`](https://example.rv-grid.com/construction-gantt-simple/) |
 
-The gallery retains detail and demo routes at `/<showcase>/` and
-`/<showcase>/demo/`. Feature live-demo links use the dedicated subdomains.
-Descriptions, recipes, frameworks, links, media, and output paths are read
-directly from each child repository's validated `feature.json`.
+The gallery links directly to demos at `/<showcase>/demo/`. Older
+`/<showcase>/` links redirect to the corresponding demo. Feature live-demo
+links use the dedicated subdomains. Descriptions, frameworks, links, media,
+and output paths are read from each child repository's `feature.json`.
 
 ## Local development
 

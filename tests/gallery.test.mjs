@@ -42,11 +42,13 @@ test('every catalog source has a build manifest and gallery media', async () => 
   }
 });
 
-test('gallery publishes every detail and canonical demo route', async () => {
+test('gallery publishes canonical demos and legacy redirects', async () => {
   const manifest = JSON.parse(await readFile(join(output, 'manifest.json'), 'utf8'));
   assert.equal(manifest.showcases.length, 22);
   for (const showcase of manifest.showcases) {
-    await access(join(output, showcase.slug, 'index.html'));
+    const redirect = await readFile(join(output, showcase.slug, 'index.html'), 'utf8');
+    assert.match(redirect, new RegExp(`url=/${showcase.slug}/demo/`));
+    assert.equal(showcase.route, `/${showcase.slug}/demo/`);
     await access(join(output, showcase.slug, 'demo', 'index.html'));
   }
   assert.equal(await readFile(join(output, 'CNAME'), 'utf8'), 'example.rv-grid.com\n');
@@ -73,7 +75,7 @@ test('home page renders a keyboard-reachable link for each showcase', async () =
   const html = await readFile(join(output, 'index.html'), 'utf8');
   const catalog = await loadCatalog();
   assert.equal((html.match(/class="showcase-card"/g) ?? []).length, catalog.length - 1 + 12);
-  for (const { slug } of catalog.filter(entry => entry.slug !== 'advanced-grids')) assert.ok(html.includes(`href="/${slug}/"`), slug);
+  for (const { slug } of catalog.filter(entry => entry.slug !== 'advanced-grids')) assert.ok(html.includes(`href="/${slug}/demo/"`), slug);
   assert.equal((html.match(/href="\/examples\//g) ?? []).length, 12);
 });
 

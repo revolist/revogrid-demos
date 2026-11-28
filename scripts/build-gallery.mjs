@@ -85,10 +85,6 @@ function page({ title, description, content }) {
 </html>`;
 }
 
-function frameworkBadges(frameworks = []) {
-  return frameworks.map((framework) => `<span class="badge">${escapeHtml(framework === 'ts' ? 'TypeScript' : framework)}</span>`).join('');
-}
-
 function posterName(showcase) {
   return basename(showcase.media.poster);
 }
@@ -96,7 +92,7 @@ function posterName(showcase) {
 function card(showcase) {
   const searchText = [showcaseTitle(showcase), showcase.summary, showcase.edition, ...(showcase.frameworks ?? []).map(framework => framework === 'ts' ? 'TypeScript' : framework), ...(showcase.highlights ?? [])].join(' ');
   return `<article class="showcase-card" data-search="${escapeHtml(searchText)}">
-    <a href="${escapeHtml(showcase.href ?? `/${showcase.slug}/`)}">
+    <a href="${escapeHtml(showcase.href ?? `/${showcase.slug}/demo/`)}">
       <div class="card-body">
         <div class="card-meta"><h4>${escapeHtml(showcaseTitle(showcase))}</h4><span class="edition">${escapeHtml(showcase.edition)}</span></div>
         <p>${escapeHtml(showcase.summary)}</p>
@@ -104,47 +100,6 @@ function card(showcase) {
       <div class="card-media"><div class="preview-frame"><img src="${escapeHtml(showcase.preview ?? `/${showcase.slug}/media/${posterName(showcase)}`)}" alt="" loading="lazy" /></div></div>
     </a>
   </article>`;
-}
-
-function detail(showcase) {
-  const recipes = showcase.recipes ?? (showcase.highlights ?? []).map((title, index) => ({
-    id: `highlight-${index + 1}`,
-    title,
-    summary: `Explore ${title.toLowerCase()} in the production-style live showcase.`,
-  }));
-  const trial = showcase.trialUrl
-    ? `<a class="button" href="${escapeHtml(showcase.trialUrl)}">Request trial</a>`
-    : `<a class="button" href="${escapeHtml(showcase.productUrl)}">View RevoGrid ${showcase.edition === 'Core' ? 'Core' : 'Pro'}</a>`;
-  const pricing = showcase.pricingUrl
-    ? `<a class="button" href="${escapeHtml(showcase.pricingUrl)}">Get Pro Advanced</a>`
-    : '';
-  const screenshots = (showcase.media.screenshots ?? []).map((path, index) =>
-    `<img src="./media/${escapeHtml(path.replace(/^assets\//, ''))}" alt="${escapeHtml(showcase.title)} workflow ${index + 1}" loading="lazy" />`,
-  ).join('');
-  const gallery = screenshots ? `<section class="content-section shell"><h2>Workflow gallery</h2><div class="screenshot-grid">${screenshots}</div></section>` : '';
-
-  return page({
-    title: `${showcaseTitle(showcase)} · RevoGrid Examples`,
-    description: showcase.summary,
-    content: `<section class="detail-hero shell">
-      <div class="detail-copy">
-        <span class="edition">${escapeHtml(showcase.edition)}</span>
-        <h1>${escapeHtml(showcaseTitle(showcase))}</h1>
-        <p>${escapeHtml(showcase.summary)}</p>
-        <div class="frameworks" aria-label="Framework examples">${frameworkBadges(showcase.frameworks)}</div>
-        <div class="actions">
-          <a class="button primary" href="./demo/">View live demo</a>
-          ${trial}${pricing}
-          <a class="button" href="${escapeHtml(showcase.repositoryUrl)}">View source</a>
-        </div>
-      </div>
-      <div class="poster"><img src="./media/${escapeHtml(posterName(showcase))}" alt="${escapeHtml(showcase.title)} preview" /></div>
-    </section>
-    <section class="content-section shell">
-      <div class="section-heading"><h2>What to explore</h2><p>Focused paths from first integration to production workflows.</p></div>
-      <div class="recipe-grid">${recipes.map((recipe) => `<article class="recipe"><span class="eyebrow">${escapeHtml(recipe.id)}</span><h3>${escapeHtml(recipe.title)}</h3><p>${escapeHtml(recipe.summary)}</p></article>`).join('')}</div>
-    </section>${gallery}`,
-  });
 }
 
 export const home = page({
@@ -172,7 +127,12 @@ export const home = page({
   </section>`,
 });
 
-export { catalog, detail, scenarioShowcases };
+export { catalog, scenarioShowcases };
+
+function legacyRedirect(showcase) {
+  const target = `/${showcase.slug}/demo/`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=${escapeHtml(target)}"><script>location.replace(${JSON.stringify(target)} + location.search + location.hash)</script><title>Opening demo</title></head><body><a href="${escapeHtml(target)}">Open demo</a></body></html>`;
+}
 
 export function standaloneExampleHtml(html) {
   return html.replaceAll('./assets/', '/advanced-grids/demo/assets/');
@@ -193,7 +153,7 @@ export async function buildGallery() {
     await mkdir(route, { recursive: true });
     await cp(join(source, showcase.demoOutput ?? 'dist'), join(route, 'demo'), { recursive: true });
     await cp(join(source, 'assets'), join(route, 'media'), { recursive: true });
-    await writeFile(join(route, 'index.html'), detail(showcase));
+    await writeFile(join(route, 'index.html'), legacyRedirect(showcase));
   }
 
 
@@ -205,7 +165,7 @@ export async function buildGallery() {
   }
 
   await writeFile(join(output, 'index.html'), home);
-  await writeFile(join(output, 'manifest.json'), `${JSON.stringify({ generatedAt: new Date().toISOString(), showcases: catalog.map(({ slug, title, edition }) => ({ slug, title, edition, route: `/${slug}/`, demoRoute: `/${slug}/demo/` })) }, null, 2)}\n`);
+  await writeFile(join(output, 'manifest.json'), `${JSON.stringify({ generatedAt: new Date().toISOString(), showcases: catalog.map(({ slug, title, edition }) => ({ slug, title, edition, route: `/${slug}/demo/`, demoRoute: `/${slug}/demo/`, legacyRoute: `/${slug}/` })) }, null, 2)}\n`);
   await writeFile(join(output, 'CNAME'), 'example.rv-grid.com\n');
   await writeFile(join(output, '.nojekyll'), '');
 

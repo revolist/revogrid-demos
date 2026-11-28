@@ -43,7 +43,8 @@ async function serveFile(response, base, relativePath) {
 
 createServer(async (request, response) => {
   try {
-    const pathname = decodeURIComponent(new URL(request.url ?? '/', `http://${host}:${port}`).pathname);
+    const requestUrl = new URL(request.url ?? '/', `http://${host}:${port}`);
+    const pathname = decodeURIComponent(requestUrl.pathname);
     if (pathname === '/__gallery_events') {
       response.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
       response.write(': connected\n\n');
@@ -69,7 +70,11 @@ createServer(async (request, response) => {
       const gallery = await import(`./build-gallery.mjs?dev=${revision}`);
       const showcase = gallery.catalog.find(entry => entry.slug === slug);
       if (slug && !showcase) return response.writeHead(404).end('Not found');
-      const html = slug ? gallery.detail(showcase) : gallery.home;
+      if (slug) {
+        response.writeHead(302, { Location: `/${showcase.slug}/demo/${requestUrl.search}`, 'Cache-Control': 'no-store' });
+        return response.end();
+      }
+      const html = gallery.home;
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
       return response.end(html.replace('</body>', `${reloadScript}</body>`));
     }

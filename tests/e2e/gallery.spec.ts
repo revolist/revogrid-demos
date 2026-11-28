@@ -34,6 +34,7 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
     await expect(page.getByRole('heading', { name: section })).toBeVisible();
   }
   await expect(page.getByRole('heading', { name: 'Kanban Workflow Board' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Resource Scheduler/ })).toHaveAttribute('href', '/scheduler/demo/');
   await expect(page.getByRole('heading', { name: 'Pivot Table & Charts' })).toBeVisible();
   const scenarios = page.locator('.showcase-card a[href^="/examples/"]');
   await expect(scenarios).toHaveCount(12);
@@ -106,6 +107,17 @@ test('search and category filters work together and can be cleared', async ({ pa
   await expect(groups.getByRole('button', { name: 'All examples' })).toHaveAttribute('aria-pressed', 'true');
 });
 
+test('a showcase card opens its demo and the old route redirects', async ({ page }) => {
+  await page.goto('/');
+  const scheduler = page.getByRole('link', { name: /Resource Scheduler/ });
+  await expect(scheduler).toHaveAttribute('href', '/scheduler/demo/');
+  await scheduler.click();
+  await expect(page).toHaveURL(/\/scheduler\/demo\/$/);
+  await expect(page.locator('revo-grid').first()).toBeVisible({ timeout: 15_000 });
+  await page.goto('/scheduler/?example=calendar#week');
+  await expect(page).toHaveURL(/\/scheduler\/demo\/\?example=calendar#week$/);
+});
+
 test('gallery follows the system theme and remembers a theme choice', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto('/');
@@ -120,10 +132,9 @@ test('gallery follows the system theme and remembers a theme choice', async ({ p
 });
 
 for (const slug of [...featureSlugs, ...retainedSlugs]) {
-  test(`${slug} detail and demo routes render`, async ({ page }) => {
+  test(`${slug} legacy route opens its demo`, async ({ page }) => {
     await page.goto(`/${slug}/`);
-    await expect(page.getByRole('link', { name: 'View live demo' })).toHaveAttribute('href', './demo/');
-    await page.goto(`/${slug}/demo/`);
+    await expect(page).toHaveURL(new RegExp(`/${slug}/demo/`));
     await expect(page.locator('revo-grid').first()).toBeVisible({ timeout: 15_000 });
   });
 }
@@ -205,14 +216,6 @@ test('audit history attributes a live edit and appends it to the ledger', async 
   });
   expect(latestValue).toBe('Northwind Labs');
   expect(errors).toEqual([]);
-});
-
-test('feature pages expose trial and upgrade paths', async ({ page }) => {
-  for (const slug of featureSlugs) {
-    await page.goto(`/${slug}/`);
-    await expect(page.getByRole('link', { name: 'Request trial' })).toHaveAttribute('href', 'https://pro.rv-grid.com/guides/installation-npm-trial/');
-    await expect(page.getByRole('link', { name: 'Get Pro Advanced' })).toHaveAttribute('href', 'https://rv-grid.com/pricing/');
-  }
 });
 
 test('filtering showcase composes global search, filter badges, and Clear All responsively', async ({ page }) => {
