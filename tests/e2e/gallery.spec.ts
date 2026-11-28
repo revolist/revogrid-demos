@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test';
 const featureSlugs = ['pivot', 'gantt', 'kanban', 'scheduler'];
 const retainedSlugs = [
   'ai-agent',
+  'advanced-grids',
+  'category-forecast',
   'core-project-portfolio',
   'core',
   'excel',
@@ -26,14 +28,21 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('20 complete ways');
-  await expect(page.locator('.showcase-card')).toHaveCount(20);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('See what you can build');
+  await expect(page.locator('.showcase-card')).toHaveCount(22);
+  const scenarioLinks = await page.locator('.advanced-grid a').evaluateAll(links => links.map(link => new URL((link as HTMLAnchorElement).href).hash));
+  await page.goto('/advanced-grids/demo/');
+  const navigationLinks = page.getByRole('navigation', { name: 'Advanced RevoGrid examples' }).getByRole('link');
+  await expect(navigationLinks).toHaveCount(scenarioLinks.length);
+  const workbenchLinks = await navigationLinks.evaluateAll(links => links.map(link => new URL((link as HTMLAnchorElement).href).hash));
+  expect(scenarioLinks).toEqual(workbenchLinks);
+  await page.goto('/');
   await page.keyboard.press('Tab');
   await expect(page.locator(':focus')).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator('.showcase-card').first()).toBeVisible();
   await page.emulateMedia({ colorScheme: 'dark' });
-  await expect.poll(() => page.locator('body').evaluate((element) => getComputedStyle(element).backgroundColor)).toBe('rgb(9, 13, 24)');
+  await expect.poll(() => page.locator('body').evaluate((element) => getComputedStyle(element).backgroundColor)).toBe('rgb(9, 9, 9)');
   expect(errors).toEqual([]);
 });
 

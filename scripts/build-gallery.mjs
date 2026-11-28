@@ -4,6 +4,19 @@ import { featureSlugs, loadCatalog, root } from './catalog.mjs';
 
 const output = join(root, 'dist');
 const catalog = await loadCatalog();
+const featuredSlugs = ['advanced-grids', 'category-forecast', 'ai-agent'];
+const advancedGridExamples = [
+  ['campaign-performance', 'Marketing Campaign Analytics'], ['product-kpis', 'Product Sales & Profitability'],
+  ['service-visits', 'Field Service Visit Planner'], ['category-forecast', 'Retail Demand Forecast'],
+  ['job-schedule', 'Venue Changeover Schedule'], ['supplier-quality', 'Supplier Quality Dashboard'],
+  ['reliability-index', 'Service Reliability Dashboard'], ['scale-up-index', 'Company Growth Explorer'],
+  ['sales-to-target', 'Store Sales vs. Targets'], ['brand-scorecard', 'Brand Portfolio Scorecard'],
+  ['project-budget', 'Project Budget Tracker'], ['patient-cohorts', 'Patient Access Cohorts'],
+];
+const homeCatalog = [...catalog].sort((a, b) => {
+  const rank = (slug) => { const index = featuredSlugs.indexOf(slug); return index < 0 ? featuredSlugs.length : index; };
+  return rank(a.slug) - rank(b.slug);
+});
 
 function escapeHtml(value = '') {
   return String(value)
@@ -25,9 +38,11 @@ function page({ title, description, content }) {
     <link rel="stylesheet" href="/assets/gallery.css" />
   </head>
   <body>
+    <div class="announcement"><a href="https://rv-grid.com/">Built with RevoGrid <span>· Explore the grid for ambitious applications</span> <b aria-hidden="true">↗</b></a></div>
     <header class="site-header shell">
-      <a class="brand" href="/"><span class="brand-mark">R</span><span>RevoGrid Examples</span></a>
-      <a class="top-link" href="https://github.com/revolist/revogrid-demos">Source on GitHub ↗</a>
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">R</span><span>RevoGrid <span class="brand-muted">Examples</span></span></a>
+      <nav class="site-nav" aria-label="Main navigation"><a href="/#showcases">Showcases</a><a href="/advanced-grids/">Advanced grids</a><a href="https://rv-grid.com/guide/">Documentation ↗</a></nav>
+      <a class="top-link" href="https://github.com/revolist/revogrid-demos">GitHub <span aria-hidden="true">↗</span></a>
     </header>
     <main>${content}</main>
     <footer class="site-footer"><div class="shell">Production-style examples for RevoGrid Core, Pro, and Pro Advanced.</div></footer>
@@ -48,10 +63,10 @@ function card(showcase) {
     <a href="/${showcase.slug}/">
       <div class="card-media"><img src="/${showcase.slug}/media/${escapeHtml(posterName(showcase))}" alt="${escapeHtml(showcase.title)} showcase" loading="lazy" /></div>
       <div class="card-body">
-        <span class="edition">${escapeHtml(showcase.edition)}</span>
-        <h2>${escapeHtml(showcase.title)}</h2>
+        <div class="card-meta"><span class="edition">${escapeHtml(showcase.edition)}</span><span class="card-arrow" aria-hidden="true">↗</span></div>
+        <h3>${escapeHtml(showcase.title)}</h3>
         <p>${escapeHtml(showcase.summary)}</p>
-        <span class="card-link">Explore showcase →</span>
+        <span class="card-link">Explore showcase <span aria-hidden="true">→</span></span>
       </div>
     </a>
   </article>`;
@@ -65,7 +80,7 @@ function detail(showcase) {
   }));
   const trial = showcase.trialUrl
     ? `<a class="button" href="${escapeHtml(showcase.trialUrl)}">Request trial</a>`
-    : `<a class="button" href="${escapeHtml(showcase.productUrl)}">View RevoGrid Core</a>`;
+    : `<a class="button" href="${escapeHtml(showcase.productUrl)}">View RevoGrid ${showcase.edition === 'Core' ? 'Core' : 'Pro'}</a>`;
   const pricing = showcase.pricingUrl
     ? `<a class="button" href="${escapeHtml(showcase.pricingUrl)}">Get Pro Advanced</a>`
     : '';
@@ -115,14 +130,19 @@ const home = page({
   title: `RevoGrid Examples · ${catalog.length} production-style showcases`,
   description: 'Explore RevoGrid Core prompt, portfolio, and large-data workflows, plus Pro filtering, infinity scroll, context menus, Pivot, Gantt, Kanban, Scheduler, and planning examples in TypeScript, React, Vue, and Angular.',
   content: `<section class="hero shell">
-    <span class="eyebrow">RevoGrid in production</span>
-    <h1>${catalog.length} complete ways to build beyond the data grid.</h1>
-    <p>Run polished, framework-ready examples for filtering, remote loading, grouped columns, context menus and formatting, master detail, audit history, hierarchy, analytics, planning, scheduling, workflow, spreadsheets, and high-performance data experiences.</p>
-    <div class="hero-actions"><a class="button primary" href="#showcases">Explore all showcases</a><a class="button" href="https://pro.rv-grid.com/guides/installation-npm-trial/">Request trial</a><a class="button" href="https://rv-grid.com/pricing/">Get Pro Advanced</a></div>
+    <span class="eyebrow hero-eyebrow"><span class="status-dot"></span> REAL-WORLD EXAMPLES, READY TO EXPLORE</span>
+    <h1>See what you can build<br />with <span>RevoGrid.</span></h1>
+    <p>From powerful data grids to complete planning applications. Explore ${catalog.length} interactive showcases built for the way you work.</p>
+    <div class="hero-actions"><a class="button primary" href="#showcases">Explore showcases <span aria-hidden="true">↘</span></a><a class="button" href="https://github.com/revolist/revogrid-demos">View on GitHub <span aria-hidden="true">↗</span></a></div>
+    <div class="hero-frameworks"><span>BUILT FOR YOUR STACK</span><b>TypeScript</b><b>React</b><b>Vue</b><b>Angular</b></div>
   </section>
-  <section class="shell" id="showcases">
-    <div class="section-heading"><h2>Showcase gallery</h2><p>Every feature includes a live TypeScript build and matching framework implementations.</p></div>
-    <div class="showcase-grid">${catalog.map(card).join('')}</div>
+  <section class="advanced-section shell" aria-labelledby="advanced-heading">
+    <div class="advanced-heading"><div><span class="eyebrow">ADVANCED GRID EXAMPLES</span><h2 id="advanced-heading">A closer look at what's possible.</h2><p>Jump straight into a real-world grid.</p></div><a href="/advanced-grids/">About the workbench <span aria-hidden="true">→</span></a></div>
+    <div class="advanced-grid">${advancedGridExamples.map(([id, title]) => `<a href="/advanced-grids/demo/#${escapeHtml(id)}"><span>${escapeHtml(title)}</span><span aria-hidden="true">↗</span></a>`).join('')}</div>
+  </section>
+  <section class="catalog-section shell" id="showcases">
+    <div class="catalog-intro"><div><span class="eyebrow">THE SHOWCASE COLLECTION</span><h2>Explore what's possible.</h2><p>Discover practical examples, from your first grid to advanced workflows.</p></div><span class="catalog-count">${catalog.length} showcases <span aria-hidden="true">↗</span></span></div>
+    <div class="showcase-grid">${homeCatalog.map(card).join('')}</div>
   </section>`,
 });
 
