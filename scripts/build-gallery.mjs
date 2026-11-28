@@ -21,7 +21,7 @@ const displayTitles = {
   'category-forecast': 'Retail Forecast Workbench',
 };
 const showcaseGroups = [
-  { title: 'Analytics & business', description: 'Explore data, uncover insights, and work with real-world business records.', slugs: ['advanced:campaign-performance', 'advanced:product-kpis', 'advanced:category-forecast', 'advanced:supplier-quality', 'advanced:reliability-index', 'advanced:scale-up-index', 'advanced:sales-to-target', 'advanced:brand-scorecard', 'advanced:patient-cohorts', 'category-forecast', 'ai-agent', 'ecommerce', 'pivot'] },
+  { title: 'Analytics & business', description: 'Explore data, uncover insights, and work with real-world business records.', slugs: ['pivot', 'advanced:campaign-performance', 'advanced:product-kpis', 'advanced:category-forecast', 'advanced:supplier-quality', 'advanced:reliability-index', 'advanced:scale-up-index', 'advanced:sales-to-target', 'advanced:brand-scorecard', 'advanced:patient-cohorts', 'category-forecast', 'ai-agent', 'ecommerce'] },
   { title: 'Planning & workflows', description: 'Plan projects, schedule people, and keep work moving.', slugs: ['advanced:service-visits', 'advanced:job-schedule', 'advanced:project-budget', 'gantt', 'kanban', 'scheduler', 'project-table', 'planning', 'construction-operations', 'construction-gantt-simple'] },
   { title: 'Grid features', description: 'See editing, filtering, hierarchies, and other grid capabilities in action.', slugs: ['core', 'core-project-portfolio', 'excel', 'filtering', 'infinity-scroll', 'column-collapse', 'data-grid-context-menu', 'row-master', 'audit-history', 'tree-data'] },
 ];
