@@ -46,6 +46,19 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
   expect(errors).toEqual([]);
 });
 
+test('gallery follows the system theme and remembers a theme choice', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/');
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  await expect(page.locator('.hero-frameworks img')).toHaveCount(4);
+  await page.getByRole('button', { name: 'Switch to dark theme' }).click();
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(9, 9, 9)');
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Switch to light theme' })).toBeVisible();
+  await page.getByRole('button', { name: 'Switch to light theme' }).click();
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+});
+
 for (const slug of [...featureSlugs, ...retainedSlugs]) {
   test(`${slug} detail and demo routes render`, async ({ page }) => {
     await page.goto(`/${slug}/`);

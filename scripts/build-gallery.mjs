@@ -35,14 +35,16 @@ function page({ title, description, content }) {
     <meta name="description" content="${escapeHtml(description)}" />
     <meta name="color-scheme" content="light dark" />
     <title>${escapeHtml(title)}</title>
+    <script>try { const theme = localStorage.getItem('revo-gallery-theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch {}</script>
     <link rel="stylesheet" href="/assets/gallery.css" />
+    <script src="/assets/gallery.js" defer></script>
   </head>
   <body>
     <div class="announcement"><a href="https://rv-grid.com/">Built with RevoGrid <span>· Explore the grid for ambitious applications</span> <b aria-hidden="true">↗</b></a></div>
     <header class="site-header shell">
-      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">R</span><span>RevoGrid <span class="brand-muted">Examples</span></span></a>
+      <a class="brand" href="/"><img class="brand-mark" src="https://rv-grid.com/logo.svg?skipsvgo" alt="" width="26" height="26" /><span>RevoGrid <span class="brand-muted">Examples</span></span></a>
       <nav class="site-nav" aria-label="Main navigation"><a href="/#showcases">Showcases</a><a href="/advanced-grids/">Advanced grids</a><a href="https://rv-grid.com/guide/">Documentation ↗</a></nav>
-      <a class="top-link" href="https://github.com/revolist/revogrid-demos">GitHub <span aria-hidden="true">↗</span></a>
+      <div class="header-actions"><button class="theme-toggle" type="button" aria-label="Toggle color theme" title="Toggle color theme"><span class="theme-icon" aria-hidden="true">◐</span></button><a class="top-link" href="https://github.com/revolist/revogrid-demos">GitHub <span aria-hidden="true">↗</span></a></div>
     </header>
     <main>${content}</main>
     <footer class="site-footer"><div class="shell">Production-style examples for RevoGrid Core, Pro, and Pro Advanced.</div></footer>
@@ -116,6 +118,8 @@ function detail(showcase) {
 await rm(output, { recursive: true, force: true });
 await mkdir(join(output, 'assets'), { recursive: true });
 await cp(join(root, 'gallery/gallery.css'), join(output, 'assets/gallery.css'));
+await cp(join(root, 'gallery/gallery.js'), join(output, 'assets/gallery.js'));
+await cp(join(root, 'gallery/frameworks'), join(output, 'assets/frameworks'), { recursive: true });
 
 for (const showcase of catalog) {
   const source = join(root, showcase.sourceDir);
@@ -134,7 +138,7 @@ const home = page({
     <h1>See what you can build<br />with <span>RevoGrid.</span></h1>
     <p>From powerful data grids to complete planning applications. Explore ${catalog.length} interactive showcases built for the way you work.</p>
     <div class="hero-actions"><a class="button primary" href="#showcases">Explore showcases <span aria-hidden="true">↘</span></a><a class="button" href="https://github.com/revolist/revogrid-demos">View on GitHub <span aria-hidden="true">↗</span></a></div>
-    <div class="hero-frameworks"><span>BUILT FOR YOUR STACK</span><b>TypeScript</b><b>React</b><b>Vue</b><b>Angular</b></div>
+    <div class="hero-frameworks" aria-label="Supported frameworks">${['TypeScript', 'React', 'Vue', 'Angular'].map((name) => `<img src="/assets/frameworks/${name.toLowerCase()}.svg" alt="${name}" title="${name}" width="25" height="25" />`).join('')}</div>
   </section>
   <section class="advanced-section shell" aria-labelledby="advanced-heading">
     <div class="advanced-heading"><div><span class="eyebrow">ADVANCED GRID EXAMPLES</span><h2 id="advanced-heading">A closer look at what's possible.</h2><p>Jump straight into a real-world grid.</p></div><a href="/advanced-grids/">About the workbench <span aria-hidden="true">→</span></a></div>
