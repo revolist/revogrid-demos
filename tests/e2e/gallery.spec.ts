@@ -30,6 +30,11 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('See what you can build');
   await expect(page.locator('.showcase-card')).toHaveCount(22);
+  for (const section of ['Analytics & business', 'Planning & workflows', 'Grid features']) {
+    await expect(page.getByRole('heading', { name: section })).toBeVisible();
+  }
+  await expect(page.getByRole('heading', { name: 'Kanban Workflow Board' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Pivot Table & Charts' })).toBeVisible();
   const preview = page.locator('.advanced-grid img').first();
   await expect(page.locator('.advanced-grid img')).toHaveCount(12);
   await expect(preview).toHaveCSS('filter', 'grayscale(1)');

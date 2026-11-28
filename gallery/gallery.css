@@ -55,7 +55,7 @@ img, video { display: block; max-width: 100%; }
 .advanced-grid > a { display: block; padding-top: 22px; }
 .advanced-card-heading, .card-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .advanced-card-heading { padding: 0 20px; }
-.advanced-card-heading h3, .card-body h3 { margin: 0; font-size: 15px; line-height: 1.35; font-weight: 600; letter-spacing: -.025em; }
+.advanced-card-heading h3, .card-body h4 { margin: 0; font-size: 15px; line-height: 1.35; font-weight: 600; letter-spacing: -.025em; }
 .advanced-card-heading > span { flex: none; color: var(--muted); }
 .advanced-grid > a > p { margin: 4px 20px 0; color: var(--muted); font-size: 12px; }
 .advanced-card-preview, .card-media { position: relative; display: flex; height: 150px; aspect-ratio: auto; align-items: flex-end; overflow: hidden; margin-top: 16px; padding: 16px 0 0 34px; border: 0; background: transparent; }
@@ -66,7 +66,7 @@ img, video { display: block; max-width: 100%; }
 .advanced-grid > a:hover img, .showcase-card a:hover img { transform: scale(1.025); }
 .showcase-card > a { display: flex; flex-direction: column; min-height: 100%; }
 .card-body { flex: none; padding: 22px 20px 22px; }
-.card-body h3 { flex: 1; }
+.card-body h4 { flex: 1; }
 .card-body p { display: -webkit-box; overflow: hidden; margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .card-meta .edition { flex: none; color: var(--muted); font-size: 10px; letter-spacing: .08em; }
 .card-media { margin-top: auto; }
@@ -74,3 +74,10 @@ img, video { display: block; max-width: 100%; }
 .catalog-section { padding-bottom: 100px; }
 @media (max-width: 940px) { .advanced-grid, .showcase-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 480px) { .advanced-grid, .showcase-grid { grid-template-columns: 1fr; }.advanced-card-preview, .card-media { height: 180px; } }
+
+.showcase-group + .showcase-group { margin-top: 76px; }
+.showcase-group-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin: 0 0 22px; }
+.showcase-group-heading h3 { margin: 0; font-size: clamp(1.4rem, 2.3vw, 1.8rem); line-height: 1.2; letter-spacing: -.04em; font-weight: 600; }
+.showcase-group-heading p { margin: 7px 0 0; color: var(--muted); }
+.showcase-group-heading > span { flex: none; color: var(--muted); font-size: 12px; }
+@media (max-width: 640px) { .showcase-group + .showcase-group { margin-top: 56px; }.showcase-group-heading { align-items: start; flex-direction: column; gap: 8px; } }

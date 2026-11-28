@@ -7,7 +7,26 @@ const output = join(root, 'dist');
 const catalog = await loadCatalog();
 const themeIcon = (await readFile(join(root, 'gallery/icons/circle-half-stroke.svg'), 'utf8'))
   .replace('<svg ', '<svg class="theme-icon" aria-hidden="true" focusable="false" ');
-const featuredSlugs = ['advanced-grids', 'category-forecast', 'ai-agent'];
+const displayTitles = {
+  'core': 'Employee Data Grid',
+  'core-project-portfolio': 'Grouped Project Portfolio',
+  'excel': 'Spreadsheet Workbench',
+  'pivot': 'Pivot Table & Charts',
+  'gantt': 'Project Gantt Chart',
+  'kanban': 'Kanban Workflow Board',
+  'scheduler': 'Resource Scheduler',
+  'ai-agent': 'Grid AI Assistant',
+};
+const showcaseGroups = [
+  { title: 'Analytics & business', description: 'Explore data, uncover insights, and work with real-world business records.', slugs: ['advanced-grids', 'category-forecast', 'ai-agent', 'ecommerce', 'pivot'] },
+  { title: 'Planning & workflows', description: 'Plan projects, schedule people, and keep work moving.', slugs: ['gantt', 'kanban', 'scheduler', 'project-table', 'planning', 'construction-operations', 'construction-gantt-simple'] },
+  { title: 'Grid features', description: 'See editing, filtering, hierarchies, and other grid capabilities in action.', slugs: ['core', 'core-project-portfolio', 'excel', 'filtering', 'infinity-scroll', 'column-collapse', 'data-grid-context-menu', 'row-master', 'audit-history', 'tree-data'] },
+];
+const showcaseTitle = (showcase) => displayTitles[showcase.slug] ?? showcase.title;
+const showcasesBySlug = new Map(catalog.map(showcase => [showcase.slug, showcase]));
+const assignedSlugs = new Set(showcaseGroups.flatMap(group => group.slugs));
+const additionalShowcases = catalog.filter(showcase => !assignedSlugs.has(showcase.slug));
+if (additionalShowcases.length) showcaseGroups.push({ title: 'More examples', description: 'Explore more ways to work with your data.', slugs: additionalShowcases.map(showcase => showcase.slug) });
 const advancedGridExamples = [
   ['campaign-performance', 'Marketing Campaign Analytics'], ['product-kpis', 'Product Sales & Profitability'],
   ['service-visits', 'Field Service Visit Planner'], ['category-forecast', 'Retail Demand Forecast'],
@@ -16,10 +35,7 @@ const advancedGridExamples = [
   ['sales-to-target', 'Store Sales vs. Targets'], ['brand-scorecard', 'Brand Portfolio Scorecard'],
   ['project-budget', 'Project Budget Tracker'], ['patient-cohorts', 'Patient Access Cohorts'],
 ];
-const homeCatalog = [...catalog].sort((a, b) => {
-  const rank = (slug) => { const index = featuredSlugs.indexOf(slug); return index < 0 ? featuredSlugs.length : index; };
-  return rank(a.slug) - rank(b.slug);
-});
+
 
 function escapeHtml(value = '') {
   return String(value)
@@ -67,7 +83,7 @@ function card(showcase) {
   return `<article class="showcase-card">
     <a href="/${showcase.slug}/">
       <div class="card-body">
-        <div class="card-meta"><h3>${escapeHtml(showcase.title)}</h3><span class="edition">${escapeHtml(showcase.edition)}</span></div>
+        <div class="card-meta"><h4>${escapeHtml(showcaseTitle(showcase))}</h4><span class="edition">${escapeHtml(showcase.edition)}</span></div>
         <p>${escapeHtml(showcase.summary)}</p>
       </div>
       <div class="card-media"><div class="preview-frame"><img src="/${showcase.slug}/media/${escapeHtml(posterName(showcase))}" alt="" loading="lazy" /></div></div>
@@ -93,12 +109,12 @@ function detail(showcase) {
   const gallery = screenshots ? `<section class="content-section shell"><h2>Workflow gallery</h2><div class="screenshot-grid">${screenshots}</div></section>` : '';
 
   return page({
-    title: `${showcase.title} · RevoGrid Examples`,
+    title: `${showcaseTitle(showcase)} · RevoGrid Examples`,
     description: showcase.summary,
     content: `<section class="detail-hero shell">
       <div class="detail-copy">
         <span class="edition">${escapeHtml(showcase.edition)}</span>
-        <h1>${escapeHtml(showcase.title)}</h1>
+        <h1>${escapeHtml(showcaseTitle(showcase))}</h1>
         <p>${escapeHtml(showcase.summary)}</p>
         <div class="frameworks" aria-label="Framework examples">${frameworkBadges(showcase.frameworks)}</div>
         <div class="actions">
@@ -132,7 +148,10 @@ export const home = page({
   </section>
   <section class="catalog-section shell" id="showcases">
     <div class="catalog-intro"><div><span class="eyebrow">THE SHOWCASE COLLECTION</span><h2>Explore what's possible.</h2><p>Discover practical examples, from your first grid to advanced workflows.</p></div><span class="catalog-count">${catalog.length} showcases <span aria-hidden="true">↗</span></span></div>
-    <div class="showcase-grid">${homeCatalog.map(card).join('')}</div>
+    ${showcaseGroups.map(group => {
+      const items = group.slugs.map(slug => showcasesBySlug.get(slug)).filter(Boolean);
+      return items.length ? `<section class="showcase-group" aria-label="${escapeHtml(group.title)}"><div class="showcase-group-heading"><div><h3>${escapeHtml(group.title)}</h3><p>${escapeHtml(group.description)}</p></div><span>${items.length} examples</span></div><div class="showcase-grid">${items.map(card).join('')}</div></section>` : '';
+    }).join('')}
   </section>`,
 });
 
