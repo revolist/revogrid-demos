@@ -72,6 +72,7 @@ test('all generated internal links and media references resolve', async () => {
 test('home page renders a keyboard-reachable link for each showcase', async () => {
   const html = await readFile(join(output, 'index.html'), 'utf8');
   const catalog = await loadCatalog();
-  assert.equal((html.match(/class="showcase-card"/g) ?? []).length, catalog.length);
-  for (const { slug } of catalog) assert.ok(html.includes(`href="/${slug}/"`), slug);
+  assert.equal((html.match(/class="showcase-card"/g) ?? []).length, catalog.length - 1 + 12);
+  for (const { slug } of catalog.filter(entry => entry.slug !== 'advanced-grids')) assert.ok(html.includes(`href="/${slug}/"`), slug);
+  assert.equal((html.match(/href="\/advanced-grids\/demo\/#/g) ?? []).length, 12);
 });

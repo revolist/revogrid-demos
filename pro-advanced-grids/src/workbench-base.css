@@ -10,30 +10,9 @@
 body {
   margin: 0;
 }
-.workbench,
-.workbench-nav {
+.workbench {
   max-width: 1280px;
   margin-inline: auto;
-}
-.workbench-nav {
-  display: flex;
-  gap: 6px;
-  overflow: auto;
-  scrollbar-width: none;
-  padding: 12px 32px 24px;
-}
-.workbench-nav::-webkit-scrollbar { display: none; }
-.workbench-nav a {
-  font-size: 12px;
-  white-space: nowrap;
-  color: var(--demo-palette-hex-525252);
-  padding: 6px 9px;
-  border-radius: 6px;
-  text-decoration: none;
-}
-.workbench-nav a[aria-current] {
-  color: white;
-  background: var(--demo-palette-hex-171717);
 }
 .workbench {
   --border: var(--demo-palette-hex-e4e4e4);
@@ -505,9 +484,6 @@ body {
   }
   .workbench-search {
     width: min(210px, 100%);
-  }
-  .workbench-nav {
-    padding-inline: 16px;
   }
 }
 .workbench-share {

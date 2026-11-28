@@ -26,7 +26,7 @@ const screenExamples = [
   patientCohorts,
 ];
 
-// All framework wrappers use this shared navigation and lifecycle.
+// All framework wrappers use this shared scenario selection and lifecycle.
 export const examples = screenExamples.map((example) => ({
   id: example.id,
   title: example.title,

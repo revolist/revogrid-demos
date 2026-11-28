@@ -29,22 +29,20 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
 
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('See what you can build');
-  await expect(page.locator('.showcase-card')).toHaveCount(22);
+  await expect(page.locator('.showcase-card')).toHaveCount(33);
   for (const section of ['Analytics & business', 'Planning & workflows', 'Grid features']) {
     await expect(page.getByRole('heading', { name: section })).toBeVisible();
   }
   await expect(page.getByRole('heading', { name: 'Kanban Workflow Board' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Pivot Table & Charts' })).toBeVisible();
-  const preview = page.locator('.advanced-grid img').first();
-  await expect(page.locator('.advanced-grid img')).toHaveCount(12);
+  const scenarios = page.locator('.showcase-card a[href*="/advanced-grids/demo/#"]');
+  await expect(scenarios).toHaveCount(12);
+  const preview = scenarios.first().locator('img');
   await expect(preview).toHaveCSS('filter', 'grayscale(1)');
   await expect.poll(() => preview.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
-  const scenarioLinks = await page.locator('.advanced-grid a').evaluateAll(links => links.map(link => new URL((link as HTMLAnchorElement).href).hash));
-  await page.goto('/advanced-grids/demo/');
-  const navigationLinks = page.getByRole('navigation', { name: 'Advanced RevoGrid examples' }).getByRole('link');
-  await expect(navigationLinks).toHaveCount(scenarioLinks.length);
-  const workbenchLinks = await navigationLinks.evaluateAll(links => links.map(link => new URL((link as HTMLAnchorElement).href).hash));
-  expect(scenarioLinks).toEqual(workbenchLinks);
+  await scenarios.first().click();
+  await expect(page.locator('revo-grid').first()).toBeVisible();
+  await expect(page.locator('.workbench-nav')).toHaveCount(0);
   await page.goto('/');
   await page.evaluate(() => window.scrollTo(0, 700));
   await expect(page.locator('.header-bar')).toBeInViewport();
@@ -56,6 +54,21 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect.poll(() => page.locator('body').evaluate((element) => getComputedStyle(element).backgroundColor)).toBe('rgb(9, 9, 9)');
   expect(errors).toEqual([]);
+});
+
+test('each advanced grid opens directly without the combined navigation', async ({ page }) => {
+  await page.goto('/');
+  const links = await page.locator('.showcase-card a[href*="/advanced-grids/demo/#"]').evaluateAll(elements =>
+    elements.map(element => (element as HTMLAnchorElement).getAttribute('href')!),
+  );
+  expect(links).toHaveLength(12);
+  expect(new Set(links).size).toBe(12);
+  for (const link of links) {
+    await page.goto(link);
+    await expect(page.locator('.workbench-content')).toHaveAttribute('data-example-id', link.split('#')[1]);
+    await expect(page.locator('revo-grid').first()).toBeVisible();
+    await expect(page.locator('.workbench-nav')).toHaveCount(0);
+  }
 });
 
 test('gallery follows the system theme and remembers a theme choice', async ({ page }) => {

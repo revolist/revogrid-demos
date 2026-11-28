@@ -13,32 +13,29 @@ after(async () => {
   await browser?.close();
   if (server) await new Promise((resolve, reject) => server.httpServer.close(error => error ? reject(error) : resolve()));
 });
-test('all twelve examples share navigation and forecast mounts and cleans up', async () => {
+test('direct example routes mount and clean up without a navigation strip', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`${url}#category-forecast`);
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
-    const nav = page.getByRole('navigation', { name: 'Advanced RevoGrid examples' });
-    assert.equal(await nav.getByRole('link').count(), 12);
-    await nav.getByRole('link', { name: 'Service Reliability Dashboard' }).click();
+    await page.locator('.forecast-grid').waitFor();
+    assert.equal(await page.locator('.workbench-nav').count(), 0);
+    await page.evaluate(() => { location.hash = 'reliability-index'; });
     await page.getByRole('button', { name: 'Open Order journal durability' }).waitFor();
-    await nav.getByRole('link', { name: 'Supplier Quality Dashboard' }).click();
+    await page.evaluate(() => { location.hash = 'supplier-quality'; });
     await page.getByRole('button', { name: 'Open Aster Circuit Works' }).waitFor();
-    await nav.getByRole('link', { name: 'Venue Changeover Schedule' }).click();
+    await page.evaluate(() => { location.hash = 'job-schedule'; });
     await page.getByRole('button', { name: 'Open Lantern Festival Setup' }).waitFor();
-    assert.equal(await nav.getByRole('link', { name: 'Venue Changeover Schedule' }).getAttribute('aria-current'), 'page');
-    await nav.getByRole('link', { name: 'Retail Demand Forecast' }).click();
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
-    assert.equal(await nav.getByRole('link', { name: 'Retail Demand Forecast' }).getAttribute('aria-current'), 'page');
-    await nav.getByRole('link', { name: 'Marketing Campaign Analytics' }).click();
+    await page.evaluate(() => { location.hash = 'category-forecast'; });
+    await page.locator('.forecast-grid').waitFor();
+    await page.evaluate(() => { location.hash = 'campaign-performance'; });
     await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     assert.equal(await page.locator('.forecast').count(), 0);
     assert.equal(await page.locator('.workbench-grid').count(), 1);
     assert.equal(await page.locator('.forecast-grid').count(), 0);
-    await nav.getByRole('link', { name: 'Retail Demand Forecast' }).click();
-    await page.getByText('Trail Footwear', { exact: true }).waitFor();
+    await page.evaluate(() => { location.hash = 'category-forecast'; });
+    await page.locator('.forecast-grid').waitFor();
     assert.equal(await page.locator('.forecast-grid').count(), 1);
     assert.equal(await page.locator('.workbench-grid').count(), 0);
     assert.equal(await page.locator('.workbench').count(), 0);
@@ -335,7 +332,7 @@ test('campaign filter suggestions keep their styling after switching demos', asy
     assert.equal(initial.border, '0px');
     for (const id of ['product-kpis', 'service-visits', 'category-forecast', 'job-schedule', 'supplier-quality', 'reliability-index', 'scale-up-index', 'sales-to-target', 'brand-scorecard', 'project-budget', 'patient-cohorts']) {
       await page.evaluate(id => { location.hash = id; }, id);
-      await page.waitForFunction(id => document.querySelector('.workbench-nav a[aria-current]')?.getAttribute('href') === `#${id}`, id);
+      await page.waitForFunction(id => document.querySelector('.workbench-content')?.dataset.exampleId === id, id);
       // Another demo can load the shared button stylesheet after the filter styles.
       if (id === 'category-forecast') {
         await page.addStyleTag({ content: '.rv-btn { display: inline-flex; justify-content: center; border: 1px solid; padding: 9px 16px; border-radius: 8px; font-weight: 600; }' });
@@ -351,7 +348,7 @@ test('campaign filter suggestions keep their styling after switching demos', asy
         assert.deepEqual(hostButton, { border: '1px', justify: 'center' }, 'unrelated shared buttons keep their styling');
       }
       await page.evaluate(() => { location.hash = 'campaign-performance'; });
-      await page.waitForFunction(() => document.querySelector('.workbench-nav a[aria-current]')?.getAttribute('href') === '#campaign-performance');
+      await page.waitForFunction(() => document.querySelector('.workbench-content')?.dataset.exampleId === 'campaign-performance');
       assert.deepEqual(await checkSuggestions(), initial, `filter suggestions changed after visiting ${id}`);
     }
     await page.getByRole('listbox', { name: /Status/ }).getByRole('option', { name: 'Learning', exact: true }).click();
@@ -366,7 +363,7 @@ test('action notifications are cleared when navigating between demos', async () 
     await page.goto(`${url}#service-visits`);
     await page.getByRole('button', { name: /Book all .*unbooked visits/ }).click();
     await page.locator('.rv-toast').getByText(/visits booked/).waitFor();
-    await page.getByRole('navigation', { name: 'Advanced RevoGrid examples' }).getByRole('link', { name: 'Marketing Campaign Analytics' }).click();
+    await page.evaluate(() => { location.hash = 'campaign-performance'; });
     await page.getByRole('button', { name: 'Open Community Plan Member Event' }).waitFor();
     assert.equal(await page.locator('.rv-toast').count(), 0);
   } finally { await page.close(); }
@@ -693,20 +690,6 @@ test('province controls expand groups without a duplicate company expand icon', 
 });
 
 
-test('demo navigation scrolls without a visible scrollbar', async () => {
-  const page = await browser.newPage({ viewport: { width: 800, height: 800 } });
-  try {
-    await page.goto(url);
-    const nav = page.getByRole('navigation', { name: 'Advanced RevoGrid examples' });
-    const state = await nav.evaluate(element => {
-      element.scrollLeft = element.scrollWidth;
-      return { scrollLeft: element.scrollLeft, scrollbar: getComputedStyle(element).scrollbarWidth };
-    });
-    assert.ok(state.scrollLeft > 0);
-    assert.equal(state.scrollbar, 'none');
-  } finally { await page.close(); }
-});
-
 test('demos fit the viewport and let the grid fill the available height', async () => {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
@@ -718,11 +701,10 @@ test('demos fit the viewport and let the grid fill the available height', async 
       await grid.waitFor();
       const sizes = await page.evaluate(() => {
         const grid = document.querySelector('revo-grid').getBoundingClientRect();
-        const nav = document.querySelector('.workbench-nav').getBoundingClientRect();
-        return { documentHeight: document.documentElement.scrollHeight, height: innerHeight, gridHeight: grid.height, gridBottom: grid.bottom, navTop: nav.top, navBottom: nav.bottom };
+        return { documentHeight: document.documentElement.scrollHeight, height: innerHeight, gridHeight: grid.height, gridBottom: grid.bottom };
       });
       assert.ok(sizes.documentHeight <= sizes.height + 1, `${id}: ${JSON.stringify(sizes)}`);
-      assert.ok(sizes.gridHeight >= 150 && sizes.gridBottom <= sizes.navTop + 1 && sizes.navBottom <= sizes.height + 1, `${id}: ${JSON.stringify(sizes)}`);
+      assert.ok(sizes.gridHeight >= 150 && sizes.gridBottom <= sizes.height + 1, `${id}: ${JSON.stringify(sizes)}`);
     }
     }
   } finally { await page.close(); }

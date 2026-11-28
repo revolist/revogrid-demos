@@ -8,28 +8,16 @@ export function mountWorkbench(host: HTMLElement) {
   const hadGalleryClass = host.classList.contains('advanced-grid-gallery');
   host.classList.add('advanced-grid-gallery');
   const window = host.ownerDocument.defaultView!;
-  const nav = make('nav', '', 'workbench-nav');
-  nav.setAttribute('aria-label', 'Advanced RevoGrid examples');
   const contents = make('div', '', 'workbench-content');
-  host.append(contents, nav);
+  host.append(contents);
   let cleanup: (() => void) | undefined;
-  const links = examples.map((example) => {
-    const link = make('a', example.title);
-    link.href = `#${example.id}`;
-    nav.append(link);
-    return link;
-  });
   function update() {
     const id = window.location.hash.slice(1);
     const selected =
       examples.find((example) => example.id === id) ?? examples[0];
-    links.forEach((link, index) => {
-      if (examples[index] === selected)
-        link.setAttribute('aria-current', 'page');
-      else link.removeAttribute('aria-current');
-    });
     cleanup?.();
     cleanup = selected.mount(contents);
+    contents.dataset.exampleId = selected.id;
     window.document.title = `${selected.title} · RevoGrid Pro`;
   }
   window.addEventListener('hashchange', update);
@@ -37,7 +25,6 @@ export function mountWorkbench(host: HTMLElement) {
   return () => {
     window.removeEventListener('hashchange', update);
     cleanup?.();
-    nav.remove();
     contents.remove();
     if (!hadGalleryClass) host.classList.remove('advanced-grid-gallery');
   };

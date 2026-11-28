@@ -648,7 +648,6 @@
   min-height: 0;
   min-width: 0;
 }
-.advanced-grid-gallery .workbench-nav { flex: 0 0 auto; width: 100%; padding-block: 8px; }
 .advanced-grid-gallery .workbench-content > :is(.workbench, .forecast) {
   display: flex;
   flex-direction: column;
