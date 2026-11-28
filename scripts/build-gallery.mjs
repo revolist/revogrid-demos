@@ -109,7 +109,7 @@ export const home = page({
     <span class="eyebrow hero-eyebrow"><span class="status-dot"></span> REAL-WORLD EXAMPLES, READY TO EXPLORE</span>
     <h1>See what you can build<br />with <span>RevoGrid.</span></h1>
     <p>From powerful data grids to complete planning applications. Explore ${galleryCatalog.length} interactive showcases built for the way you work.</p>
-    <div class="hero-actions"><a class="button primary" href="#showcases">Explore showcases <span aria-hidden="true">↘</span></a><a class="button" href="https://github.com/revolist/revogrid-demos">View on GitHub <span aria-hidden="true">↗</span></a></div>
+    <div class="hero-actions"><a class="button primary" href="#showcases">Explore showcases <span aria-hidden="true">↘</span></a><a class="button" href="https://pro.rv-grid.com/guides/installation-npm-trial/">Get Pro Free Trial <span aria-hidden="true">↗</span></a></div>
     <div class="hero-frameworks" aria-label="Supported frameworks">${['TypeScript', 'React', 'Vue', 'Angular'].map((name) => `<img src="/assets/frameworks/${name.toLowerCase()}.svg" alt="${name}" title="${name}" width="25" height="25" />`).join('')}</div>
   </section>
   <section class="catalog-section shell" id="showcases">
