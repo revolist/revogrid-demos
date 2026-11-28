@@ -26,6 +26,12 @@ body {
   width: calc(100% - 64px);
   color: var(--ink);
 }
+/* Standalone demos share the full-width gallery layout; embedded forecasts keep their own sizing. */
+.forecast-standalone .forecast {
+  width: 100%;
+  max-width: none;
+  margin: 16px 0 0;
+}
 .forecast h1,
 .forecast h2,
 .forecast p {

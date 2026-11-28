@@ -78,6 +78,23 @@ test('each advanced grid opens directly without the combined navigation', async 
   await expect(page.locator('revo-grid').first()).toBeVisible();
 });
 
+test('standalone campaign and forecast demos fill the viewport', async ({ page }) => {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const [url, selector] of [
+      ['/examples/campaign-performance/', '.workbench'],
+      ['/category-forecast/demo/', '.forecast'],
+    ]) {
+      await page.goto(url);
+      await expect(page.locator('revo-grid').first()).toBeVisible();
+      const bounds = await page.locator(selector).first().boundingBox();
+      expect(bounds).not.toBeNull();
+      expect(bounds!.x).toBeCloseTo(0, 0);
+      expect(bounds!.width).toBeCloseTo(width, 0);
+    }
+  }
+});
+
 test('search and category filters work together and can be cleared', async ({ page }) => {
   await page.goto('/');
   const search = page.getByRole('searchbox', { name: 'Search examples' });
