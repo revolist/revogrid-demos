@@ -1,9 +1,11 @@
-import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { featureSlugs, loadCatalog, root } from './catalog.mjs';
 
 const output = join(root, 'dist');
 const catalog = await loadCatalog();
+const themeIcon = (await readFile(join(root, 'gallery/icons/circle-half-stroke.svg'), 'utf8'))
+  .replace('<svg ', '<svg class="theme-icon" aria-hidden="true" focusable="false" ');
 const featuredSlugs = ['advanced-grids', 'category-forecast', 'ai-agent'];
 const advancedGridExamples = [
   ['campaign-performance', 'Marketing Campaign Analytics'], ['product-kpis', 'Product Sales & Profitability'],
@@ -44,7 +46,7 @@ function page({ title, description, content }) {
     <header class="site-header shell">
       <a class="brand" href="/"><img class="brand-mark" src="https://rv-grid.com/logo.svg?skipsvgo" alt="" width="26" height="26" /><span>RevoGrid <span class="brand-muted">Examples</span></span></a>
       <nav class="site-nav" aria-label="Main navigation"><a href="/#showcases">Showcases</a><a href="/advanced-grids/">Advanced grids</a><a href="https://rv-grid.com/guide/">Documentation ↗</a></nav>
-      <div class="header-actions"><button class="theme-toggle" type="button" aria-label="Toggle color theme" title="Toggle color theme"><span class="theme-icon" aria-hidden="true">◐</span></button><a class="top-link" href="https://github.com/revolist/revogrid-demos">GitHub <span aria-hidden="true">↗</span></a></div>
+      <div class="header-actions"><button class="theme-toggle" type="button" aria-label="Toggle color theme" title="Toggle color theme">${themeIcon}</button><a class="top-link" href="https://github.com/revolist/revogrid-demos">GitHub <span aria-hidden="true">↗</span></a></div>
     </header>
     <main>${content}</main>
     <footer class="site-footer"><div class="shell">Production-style examples for RevoGrid Core, Pro, and Pro Advanced.</div></footer>
