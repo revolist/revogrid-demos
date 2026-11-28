@@ -1,39 +1,47 @@
-import { mountForecast } from '../../pro-category-forecast/src/forecast';
-import { brandScorecard } from './examples/brands/brands';
-import { projectBudget } from './examples/budget/budget';
-import { campaigns } from './examples/campaigns/campaigns';
-import { patientCohorts } from './examples/patient-cohorts/patient-cohorts';
-import { productKpis } from './examples/products/products';
-import { salesTargets } from './examples/sales-targets/sales-targets';
-import { scaleUpIndex } from './examples/scale-ups/scale-ups';
-import { visitPlanner } from './examples/visits/visits';
-import { jobSchedule } from './examples/job-schedule/job-schedule';
-import { supplierQuality } from './examples/supplier-quality/supplier-quality';
-import { reliabilityIndex } from './examples/reliability-index/reliability-index';
-import { mountScreen } from './shared/workbench-ui';
+import { mountScreen, type Example } from './shared/workbench-ui';
 
-const screenExamples = [
-  campaigns,
-  productKpis,
-  visitPlanner,
-  jobSchedule,
-  supplierQuality,
-  reliabilityIndex,
-  scaleUpIndex,
-  salesTargets,
-  brandScorecard,
-  projectBudget,
-  patientCohorts,
+type Cleanup = () => void;
+type Loader = () => Promise<(host: HTMLElement) => Cleanup | undefined>;
+
+function lazyScreen(id: string, title: string, load: Loader) {
+  return {
+    id,
+    title,
+    mount(host: HTMLElement): Cleanup {
+      let disposed = false;
+      let cleanup: Cleanup | undefined;
+      void load().then(mount => {
+        if (!disposed) cleanup = mount(host);
+      }).catch(error => {
+        if (!disposed) console.error(`Could not load example ${id}`, error);
+      });
+      return () => {
+        disposed = true;
+        cleanup?.();
+      };
+    },
+  };
+}
+
+function screen(loader: () => Promise<Example>): Loader {
+  return async () => {
+    const example = await loader();
+    return host => mountScreen(host, example);
+  };
+}
+
+// Each scenario is loaded on demand; the grid renderer and controls are shared.
+export const examples = [
+  lazyScreen('campaign-performance', 'Marketing Campaign Analytics', screen(() => import('./examples/campaigns/campaigns').then(m => m.campaigns))),
+  lazyScreen('product-kpis', 'Product Sales & Profitability', screen(() => import('./examples/products/products').then(m => m.productKpis))),
+  lazyScreen('service-visits', 'Field Service Visit Planner', screen(() => import('./examples/visits/visits').then(m => m.visitPlanner))),
+  lazyScreen('category-forecast', 'Retail Demand Forecast', () => import('../../pro-category-forecast/src/forecast').then(m => m.mountForecast)),
+  lazyScreen('job-schedule', 'Venue Changeover Schedule', screen(() => import('./examples/job-schedule/job-schedule').then(m => m.jobSchedule))),
+  lazyScreen('supplier-quality', 'Supplier Quality Dashboard', screen(() => import('./examples/supplier-quality/supplier-quality').then(m => m.supplierQuality))),
+  lazyScreen('reliability-index', 'Service Reliability Dashboard', screen(() => import('./examples/reliability-index/reliability-index').then(m => m.reliabilityIndex))),
+  lazyScreen('scale-up-index', 'Company Growth Explorer', screen(() => import('./examples/scale-ups/scale-ups').then(m => m.scaleUpIndex))),
+  lazyScreen('sales-to-target', 'Store Sales vs. Targets', screen(() => import('./examples/sales-targets/sales-targets').then(m => m.salesTargets))),
+  lazyScreen('brand-scorecard', 'Brand Portfolio Scorecard', screen(() => import('./examples/brands/brands').then(m => m.brandScorecard))),
+  lazyScreen('project-budget', 'Project Budget Tracker', screen(() => import('./examples/budget/budget').then(m => m.projectBudget))),
+  lazyScreen('patient-cohorts', 'Patient Access Cohorts', screen(() => import('./examples/patient-cohorts/patient-cohorts').then(m => m.patientCohorts))),
 ];
-
-// All framework wrappers use this shared scenario selection and lifecycle.
-export const examples = screenExamples.map((example) => ({
-  id: example.id,
-  title: example.title,
-  mount: (host: HTMLElement) => mountScreen(host, example),
-}));
-examples.splice(3, 0, {
-  id: 'category-forecast',
-  title: 'Retail Demand Forecast',
-  mount: mountForecast,
-});

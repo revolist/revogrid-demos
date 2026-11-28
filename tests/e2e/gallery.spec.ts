@@ -35,7 +35,7 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
   }
   await expect(page.getByRole('heading', { name: 'Kanban Workflow Board' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Pivot Table & Charts' })).toBeVisible();
-  const scenarios = page.locator('.showcase-card a[href*="/advanced-grids/demo/#"]');
+  const scenarios = page.locator('.showcase-card a[href^="/examples/"]');
   await expect(scenarios).toHaveCount(12);
   const preview = scenarios.first().locator('img');
   await expect(preview).toHaveCSS('filter', 'grayscale(1)');
@@ -58,17 +58,44 @@ test('gallery is complete, keyboard navigable, and responsive', async ({ page })
 
 test('each advanced grid opens directly without the combined navigation', async ({ page }) => {
   await page.goto('/');
-  const links = await page.locator('.showcase-card a[href*="/advanced-grids/demo/#"]').evaluateAll(elements =>
+  const links = await page.locator('.showcase-card a[href^="/examples/"]').evaluateAll(elements =>
     elements.map(element => (element as HTMLAnchorElement).getAttribute('href')!),
   );
   expect(links).toHaveLength(12);
   expect(new Set(links).size).toBe(12);
   for (const link of links) {
     await page.goto(link);
-    await expect(page.locator('.workbench-content')).toHaveAttribute('data-example-id', link.split('#')[1]);
+    await expect(page.locator('.workbench-content')).toHaveAttribute('data-example-id', link.split('/')[2]);
     await expect(page.locator('revo-grid').first()).toBeVisible();
     await expect(page.locator('.workbench-nav')).toHaveCount(0);
   }
+  await page.reload();
+  await expect(page.locator('.workbench-content')).toHaveAttribute('data-example-id', links.at(-1)!.split('/')[2]);
+  await expect(page.locator('revo-grid').first()).toBeVisible();
+  await page.goto('/advanced-grids/demo/#campaign-performance');
+  await expect(page.locator('.workbench-content')).toHaveAttribute('data-example-id', 'campaign-performance');
+  await expect(page.locator('revo-grid').first()).toBeVisible();
+});
+
+test('search and category filters work together and can be cleared', async ({ page }) => {
+  await page.goto('/');
+  const search = page.getByRole('searchbox', { name: 'Search examples' });
+  const groups = page.getByRole('group', { name: 'Filter by category' });
+  const results = page.getByRole('status');
+  await expect(results).toHaveText('33 examples');
+  await groups.getByRole('button', { name: 'Planning & workflows' }).click();
+  await expect(groups.getByRole('button', { name: 'Planning & workflows' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(results).toHaveText('10 examples');
+  await search.fill('kanban workflow');
+  await expect(results).toHaveText('1 example');
+  await expect(page.getByRole('heading', { name: 'Kanban Workflow Board' })).toBeVisible();
+  await search.fill('no matching example 5738');
+  await expect(results).toHaveText('0 examples');
+  await expect(page.getByText('No examples match your search.')).toBeVisible();
+  await page.getByRole('button', { name: 'Clear filters' }).click();
+  await expect(search).toBeFocused();
+  await expect(results).toHaveText('33 examples');
+  await expect(groups.getByRole('button', { name: 'All examples' })).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('gallery follows the system theme and remembers a theme choice', async ({ page }) => {

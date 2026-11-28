@@ -12,7 +12,8 @@ export function mountWorkbench(host: HTMLElement) {
   host.append(contents);
   let cleanup: (() => void) | undefined;
   function update() {
-    const id = window.location.hash.slice(1);
+    const standaloneId = window.location.pathname.match(/^\/examples\/([^/]+)\/?$/)?.[1];
+    const id = standaloneId ?? window.location.hash.slice(1);
     const selected =
       examples.find((example) => example.id === id) ?? examples[0];
     cleanup?.();

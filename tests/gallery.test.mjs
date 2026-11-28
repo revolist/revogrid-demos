@@ -74,5 +74,17 @@ test('home page renders a keyboard-reachable link for each showcase', async () =
   const catalog = await loadCatalog();
   assert.equal((html.match(/class="showcase-card"/g) ?? []).length, catalog.length - 1 + 12);
   for (const { slug } of catalog.filter(entry => entry.slug !== 'advanced-grids')) assert.ok(html.includes(`href="/${slug}/"`), slug);
-  assert.equal((html.match(/href="\/advanced-grids\/demo\/#/g) ?? []).length, 12);
+  assert.equal((html.match(/href="\/examples\//g) ?? []).length, 12);
+});
+
+test('standalone example pages load assets from the shared example build', async () => {
+  const html = await readFile(join(output, 'index.html'), 'utf8');
+  const routes = [...html.matchAll(/href="(\/examples\/[^"/]+\/)"/g)].map(([, route]) => route);
+  assert.equal(new Set(routes).size, 12);
+  for (const route of routes) {
+    const example = await readFile(join(output, route, 'index.html'), 'utf8');
+    const script = example.match(/src="(\/advanced-grids\/demo\/assets\/[^\"]+\.js)"/);
+    assert.ok(script, route);
+    await access(join(output, script[1]));
+  }
 });

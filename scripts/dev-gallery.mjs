@@ -51,6 +51,13 @@ createServer(async (request, response) => {
     }
     if (pathname.startsWith('/assets/')) return await serveFile(response, join(root, 'gallery'), pathname.slice('/assets/'.length));
     const [, slug, section, ...rest] = pathname.split('/');
+    if (slug === 'examples' && section && (!rest.length || (rest.length === 1 && rest[0] === ''))) {
+      const gallery = await import(`./build-gallery.mjs?dev=${revision}`);
+      if (!gallery.scenarioShowcases.some(example => example.slug === `advanced:${section}`)) return response.writeHead(404).end('Not found');
+      const html = await readFile(join(root, 'pro-advanced-grids', 'dist', 'index.html'), 'utf8');
+      response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+      return response.end(gallery.standaloneExampleHtml(html));
+    }
     if (!slug || (!section && slug)) {
       const gallery = await import(`./build-gallery.mjs?dev=${revision}`);
       const showcase = gallery.catalog.find(entry => entry.slug === slug);

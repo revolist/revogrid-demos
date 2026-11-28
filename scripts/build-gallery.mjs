@@ -37,7 +37,8 @@ const scenarioShowcases = advancedGridExamples.map(([id, title]) => ({
   title,
   summary: 'Interactive grid example',
   edition: 'Pro',
-  href: `/advanced-grids/demo/#${id}`,
+  frameworks: ['ts', 'react', 'vue', 'angular'],
+  href: `/examples/${id}/`,
   preview: `/assets/previews/${id}.jpg`,
 }));
 const galleryCatalog = [...catalog.filter(showcase => showcase.slug !== 'advanced-grids'), ...scenarioShowcases];
@@ -91,7 +92,8 @@ function posterName(showcase) {
 }
 
 function card(showcase) {
-  return `<article class="showcase-card">
+  const searchText = [showcaseTitle(showcase), showcase.summary, showcase.edition, ...(showcase.frameworks ?? []).map(framework => framework === 'ts' ? 'TypeScript' : framework), ...(showcase.highlights ?? [])].join(' ');
+  return `<article class="showcase-card" data-search="${escapeHtml(searchText)}">
     <a href="${escapeHtml(showcase.href ?? `/${showcase.slug}/`)}">
       <div class="card-body">
         <div class="card-meta"><h4>${escapeHtml(showcaseTitle(showcase))}</h4><span class="edition">${escapeHtml(showcase.edition)}</span></div>
@@ -155,14 +157,24 @@ export const home = page({
   </section>
   <section class="catalog-section shell" id="showcases">
     <div class="catalog-intro"><div><span class="eyebrow">THE SHOWCASE COLLECTION</span><h2>Explore what's possible.</h2><p>Discover practical examples, from your first grid to advanced workflows.</p></div><span class="catalog-count">${galleryCatalog.length} showcases <span aria-hidden="true">↗</span></span></div>
-    ${showcaseGroups.map(group => {
+    <div class="catalog-controls" hidden>
+      <div class="catalog-search"><label class="visually-hidden" for="showcase-search">Search examples</label><svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="showcase-search" type="search" placeholder="Search examples..." autocomplete="off" /></div>
+      <div class="category-filters" role="group" aria-label="Filter by category"><button type="button" data-category-filter="all" aria-pressed="true">All examples</button>${showcaseGroups.map((group, index) => `<button type="button" data-category-filter="${index}" aria-pressed="false">${escapeHtml(group.title)}</button>`).join('')}</div>
+      <p class="filter-results" role="status" aria-live="polite"></p>
+    </div>
+    <div class="filter-empty" hidden><p>No examples match your search.</p><button type="button" class="filter-reset">Clear filters</button></div>
+    ${showcaseGroups.map((group, index) => {
       const items = group.slugs.map(slug => showcasesBySlug.get(slug)).filter(Boolean);
-      return items.length ? `<section class="showcase-group" aria-label="${escapeHtml(group.title)}"><div class="showcase-group-heading"><div><h3>${escapeHtml(group.title)}</h3><p>${escapeHtml(group.description)}</p></div><span>${items.length} examples</span></div><div class="showcase-grid">${items.map(card).join('')}</div></section>` : '';
+      return items.length ? `<section class="showcase-group" data-category="${index}" aria-label="${escapeHtml(group.title)}"><div class="showcase-group-heading"><div><h3>${escapeHtml(group.title)}</h3><p>${escapeHtml(group.description)}</p></div><span>${items.length} examples</span></div><div class="showcase-grid">${items.map(card).join('')}</div></section>` : '';
     }).join('')}
   </section>`,
 });
 
-export { catalog, detail };
+export { catalog, detail, scenarioShowcases };
+
+export function standaloneExampleHtml(html) {
+  return html.replaceAll('./assets/', '/advanced-grids/demo/assets/');
+}
 
 export async function buildGallery() {
   await rm(output, { recursive: true, force: true });
@@ -181,6 +193,13 @@ export async function buildGallery() {
     await writeFile(join(route, 'index.html'), detail(showcase));
   }
 
+
+  const exampleHtml = standaloneExampleHtml(await readFile(join(root, 'pro-advanced-grids', 'dist', 'index.html'), 'utf8'));
+  for (const scenario of scenarioShowcases) {
+    const route = join(output, 'examples', scenario.slug.slice('advanced:'.length));
+    await mkdir(route, { recursive: true });
+    await writeFile(join(route, 'index.html'), exampleHtml);
+  }
 
   await writeFile(join(output, 'index.html'), home);
   await writeFile(join(output, 'manifest.json'), `${JSON.stringify({ generatedAt: new Date().toISOString(), showcases: catalog.map(({ slug, title, edition }) => ({ slug, title, edition, route: `/${slug}/`, demoRoute: `/${slug}/demo/` })) }, null, 2)}\n`);

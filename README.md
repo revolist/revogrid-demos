@@ -94,6 +94,10 @@ pnpm dev
 `pnpm run setup` initializes nested repositories and performs frozen parent and
 child installs. `pnpm build` builds the showcases and assembles `dist/`.
 
+The gallery supports searching and filtering examples by category. Advanced grid
+examples have individual `/examples/<example-id>/` routes; existing
+`/advanced-grids/demo/#<example-id>` links continue to work.
+
 `pnpm dev` serves the gallery from source at http://127.0.0.1:4173 and reloads
 open gallery pages when its templates, styles, scripts, or catalog metadata
 change. Showcase routes use their existing built output; run a showcase’s own
