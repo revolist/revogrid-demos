@@ -105,13 +105,28 @@ test('catalog demo hosts fill the viewport without page overflow', async ({ page
       await page.goto(`/${slug}/demo/`);
       const grid = page.locator('revo-grid').first();
       await expect(grid, slug).toBeVisible();
-      const container = page.locator('#app > :is(section, div)').first();
+      const container = page.locator(slug === 'ai-agent' ? '.ai-demo-shell' : '#app > :is(section, div)').first();
       const bounds = await container.boundingBox();
       expect(bounds, slug).not.toBeNull();
       expect(bounds!.x, slug).toBeCloseTo(0, 0);
       expect(bounds!.width, slug).toBeCloseTo(width, 0);
       expect(await page.evaluate(() => document.documentElement.scrollHeight), slug).toBeLessThanOrEqual(844);
     }
+  }
+});
+
+test('AI assistant uses the shared demo shell', async ({ page }) => {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/ai-agent/demo/');
+    await expect(page.getByRole('heading', { name: 'AI Grid Assistant' })).toBeVisible();
+    const panel = page.locator('.ai-demo-shell > .demo-shell__body');
+    await expect(panel.locator('revo-grid')).toBeVisible();
+    await expect(panel.getByRole('complementary', { name: 'AI assistant' })).toBeVisible();
+    const bounds = await panel.boundingBox();
+    expect(bounds!.width).toBeCloseTo(width, 0);
+    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(844);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(844);
   }
 });
 

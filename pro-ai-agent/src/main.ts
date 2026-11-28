@@ -1,4 +1,6 @@
 import '../../demo-host.css';
+import '../../composables/demo-shell.css';
+import './ai-demo-shell.css';
 import '@revolist/revogrid-pro/styles.css';
 import '@revolist/ui/styles.css';
 
